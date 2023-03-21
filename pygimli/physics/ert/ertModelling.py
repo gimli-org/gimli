@@ -1,9 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""ERT modelling operator classes
+"""ERT modelling operator classes.
 
-* base class
-* standard BERT modelling class using pygimli.core (C++) functions
+* abstract base class providing a plotting function
+* standard BERT modelling class using pygimli.core (C++) functionality
 * 2.5D non-optimized totalfield forward operator for ERT (reference)
 """
 
@@ -115,6 +113,7 @@ class ERTModelling(ERTModellingBase):
         self._conjImag = False  # the imaginary parts are flipped for log trans
 
     def setVerbose(self, v):
+        """Set verbosity."""
         super().setVerbose(v)
         self._core.setVerbose(v)
 
@@ -205,11 +204,11 @@ class ERTModelling(ERTModellingBase):
         return self._core.createJacobian(mod)
 
     def setDataPost(self, data):
-        """"""
+        """Set data (at a later stage)."""
         self._core.setData(data)
 
     def setMeshPost(self, mesh):
-        """"""
+        """Set mesh (at a later stage)."""
         self._core.setMesh(mesh, ignoreRegionManager=True)
 
 
