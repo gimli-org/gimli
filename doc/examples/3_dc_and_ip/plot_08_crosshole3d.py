@@ -81,7 +81,10 @@ ax.plot(*elPosXY.T, "mx")
 
 # %%%
 # We create a vertical discretization vector with dense spacing in the range of
-# the electrodes and a coarser discretization above and below.
+# the electrodes and a coarser discretization above and below. From the 2d mesh
+# and the z vector we create a 3D triangular prism mesh that obtains the marker
+# of the 2D mesh. Additionally, we set all cells above or below to marker 1
+# which is by default the background region.
 #
 
 dTop, dBot = 3.5, 10.7
