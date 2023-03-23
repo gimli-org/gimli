@@ -28,8 +28,8 @@ def registerDAEROcmap():
     return daero
 
 
-# class HEMmodelling(Block1DModelling):
-class HEMmodelling(pg.Modelling):
+# class HEMmodelling(pg.Modelling):
+class HEMmodelling(Block1DModelling):
     """HEM Airborne modelling class based on the BGR RESOLVE system."""
 
     # Constants, should rather use pygiml/physics/constants
@@ -41,7 +41,7 @@ class HEMmodelling(pg.Modelling):
     scaling = 1e6
 
     def __init__(self, nlay, height, f=None, r=None, **kwargs):
-        """Initialize class with geometry
+        """Initialize class with geometry.
 
         Parameters
         ----------
@@ -97,6 +97,9 @@ class HEMmodelling(pg.Modelling):
 #                              np.asarray(par(self.nlay-1, self.nlay*2-1)),
 #                              np.asarray(par(0, self.nlay-1)))
         return pg.cat(ip, op)
+
+    def response_mt(self, par, i=0):
+        return self.response(par)
 
     # Methoden
     def calc_forward(self, x, h, rho, d, epr, mur, quasistatic=False):
@@ -508,10 +511,10 @@ class FDEMResSusModelling(HEMmodelling):
 
 
 class HEMRhoSusModelling(HEMmodelling):
-    """Airborne EM (HEM) Forward modelling class for Occam inversion."""
+    """Airborne EM (HEM) smooth forward modelling including susceptibility."""
 
     def __init__(self, dvec, *args, **kwargs):
-        """ not yet working! """
+        """Initialize (not yet working)."""
         self.nlay = len(dvec) + 1
         self.dvec = np.asarray(dvec)
         self.zvec = np.hstack((0, np.cumsum(dvec)))

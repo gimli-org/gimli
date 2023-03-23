@@ -178,7 +178,7 @@ def drawSensors(ax, sensors, diam=0.01, color='grey', **kwargs):
 
 
 def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
-    """
+    """Draw a slice in a 3D mesh for given pygimli mesh.
 
     Parameters
     ----------
@@ -194,15 +194,18 @@ def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
     ax: pyvista.Plotter
         The plotter containing the mesh and drawn electrode positions.
 
-    Note
-    ----
-    Possible kwargs are:
-    normal: tuple(float), str
-    origin: tuple(float)
-    generate_triangles: bool, optional
-    contour: bool, optional
+    Keyword arguments passed to pyvista
+    -----------------------------------
+    normal: [float, float, float] | str
+        normal vector constructing the slice
+    origin: [float, float, float]
+        origin for the slice (by default mesh center)
+    generate_triangles: bool [False]
+        generate triangle mesh
+    contour: bool [False]
+        draw contours instead
 
-    They can be found at
+    More information can be found at
     https://docs.pyvista.org/api/core/filters.html
     """
     label = kwargs.pop('label', None)

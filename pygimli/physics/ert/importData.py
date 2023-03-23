@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+"""Import routines several ERT file formats."""
 import re
 import numpy as np
 import pygimli as pg
@@ -24,7 +23,6 @@ def load(fileName, verbose=False, **kwargs):
     data: pg.DataContainer
 
     """
-
     data = pg.load(fileName)
     if isinstance(data, pg.DataContainerERT):
         return data
@@ -56,7 +54,7 @@ def load(fileName, verbose=False, **kwargs):
 
 
 def importRes2dInv(filename, verbose=False, return_header=False):
-    """Read res2dinv format
+    """Read res2dinv format file.
 
     Parameters
     ----------
@@ -302,7 +300,7 @@ def importRes2dInv(filename, verbose=False, return_header=False):
 
 
 def importAsciiColumns(filename, verbose=False, return_header=False):
-    """Import any ERT data file organized in columns with column header
+    """Import any ERT data file organized in columns with column header.
 
     Input can be:
         * Terrameter LS or SAS Ascii Export format, e.g.

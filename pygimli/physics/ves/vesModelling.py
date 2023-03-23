@@ -384,15 +384,56 @@ class VESCModelling(VESModelling):
         a2.grid(True)
 
 
-class VESRhoModelling(pg.Modelling):
+# class VESRhoModelling(VESModelling):  # not working due to Block1dModelling
+class VESRhoModelling(pg.frameworks.MeshModelling):
     """Vertical electrical sounding (VES) modelling with fixed layers."""
 
-    def __init__(self, thk, **kwargs):
-        super().__init__()
-        self.fwd = pg.core.DC1dRhoModelling(thk, **kwargs)
-        mesh = pg.meshtools.createMesh1D(len(thk)+1)
-        self.setMesh(mesh)
+    def __init__(self, thk, verbose=False, **kwargs):
+        """Initialize modelling operator by passing model and data space.
+
+        Parameters
+        ----------
+        thk : iterable, optional
+            Thickness vector of the individual layers.
+        verbose : bool, optional
+            some output. The default is False.
+        **kwargs : geometric definition of the sounding, either
+            ab2 : iterable
+                AB/2 distances
+            mn2 : iterable
+                MN/2 distances (if not specified, ab2/3 by default) OR
+            am : iterable
+                A-M distance AND
+            an : iterable
+                A-N distance AND
+            bm : iterable
+                N-M distance AND
+            bn : iterable
+                B-N distance OR
+            dataContainer : pg.DataContainerERT
+                ERT data container to determine the AM/AN/BM/BN distances
+        """
+        super().__init__(verbose=verbose)
+        # better do the following in a function like setDataSpace/setModelSpace
+        self.bfop = VESModelling(**kwargs)  # just to sort out AM, AN etc.
+        self.thk = thk
+        self.fwd = pg.core.DC1dRhoModelling(thk, self.bfop.am, self.bfop.bm,
+                                            self.bfop.an, self.bfop.bn,
+                                            verbose=verbose)
+        self.mesh_ = pg.meshtools.createMesh1D(len(thk)+1)
+        self.setMesh(self.mesh_)
+        # self.mesh = self.mesh_  # could work with MeshModelling parent
 
     def response(self, par):
-        """Forward response."""
+        """Forward response (app. resistivity for given resistivity vector)."""
         return self.fwd.response(par)
+
+    def response_mt(self, par):
+        """Forward response."""
+        fwd = pg.core.DC1dRhoModelling(self.thk, self.bfop.am, self.bfop.bm,
+                                       self.bfop.an, self.bfop.bn, False)
+        return fwd.response(par)
+
+    def createStartModel(self, rhoa):
+        """Create starting model."""
+        return pg.Vector(len(self.thk)+1, np.median(rhoa))

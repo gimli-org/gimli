@@ -35,6 +35,7 @@ from pygimli.physics import ert
 
 
 def get_scheme():
+    """Create data scheme of dipole-dipole array."""
     scheme = ert.createData(elecs=np.linspace(start=0, stop=50, num=51),
                             schemeName='dd')
     # Not strictly required, but we switch potential electrodes to yield
@@ -49,7 +50,7 @@ def get_scheme():
 
 
 def get_fwd_mesh():
-    """Generate the forward mesh (with embedded anomalies)"""
+    """Generate the forward mesh (with embedded anomalies)."""
     scheme = get_scheme()
 
     # Mesh generation
@@ -76,7 +77,7 @@ def get_fwd_mesh():
 
 
 def generate_forward_data():
-    """Generate synthetic forward data that we then invert"""
+    """Generate synthetic forward data that we then invert."""
     scheme = get_scheme()
 
     mesh = get_fwd_mesh()
@@ -138,9 +139,7 @@ data_rcomplex = generate_forward_data()
 
 
 def plot_fwd_model(axes):
-    """This function plots the forward model used to generate the data
-
-    """
+    """Plot the forward model used to generate the data."""
     # Mesh generation
     world = mt.createWorld(
         start=[-55, 0], end=[105, -80], worldMarker=True)
@@ -198,7 +197,7 @@ m = scheme['m']
 n = scheme['n']
 scheme['m'] = n
 scheme['n'] = m
-scheme.set('k', [1 for x in range(scheme.size())])
+scheme['k'] = np.ones(scheme.size())
 
 ###############################################################################
 # Mesh generation for the inversion
@@ -245,16 +244,13 @@ J0 = J_re + 1j * J_im
 ###############################################################################
 # Regularization matrix
 rm = fop.regionManager()
-rm.setMesh(mesh) # need to set here manually because of ignoreRegionManager=True
+rm.setMesh(mesh)  # need to be set manually because of ignoreRegionManager=True
 rm.setVerbose(True)
 rm.setConstraintType(2)
 
 Wm = pg.matrix.SparseMapMatrix()
 rm.fillConstraints(Wm)
-#print(Wm)
-#print(Wm.values())
 Wm = pg.utils.sparseMatrix2coo(Wm)
-#print(Wm)
 
 ###############################################################################
 # read-in data and determine error parameters
@@ -308,9 +304,9 @@ WdTwd = Wd.conj().dot(Wd)
 # d = log(V)
 # m = log(sigma)
 
-# %%
+
 def plot_inv_pars(filename, d, response, Wd, iteration='start'):
-    """Plot error-weighted residuals"""
+    """Plot error-weighted residuals."""
     if 0:
         fig, axes = plt.subplots(1, 1, figsize=(20 / 2.54, 10 / 2.54))
 
@@ -332,11 +328,11 @@ def plot_inv_pars(filename, d, response, Wd, iteration='start'):
             label=r"$(d'' - f'') / \epsilon$"
         )
 
-        fig.suptitle(
-            'Error weighted residuals of iteration {}'.format(iteration), y=1.00)
+        fig.suptitle(f'Error weighted residuals of iteration {iteration}',
+                     y=1.0)
 
     fig.tight_layout()
-# %%
+
 
 m_old = np.log(start_model)
 # d = np.log(pg.utils.toComplex(data_rre_rim))

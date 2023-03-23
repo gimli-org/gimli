@@ -13,7 +13,7 @@ from .core import (CMatrix, CSparseMapMatrix, CSparseMatrix,
 from .logger import critical, warn, info
 
 
-# make core matrices (now in pgcore, later pg.core) available here for brevity
+# make pygimli core (pgcore) matrices available here for clarity
 # useful aliases
 IdentityMatrix = pgcore.IdentityMatrix
 

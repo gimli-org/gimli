@@ -1191,7 +1191,7 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
         ax to draw into
     mesh : :gimliapi:`GIMLI::Mesh`
         2d mesh
-    data : iterable float | [float, float] | pg.core.R3Vector
+    data : iterable float | [float, float] | pg.PosVector
         If data is an array (per cell or node) gradients are calculated
         otherwise the data will be interpreted as vector field per nodes or
         cell centers.
@@ -1248,7 +1248,7 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
             x = pg.x(mesh.boundaryCenters())
             y = pg.y(mesh.boundaryCenters())
 
-        if isinstance(data, pg.core.R3Vector):
+        if isinstance(data, pg.PosVector):
             u = pg.x(data)
             v = pg.y(data)
         else:

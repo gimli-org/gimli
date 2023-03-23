@@ -70,7 +70,7 @@ def createGrid(x=None, y=None, z=None, **kwargs):
             z = list(range(z))
         kwargs['z'] = z
 
-    return pg.core.pgcore.createGrid(**kwargs)
+    return pg.core.createGrid(**kwargs)
 
 
 def createGridPieShaped(x, degree=10.0, h=2, marker=0):
@@ -166,7 +166,7 @@ def createGridPieShaped(x, degree=10.0, h=2, marker=0):
 
 
 def appendBoundary(mesh, **kwargs):
-    """ Append Boundary to a given mesh.
+    """Append Boundary to a given mesh.
 
     Syntactic sugar for :py:mod:`pygimli.meshtools.appendTriangleBoundary`
     and :py:mod:`pygimli.meshtools.appendTetrahedronBoundary`.
@@ -395,7 +395,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
 
     for b in mesh3.boundaries():
         if b.outside() and b.marker() > -1:
-            if b.norm().x() != 0 or b.norm().y() == -1.0:
+            if b.norm().x() != 0 or b.norm().y() == -1.0 or not isSubSurface:
                 b.setMarker(pg.core.MARKER_BOUND_MIXED)
             else:
                 b.setMarker(pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
@@ -405,7 +405,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
 
 def appendBoundaryGrid(grid, xbound=None, ybound=None, zbound=None,
                        marker=1, isSubSurface=True, **kwargs):
-    """ Return a copy of grid surrounded by a boundary grid.
+    """Return a copy of grid surrounded by a boundary grid.
 
     Note, the input grid needs to be a 2d or 3d grid with quad/hex cells.
 
@@ -419,16 +419,20 @@ def appendBoundaryGrid(grid, xbound=None, ybound=None, zbound=None,
     grid: :gimliapi:`GIMLI::Mesh`
         2D or 3D Mesh that must contain structured quads or hex cells
     xbound: iterable of type float [None]
-        Needed for 2D or 3D grid prolongation and will be added on the left side in opposit order and on the right side in normal order.
+        Needed for 2D or 3D grid prolongation and will be added on the left
+        side in opposit order and on the right side in normal order.
     ybound: iterable of type float [None]
-        Needed for 2D or 3D grid prolongation and will be added (2D bottom, 3D fron) in opposit order and (2D top, 3D back) in normal order.
+        Needed for 2D or 3D grid prolongation and will be added (2D bottom,
+        3D front) in opposit order and (2D top, 3D back) in normal order.
     zbound: iterable of type float [None]
-        Needed for 3D grid prolongation and will be added the bottom side in opposit order on the top side in normal order.
+        Needed for 3D grid prolongation and will be added the bottom side in
+        opposite order on the top side in normal order.
     marker: int [1]
         Cellmarker for the cells in the boundary region
     isSubSurface : boolean, optional
         Apply boundary conditions suitable for geo-simulaion and prolongate
         mesh to the surface if necessary, e.i., no boundary on top of the grid.
+
     Examples
     --------
     >>> import pygimli as pg
@@ -497,7 +501,7 @@ def appendBoundaryGrid(grid, xbound=None, ybound=None, zbound=None,
 
 def appendTetrahedronBoundary(mesh, xbound=10, ybound=10, zbound=10,
                               marker=1, isSubSurface=True, **kwargs):
-    """ Return a copy of mesh surrounded by a tetrahedron mesh as boundary.
+    """Return a copy of mesh surrounded by a tetrahedron mesh as boundary.
 
     Returns a new mesh that contains a tetrahedron mesh box around a given mesh
     suitable for geo-simulation (surface boundary with marker = -1  at top and

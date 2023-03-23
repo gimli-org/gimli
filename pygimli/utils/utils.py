@@ -481,7 +481,7 @@ def diff(v):
 
     Parameters
     ----------
-    v : array(N) | pg.core.R3Vector(N)
+    v : array(N) | pg.PosVector(N)
         Array of double values or positions
 
     Returns
@@ -493,7 +493,7 @@ def diff(v):
     --------
     >>> import pygimli as pg
     >>> from pygimli.utils import diff
-    >>> p = pg.core.R3Vector(4)
+    >>> p = pg.PosVector(4)
     >>> p[0] = [0.0, 0.0]
     >>> p[1] = [0.0, 1.0]
     >>> print(diff(p)[0])
@@ -514,20 +514,20 @@ def diff(v):
     if isinstance(v, np.ndarray):
         if v.ndim == 2:
             if v.shape[1] < 4:
-                # v = pg.core.R3Vector(v.T)
+                # v = pg.PosVector(v.T)
                 vt = v.copy()
-                v = pg.core.R3Vector(len(vt))
+                v = pg.PosVector(len(vt))
                 for i, vi in enumerate(vt):
                     v.setVal(pg.RVector3(vi), i)
             else:
-                v = pg.core.R3Vector(v)
+                v = pg.PosVector(v)
         else:
             v = pg.Vector(v)
     elif isinstance(v, list):
-        v = pg.core.R3Vector(v)
+        v = pg.PosVector(v)
 
-    if isinstance(v, pg.core.R3Vector) or isinstance(v, pg.core.stdVectorRVector3):
-        d = pg.core.R3Vector(len(v) - 1)
+    if isinstance(v, pg.PosVector) or isinstance(v, pg.core.stdVectorRVector3):
+        d = pg.PosVector(len(v) - 1)
     else:
         d = pg.Vector(len(v) - 1)
 
@@ -541,7 +541,7 @@ def dist(p, c=None):
 
     Parameters
     ----------
-    p : ndarray(N,2) | ndarray(N,3) | pg.core.R3Vector
+    p : ndarray(N,2) | ndarray(N,3) | pg.PosVector
 
         Position array
     c : [x,y,z] [None]
@@ -557,7 +557,7 @@ def dist(p, c=None):
     >>> import pygimli as pg
     >>> from pygimli.utils import dist
     >>> import numpy as np
-    >>> p = pg.core.R3Vector(4)
+    >>> p = pg.PosVector(4)
     >>> p[0] = [0.0, 0.0]
     >>> p[1] = [0.0, 1.0]
     >>> print(dist(p))
@@ -590,7 +590,7 @@ def cumDist(p):
 
     Parameters
     ----------
-    p : ndarray(N,2) | ndarray(N,3) | pg.core.R3Vector
+    p : ndarray(N,2) | ndarray(N,3) | pg.PosVector
         Position array
 
     Returns
@@ -603,7 +603,7 @@ def cumDist(p):
     >>> import pygimli as pg
     >>> from pygimli.utils import cumDist
     >>> import numpy as np
-    >>> p = pg.core.R3Vector(4)
+    >>> p = pg.PosVector(4)
     >>> p[0] = [0.0, 0.0]
     >>> p[1] = [0.0, 1.0]
     >>> p[2] = [0.0, 1.0]
