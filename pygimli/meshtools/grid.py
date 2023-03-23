@@ -12,7 +12,9 @@ def createGrid(x=None, y=None, z=None, **kwargs):
     Generate simple grid with defined node positions for each dimension.
     The resulting grid depends on the amount of given coordinate arguments
     and consists out of edges (1D - x), quads (2D- x and y), or
-    hexahedrons(3D- x, y, and z).
+    hexahedrons(3D- x, y, and z). For grids with world boundary markers 
+    (-1 surface and -2 subsurface) the y or z array need to be in increasing
+    order.
 
     Parameters
     ----------
@@ -174,8 +176,8 @@ def appendBoundary(mesh, **kwargs):
     mesh: :gimliapi:`GIMLI::Mesh`
         "2d or 3d Mesh to which the boundary will be appended.
 
-    Additional Args
-    ---------------
+    Keyword Args
+    ------------
     **kwargs forwarded to :py:mod:`pygimli.meshtools.appendTriangleBoundary`
     or :py:mod:`pygimli.meshtools.appendTetrahedronBoundary`.
 
@@ -198,14 +200,15 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
     """Add a triangle mesh boundary to a given mesh.
 
     Returns a new mesh that contains a triangulated box around a given mesh
-    suitable for geo-simulation (surface boundary with marker = -1  at top and
-    marker = -2 in the inner subsurface). The old boundary marker from mesh
-    will be preserved, except for marker == -2 which will be switched to 2 as
-    we assume -2 is the world marker for outer boundaries in the subsurface.
+    suitable for geo-simulation (surface boundary with marker == -1  at the top
+    and marker == -2 in the inner subsurface). The old boundary marker from the
+    input mesh are preserved, except for marker == -2 which will be changed
+    to +2 as we assume marker == -2 is the world marker for outer boundaries in
+    the subsurface.
 
-    Note that this all will only work stable if the mesh generator (triangle)
-    preserve all input boundaries. This will lead to bad quality meshes for the
-    boundary region so its a good idea to play with the addNodes keyword
+    Note, this all will only work stable if the mesh generator (triangle)
+    preserve all input boundaries. However this will lead to bad quality meshes 
+    for the boundary region so its a good idea to play with the addNodes keyword
     argument to manually refine the newly created outer boundaries.
 
     Parameters
@@ -222,8 +225,8 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
         Apply boundary conditions suitable for geo-simulation and prolongate
         mesh to the surface if necessary.
 
-    Additional Args
-    ---------------
+    Keyword Args
+    ------------
     ** kargs forwarded to pg.createMesh
 
     quality : float, optional

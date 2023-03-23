@@ -70,7 +70,7 @@ def setPolyRegionMarker(poly, marker=1, area=0.0, markerPosition=None,
         Marks the geometry as a hole and will be cut in any merge mesh.
 
     Keyword Arguments
-    ----------------
+    -----------------
     **kwargs
         Additional kwargs
     """
