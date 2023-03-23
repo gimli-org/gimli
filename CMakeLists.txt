@@ -514,6 +514,7 @@ else()
             find_program(CLANG_EXECUTABLE
                 NAMES clang++-3.9 clang++-3.8 clang++-3.7 clang++-3.6 clang
             )
+            
             if(CLANG_EXECUTABLE)
                 message(STATUS "clang++ found : ${CLANG_EXECUTABLE}")
             else()
