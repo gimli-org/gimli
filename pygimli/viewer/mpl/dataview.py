@@ -383,7 +383,7 @@ def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
 
 
 def plotMatrix(mat, *args, **kwargs):
-    """Naming conventions. Use drawDataMatrix or showDataMatrix"""
+    """Naming conventions. Use drawDataMatrix or showDataMatrix instead."""
     pg.deprecated("use drawDataMatrix or showMatrix")
     return showDataMatrix(*args, **kwargs)
 
@@ -483,8 +483,7 @@ def drawDataMatrix(ax, mat, xmap=None, ymap=None, cMin=None, cMax=None,
 
 
 def plotVecMatrix(xvec, yvec, vals, full=False, **kwargs):
-    """DEPRECATED for nameing
-    """
+    """Plot vectors as matrix (deprecated)."""
     pg.deprecated("use showVecMatrix")
     return showVecMatrix(xvec, yvec, vals, full, **kwargs)
 
@@ -524,12 +523,13 @@ def showVecMatrix(xvec, yvec, vals, full=False, **kwargs):
 
 
 def drawVecMatrix(ax, xvec, yvec, vals, full=False, **kwargs):
+    """Draw x, y, v vectors in form of a matrix."""
     A, xmap, ymap = generateMatrix(xvec, yvec, vals, full=full)
     return drawDataMatrix(ax, A, xmap=xmap, ymap=ymap, **kwargs)
 
 
 def plotDataContainerAsMatrix(*args, **kwargs):
-    "DEPRECATED naming scheme"""
+    """Plot datacontainer as matrix (deprecated)."""
     pg.deprecated('plotDataContainerAsMatrix', 'showDataContainerAsMatrix')
     return showDataContainerAsMatrix(*args, **kwargs)
 
@@ -555,16 +555,8 @@ def showDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
             xToken += token + ' '
         x = num.copy()
 
-    print("found " + str(len(np.unique(x))) + " x values")
-
-#        kwargs.setdefault('xmap', {n: i for i, n in enumerate(np.unique(x))})
-#        xmap = {}
-#        for i, n in enumerate(np.unique(x)):
-#            st = ''
-#            while n > 0:
-#                st = str(n % mul) + '-' + st
-#                n = n // mul
-#            xmap[]
+    if verbose:
+        pg.info("found " + str(len(np.unique(x))) + " x values")
 
     if isinstance(y, str):
         y = data(y)
@@ -577,13 +569,12 @@ def showDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
             yToken += token + ' '
         y = num.copy()
 
-    print("found " + str(len(np.unique(y))) + " y values")
-#        kwargs.setdefault('ymap', {n: i for i, n in enumerate(np.unique(y))})
-
     if isinstance(v, str):
         v = data(v)
 
+#        kwargs.setdefault('ymap', {n: i for i, n in enumerate(np.unique(y))})
     if verbose:
+        pg.info("found " + str(len(np.unique(y))) + " y values")
         pg.info("x vector length: {:d}".format(len(x)))
         pg.info("y vector length: {:d}".format(len(y)))
         pg.info("v vector length: {:d}".format(len(v)))

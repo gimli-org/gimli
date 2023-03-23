@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-2D crosshole ERT inversion
+3D crosshole ERT inversion
 --------------------------
 
-Inversion of 2D crosshole field data.
+In this example, we demonstrate the inversion of 3D crosshole field data.
+Instead of a regular grid or an irregular tetrahedral mesh, we use triangular
+prism mesh (triangles in x-y plane and regular along z). This is beneficial
+in cases of a predominant layering that can be accounted for by using zWeight.
 """
 
 # %%%
@@ -17,11 +20,12 @@ import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.physics import ert
 from pygimli.viewer.mpl import showDataContainerAsMatrix
-from pygimli.viewer import pv
 
 # %%%
 # We load the data file from the example repository. It represents a crosshole
-# data set published by Kuras et al. (2009) in the frame of the ALERT project.
+# data set published by Doetsch et al. (2010) in the frame of the RECORD
+# project where boreholes were installed to monitor the exchange between river
+# and groundwater (Coscia et al., 2008).
 #
 
 data = pg.getExampleData("ert/crosshole3d.dat")
@@ -38,20 +42,12 @@ data["rhoa"] = data["r"] * data["k"]
 
 # %%%
 # We plot the data in form of a crossplot between the A-B and M-N electrode
-# combinations.
+# combinations. Values are in the range between 100 and 500 Ohmmeters.
 #
 
 ab = data["a"] * 100 + data["b"]
 mn = data["m"] * 100 + data["n"]
 showDataContainerAsMatrix(data, ab, mn, "rhoa", cMap="Spectral_r")
-
-# %%%
-# We determine the x and z positions and create a regular grid with a spacing
-# of 5xm that contains the electrodes as nodes. This is not necessary but
-# improves quality of the forward response. Around the boreholes there is 0.5m
-# space and all mesh cells have the marker 2.
-#
-
 
 # %%%
 # We first extract the borehole locations, i.e. the x and y positions of the
@@ -84,7 +80,8 @@ ax.plot(*elPosXY.T, "mx")
 # the electrodes and a coarser discretization above and below. From the 2d mesh
 # and the z vector we create a 3D triangular prism mesh that obtains the marker
 # of the 2D mesh. Additionally, we set all cells above or below to marker 1
-# which is by default the background region.
+# which is by default the background region. In total we have 56k cells, of
+# which the most are background and less than 20k cells are inverted.
 #
 
 dTop, dBot = 3.5, 10.7
@@ -92,11 +89,10 @@ dzIn, dzOut = 0.3, 0.7
 zTop = -np.arange(0, dTop, dzOut)  # the upper layer
 zMid = -np.arange(dTop, dBot, dzIn)  # the middle
 zBot = -np.arange(dBot, dBot+bnd+.1, dzOut)  # the lower layer
-zVec = np.concatenate([zTop, zMid, zBot])
+zVec = np.concatenate([zTop, zMid, zBot])  # all vectors together
 print(zVec)
 mesh = mt.createMesh3D(mesh2d, zVec, pg.core.MARKER_BOUND_HOMOGEN_NEUMANN,
                        pg.core.MARKER_BOUND_MIXED)
-
 print(mesh)
 for c in mesh.cells():
     cd = -c.center().z()  # center depth
@@ -117,14 +113,15 @@ mgr = ert.Manager(data)
 mgr.invert(mesh=mesh, zWeight=0.4, verbose=True)
 
 # %%%
-# We visualize the result
+# We visualize the result using the pyVista package with a clip.
+# The electrodes are marked by magenta points.
 #
 
 pd = mgr.paraDomain
 pd["res"] = mgr.model
-pd.exportVTK("result.vtk")
-pl, _ = pg.show(pd, label="res", style="surface", cMap="Spectral_r",  # hold=1
-                filter={"slice": dict(normal=[-1, -1, 0], origin=[2, 2, -6])})
+pl, _ = pg.show(pd, label="res", style="surface", cMap="Spectral_r", hold=1,
+                filter={"slice": dict(normal=[1, 1, 0], origin=[2, 2, -6])})
+pl.add_points(data.sensors().array(), color="magenta")
 pl.camera_position = "yz"
 pl.camera.azimuth = 20
 pl.camera.elevation = 20
@@ -134,4 +131,11 @@ pl.show()
 # %%%
 # References
 # ----------
+# Coscia, I., S. Greenhalgh, N. Linde, A. Green, T. Günter, J. Doetsch, and T.
+# Vogt, 2010, A multi-borehole 3-D ERT monitoring system for aquifer
+# characterization using river flood events as a natural tracer: Ext. Abstr.
+# 16th Annual EAGE meeting of Environmental and Engineering Geophysics.
+# Doetsch, J., Linde, N., Coscia, I., Greenhalgh, S., & Green, A. (2010):
+# Zonation for 3D aquifer characterization based on joint inversions of
+# multimethod crosshole geophysical data. GEOPHYSICS (2010),75(6): G53.
 #
