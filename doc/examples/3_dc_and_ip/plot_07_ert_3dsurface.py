@@ -60,7 +60,7 @@ pl.camera_position = "yz"
 pl.camera.azimuth = 20
 pl.camera.elevation = 20
 pl.camera.zoom(1.2)
-pl.show()
+_ = pl.show()
 
 # %%%
 # References

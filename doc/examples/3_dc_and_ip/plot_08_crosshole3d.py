@@ -7,7 +7,8 @@
 In this example, we demonstrate the inversion of 3D crosshole field data.
 Instead of a regular grid or an irregular tetrahedral mesh, we use triangular
 prism mesh (triangles in x-y plane and regular along z). This is beneficial
-in cases of a predominant layering that can be accounted for by using zWeight.
+in cases of a predominant layering that can be accounted for by using the
+zWeight inversion parameter because the boundaries are perfectly vertical.
 """
 
 # %%%
@@ -47,7 +48,7 @@ data["rhoa"] = data["r"] * data["k"]
 
 ab = data["a"] * 100 + data["b"]
 mn = data["m"] * 100 + data["n"]
-showDataContainerAsMatrix(data, ab, mn, "rhoa", cMap="Spectral_r")
+ax, cb = showDataContainerAsMatrix(data, ab, mn, "rhoa", cMap="Spectral_r")
 
 # %%%
 # We first extract the borehole locations, i.e. the x and y positions of the
@@ -61,7 +62,7 @@ for elpos in elPosXY:
     rect.createNode(*elpos, 0)
 
 ax, cb = pg.show(rect)
-ax.plot(*elPosXY.T, "mx")
+_ = ax.plot(*elPosXY.T, "mx")
 
 # %%%
 # From this PLC, we create a mesh using a maximum cell size.
@@ -73,16 +74,11 @@ rectMesh = mt.createMesh(rect, quality=34.5, area=.2)
 mesh2d = mt.appendTriangleBoundary(
     rectMesh, boundary=bnd, isSubSurface=False, marker=1)
 ax, cb = pg.show(mesh2d, markers=True, showMesh=True)
-ax.plot(*elPosXY.T, "mx")
+_ = ax.plot(*elPosXY.T, "mx")
 
 # %%%
 # We create a vertical discretization vector with dense spacing in the range of
-# the electrodes and a coarser discretization above and below. From the 2d mesh
-# and the z vector we create a 3D triangular prism mesh that obtains the marker
-# of the 2D mesh. Additionally, we set all cells above or below to marker 1
-# which is by default the background region. In total we have 56k cells, of
-# which the most are background and less than 20k cells are inverted.
-#
+# the electrodes and a coarser discretization above and below.
 
 dTop, dBot = 3.5, 10.7
 dzIn, dzOut = 0.3, 0.7
@@ -91,6 +87,14 @@ zMid = -np.arange(dTop, dBot, dzIn)  # the middle
 zBot = -np.arange(dBot, dBot+bnd+.1, dzOut)  # the lower layer
 zVec = np.concatenate([zTop, zMid, zBot])  # all vectors together
 print(zVec)
+
+# %%%
+# From the 2d mesh and the z vector we create a 3D triangular prism mesh that
+# obtains the marker of the 2D mesh. Additionally, we set all cells above or
+# below to marker 1 which is by default the background region. In total we have
+# 56k cells, of which most are background and less than 20k cells are inverted.
+#
+
 mesh = mt.createMesh3D(mesh2d, zVec, pg.core.MARKER_BOUND_HOMOGEN_NEUMANN,
                        pg.core.MARKER_BOUND_MIXED)
 print(mesh)
@@ -99,8 +103,10 @@ for c in mesh.cells():
     if cd < dTop or cd > dBot:
         c.setMarker(1)
 
-mesh.exportVTK("mesh.vtk")
-mesh.exportBoundaryVTU("mesh.vtu")
+mesh["region"] = pg.Vector(mesh.cellMarkers())
+sli = mt.extract2dSlice(mesh)
+ax, cb = pg.show(sli, "region", showMesh=True)
+ax, cb = ax.plot(pg.x(data), pg.z(data), "mo", markersize=1)
 
 # %%%
 # We estimate an error using default values, i.e. 3% relative error and an
@@ -120,13 +126,13 @@ mgr.invert(mesh=mesh, zWeight=0.4, verbose=True)
 pd = mgr.paraDomain
 pd["res"] = mgr.model
 pl, _ = pg.show(pd, label="res", style="surface", cMap="Spectral_r", hold=1,
-                filter={"slice": dict(normal=[1, 1, 0], origin=[2, 2, -6])})
+                filter={"clip": dict(normal=[1, 1, 0], origin=[2, 2, -6])})
 pl.add_points(data.sensors().array(), color="magenta")
 pl.camera_position = "yz"
 pl.camera.azimuth = 20
 pl.camera.elevation = 20
 pl.camera.zoom(1.2)
-pl.show()
+_ = pl.show()
 
 # %%%
 # References
