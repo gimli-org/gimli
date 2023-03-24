@@ -807,8 +807,7 @@ class MarquardtInversion(Inversion):
         self.fop.regionManager().setConstraintType(0)
         self.fop.setRegionProperties('*', cType=0)
 
-        self.model = super(MarquardtInversion, self).run(dataVals,
-                                                         errorVals, **kwargs)
+        self.model = super().run(dataVals, errorVals, **kwargs)
         return self.model
 
 
