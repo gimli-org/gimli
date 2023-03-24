@@ -100,7 +100,7 @@ def harmfitNative(y, x=None, nc=None, xc=None, error=None, err=None):
         if err is not None:  # old keyword
             error = err
         else:
-            err = np.ones((1, len(x)))
+            error = np.ones((1, len(x)))
 
     if nc is None or nc == 0:
         # nc=round(length(x)/30) % number of coefficients

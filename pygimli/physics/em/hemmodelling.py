@@ -99,6 +99,7 @@ class HEMmodelling(Block1DModelling):
         return pg.cat(ip, op)
 
     def response_mt(self, par, i=0):
+        """Multi-threaded forward response."""
         return self.response(par)
 
     # Methoden
