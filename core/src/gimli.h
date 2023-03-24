@@ -150,7 +150,6 @@ template< typename T > inline std::string str(const T & v){
 enum LogType {Verbose, Info, Warning, Error, Debug, Critical};
 DLLEXPORT void log(LogType type, const std::string & msg);
 
-
 template<typename Value, typename... Values>
 std::string str(Value v, Values... vs){
     std::ostringstream os;

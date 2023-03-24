@@ -259,7 +259,7 @@ def generate(defined_symbols, extraIncludes):
                                         include_paths=settings.includesPaths,
                                         define_symbols=defines,
                                         ignore_gccxml_output=False,
-                                        cflags="",
+                                        cflags="-std=c++11",
                                         compiler_path=compiler_path)
 
     mb = module_builder.module_builder_t(
