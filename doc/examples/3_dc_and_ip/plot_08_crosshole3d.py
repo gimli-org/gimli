@@ -106,7 +106,7 @@ for c in mesh.cells():
 mesh["region"] = pg.Vector(mesh.cellMarkers())
 sli = mt.extract2dSlice(mesh)
 ax, cb = pg.show(sli, "region", showMesh=True)
-ax, cb = ax.plot(pg.x(data), pg.z(data), "mo", markersize=1)
+_ = ax.plot(pg.x(data), pg.z(data), "mo", markersize=1)
 
 # %%%
 # We estimate an error using default values, i.e. 3% relative error and an
