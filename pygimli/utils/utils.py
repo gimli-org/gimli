@@ -68,7 +68,7 @@ class ProgressBar(object):
         >>> from pygimli.utils import ProgressBar
         >>> pBar = ProgressBar(its=20, width=40, sign='+')
         >>> pBar.update(5)
-        \r[+++++++++++       30%                 ] 6 of 20 complete
+        [+++++++++++       30%                 ] 6 of 20 complete
         """
         self.its = int(its)
         self.width = width

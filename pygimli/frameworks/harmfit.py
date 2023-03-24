@@ -255,12 +255,11 @@ def harmfit(y, x=None, error=None, nc=42, resample=None,  # lam=0.1,
     coeff = inv.run(yToFit, errorRel, **kwargs, verbose=verbose)
 
     if resample is not None:
-        # DOES NOT WORK YET
-        ret = fop.response(coeff, resample)
+        ret = fop.resample(coeff, resample)
         if window is not None:
             ret.setVal(0.0, pg.find((resample < window[0]) |
                                     (resample >= window[1])))
 
-        return ret, coeff
+        return ret, inv
     else:
         return inv.response, inv
