@@ -43,7 +43,7 @@ class ProgressBar(object):
     """
 
     def __init__(self, its, width=80, sign=":", **kwargs):
-        r"""Create animated text-based progress bar.
+        """Create animated text-based progress bar.
 
         Todo
         ----
@@ -68,7 +68,7 @@ class ProgressBar(object):
         >>> from pygimli.utils import ProgressBar
         >>> pBar = ProgressBar(its=20, width=40, sign='+')
         >>> pBar.update(5)
-        [+++++++++++       30%                 ] 6 of 20 complete
+        \r[+++++++++++       30%                 ] 6 of 20 complete
         """
         self.its = int(its)
         self.width = width
