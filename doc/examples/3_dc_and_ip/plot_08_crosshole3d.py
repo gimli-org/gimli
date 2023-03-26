@@ -119,8 +119,10 @@ mgr = ert.Manager(data)
 mgr.invert(mesh=mesh, zWeight=0.4, verbose=True)
 
 # %%%
-# We visualize the result using the pyVista package with a clip.
-# The electrodes are marked by magenta points.
+# Eventually, we are able to fit the data to a chi-square value close to 1, or
+# about 3% RRMS. We visualize the result using the pyVista package with a clip.
+# The electrodes are marked by magenta points. We mainly see a layering with
+# highest resistivity on top and lowest at the bottom.
 #
 
 pd = mgr.paraDomain
@@ -141,6 +143,7 @@ _ = pl.show()
 # Vogt, 2010, A multi-borehole 3-D ERT monitoring system for aquifer
 # characterization using river flood events as a natural tracer: Ext. Abstr.
 # 16th Annual EAGE meeting of Environmental and Engineering Geophysics.
+#
 # Doetsch, J., Linde, N., Coscia, I., Greenhalgh, S., & Green, A. (2010):
 # Zonation for 3D aquifer characterization based on joint inversions of
 # multimethod crosshole geophysical data. GEOPHYSICS (2010),75(6): G53.
