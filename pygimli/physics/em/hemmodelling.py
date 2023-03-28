@@ -32,9 +32,8 @@ def registerDAEROcmap():
 class HEMmodelling(Block1DModelling):
     """HEM Airborne modelling class based on the BGR RESOLVE system."""
 
-    # Constants, should rather use pygiml/physics/constants
-    ep0 = 8.8542e-12
-    mu0 = 4e-7 * np.pi
+    ep0 = pg.physics.constants.e0
+    mu0 = pg.physics.constants.mu0
     c0 = sqrt(1. / ep0 / mu0)
     fdefault = np.array([387.0, 1821.0, 8388.0, 41460.0, 133300.0], float)
     rdefault = np.array([7.94, 7.93, 7.93, 7.91, 7.92], float)
@@ -56,7 +55,6 @@ class HEMmodelling(Block1DModelling):
         scaling : float
             scaling factor or string (ppm=1e6, percent=1e2)
         """
-        # Attribute
         self.nlay = nlay
         self.height = height
         self.f = np.asarray(f)
@@ -83,7 +81,6 @@ class HEMmodelling(Block1DModelling):
 
         self.wem = (2.0 * pi * self.f) ** 2 * self.ep0 * self.mu0
         self.iwm = np.complex(0, 1) * 2.0 * pi * self.f * self.mu0
-        # super().__init__(nLayers=nlay)
         mesh = pg.meshtools.createMesh1DBlock(nlay)
         super().__init__()
         self.setMesh(mesh)
@@ -93,16 +90,12 @@ class HEMmodelling(Block1DModelling):
         ip, op = self.vmd_hem(self.height,
                               np.asarray(par)[self.nlay-1:self.nlay*2-1],
                               np.asarray(par)[:self.nlay-1])
-#        ip, op = self.vmd_hem(self.height,
-#                              np.asarray(par(self.nlay-1, self.nlay*2-1)),
-#                              np.asarray(par(0, self.nlay-1)))
         return pg.cat(ip, op)
 
     def response_mt(self, par, i=0):
         """Multi-threaded forward response."""
         return self.response(par)
 
-    # Methoden
     def calc_forward(self, x, h, rho, d, epr, mur, quasistatic=False):
         """Calculate forward response."""
         field = np.zeros((self.f.size, x.size), np.complex)
@@ -112,7 +105,6 @@ class HEMmodelling(Block1DModelling):
                 field[:, m] = self.vmd_hem(np.array([h[m]], np.float),
                                            rho[:, m], d[:, m], epr[:, m],
                                            mur[:, m], quasistatic).T[:, 0]
-        # für jede Frequenz
         else:
             for n in range(self.f.size):
                 for m in range(x.size):
@@ -126,9 +118,7 @@ class HEMmodelling(Block1DModelling):
 
     def downward(self, rho, d, z, epr, mur, lam):
         """Downward continuation of fields."""
-        # Anzahl der Schichten
         nl = rho.size
-        # arrays anlegen
         alpha = np.zeros((nl, lam.shape[1], self.f.size), np.complex)
         b = np.zeros((nl, lam.shape[1], self.f.size), np.complex)
         aa = np.zeros((nl, lam.shape[1], self.f.size), np.complex)
@@ -143,7 +133,7 @@ class HEMmodelling(Block1DModelling):
         mur = mur[:, np.newaxis, np.newaxis] * np.ones(
             (mur.size, lam.shape[1], self.f.size), np.float)
         lam = np.tile(lam, (nl, 1, 1))
-        # Ausbreitungskonstante
+        # progression constant
         alpha = np.sqrt(lam ** 2 - np.tile(self.wem, (nl, lam.shape[1], 1)) *
                         epr * mur + np.tile(self.iwm, (nl, lam.shape[1], 1)) *
                         mur / rho)
@@ -153,12 +143,12 @@ class HEMmodelling(Block1DModelling):
             ap = a.copy()
             return b1, a, ap
         elif nl > 1:  # multi-layer case
-            # tanh num instabil tanh(x)=(exp(x)-exp(-x))/(exp(x)+exp(-x))
+            # tanh num unstable tanh(x)=(exp(x)-exp(-x))/(exp(x)+exp(-x))
             ealphad = np.exp(-2.0 * alpha[0:-1, :, :] * d)
             talphad = (1.0 - ealphad) / (1.0 + ealphad)
             b[-1, :, :] = np.copy(alpha[-1, :, :])
-            # rekursive Berechnung der Admittanzen an der Oberkante der Schicht
-            # von unten nach oben, für nl-1 Schichten
+            # recursive admittance computation at upper layer boundary
+            # from bottom to top, for nl-1 layers
             for n in range(nl-2, -1, -1):
                 b[n, :, :] = alpha[n, :, :] * \
                     (b[n+1, :, :] + alpha[n, :, :] * talphad[n, :, :]) / \
@@ -175,7 +165,7 @@ class HEMmodelling(Block1DModelling):
                 aap[n, :, :] = (1.0 + alpha[n, :, :] * c[n, :, :]) / (
                     1.0 + alpha[n, :, :] * c[n+1, :, :]) * \
                     np.exp(-alpha[n, :, :] * d[n, :, :])
-            # Determin layer Index where z is
+            # Determine layer Index where z is
             for n in range(0, nl-1):
                 if np.logical_and(z >= h[n], z < h[n+1]):
                     ind = n
@@ -217,14 +207,14 @@ class HEMmodelling(Block1DModelling):
         d : array
             thickness vector
         """
-        # Filterkoeffizienten
+        # filter coefficients
         if isinstance(epr, float):
             epr = np.ones((len(rho),), np.float)*epr
         if isinstance(mur, float):
             mur = np.ones((len(rho),), np.float)*mur
         fc0, nc, nc0 = hankelfc(3)
         fc1, nc, nc0 = hankelfc(4)
-        # arrays anlegen
+        # allocate arrays
         nf = len(self.f)
         lam = np.zeros((1, nc, nf), np.float)
         alpha0 = np.zeros((1, nc, nf), np.complex)
@@ -244,20 +234,21 @@ class HEMmodelling(Block1DModelling):
             index = np.zeros(self.f.shape, np.bool)
         else:
             index = np.logical_and(self.f >= 1e4, h >= 100.0)
+
         if np.any(index):
             opt = np.floor(10.0 * np.log10(
                 self.r[index] * 2.0 * np.pi * self.f[index] / self.c0) + nc0)
             r0[index] = self.c0 / (2.0 * np.pi * self.f[index]) * 10.0 ** (
                 (opt + 0.5 - nc0) / 10.0)
-        # Bereitstellung der Wellenzahlen
+        # Wave numbers
         n = np.arange(nc0 - nc, nc0, 1, np.float)
         q = 0.1 * np.log(10)
         lam = np.reshape(np.exp(-n[np.newaxis, :, np.newaxis] * q) /
                          r0[np.newaxis, np.newaxis, :], (-1, nc, r0.size))
         # (1, 100, nfreq)
-        # Wellenzahl in Luft, quasistationäre Näherung
+        # wave number in air, quasistationary approximation
         alpha0 = np.copy(lam) * np.complex(1, 0)  # (1, 100, nfreq)
-        # Wellenzahl in Luft, vollständige Lösung für f > 1e4
+        # wave number in air, full solution for f > 1e4
         if quasistatic:
             index = np.zeros(self.f.shape, np.bool)
         else:
@@ -274,12 +265,12 @@ class HEMmodelling(Block1DModelling):
         delta1 = (2 * mur[0]) / (b1 + alpha0 * mur[0]) * e  # (1, 100, nfreq)
         delta2 = 1 / h * e  # (1, 100, nfreq)
         delta3 = 1 / (2 * h) * e  # (1, 100, nfreq)
-        # Faltung
-        # quasistationäre Näherung
+        # convolution
+        # quasistationary approximation
         aux0 = np.sum(delta0 * lam ** 3 / alpha0 *
                       np.tile(fc0[::-1].T[:, :, np.newaxis],
                               (1, 1, self.f.size)), 1, np.complex) / r0
-        # vollständige Lösung, partielle Integration
+        # full solution, partial integration
         if np.any(index):
             aux1 = np.sum(delta1 * lam ** 3 *
                           np.tile(fc0[::-1].T[:, :, np.newaxis],
@@ -290,10 +281,10 @@ class HEMmodelling(Block1DModelling):
             aux3 = np.sum(delta3 * lam ** 2 *
                           np.tile(fc1[::-1].T[:, :, np.newaxis],
                                   (1, 1, self.f.size)), 1, np.complex) / r0
-        # normiertes Sekundärfeld
-        # quasistationäre Näherung
+        # normed secondary field
+        # quasistationary approximation
         Z = self.r ** 3 * aux0 * self.scaling
-        # vollständige Lösung
+        # full solution
         if np.any(index):
             Z[:, index] = (-self.r[index]**3 * aux1[:, index] +
                            self.r[index]**3 * aux2[:, index] -
@@ -302,37 +293,34 @@ class HEMmodelling(Block1DModelling):
 
     def vmd_total_Ef(self, h, z, rho, d, epr, mur, tm):
         """VMD E-phi field (not used actively)."""
-        # nur im HR
-        # Filterkoeffizienten
+        # only halfspace
+        # Filter coefficients
         fc1, nc, nc0 = hankelfc(4)
-        # arrays anlegen
         lam = np.zeros((1, nc, self.f.size), np.float)
         alpha0 = np.zeros((1, nc, self.f.size), np.complex)
         delta = np.zeros((1, nc, self.f.size), np.complex)
         aux = np.zeros((1, self.f.size), np.complex)
         Ef = np.zeros(self.f.size, np.complex)
-        # r0
         r0 = np.copy(self.r)
-        # Bereitstellung der Wellenzahlen
+        # wave numbers
         n = np.arange(nc0 - nc, nc0, 1, np.float)
         q = 0.1 * np.log(10)
         lam = np.reshape(np.exp(-n[np.newaxis, :, np.newaxis] * q) /
                          r0[np.newaxis, np.newaxis, :], (-1, nc, r0.size))
-        # Wellenzahl in Luft, vollständige Lösung
+        # wave numbers in air, full solution
         alpha0 = np.sqrt(lam ** 2 - np.tile(self.wem, (1, nc, 1)) +
                          np.tile(self.iwm, (1, nc, 1)) / 1e9)
-        # Admittanzen an der Oberfläche eines geschichteten Halbraums
+        # admittances on surface of layered halfspace
         b1, aa, _ = self.downward(rho, d, z, epr, mur, lam)
-        # Kernfunktionen
+        # Kernel functions
         e = np.exp(-h * alpha0)  # (1, 100, nfreq)
         delta = 2.0 / (alpha0 + b1) * e  # (1, 100, nfreq)
-        # Faltung
-        # vollständige Lösung
+        # convolution
+        # quasistationary approximation
         aux = np.sum(delta*lam**2*aa*np.tile(fc1[::-1].T[:, :, np.newaxis],
                                              (1, 1, self.f.size)), 1,
                      np.complex) / r0  # (1, nfreq)
-        # absolute Feldwerte
-        # vollständige Lösung
+        # absolute fields, full solution
         Ef = -tm * self.iwm / (4.0 * np.pi) * aux
         return Ef
 
