@@ -32,8 +32,10 @@ def registerDAEROcmap():
 class HEMmodelling(Block1DModelling):
     """HEM Airborne modelling class based on the BGR RESOLVE system."""
 
-    ep0 = pg.physics.constants.e0
-    mu0 = pg.physics.constants.mu0
+    from pygimli.physics.constants import Constants
+
+    ep0 = Constants.e0
+    mu0 = Constants.mu0
     c0 = sqrt(1. / ep0 / mu0)
     fdefault = np.array([387.0, 1821.0, 8388.0, 41460.0, 133300.0], float)
     rdefault = np.array([7.94, 7.93, 7.93, 7.91, 7.92], float)
