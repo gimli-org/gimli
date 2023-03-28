@@ -337,6 +337,7 @@ typedef Matrix3< double > RMatrix3;
 typedef Matrix < Complex > CMatrix;
 typedef BlockMatrix < double > RBlockMatrix;
 
+
 //#typedef Vector< unsigned char > BVector;
 
 // typedef std::vector < RVector > RMatrix;

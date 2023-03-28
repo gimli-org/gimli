@@ -85,11 +85,13 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
 
         if (APPLE)
             ## needet?
-            # If it's libc++ and you're on <= 10.8, you need to compile with clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later, you need to compile with clang++ -stdlib=libstdc++.
+            # If it's libc++ and you're on <= 10.8, you need to compile with 
+            # clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later, 
+            # you need to compile with clang++ -stdlib=libstdc++.
             # add_compile_options(-stdlib=libstdc++)
             # add_compile_options(-stdlib=libc++)
         endif()
-    else() # if gcc
+    else() # if not clang but gcc
 
     endif()
 
@@ -406,7 +408,7 @@ find_or_build_package(Triangle triangle LOCAL)
 #find_package(Triangle)
 
 set(BLA_VENDOR OpenBLAS)
-find_or_build_package(BLAS lapack)
+find_or_build_package(BLAS blas)
 find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
 find_package(UMFPACK)
