@@ -897,6 +897,8 @@ class Block1DInversion(MarquardtInversion):
             Forwarded to the parent class.
             See: :py:mod:`pygimli.modelling.MarquardtInversion`
         """
+        if nLayers is None and "startModel" in kwargs:
+            nLayers = (len(kwargs["startModel"]) + 1) // (self.fop.nPara + 1)
         if nLayers is not None:
             self.fop.nLayers = nLayers
 
