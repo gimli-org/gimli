@@ -3,14 +3,19 @@
 """Frequency Domain Electromagnetics (FDEM) functions and class."""
 
 import numpy as np
-# import matplotlib.pyplot as plt
-# from matplotlib.colors import LinearSegmentedColormap
-# from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import pygimli as pg
 from pygimli.viewer.mpl import show1dmodel, drawModel1D
 from .hemmodelling import HEMmodelling
 
+freqMaxMin10 = 2**np.arange(10) * 110.
+freqMaxMin8 = 2**np.arange(8) * 110.
+freqResolveHCP = np.array([387., 1820., 8330., 41500., 133400.])
+freqResolveVCX = 5410.
+freqResolveHCPOld = np.array([380., 1770., 8300., 41000., 129500.])
 
 def cmapDAERO():
     """Standardized colormap from A-AERO projects (purple=0.3 to red=500)."""
@@ -40,6 +45,7 @@ def xfplot(ax, DATA, x, freq, everyx=5, orientation='horizontal', aspect=30,
     ax.set_xlabel('x [m]')
     ax.set_ylabel('f [Hz]')
     ax.xaxis.set_label_position('top')
+    ax.set_aspect("auto")
     divider = make_axes_locatable(ax)
     cax = divider.append_axes('bottom', size='5%', pad=0.3)
     plt.colorbar(im, ax=ax, cax=cax, orientation=orientation, aspect=aspect)
@@ -53,7 +59,7 @@ class FDEM2dFOPold(pg.core.ModellingBase):
     """Old variant of 2D FOP (to be deleted)."""
 
     def __init__(self, data, nlay=2, verbose=False):
-        """ constructor with data and (optionally) number of layers """
+        """Initialize with data and number of layers."""
         pg.core.ModellingBase.__init__(self, verbose)
         self.nlay = nlay
         self.FOP1d = data.FOP(nlay)
@@ -196,7 +202,8 @@ class FDEM():
                 except Exception:
                     self.importEmsysAsciiData(filename)
             else:
-                self.importMaxminData(filename)
+                self.importMaxMinData(filename)
+
         if np.any(self.frequencies):
             self.isActiveFreq = self.frequencies > 0.0
             self.activeFreq = np.nonzero(self.isActiveFreq)[0]
@@ -207,6 +214,7 @@ class FDEM():
             self.OP /= freeAirSolution
 
     def __repr__(self):
+        """String representation."""
         if self.x is None:
             part1 = "<FDEMdata: sounding with {:d} frequencies".format(
                 len(self.frequencies))
@@ -418,7 +426,7 @@ class FDEM():
                                            -self.height)
 
     def FOPsmooth(self, zvec):
-        """Forward modelling operator using fixed layers (smooth inversion)
+        """Forward modelling operator using fixed layers (smooth inversion).
 
         Parameters
         ----------
@@ -433,7 +441,13 @@ class FDEM():
         Retrieve inphase, outphase and error(if exist) vector from index
         or near given position
 
-        Returns:
+        Parameters
+        ----------
+        xpos : int | float
+            index (int) or position (float) along profile to choose
+
+        Returns
+        -------
             IP : array
             OP : array
             ERR : array or None (if no error is specified)
@@ -444,6 +458,7 @@ class FDEM():
         else:
             n = np.argmin(np.absolute(self.x - xpos))
 
+        self.height = self.z[n]
         ip = self.IP[n, self.activeFreq]
         op = self.OP[n, self.activeFreq]
         err = None
@@ -459,7 +474,6 @@ class FDEM():
 
     def datavec(self, xpos=0):
         """Extract data vector (stack in and out phase) for given pos/no."""
-
         ip, op, _ = self.selectData(xpos)
         return np.hstack((ip, op))
 
@@ -506,7 +520,7 @@ class FDEM():
         self.transData = pg.trans.TransSymLog(tol=0.1)
         self.transLog = pg.trans.TransLog()
 
-        useHEM = kwargs.pop("useHEM", False)
+        useHEM = kwargs.pop("useHEM", True)
         # EM forward operator
         if isinstance(nlay, pg.core.FDEM1dModelling):
             self.fop = nlay
@@ -546,7 +560,7 @@ class FDEM():
                                         lam=lam, startModel=model, **kwargs)
             response = self.inv.response
         else:
-            self.inv = pg.core.RInversion(data, self.fop, self.transData,
+            self.inv = pg.core.RInversion(dataVec, self.fop, self.transData,
                                           verbose)
             self.inv.setAbsoluteError(errorVec)
             self.inv.setLambda(lam)

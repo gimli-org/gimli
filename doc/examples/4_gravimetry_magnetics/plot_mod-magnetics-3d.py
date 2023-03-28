@@ -61,7 +61,7 @@ pl.camera.roll = 90
 pl.camera.azimuth = 180 - 15
 pl.camera.elevation = 10
 pl.camera.zoom(1.2)
-pl.show()
+_ = pl.show()
 
 # %%%
 # For the computation of the total field, we define the global magnetic
@@ -151,7 +151,7 @@ pl.camera.roll = 90
 pl.camera.azimuth = 180 - 15
 pl.camera.elevation = 10
 pl.camera.zoom(1.2)
-pl.show()
+_ = pl.show()
 
 # %%%
 # The model can nicely outline the top part of the anomalous body, but not
@@ -164,14 +164,14 @@ fig, ax = pg.plt.subplots(ncols=2, figsize=(12, 5), sharex=True, sharey=True)
 vals = data * 1e9
 mm = np.max(np.abs(vals))
 ax[0].scatter(px, py, c=vals, cmap="bwr", vmin=-mm, vmax=mm);
-ax[1].scatter(px, py, c=inv.response*1e9, cmap="bwr", vmin=-mm, vmax=mm);
+_ = ax[1].scatter(px, py, c=inv.response*1e9, cmap="bwr", vmin=-mm, vmax=mm);
 
 # %%%
 # Alternatively, we can also plot the error-weighted misfit.
 #
 
 misfit = (inv.response*1e9-vals) / (relError * np.abs(data) * 1e9)
-pg.plt.scatter(py, px, c=misfit, cmap="bwr", vmin=-3, vmax=3);
+_ = pg.plt.scatter(py, px, c=misfit, cmap="bwr", vmin=-3, vmax=3);
 
 # %%%
 # References

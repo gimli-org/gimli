@@ -807,8 +807,7 @@ class MarquardtInversion(Inversion):
         self.fop.regionManager().setConstraintType(0)
         self.fop.setRegionProperties('*', cType=0)
 
-        self.model = super(MarquardtInversion, self).run(dataVals,
-                                                         errorVals, **kwargs)
+        self.model = super().run(dataVals, errorVals, **kwargs)
         return self.model
 
 
@@ -898,6 +897,8 @@ class Block1DInversion(MarquardtInversion):
             Forwarded to the parent class.
             See: :py:mod:`pygimli.modelling.MarquardtInversion`
         """
+        if nLayers is None and "startModel" in kwargs:
+            nLayers = (len(kwargs["startModel"]) + 1) // (self.fop.nPara + 1)
         if nLayers is not None:
             self.fop.nLayers = nLayers
 
