@@ -18,13 +18,17 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
 
     add_definitions(-DPYGIMLI)
     add_definitions(-DBOOST_PYTHON_NO_PY_SIGNATURES)
-	add_definitions(-DBOOST_PYTHON_USE_GCC_SYMBOL_VISIBILITY)
+    add_definitions(-DBOOST_PYTHON_USE_GCC_SYMBOL_VISIBILITY)
 
     add_library(${PYTHON_TARGET_NAME} MODULE ${${PYTHON_MODULE_NAME}_SOURCE_FILES})
 
     target_link_libraries(${PYTHON_TARGET_NAME} ${EXTRA_LIBS})
     target_link_libraries(${PYTHON_TARGET_NAME} ${Python_LIBRARIES})
     target_link_libraries(${PYTHON_TARGET_NAME} ${Boost_PYTHON_LIBRARY})
+
+    if (APPLE)
+	target_link_libraries(${PYTHON_TARGET_NAME} -bundle "-undefined dynamic_lookup")
+    endif()
 
     set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES PREFIX "")
 

@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+#cmake_minimum_required(VERSION 3.10)
+>>>>>>> d0f21324 (tmp for mac build)
 cmake_minimum_required(VERSION 3.15)
 #BOOST_MAX_VERISION: 1.65 UBUNTU:18
 
@@ -36,14 +40,14 @@ message(STATUS "MSVC:   " ${MSVC} " ")
 if (POLICY CMP0025) # recognize appleclang
     cmake_policy(SET CMP0025 NEW)
 endif()
+#if (APPLE) // check if needed!
+#    set(CMAKE_MACOSX_RPATH 1)
+#    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+#endif()
 
 # Check if conda package is created
 if (DEFINED ENV{CONDA_BUILD})
     message(STATUS "Conda package is being created.")
-    if (APPLE)
-	    set(CMAKE_MACOSX_RPATH 1)
-	    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-    endif()
     set(CONDA_BUILD TRUE)
     set(Boost_INCLUDE_DIR "${CMAKE_PREFIX_PATH}/include")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-class-memaccess") # new since gcc.8 maybe need to be checked, not on apple
@@ -104,6 +108,10 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX OR ${CMAKE_CXX_COMPILE
 
     if (NOT WIN32 AND ASAN)
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
+    endif()
+
+    if (APPLE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-infinite-recursion") 
     endif()
 elseif(MSVC)
 	# MSVC complain a lot of possible unsecure std function
@@ -370,6 +378,7 @@ if (NOT Boost_PYTHON_LIBRARY)
         endif()
     endif()
 
+    #set(Boost_PYTHON_LIBRARY "/opt/homebrew/Caskroom/mambaforge/base/lib/libboost_python39.dylib")
     if (Boost_PYTHON_FOUND)
         message(STATUS "Boost_PYTHON_FOUND:" ${Boost_PYTHON_FOUND})
         message(STATUS "Boost_PYTHON_LIBRARY:" ${Boost_PYTHON_LIBRARY})
@@ -415,6 +424,11 @@ find_or_build_package(Triangle triangle LOCAL)
 #find_package(Triangle)
 
 set(BLA_VENDOR OpenBLAS)
+#find_package(BLAS)
+#find_package(LAPACK)
+#find_package(blas)
+#find_package(lapack)
+#exit()
 find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
@@ -425,9 +439,9 @@ find_package(UMFPACK)
 ################################################################################
 
 #if (";${BLAS_LIBRARIES};" MATCHES "openblas")
-message(STATUS "Blas found:" ${BLAS_FOUND})
+message(STATUS "BLAS found:" ${BLAS_FOUND})
 if (BLAS_FOUND)
-    message(STATUS "openblas is used: ${BLAS_LIBRARIES}")
+    message(STATUS "OpenBLAS is used: ${BLAS_LIBRARIES}")
 
     if (MINGW)
         get_filename_component(MINGW_ROOT ${BLAS_LIBRARIES} PATH)
@@ -457,14 +471,14 @@ if (BLAS_FOUND)
     endif()
 
     if (NOT OpenBLAS_INCLUDE_DIR)
-        message(STATUS "no openblas cblas.h in prefered paths .. searching defaults")
+        message(STATUS "No OpenBLAS cblas.h in prefered paths .. searching defaults")
 
         FIND_PATH(OpenBLAS_INCLUDE_DIR
             NAMES
                 cblas.h
         )
     endif()
-    message(STATUS "openblas cblas.h: ${OpenBLAS_INCLUDE_DIR}")
+    message(STATUS "OpenBLAS cblas.h: ${OpenBLAS_INCLUDE_DIR}")
 
     if (OpenBLAS_INCLUDE_DIR)
     set(OPENBLAS_CBLAS_FOUND TRUE)
