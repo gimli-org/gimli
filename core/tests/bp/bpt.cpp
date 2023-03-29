@@ -6,7 +6,20 @@ void t(){
    throw std::out_of_range ("std::out_of_range");
 }
 
+class A{
+public: 
+    A(int a=1){
+        std::cout << "init A with: " << a << std::endl;
+    }
+};
+
 namespace bp = boost::python;
+
 BOOST_PYTHON_MODULE(_bpt_){
+
     bp::def("t", t, "");
+
+    typedef bp::class_< A > A_exposer_t;
+    A_exposer_t A_exposer = A_exposer_t( "A", "class doctest", 
+        bp::init< bp::optional< int > >((bp::arg("a")=(int)(1)), "init doctest"));
 }
