@@ -213,7 +213,8 @@ int DataContainer::load(const std::string & fileName,
     // __MS(std::locale::locale(LC_NUMERIC));
     // __MS(std::localeconv()->decimal_point[0]));
     //putenv("LC_NUMERIC=C");
-    std::setlocale(LC_NUMERIC, "C");
+    setlocale(LC_NUMERIC, "C"); // no std::setlocale on appleclang
+    //std::setlocale(LC_NUMERIC, "C");
     // __MS(std::locale(LC_NUMERIC, "C"));
     // __MS(std::localeconv()->decimal_point[0]));
                             
