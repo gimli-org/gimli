@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-#cmake_minimum_required(VERSION 3.10)
->>>>>>> d0f21324 (tmp for mac build)
 cmake_minimum_required(VERSION 3.15)
 #BOOST_MAX_VERISION: 1.65 UBUNTU:18
 
