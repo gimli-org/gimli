@@ -654,6 +654,8 @@ def generate(defined_symbols, extraIncludes):
         os.path.join(
             os.path.abspath(os.path.dirname(__file__)), 'custom_rvalue.cpp'),
         os.path.join(
+            os.path.abspath(os.path.dirname(__file__)), 'explicit_instances.cpp'),
+        os.path.join(
             os.path.abspath(os.path.dirname(__file__)), 'generators.h'),
         os.path.join(
             os.path.abspath(os.path.dirname(__file__)), 'tuples.hpp')]
