@@ -12,7 +12,7 @@
 //typedef struct { long double x, y; } __float128;
 #endif
 
-// #define PYTEST
+//#define PYTEST
 #ifdef PYTEST
 
  #include <iostream>
@@ -27,16 +27,19 @@
 #endif
 
 namespace GIMLI{
-
     inline void tmp(){
-        std::cout << "tmp"<< std::endl;  
+         std::cout << "tmp"<< std::endl;  
     }
     class TMP {
-        public:
-        void a(){std::cout << "TMP"<< std::endl;}  
+            public:
+            void a(){std::cout << "TMP"<< std::endl;}  
     };
 
-	template class Vector< double >;
+    extern template class Vector< double >;
+//     template class VectorIterator< double >;
+//     template class Vector< Complex >;
+//     template class Vector< int >;
+//     template class BlockMatrix< double >;
 
     inline void ___instantiation___(){
         // sizeof(::GIMLI::Index *);
@@ -65,7 +68,6 @@ namespace GIMLI{
 
 } // namespace GIMLI
 
-namespace pyplusplus{ namespace aliases{
     typedef std::complex< double >                  Complex;
     typedef GIMLI::Vector< double >                 RVector;
     // typedef GIMLI::Vector< bool >                 BVector;

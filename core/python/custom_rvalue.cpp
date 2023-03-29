@@ -27,7 +27,8 @@ static int __numpy_initialized = 0;
 
 int initNumpy(){
     // Needed or py* checks will segfault
-    if (__numpy_initialized == 0){
+	std::cout << "init numpy" << std::endl;
+	if (__numpy_initialized == 0){
         import_array2("Cannot import numpy.core.multiarray c-api for rvalue converters.", 0);
         __numpy_initialized = 1;
     }

@@ -158,6 +158,7 @@ std::string str(Value v, Values... vs){
     (void) expander{ 0, (os << " " << vs, void(), 0)... };
     return os.str();
 }
+
 template<typename... Values>
 void log(LogType type, Values... vs){
     return log(type, str(vs...));

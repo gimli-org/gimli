@@ -18,7 +18,7 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
 
     add_definitions(-DPYGIMLI)
     add_definitions(-DBOOST_PYTHON_NO_PY_SIGNATURES)
-	add_definitions(-DBOOST_PYTHON_USE_GCC_SYMBOL_VISIBILITY)
+    add_definitions(-DBOOST_PYTHON_USE_GCC_SYMBOL_VISIBILITY)
 
     add_library(${PYTHON_TARGET_NAME} MODULE ${${PYTHON_MODULE_NAME}_SOURCE_FILES})
 
@@ -26,7 +26,15 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
     target_link_libraries(${PYTHON_TARGET_NAME} ${Python_LIBRARIES})
     target_link_libraries(${PYTHON_TARGET_NAME} ${Boost_PYTHON_LIBRARY})
 
+    if (APPLE)
+	target_link_libraries(${PYTHON_TARGET_NAME} -bundle "-undefined dynamic_lookup")
+    endif()
+
     set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES PREFIX "")
+
+    if (APPLE)
+        target_link_libraries(${PYTHON_TARGET_NAME} "-bundle -undefined dynamic_lookup")
+    endif()
 
     if (WIN32)
         set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES SUFFIX ".pyd")
@@ -49,15 +57,11 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
                             LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${OUTDIR})
 #     endif(OUTDIR)
 
-    if (CMAKE_COMPILER_IS_GNUCXX)
-        set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES COMPILE_FLAGS "-fvisibility=hidden -Wno-unused-value")
+    if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_CLANGXX)
+	    set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES COMPILE_FLAGS "-fvisibility=hidden -Wno-unused-value -Wno-infinite-recursion")
         if (WIN32 AND ADDRESSMODEL EQUAL "64")
             set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES DEFINE_SYMBOL "MS_WIN64")
         endif()
-    endif()
-    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        #     using regular Clang or AppleClang
-        set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES COMPILE_FLAGS "-fvisibility=hidden -Wno-unused-value")
     endif()
 
     #--copy pattern files to build folder--

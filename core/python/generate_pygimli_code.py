@@ -198,6 +198,10 @@ def generate(defined_symbols, extraIncludes):
     caster = 'gccxml'
     compiler_path = options.clang
 
+    cflags = '-std=c++11'
+    if sys.platform == 'darwin':
+        compiler_path = "/usr/bin/clang++"
+
     if platform.system() == 'Windows':
         if platform.architecture()[0] == '64bit':
             #compiler_path = 'C:/msys64/mingw64/bin/clang++'
@@ -259,7 +263,7 @@ def generate(defined_symbols, extraIncludes):
                                         include_paths=settings.includesPaths,
                                         define_symbols=defines,
                                         ignore_gccxml_output=False,
-                                        cflags="-std=c++11",
+                                        cflags=cflags,
                                         compiler_path=compiler_path)
 
     mb = module_builder.module_builder_t(
@@ -629,7 +633,7 @@ def generate(defined_symbols, extraIncludes):
                 # mem_fun.call_policies = \
                 #   call_policies.return_value_policy(call_policies.copy_non_const_reference)
 
-    logger.info("Create api documentation from Doxgen comments.")
+    logger.info("Create API documentation from Doxygen comments.")
     # Now it is the time to give a name to our module
     from doxygen import doxygen_doc_extractor
     extractor = doxygen_doc_extractor()

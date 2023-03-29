@@ -8,7 +8,9 @@ import os
 pgcore = None
 
 try:
+    print('PRECORE')
     from . import _pygimli_  # if it works: as pgcore, replace all _pygimli_
+    print('POSTCORE') 
     # from . import _pygimli_ as pgcore  # if it works: as pgcore, replace all _pygimli_
     # dir(pgcore)
     from ._pygimli_ import *  # check if . can be omitted
