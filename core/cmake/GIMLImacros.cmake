@@ -22,13 +22,21 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
 
     add_library(${PYTHON_TARGET_NAME} MODULE ${${PYTHON_MODULE_NAME}_SOURCE_FILES})
 
-    target_link_libraries(${PYTHON_TARGET_NAME} ${EXTRA_LIBS})
-    target_link_libraries(${PYTHON_TARGET_NAME} ${Python_LIBRARIES})
+    # fails on apple .. check is needed
+    #target_link_libraries(${PYTHON_TARGET_NAME} ${EXTRA_LIBS})
+    #target_link_libraries(${PYTHON_TARGET_NAME} ${Python_LIBRARIES})
+    
+    message( STATUS "EXTRA_LIBS:" ${EXTRA_LIBS}) 
+    message( STATUS "Python_LIBRARIES:" ${Python_LIBRARIES})
+    #link_directories(CMAKE_BUILD_DIR/lib)
+    #set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
+    #			  IMPORTED_LOCATION "${CMAKE_BUILD_DIR}/lib/libgimli.dylib"
+    #			  )
+
+    target_link_libraries(${PYTHON_TARGET_NAME} "${CMAKE_BINARY_DIR}/${LIBRARY_INSTALL_DIR}/libgimli.dylib") 
+
     target_link_libraries(${PYTHON_TARGET_NAME} ${Boost_PYTHON_LIBRARY})
 
-    if (APPLE)
-	target_link_libraries(${PYTHON_TARGET_NAME} -bundle "-undefined dynamic_lookup")
-    endif()
 
     set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES PREFIX "")
 

@@ -8,8 +8,8 @@ void t(){
 
 class A{
 public: 
-    A(int a=1){
-        std::cout << "init A with: " << a << std::endl;
+    A(int dim=1){
+        std::cout << "init A with: " << dim << std::endl;
     }
 };
 
@@ -21,5 +21,5 @@ BOOST_PYTHON_MODULE(_bpt_){
 
     typedef bp::class_< A > A_exposer_t;
     A_exposer_t A_exposer = A_exposer_t( "A", "class doctest", 
-        bp::init< bp::optional< int > >((bp::arg("a")=(int)(1)), "init doctest"));
+        bp::init< bp::optional< int > >((bp::arg("dim")=(int)(1)), "init doctest"));
 }
