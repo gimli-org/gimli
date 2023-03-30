@@ -330,9 +330,9 @@ pgcore.IndexArray.setVal = __newIndexArraySetVal__
 ############################
 def __getVal(self, idx):
     """Hell slow"""
-    if isinstance(idx, pgcore.BVector): 
+    if isinstance(idx, pgcore.BVector):
         return self.get_(idx)
-    elif isinstance(idx, pgcore.IVector): 
+    elif isinstance(idx, pgcore.IVector):
         return self.getVSI_(idx)
     elif isinstance(idx, pgcore.IndexArray):
         return self.getVUI_(idx)
@@ -885,7 +885,7 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
     nProcs = self.multiThreadJacobian()
 
 
-    if sys.platform == 'win32':
+    if sys.platform == 'win32' or 'darwin':
         # strange pickle problem: see  python test_PhysicsManagers.py ves
         from .logger import warn
         warn('Multiprocess jacobian currently unavailable for win build')
