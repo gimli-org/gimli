@@ -24,6 +24,25 @@ class TestMeshGenerator(unittest.TestCase):
         self.assertEqual(mesh.cellCount(), 2)
         self.assertEqual(mesh.boundaryCount(), 5)
 
+    def test_triangle_MAC(self):
+        """ Ther seems to be an issue on mac for higher quality, which produce 
+            different meshes on mac vs. linux/windows. Need observation and/or 
+            clearfication."""
+        import pygimli as pg
+        import pygimli.meshtools as mt
+        plc = mt.createCircle(nSegments=24)
+        l = mt.createLine(start=[0, -1], end=[0, -0.1], boundaryMarker=2)
+        mesh = mt.createMesh([plc, l], area=0.1, quality=30)
+        print(mesh)
+        #on Linux Mesh: Nodes: 43 Cells: 60 Boundaries: 102
+        #on Mac ??
+        self.assertEqual(mesh.nodeCount(), 43)
+        mesh = mt.createMesh([plc, l], area=0.1, quality=32)
+        print(mesh)
+        #on Linux Mesh: Nodes: 43 Cells: 60 Boundaries: 102
+        #on Mac ??
+        self.assertEqual(mesh.nodeCount(), 43)
+        
     def test_createGrid(self):
         mesh = pg.createGrid(3)
         self.assertEqual(mesh.xmax(), 2.0)
