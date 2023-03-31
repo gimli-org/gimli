@@ -116,7 +116,8 @@ protected:
 class DLLEXPORT PolynomialModelling : public ModellingBase {
 public:
 
-    PolynomialModelling(uint dim, uint nCoeffizient, const std::vector < RVector3 > & referencePoints,
+    PolynomialModelling(uint dim, uint nCoeff, 
+                        const std::vector < RVector3 > & referencePoints,
                         const RVector & startModel);
 
     virtual RVector response(const RVector & par);

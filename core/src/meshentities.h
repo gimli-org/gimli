@@ -403,6 +403,8 @@ public:
 
     virtual uint rtti() const { return MESH_BOUNDARY_NODE_RTTI; }
 
+    virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
+
     void setNodes(Node & n1);
 
     virtual double size() const { return 1.0; }
