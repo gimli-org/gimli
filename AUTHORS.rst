@@ -12,7 +12,7 @@
 
 * `Florian Wagner <https://orcid.org/0000-0001-7407-9741>`_
 
-  *RWTH Aachen University, Institute for Applied Geophysics and Geothermal Energy, Aachen, Germany*
+  *RWTH Aachen University, Geophysical Imaging and Monitoring (GIM), Aachen, Germany*
 
   florian@pygimli.org
 
@@ -28,4 +28,4 @@
 
 * `Andrea Balza <https://www.andreabalza.com>`_
 
-  *RWTH Aachen University, Institute for Applied Geophysics and Geothermal Energy, Aachen, Germany*
+  *RWTH Aachen University, Geophysical Imaging and Monitoring (GIM), Aachen, Germany*
