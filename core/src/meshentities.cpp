@@ -634,6 +634,17 @@ void NodeBoundary::setNodes(Node & n1){
     MeshEntity::setNodes(nodes);
 }
 
+std::vector < PolynomialFunction < double > > NodeBoundary::createShapeFunctions() const {
+    // Fixme!! return createPolynomialShapeFunctions(*this, 1, true, false);
+
+    RPolynomialFunction E0(RVector(1, 1.0));
+    std::vector < PolynomialFunction < double > > ret;
+
+    ret.push_back(E0);
+    return ret;
+
+}
+
 RVector3 NodeBoundary::norm() const{
     const Cell *c = &this->leftCell();
     if (c != 0){

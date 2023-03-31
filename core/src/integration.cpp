@@ -66,6 +66,10 @@ const RVector & IntegrationRules::triGLWeights(Index order) const {
 
 const R3Vector & IntegrationRules::edgAbscissa(Index order) const {
     ASSERT_SIZE(edgAbscissa_, order)
+    // __MS(order, edgAbscissa_[order])
+    // for (Index i = 0; i < edgAbscissa_.size(); i ++ ){
+    //     print(i, ":", edgAbscissa_[i]);
+    // }
     return edgAbscissa_[order];
 }
 const RVector & IntegrationRules::edgWeights(Index order) const {
@@ -115,6 +119,7 @@ const RVector & IntegrationRules::priWeights(Index order) const {
 
 const R3Vector & IntegrationRules::abscissa(const Shape & shape, uint order) const {
     switch(shape.rtti()){
+        case MESH_SHAPE_NODE_RTTI: return edgAbscissa(0);
         case MESH_SHAPE_EDGE_RTTI: return edgAbscissa(order);
         case MESH_SHAPE_TRIANGLE_RTTI:{
              if (triUseGaussLegendre_) {
@@ -136,6 +141,7 @@ const R3Vector & IntegrationRules::abscissa(const Shape & shape, uint order) con
 
 const RVector & IntegrationRules::weights(const Shape & shape, uint order) const {
     switch(shape.rtti()){
+        case MESH_SHAPE_NODE_RTTI: return edgWeights(0);
         case MESH_SHAPE_EDGE_RTTI: return edgWeights(order);
         case MESH_SHAPE_TRIANGLE_RTTI:{
             if (triUseGaussLegendre_) {
@@ -158,9 +164,10 @@ const RVector & IntegrationRules::weights(const Shape & shape, uint order) const
 void IntegrationRules::initGau_(){
     // Gauss quadrature points and weights with the Jacobi polynomials.
     // Edge defined from -1 to 1, size = 2
-    //** 0.Order, n=1 -- just placeholder
-    gauAbscissa_.push_back(R3Vector (0));
-    gauWeights_.push_back(RVector(0, 0.0));
+    //** 0.Order, n=1 -- just placeholder and fallback for Node
+    gauAbscissa_.push_back(R3Vector (1));
+    gauAbscissa_.back()[0] = RVector3(0.0, 0.0);
+    gauWeights_.push_back(RVector(1, 1.0));
     //** 1.Order, n=1
     gauAbscissa_.push_back(R3Vector (1));
     gauAbscissa_.back()[0] = RVector3(0.0, 0.0);
@@ -260,8 +267,8 @@ void IntegrationRules::initGau_(){
 
 void IntegrationRules::initEdg_(){
     /* just transform \int_-1^1 to \int_0^1 */
-    edgAbscissa_.push_back(R3Vector (0));
-    edgWeights_.push_back(RVector(0, 0.0));
+    edgAbscissa_.push_back(R3Vector (1));
+    edgWeights_.push_back(RVector(1, 1.0));
 
     for (uint i = 1; i < gauAbscissa_.size(); i ++){
         edgAbscissa_.push_back(R3Vector (gauAbscissa_[i].size()));

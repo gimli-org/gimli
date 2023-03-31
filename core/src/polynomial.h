@@ -68,7 +68,7 @@ template< class ValueType > class DLLEXPORT PolynomialFunction {
 public:
 
     /*! Create empty polynomial */
-    PolynomialFunction(uint size = 0){
+    PolynomialFunction(uint size=0){
         init_(Vector< ValueType >(size, 0.0), 
               Vector< ValueType >(size, 0.0), 
               Vector< ValueType >(size, 0.0));
@@ -153,7 +153,8 @@ public:
             for (Index k = 0; k < mat_.size(); k ++){ // z
                 for (Index j = 0; j < mat_[k].rows() - 1; j ++){ // y
                     for (Index i = 0; i < mat_[k][j].size(); i ++){ // x
-                        ret[k][i][j] = mat_[k][i][j + 1] * (j + 1.0);
+                        ret[k][i][j] = mat_[k][i][j + 1] * (j +     
+1.0);
                     }
                 }
             }

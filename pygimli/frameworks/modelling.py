@@ -634,16 +634,17 @@ class MeshModelling(Modelling):
         This is called automatic when accessing self.mesh() so it ensures any
         effect of changing region properties (background, single).
         """
+        pg._r(self._refineH2, self._refineP2)
         m = pg.Mesh(mesh)
         if self._refineH2:
-            pg.info("Creating refined mesh (P2) to solve forward task.")
+            pg.info("Creating refined mesh (H2) to solve forward task.")
             m = m.createH2()
 
         if self._refineP2:
             pg.info("Creating refined mesh (P2) to solve forward task.")
             m = m.createP2()
 
-        pg.verbose(m)
+        pg.info("Mesh for forward calculation:", m)
         return m
 
     def createFwdMesh_(self):
