@@ -53,8 +53,8 @@ endif()
 
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX OR ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     #add_definitions(-std=c++11)
-    # set(CMAKE_CXX_STANDARD 11)
-    # set(CMAKE_CXX_STANDARD_REQUIRED on)
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD_REQUIRED on)
     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os")
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-comment")
@@ -95,8 +95,8 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX OR ${CMAKE_CXX_COMPILE
             # If it's libc++ and you're on <= 10.8, you need to compile with 
             # clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later, 
             # you need to compile with clang++ -stdlib=libstdc++.
-            # add_compile_options(-stdlib=libstdc++)
-            # add_compile_options(-stdlib=libc++)
+            add_compile_options(-stdlib=libstdc++)
+            add_compile_options(-stdlib=libc++)
         endif()
     else() # if not clang but gcc
 
