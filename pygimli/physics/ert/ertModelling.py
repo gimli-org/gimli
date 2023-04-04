@@ -125,10 +125,11 @@ class ERTModelling(ERTModellingBase):
 
         regionIds = self.regionManager().regionIdxs()
         pg.info("Found {} regions.".format(len(regionIds)))
+
         if len(regionIds) > 1:
             bk = pg.sort(regionIds)[0]
-            pg.info("Region with smallest marker ({0}) "
-                    "set to background".format(bk))
+            pg.info(f"(ERTModelling) Region with smallest marker ({bk}) "
+                    "set to background.")
             self.setRegionProperties(bk, background=True)
 
     def createStartModel(self, dataVals):

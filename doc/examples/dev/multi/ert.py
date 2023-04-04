@@ -239,7 +239,7 @@ def calcApparentResistivities(mesh, meshERT, poro, rhoBrine):
                                      markerBoundary=1,
                                      isSubSurface=False, verbose=False)
 
-    swatch = pg.core.Stopwatch(True)
+    swatch = pg.Stopwatch(True)
 
     print("res 1:", swatch.duration(True))
 

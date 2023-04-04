@@ -263,7 +263,7 @@ def cache(funct):
             return cache.value
         else:
             # pg.tic will not work because there is only one global __swatch__
-            sw = pg.core.Stopwatch(True)
+            sw = pg.Stopwatch(True)
             rv = funct(*args, **kwargs)
             cache.info['date'] = time.time()
             cache.info['dur'] = sw.duration()

@@ -17,6 +17,7 @@ Assume we want to store Vertical Electrical Sounding (VES) data.
 import numpy as np
 import matplotlib.pyplot as plt
 import pygimli as pg
+from pygimli.physics import VESManager
 
 # %%%
 # We define logarithmically equidistant AB/2 spacings
@@ -42,7 +43,7 @@ print(ves)
 # We now want to do a VES simulation and use the VES Manager for this task.
 #
 
-mgr = pg.physics.ert.VESManager()
+mgr = VESManager()
 model = [10, 10, 100, 10, 1000]
 ves["rhoa"] = mgr.simulate(model, ab2=ves["ab2"], mn2=ves["mn2"])
 print(ves)

@@ -5,17 +5,19 @@ pyGIMLi - An open-source library for modelling and inversion in geophysics
 import sys
 import locale
 
-from .core.decorators import renamed, singleton, moduleProperty
+from .core.decorators import (renamed, singleton, moduleProperty,
+                              skipOnDefaultTest,
+                              )
 
 # Import everything that should be accessible through main namespace.
 from .core import (BVector, CVector, DataContainer, DataContainerERT,
-                   IVector, Line, Mesh, Plane, Pos,
+                   IVector, Line, Mesh, Plane, Pos, PosVector,
                    RVector3, Vector, PosList, abs, cat, center, exp, find,
                    interpolate, log, log10, logDropTol, max,
                    mean, median, min, search, setDebug, setThreadCount, sort,
                    Stopwatch, sum, trans, unique, versionStr, x, y, z, zero)
 
-from .core import isScalar, isArray, isPos, isR3Array, isComplex, isMatrix
+from .core import isInt, isScalar, isArray, isPos, isR3Array, isComplex, isMatrix
 
 from .core import math # alias all from .core.math.* to pg.math.*
 # from .core import matrix # alias all from .core.matrix.* to pg.matrix.*

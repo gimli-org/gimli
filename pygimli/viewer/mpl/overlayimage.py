@@ -380,7 +380,7 @@ def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
 
 
 def underlayBKGMap(ax, mode='DOP', utmzone=32, epsg=0, imsize=2500, uuid='',
-                   usetls=False, origin=None):
+                   usetls=False, origin=None, imname=None, box=None):
     """Underlay digital orthophoto or topographic (mode='DTK') map under axes.
 
     First accessed, the image is obtained from BKG, saved and later loaded.
@@ -390,41 +390,60 @@ def underlayBKGMap(ax, mode='DOP', utmzone=32, epsg=0, imsize=2500, uuid='',
     mode : str
         'DOP' (digital orthophoto 40cm) or
         'DTK' (digital topo map 1:25000)
-
     imsize : int
         image width in pixels (height will be automatically determined
-
+    utmzone : int [32]
+        UTM (north) zone to use
+    epsg : int
+        EPSG code for coordinate system
+    uuid : str
+        user ID for payed services
+    usetls : bool [False]
+        use TLS socket layer
+    origin : (float, float)
+        origin to add to the coordinates
+    imname : str
+        use predefined file instead of download using axis bounding box
+    box : (float, float, float, float)
+        (if imname given) specify bounding box (otherwise take from imname)
     """
-    try:
-        import urllib.request as urllib2
-    except ImportError:
-        import urllib2
+    if imname is not None:  # use predefined image
+        box = box or imname[3:-4]
+        # bb = np.array(imname[3:-4].split(","),
+        #                dtype=float).take([0, 2, 1, 3])
+    else:
+        try:
+            import urllib.request as urllib2
+        except ImportError:
+            import urllib2
 
-    ext = {'DOP': '.jpg', 'DTK': '.png'}  # extensions for different map types
-    wms = {'DOP': 'dop40', 'DTK': 'dtk25'}  # wms service name for map types
-    fmt = {'DOP': 'image/jpeg', 'DTK': 'image/png'}  # format
-    lay = {'DOP': 'rgb', 'DTK': '0'}
-    if imsize < 1:  # 0, -1 or 0.4 could be reasonable parameters
-        ax = ax.get_xlim()
-        imsize = int((ax[1] - ax[0]) / 0.4)  # use original 40cm pixel size
-        if imsize > 5000:  # limit overly sized images
-            imsize = 2500  # default value
-    xl = np.array(ax.get_xlim())
-    yl = np.array(ax.get_ylim())
-    if origin:
-        xl += origin[0]
-        yl += origin[1]
-    ad, box = getBKGaddress(xl, yl, imsize, zone=utmzone,
-                            service=wms[mode.upper()], usetls=usetls,
-                            uuid=uuid, epsg=epsg,
-                            fmt=fmt[mode.upper()], layer=lay[mode.upper()])
-    imname = mode + box + ext[mode]
-    if not os.path.isfile(imname):  # not already existing
-        print('Retrieving file from geodatenzentrum.de using URL: ' + ad)
-        req = urllib2.Request(ad)
-        response = urllib2.urlopen(req)
-        with open(imname, 'wb') as output:
-            output.write(response.read())
+        ext = {'DOP': '.jpg', 'DTK': '.png'}  # extensions for different maps
+        wms = {'DOP': 'dop40', 'DTK': 'dtk25'}  # wms service name for maps
+        fmt = {'DOP': 'image/jpeg', 'DTK': 'image/png'}  # format
+        lay = {'DOP': 'rgb', 'DTK': '0'}
+        if imsize < 1:  # 0, -1 or 0.4 could be reasonable parameters
+            ax = ax.get_xlim()
+            imsize = int((ax[1] - ax[0]) / 0.4)  # use original 40cm pixel size
+            if imsize > 5000:  # limit overly sized images
+                imsize = 2500  # default value
+        xl = np.array(ax.get_xlim())
+        yl = np.array(ax.get_ylim())
+        if origin:
+            xl += origin[0]
+            yl += origin[1]
+        ad, box = getBKGaddress(xl, yl, imsize, zone=utmzone,
+                                service=wms[mode.upper()], usetls=usetls,
+                                uuid=uuid, epsg=epsg,
+                                fmt=fmt[mode.upper()], layer=lay[mode.upper()])
+        imname = mode + box + ext[mode]
+        if not os.path.isfile(imname):  # not already existing
+            pg.info('Retrieving file from geodatenzentrum.de using URL: ' + ad)
+            req = urllib2.Request(ad)
+            response = urllib2.urlopen(req)
+            with open(imname, 'wb') as output:
+                output.write(response.read())
+        else:
+            pg.info('Found image file: ' + imname)
 
     im = mpimg.imread(imname)
     bb = [int(bi) for bi in box.split(',')]  # bounding box

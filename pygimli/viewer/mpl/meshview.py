@@ -623,9 +623,6 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
     if fitView is True:
         ax.autoscale(enable=True, axis='both', tight=True)
 
-
-#    drawAA = True
-#    swatch = pg.core.Stopwatch(True)
     mesh.createNeighborInfos()
 
     if not hideMesh:
@@ -734,6 +731,10 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True,
                 areas = {}
                 for reg in mesh.regionMarkers():
                     areas[reg.marker()] = reg.area()
+                    ax.plot(reg.x(), reg.y(), "mx", alpha=0.5)
+                    ax.text(reg.x(), reg.y(), str(reg.marker()), color="m",
+                            ha="center", va="center")
+
                 labels = []
                 for marker in uniquemarkers:
                     label = "{:d}".format(marker)
@@ -1190,7 +1191,7 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
         ax to draw into
     mesh : :gimliapi:`GIMLI::Mesh`
         2d mesh
-    data : iterable float | [float, float] | pg.core.R3Vector
+    data : iterable float | [float, float] | pg.PosVector
         If data is an array (per cell or node) gradients are calculated
         otherwise the data will be interpreted as vector field per nodes or
         cell centers.
@@ -1247,7 +1248,7 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
             x = pg.x(mesh.boundaryCenters())
             y = pg.y(mesh.boundaryCenters())
 
-        if isinstance(data, pg.core.R3Vector):
+        if isinstance(data, pg.PosVector):
             u = pg.x(data)
             v = pg.y(data)
         else:

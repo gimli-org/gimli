@@ -408,7 +408,7 @@ class ERTManager(MeshMethodManager):
                                     "or voltage 'u' along with current 'i'.")
 
                 if any(data['rhoa'] < 0) and \
-                        isinstance(self.inv.dataTrans, pg.core.TransLog):
+                        isinstance(self.inv.dataTrans, pg.trans.TransLog):
                     # print(pg.find(data['rhoa'] < 0))
                     # print(data['rhoa'][data['rhoa'] < 0])
                     pg.warning("Found negative apparent resistivities. "
@@ -511,7 +511,7 @@ class ERTManager(MeshMethodManager):
             misfit = - self.inv.response / self.data["rhoa"] * 100 + 100
             kwargs.setdefault("label", "relative misfit (%)")
 
-        kwargs.setdefault("cMax", np.max(misfit))
+        kwargs.setdefault("cMax", np.max(np.abs(misfit)))
         kwargs.setdefault("cMin", -kwargs["cMax"])
         kwargs.setdefault("cMap", "bwr")
         kwargs.setdefault("logScale", False)

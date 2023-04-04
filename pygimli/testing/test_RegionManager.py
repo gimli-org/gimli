@@ -2,12 +2,11 @@
 """
 """
 import unittest
-import time
 
 import numpy as np
 import pygimli as pg
-import pygimli.meshtools as mt
 from pygimli.frameworks import MeshModelling
+
 
 class TestMod(MeshModelling):
     def __init__(self, mesh, verbose=True):
@@ -33,13 +32,14 @@ class TestRM(unittest.TestCase):
         fop = TestMod(grid)
 
         fop.createConstraints()
-        #pg.solver.showSparseMatrix(fop.constraints(), full=True)
+        # pg.solver.showSparseMatrix(fop.constraints(), full=True)
 
         fop.regionManager().setConstraintType(2)
         fop.createConstraints()
-        #pg.solver.showSparseMatrix(fop.constraints(), full=True)
+        # pg.solver.showSparseMatrix(fop.constraints(), full=True)
 
     def test_zweight(self):
+        # what's this test for?
         mesh = pg.meshtools.createGrid(x=np.arange(0, 4), y=np.arange(0, 3))
 
         # fop = pg.Modelling()
@@ -113,6 +113,7 @@ class TestRM(unittest.TestCase):
         # check distribution of zWeight
         self.assertTrue(np.allclose(w0, w1))
         # self.assertTrue(np.allclose(w0, w2))
+
 
 if __name__ == '__main__':
 

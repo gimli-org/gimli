@@ -20,7 +20,7 @@ from .grid import (createGrid, createGridPieShaped,
 from .mapping import (cellDataToBoundaryData, cellDataToNodeData,
                       fillEmptyToCellArray, interpolate, interpolateAlongCurve,
                       nodeDataToBoundaryData, nodeDataToCellData,
-                      tapeMeasureToCoordinates)
+                      tapeMeasureToCoordinates, extract2dSlice)
 
 from .mesh import (convert, convertMeshioMesh, convertHDF5Mesh, createMesh,
                    createParaMesh, createParaMesh2DGrid, createMeshFromHull,

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Class for managing first arrival travel time inversions"""
+"""Class for managing first arrival travel time inversions."""
 import os
 import numpy as np
 
@@ -9,7 +9,7 @@ import pygimli as pg
 from pygimli.frameworks import MeshMethodManager
 
 from pygimli.utils import getSavePath
-from . modelling import TravelTimeDijkstraModelling
+from . modelling import TravelTimeDijkstraModelling, FatrayDijkstraModelling
 
 
 class TravelTimeManager(MeshMethodManager):
@@ -28,7 +28,7 @@ class TravelTimeManager(MeshMethodManager):
             You can initialize the Manager with data or give them a dataset
             when calling the inversion.
         """
-        self._useFMM = False
+        self._useFMM = kwargs.pop("fatray", False)
         self.secNodes = 2  # default number of secondary nodes for inversion
 
         super(TravelTimeManager, self).__init__(data=data, **kwargs)
@@ -47,7 +47,10 @@ class TravelTimeManager(MeshMethodManager):
         Your want your Manager use a special forward operator you can add them
         here on default Dijkstra is used.
         """
-        fop = TravelTimeDijkstraModelling(**kwargs)
+        if self._useFMM:
+            fop = FatrayDijkstraModelling(**kwargs)
+        else:
+            fop = TravelTimeDijkstraModelling(**kwargs)
         return fop
 
     def load(self, fileName):
@@ -251,7 +254,7 @@ class TravelTimeManager(MeshMethodManager):
 
     def getRayPaths(self, model=None):
         """Compute ray paths.
-        
+
         If model is not specified, the last calculated Jacobian is used.
 
         Parameters

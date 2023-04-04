@@ -252,12 +252,19 @@ std::vector < std::string > split(const std::string & str, char delimiter){
     return subStrings;
 }
 
+std::string replace(const std::string & str, const std::string & from, 
+                    const std::string & to){
+    std::string ret(str);
+    if (ret.find(from) != std::string::npos){
+        ret.replace(ret.find(from), from.length(), to);
+    }
+    return ret;
+}
 std::string replace(const std::string & str, char from, char to){
     std::string ret(str);
     std::replace(ret.begin(), ret.end(), from, to);
     return ret;
 }
-
 std::string lower(const std::string & str){
     std::string lo(str);
     std::transform(lo.begin(), lo.end(), lo.begin(), tolower);

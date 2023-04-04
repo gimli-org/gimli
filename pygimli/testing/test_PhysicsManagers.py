@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 # write a correct test!
-import sys
 import unittest
 import numpy as np
 
@@ -14,26 +13,29 @@ from pygimli.physics.em import VMDTimeDomainModelling
 # pg.setTestingMode(True)
 np.random.seed(1337)
 
+
 class TestManagers(unittest.TestCase):
 
     def test_ERT(self, showProgress=False):
         dat = pg.getExampleFile('ert/gallery.dat', load=True, verbose=True)
         dat['k'] = ert.createGeometricFactors(dat)
-        mesh = pg.meshtools.createParaMesh(dat.sensors(), quality=33.4,
-                                 paraDX=0.3, paraMaxCellSize=0.5, paraDepth=8)
-        #with SR
+        mesh = pg.meshtools.createParaMesh(
+            dat.sensors(), quality=33.4,
+            paraDX=0.3, paraMaxCellSize=0.5, paraDepth=8)
+        # with SR
         mgr = ert.ERTManager(sr=True, useBert=True, verbose=False, debug=False)
         mod = mgr.invert(dat, mesh=mesh, maxIter=20, lam=10)
         np.testing.assert_approx_equal(mgr.inv.chi2(), 1.003, significant=3)
 
-        #without SR
-        mgr = ert.ERTManager(sr=False, useBert=True, verbose=False, debug=False)
+        # without SR
+        mgr = ert.ERTManager(sr=False, useBert=True, verbose=False)
         mod = mgr.invert(dat, mesh=mesh, maxIter=20, lam=10)
         # np.testing.assert_approx_equal(ert.inv.chi2(), 0.9833, significant=3)
 
     def test_TT(self, showProgress=False):
         pass
 
+    @pg.skipOnDefaultTest
     def test_VMD(self, showProgress=False):
         t = np.logspace(-5.5, -2.2, 20)
         verbose = False
@@ -55,7 +57,8 @@ class TestManagers(unittest.TestCase):
                               showProgress=showProgress, verbose=verbose)
 
         if showProgress is True:
-            fop.drawModel(ax=vmdMgr.inv.axs[0], model=synthModel, label='Synth')
+            fop.drawModel(ax=vmdMgr.inv.axs[0],
+                          model=synthModel, label='Synth')
         np.testing.assert_array_less(vmdMgr.fw.chi2(), 1.5)
 
     def test_VES(self, showProgress=False):
@@ -77,11 +80,12 @@ class TestManagers(unittest.TestCase):
 
         if showProgress:
             mgr.verbose = True
-            fig, axs = pg.plt.subplots(2, 4, figsize=(12,7))
+            fig, axs = pg.plt.subplots(2, 4, figsize=(12, 7))
             mgr.inv.axs = [axs[0][0], axs[1][0]]
 
-        ### Test -- basic
-        ra, err = mgr.simulate(synthModel, ab2=ab2, mn2=1.0, noiseLevel=0.01, seed=0)
+        # Test -- basic
+        ra, err = mgr.simulate(synthModel, ab2=ab2, mn2=1.0, noiseLevel=0.01,
+                               seed=0)
         mgr.exportData('synth.ves', ra, err)
 
         mgr.invert(ra, err, nLayers=4, lam=100, layerLimits=False,
@@ -90,7 +94,7 @@ class TestManagers(unittest.TestCase):
             mgr.fop.drawModel(ax=axs[0][0], model=synthModel, label='Synth')
         np.testing.assert_array_less(mgr.fw.chi2(), 1)
 
-        ### Test -- reinit with new parameter count
+        # Test -- reinit with new parameter count
         if showProgress is True:
             mgr.inv.axs = [axs[0][1], axs[1][1]]
         mgr.invert(ra, err, nLayers=5, layerLimits=False,
@@ -100,9 +104,10 @@ class TestManagers(unittest.TestCase):
         # axs[0][1].legend()
         np.testing.assert_array_less(mgr.inv.inv.chi2(), 1)
 
-        ### Test -- reinit with new data basis
+        # Test -- reinit with new data basis
         ab2_2 = np.logspace(np.log10(1.5), np.log10(50.), 10)
-        ra, err = mgr.simulate(synthModel, ab2=ab2_2, mn2=1.0, noiseLevel=0.01, seed=0)
+        ra, err = mgr.simulate(synthModel, ab2=ab2_2, mn2=1.0, noiseLevel=0.01,
+                               seed=0)
 
         if showProgress is True:
             mgr.inv.axs = [axs[0][2], axs[1][2]]
@@ -112,18 +117,20 @@ class TestManagers(unittest.TestCase):
         if showProgress is True:
             mgr.fop.drawModel(ax=axs[0][2], model=synthModel, label='Synth')
         # axs[0][2].legend()
-        # np.testing.assert_approx_equal(mgr.inv.inv.chi2(), 0.5242201187682258,
+        # np.testing.assert_approx_equal(mgr.inv.inv.chi2(), 0.524220118768226,
         #                                significant=3)
 
-        ### Test -- reinit with complex resistivies
+        # Test -- reinit with complex resistivies
         mgr.complex = True
-        synthModel =  pg.cat(synthModel, np.array(phi)*1e-3)
+        synthModel = pg.cat(synthModel, np.array(phi)*1e-3)
 
-        ra, err = mgr.simulate(synthModel, ab2=ab2, mn2=1.0, noiseLevel=0.01, seed=1337)
+        ra, err = mgr.simulate(synthModel, ab2=ab2, mn2=1.0, noiseLevel=0.01,
+                               seed=1337)
 
         if showProgress is True:
             mgr.inv.axs = [axs[0][3], axs[1][3]]
-        mgr.invert(ra, err, layerLimits=False, showProgress=showProgress, maxIter=50)
+        mgr.invert(ra, err, layerLimits=False, showProgress=showProgress,
+                   maxIter=50)
 
         np.testing.assert_array_less(mgr.inv.inv.chi2(), 1.09)
 

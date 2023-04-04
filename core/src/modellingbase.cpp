@@ -164,11 +164,14 @@ void ModellingBase::createRefinedForwardMesh(bool refine, bool pRefine){
     if (regionManager_->pMesh()){
         if (refine){
             if (pRefine){
+                log(Info, "Create P2 refined mesh for forward tasks.");
                 setMesh_(regionManager_->mesh().createP2());
             } else {
+                log(Info, "Create H2 refined mesh for forward tasks.");
                 setMesh_(regionManager_->mesh().createH2());
             }
         } else {
+            log(Info, "copy mesh for forward tasks.");
             setMesh_(regionManager_->mesh());
         }
     } else {

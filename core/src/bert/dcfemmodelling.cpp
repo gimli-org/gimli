@@ -2108,6 +2108,7 @@ void DCSRMultiElectrodeModelling::checkPrimpotentials_(const std::vector < Elect
                     // PLS CHECK some redundancy here see DCMultiElectrodeModelling::calculateKAnalyt
                     if (eA[i]) (*primPot_)[potID]  = exactDCSolution(*mesh_, eA[i], k, surfaceZ_, setSingValue_);
                     if (eB[i]) (*primPot_)[potID] -= exactDCSolution(*mesh_, eB[i], k, surfaceZ_, setSingValue_);
+                    //print("\r", k , "/", kValues_.size(), "/", nCurrentPattern);
 
                 } else {
                     if (initVerbose){

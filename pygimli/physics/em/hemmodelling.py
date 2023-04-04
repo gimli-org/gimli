@@ -28,20 +28,20 @@ def registerDAEROcmap():
     return daero
 
 
-# class HEMmodelling(Block1DModelling):
-class HEMmodelling(pg.Modelling):
+# class HEMmodelling(pg.Modelling):
+class HEMmodelling(Block1DModelling):
     """HEM Airborne modelling class based on the BGR RESOLVE system."""
 
     # Constants, should rather use pygiml/physics/constants
     ep0 = 8.8542e-12
     mu0 = 4e-7 * np.pi
     c0 = sqrt(1. / ep0 / mu0)
-    fdefault = np.array([387.0, 1821.0, 8388.0, 41460.0, 133300.0], np.float)
-    rdefault = np.array([7.94, 7.93, 7.93, 7.91, 7.92], np.float)
+    fdefault = np.array([387.0, 1821.0, 8388.0, 41460.0, 133300.0], float)
+    rdefault = np.array([7.94, 7.93, 7.93, 7.91, 7.92], float)
     scaling = 1e6
 
     def __init__(self, nlay, height, f=None, r=None, **kwargs):
-        """Initialize class with geometry
+        """Initialize class with geometry.
 
         Parameters
         ----------
@@ -97,6 +97,9 @@ class HEMmodelling(pg.Modelling):
 #                              np.asarray(par(self.nlay-1, self.nlay*2-1)),
 #                              np.asarray(par(0, self.nlay-1)))
         return pg.cat(ip, op)
+
+    def response_mt(self, par, i=0):
+        return self.response(par)
 
     # Methoden
     def calc_forward(self, x, h, rho, d, epr, mur, quasistatic=False):
@@ -508,10 +511,10 @@ class FDEMResSusModelling(HEMmodelling):
 
 
 class HEMRhoSusModelling(HEMmodelling):
-    """Airborne EM (HEM) Forward modelling class for Occam inversion."""
+    """Airborne EM (HEM) smooth forward modelling including susceptibility."""
 
     def __init__(self, dvec, *args, **kwargs):
-        """ not yet working! """
+        """Initialize (not yet working)."""
         self.nlay = len(dvec) + 1
         self.dvec = np.asarray(dvec)
         self.zvec = np.hstack((0, np.cumsum(dvec)))

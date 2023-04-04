@@ -19,9 +19,9 @@ Documentation
 
             How to install pyGIMLi on different platforms
 
-          - `PDF Manual <GIMLi_Documentation.pdf>`_
+          - 
 
-            Printable version of this documentation
+            
 
         * - `Tutorials <_tutorials_auto/index.html>`_
 

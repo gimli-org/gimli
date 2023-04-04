@@ -13,7 +13,7 @@ from .core import (CMatrix, CSparseMapMatrix, CSparseMatrix,
 from .logger import critical, warn, info
 
 
-# make core matrices (now in pgcore, later pg.core) available here for brevity
+# make pygimli core (pgcore) matrices available here for clarity
 # useful aliases
 IdentityMatrix = pgcore.IdentityMatrix
 
@@ -35,13 +35,18 @@ for m in __Matrices:
     m.ndim = 2
     m.__len__ = lambda self: self.rows()
     m.shape = property(lambda self: (self.rows(), self.cols()))
+    ## To allow for ignoring np.*.__mul__ in case A has the __rmul__ function
+    ## see test TestMatrixMethods.testSparseMatrixBasics, TestRVectorMethods.testUFunc
+    m.__array_ufunc__ = None
+    m.__rmul__ = lambda self: critical('not yet implemented')
 
-pgcore.RMatrix.dtype = np.float
-pgcore.CMatrix.dtype = np.complex
-pgcore.RSparseMapMatrix.dtype = np.float
-pgcore.CSparseMapMatrix.dtype = np.complex
-pgcore.RSparseMatrix.dtype = np.float
-pgcore.CSparseMatrix.dtype = np.complex
+
+pgcore.RMatrix.dtype = float
+pgcore.CMatrix.dtype = complex
+pgcore.RSparseMapMatrix.dtype = float
+pgcore.CSparseMapMatrix.dtype = complex
+pgcore.RSparseMatrix.dtype = float
+pgcore.CSparseMatrix.dtype = complex
 
 
 def __RMatrix_str(self):

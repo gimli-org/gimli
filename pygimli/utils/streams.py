@@ -35,7 +35,7 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
     vy = None
     isVectorData = False
 
-    if isinstance(field, pg.core.R3Vector):
+    if isinstance(field, pg.PosVector):
         field = field.array()
 
     if hasattr(field[0], '__len__'):

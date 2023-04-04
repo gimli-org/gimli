@@ -12,9 +12,7 @@ import numpy as np
 import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.physics import ert
-# from pygimli.physics.ert import simulate as simulateERT
-from pygimli.physics.ert import VESModelling, VESCModelling
-# from pygimli.physics.ert import createERTData
+from pygimli.physics.ves import VESModelling, VESCModelling
 
 ###############################################################################
 # First we create a data configuration of a 1D Schlumberger sounding with
