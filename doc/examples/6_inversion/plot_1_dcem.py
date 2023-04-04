@@ -4,12 +4,12 @@
 DC-EM Joint inversion
 ---------------------
 
-Joint inversion is
-This is an old script from early pyGIMLi jointly inverting direct current (DC)
-and electromagnetic (EM) soundings on the modelling abstraction level.
-Note that this is not recommended as a basis for programming, because there
-is a dedicated framework for classical joint inversion. However, it explains
-what happens under the hood in the much simpler script that follows.
+Joint inversion is an important method to improve resolution properties by
+combining different methods. In the easiest case, the methods have the same
+subsurface parameter, for example direct current (DC) and electromagnetic (EM)
+measurements. In this example, we illustrate how two modelling operators can be
+combined by the JointInversion framework, using a vertical electric sounding
+(VES) and electromagnetic frequency sounding (FDEM).
 """
 
 # %%%
@@ -37,13 +37,12 @@ synRes = [1000, 100, 500, 20]
 nlay = len(synRes)  # number of layers
 errorEMabs = 1.  # absolute (ppm of primary signal)
 errorDCrel = 3.  # in per cent
-# we use the same starting model for all
+# we use the same starting model for all methods
 startModel = [10]*(nlay-1) + [100]*nlay
 
-
 # %%%
-# Part 1: EM
-# ==========
+# Part 1: Electromagnetic sounding
+# ================================
 # We set forward operator and generate synthetic data with noise.
 #
 
@@ -55,30 +54,36 @@ fEM = HEMmodelling(nlay=nlay, height=1, f=freq, r=100, scaling="%")
 dataEM = fEM(synThk + synRes)
 errorEM = np.ones_like(dataEM) * errorEMabs
 dataEM += pg.randn(len(dataEM), seed=1234) * errorEM
-print(dataEM)
 
 # %%%
-# We set up the independent EM inversion and run the model.
+# Result is inphase and outphase secondary fields divided by the primary field
+# as a function of frequency. See inversion result & data fit figure below.
+#
+
+# %%%
+# We first set up the independent EM inversion and run the model.
 #
 
 invEM = MarquardtInversion(fop=fEM, verbose=False)
 modelEM = invEM.run(dataEM, np.abs(errorEM/dataEM), startModel=startModel)
 
 # %%%
-# Part 2: DC
-# ==========
-# Next we set up the DC forward operator and generate synthetic data with noise
+# Part 2: Vertical Electric Sounding
+# ==================================
+# We set up the (DC) forward operator and generate synthetic data plus noise.
 #
 
 ab2 = 1.3**np.arange(20) * 3.  # logarithmically equidistance starting with 3m
 na = len(ab2)
-
 fDC = VESModelling(ab2=ab2, mn2=np.ones_like(ab2))
 dataDC = fDC(synThk+synRes)
 errorDC = np.ones_like(dataDC) * errorDCrel / 100.
 dataDC *= 1. + pg.randn(len(dataDC), seed=1234) * errorDC
 
+# %%%
 # We set up the independent DC inversion and let it run.
+#
+
 invDC = MarquardtInversion(fop=fDC, verbose=False)
 modelDC = invDC.run(dataDC, errorDC, startModel=startModel)
 
@@ -90,14 +95,20 @@ modelDC = invDC.run(dataDC, errorDC, startModel=startModel)
 
 fDCEM = JointModelling([fDC, fEM])
 fDCEM.setData([dataDC, dataEM])  # just for sizes!
+
+# %%%
+# Inversion is just as for the single inversions. The data vector is created
+# by concatenating both data vectors. This is also done for the relative error.
+#
+
 jointData = pg.cat(dataDC, dataEM)
 jointError = pg.cat(errorDC, np.abs(errorEM/dataEM))
 invDCEM = MarquardtInversion(fop=fDCEM, verbose=False)
-modelDCEM = invDCEM.run(jointData, jointError,
-                        startModel=startModel)
+modelDCEM = invDCEM.run(jointData, jointError, startModel=startModel)
 
 # %%%
-# The results of the inversion are plotted for comparison.
+# The final output of the inversion is plotted for every method. Most-important
+# measure is the chi-squared misfit that should be close to 1.
 #
 
 for inv in [invEM, invDC, invDCEM]:
@@ -106,7 +117,7 @@ for inv in [invEM, invDC, invDCEM]:
 print([invEM.chi2(), invDC.chi2(), invDCEM.chi2()])  # chi-square values
 
 # %%%
-# We finally plot the results along with data and model responses.
+# We finally plot the inverted models along with data and model responses.
 #
 
 fig, (ax1, ax2, ax3) = plt.subplots(figsize=(10, 5), ncols=3)

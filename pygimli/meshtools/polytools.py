@@ -70,7 +70,7 @@ def setPolyRegionMarker(poly, marker=1, area=0.0, markerPosition=None,
         Marks the geometry as a hole and will be cut in any merge mesh.
 
     Keyword Arguments
-    ----------------
+    -----------------
     **kwargs
         Additional kwargs
     """
@@ -841,17 +841,13 @@ def mergePLC(plcs, tol=1e-3):
 
 
 def mergePLC3D(plcs, tol=1e-3):
-    """Merge a list of 3D PLC into one
+    """Merge a list of 3D PLC into one.
 
     Experimental replacement for polyMerge. Don't expect too much.
 
     Works if:
         * all plcs are free and does not have any contact to each other
         * contact of two facets if the second is completely within the first
-
-    TODO:
-        * everything else
-
     """
     if len(plcs) < 2:
         pg.critical("Give at least 2 PLCs.")
@@ -1150,6 +1146,8 @@ def createParaMeshSurface(sensors, paraBoundary=None, boundary=-1,
 
     if paraBoundary is None:
         paraBoundary = [1.1, 1.1]
+    elif isinstance(paraBoundary, (int, float)):
+        paraBoundary = [paraBoundary, paraBoundary]
 
     if boundary is None:
         boundary = [10.0, 10.0]
@@ -1212,51 +1210,51 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
                         addTopo=None, isClosed=False, **kwargs):
     r"""Create a geometry (PLC) for an 3D inversion parameter mesh.
 
-        TODO
-        ----
-            * 3D without TOPO
-            * better paraBoundary scale for with and height
+    Todo
+    ----
+        * 3D without TOPO
+        * better paraBoundary scale for with and height
 
-        Args
-        ----
-        sensors: Sensor list or pg.DataContainer with .sensors()
-            Sensor positions.
+    Args
+    ----
+    sensors: Sensor list or pg.DataContainer with .sensors()
+        Sensor positions.
 
-        paraDX : float [1]
-            Absolute distance for node refinement (0=none).
-            Refinement node will be placed below the surface.
+    paraDX : float [1]
+        Absolute distance for node refinement (0=none).
+        Refinement node will be placed below the surface.
 
-        paraDepth : float[-1], optional
-            Maximum depth in m for parametric domain.
-            Automatic (<=0) results in 0.4 * maximum sensor span range in m.
-            Depth is set to median sensors depth + paraDepth.
+    paraDepth : float[-1], optional
+        Maximum depth in m for parametric domain.
+        Automatic (<=0) results in 0.4 * maximum sensor span range in m.
+        Depth is set to median sensors depth + paraDepth.
 
-        paraBoundary: [float, float] [1.1, 1.1]
-            Margin for parameter domain in relative extend.
+    paraBoundary: [float, float] | float [1.1, 1.1]
+        Margin for parameter domain in relative extend.
 
-        paraMaxCellSize: double, optional
-            Maximum cell size for parametric region in m³
+    paraMaxCellSize: double, optional
+        Maximum cell size for parametric region in m³
 
-        boundaryMaxCellSize: double, optional
-            Maximum cells size in the boundary region in m³
+    boundaryMaxCellSize: double, optional
+        Maximum cells size in the boundary region in m³
 
-        boundary: [float, float] [10., 10.]
-            Boundary width to be appended for domain prolongation in relative
-            para domain size.
+    boundary: [float, float] | float [10., 10.]
+        Boundary width to be appended for domain prolongation in relative
+        para domain size.
 
-        surfaceMeshQuality: float [30]
-            Quality of the surface mesh.
+    surfaceMeshQuality: float [30]
+        Quality of the surface mesh.
 
-        surfaceMeshArea: float [0]
-            Max boundary size for surface area in parametric region.
+    surfaceMeshArea: float [0]
+        Max boundary size for surface area in parametric region.
 
-        addTopo: [[x,y,z],]
-            Number of additional nodes for topography.
+    addTopo: [[x,y,z],]
+        Number of additional nodes for topography.
 
-        Returns
-        -------
-        poly: :gimliapi:`GIMLI::Mesh`
-            Piecewise linear complex (PLC) containing nodes and edges
+    Returns
+    -------
+    poly: :gimliapi:`GIMLI::Mesh`
+        Piecewise linear complex (PLC) containing nodes and edges
     """
     if hasattr(sensors, 'sensors'):
         sensors = sensors.sensors()
@@ -1265,6 +1263,8 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
 
     if boundary is None:
         boundary = [10.0, 10.0]
+    elif isinstance(boundary, (float, int)):
+        boundary = [boundary, boundary]
 
     surface = pg.meshtools.createParaMeshSurface(
         sensors, paraBoundary=paraBoundary, boundary=boundary,
@@ -1390,7 +1390,7 @@ def readPLC(filename, comment='#'):
     poly :
         :gimliapi:`GIMLI::Mesh`
 
-    See also
+    See Also
     --------
     exportPLC
     """
@@ -1577,7 +1577,7 @@ def exportPLC(poly, fname, **kwargs):
     >>> pg.meshtools.exportPLC(world3d, fname)
     >>> os.remove(fname)
 
-    See also
+    See Also
     --------
     readPLC
     """
@@ -1642,15 +1642,17 @@ def exportTrianglePoly(poly, fname, float_format='.15e'):
 
 
 def writeTrianglePoly(*args, **kwargs):
-    """ Backward compatibility.
+    """Backward compatibility.
+
     Please use :py:mod:`pygimli.meshtools.exportTrianglePoly`.
     """
     return exportTrianglePoly(*args, **kwargs)
 
 
 def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
-    r"""
-    Writes a given piecewise linear complex (mesh/poly) into a Ascii file in
+    r"""Export PLC as tetgen poly file.
+
+    Write given piecewise linear complex (mesh/poly) into Ascii file in
     :term:`Tetgen` .poly format.
 
     Parameters
@@ -1743,14 +1745,14 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
                                                  sep, npolys, nHoles)
         # inner loop over polygons
         # <# of corners> <corner 1> <corner 2> ... <corner #>
-        for l in range(1):
+        for k in range(1):
             poly_str = '{:d}'.format(bound.nodeCount())
             poly_str += sep + sep.join(['{:d}'.format(n) for n in bound.ids()])
             polytxt += '{0}{1}'.format(poly_str, linesep)
 
         # loop over subfaces
-        for l in range(nSubs):
-            sub = bound.subface(l)
+        for k in range(nSubs):
+            sub = bound.subface(k)
             poly_str = '{:d}'.format(len(sub))
             poly_str += sep + sep.join(['{:d}'.format(n.id()) for n in sub])
             polytxt += '{0}{1}'.format(poly_str, linesep)
@@ -1764,8 +1766,8 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
         # because this is for 2D holes in facets only
 
         # loop over secondaryNodes add them as single points
-        for l in range(len(bound.secondaryNodes())):
-            ind = bound.secondaryNodes()[l].id()
+        for k in range(len(bound.secondaryNodes())):
+            ind = bound.secondaryNodes()[k].id()
             poly_str = '{:d}'.format(2)
             poly_str += sep + '{0:d} {0:d}'.format(ind)
             polytxt += '{0}{1}'.format(poly_str, linesep)
@@ -1904,17 +1906,27 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
                     maxCellSize=0, verbose=True):
     """Create the PLC of a default world.
 
-    Create the PLC of a default world.
+    Out-of-core wrapper for dcfemlib::polytools::polyCreateWorld
 
-    Out of core wrapper for dcfemlib::polytools::polyCreateWorld
-
-    # TODO needs to be converted to the Python-only tools.
+    Todo
+    * needs to be converted to the Python-only tools.
 
     Parameters
     ----------
-
-    Returns
-    -------
+    filename : str
+        file name
+    x : float
+        x dimension
+    y : float
+        y dimension
+    depth : float
+        z dimension
+    marker : int
+        region marker
+    maxCellSize : float
+        maximum cell size
+    verbose : bool
+        be verbose
     """
     if depth is None:
         print("Please specify worlds depth.")
@@ -1985,13 +1997,25 @@ def createSurface(mesh, boundaryMarker=None, verbose=True):
     return surface
 
 
-def createFacet(mesh, boundaryMarker=None, verbose=True):
-    """Create a coplanar PLC of a 2d mesh or poly
+def createFacet(mesh, boundaryMarker=None):
+    """Create coplanar PLC from a 2d mesh or PLC.
 
-    TODO:
+    Parameters
+    ----------
+    mesh : pg.Mesh
+        2D mesh or PLC to be converted to a 3D facet
+    boundaryMarker : int
+        boundary marker for the facet, otherwise taken from 2d region markers
+
+    Returns
+    -------
+    plc : pyGIMLi mesh
+        plc of the created facet
+
+    Todo
+    ----
     * mesh with cell into plc with boundaries
     * poly account for inner edges
-
     """
     if mesh.dimension() != 2:
         pg.error("need two dimensional mesh or poly")
@@ -2102,7 +2126,7 @@ def createCube(size=[1.0, 1.0, 1.0], pos=None,
 
 
 def extrude(p2, z=-1.0, boundaryMarker=0, **kwargs):
-    """Create 3D body by extruding a closed 2D poly into z direction
+    """Create 3D body by extruding a closed 2D poly into z direction.
 
     Parameters
     ----------
@@ -2186,7 +2210,6 @@ def createCylinder(radius=1, height=1, nSegments=8,
     -------
     poly : :gimliapi:`GIMLI::Mesh`
         The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
-
     """
     circ = createCircle(radius=radius, nSegments=nSegments)
     poly = extrude(circ, z=height, boundaryMarker=boundaryMarker, **kwargs)

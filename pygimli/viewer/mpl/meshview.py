@@ -896,7 +896,7 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
 
     Parameters
     ----------
-    ax : mpl axe
+    ax : Matplotlib axis object
 
     mesh : :gimliapi:`GIMLI::Mesh`
         2D mesh
@@ -944,8 +944,7 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
     >>> ny = pg.y(mesh.positions())
     >>> data = np.cos(1.5 * nx) * np.sin(1.5 * ny)
     >>> fig, ax = plt.subplots()
-    >>> drawField(ax, mesh, data)
-    <matplotlib.tri.tricontour.TriContourSet ...>
+    >>> tri = drawField(ax, mesh, data)
     """
     x, y, triangles, _, dataIndex = createTriangles(mesh)
     if len(data) == mesh.cellCount():

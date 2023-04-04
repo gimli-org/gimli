@@ -330,10 +330,12 @@ pgcore.IndexArray.setVal = __newIndexArraySetVal__
 ############################
 def __getVal(self, idx):
     """Hell slow"""
-    if isinstance(idx, pgcore.BVector) or isinstance(idx, pgcore.IVector): 
+    if isinstance(idx, pgcore.BVector):
         return self.get_(idx)
+    elif isinstance(idx, pgcore.IVector):
+        return self.getVSI_(idx)
     elif isinstance(idx, pgcore.IndexArray):
-        return self.getIA_(idx)
+        return self.getVUI_(idx)
     elif isinstance(idx, slice):
 
         s = idx.start
@@ -353,18 +355,18 @@ def __getVal(self, idx):
                 ids = range(s, e, idx.step)
 
             if len(ids):
-                return self.get_(ids)
+                return self.getVSI_(ids)
             else:
                 return self.get_(0)
                 #raise Exception("slice invalid")
 
     elif isinstance(idx, list) or hasattr(idx, '__iter__'):
         if isinstance(idx[0], int):
-            return self.getIA_(idx)
+            return self.getVSI_(idx)
         elif hasattr(idx[0], 'dtype'):
             # print("numpy: ", idx[0].dtype.str, idx[0].dtype ,type(idx[0]))
             if idx[0].dtype == 'bool':
-                return self.get_([i for i, x in enumerate(idx) if x])
+                return self.getVUI_([i for i, x in enumerate(idx) if x])
                 # return self[np.nonzero(idx)[0]]
         elif isinstance(idx[0], slice):  # try fixing newaxis
             # probably the call x = x[:, np.newaxis]
@@ -373,7 +375,7 @@ def __getVal(self, idx):
         # elif isinstance(idx[0], None) and isinstance(idx[1], slice):
             # return self[idx[1]]
 
-        return self.get_([int(a) for a in idx])
+        return self.getVSI_([int(a) for a in idx])
 
     elif idx < 0:
         idx = len(self) + idx
@@ -883,10 +885,10 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
     nProcs = self.multiThreadJacobian()
 
 
-    if sys.platform == 'win32':
+    if sys.platform == 'win32' or 'darwin':
         # strange pickle problem: see  python test_PhysicsManagers.py ves
         from .logger import warn
-        warn('Multiprocess jacobian currently unavailable for win build')
+        warn('Multiprocess Jacobian currently unavailable for Win32 and Mac.')
         nProcs = 1
 
     if nProcs == 1:

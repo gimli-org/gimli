@@ -114,9 +114,10 @@ FDEM1dModelling::FDEM1dModelling(size_t nlay,
 void FDEM1dModelling::init(){
     setMesh(createMesh1DBlock(nlay_));
     nfr_ = freqs_.size();
-    double zp = ze_ + zs_;
-    RVector rpq(coilspacing_ * coilspacing_ + zp * zp);
-    freeAirSolution_ = (rpq - zp * zp * 3.0) / rpq / rpq / sqrt(rpq) / 4.0 / PI;
+    // double zp = ze_ + zs_;  // indeed a bad mistake for airborne
+    double zpq = (ze_ - zs_) * (ze_ - zs_);
+    RVector rpq(coilspacing_ * coilspacing_ + zpq);
+    freeAirSolution_ = (rpq - zpq * 3.0) / rpq / rpq / sqrt(rpq) / 4.0 / PI;
 }
 
 Complex btp(double u, double f, RVector rho, RVector d){

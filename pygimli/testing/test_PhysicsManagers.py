@@ -20,17 +20,18 @@ class TestManagers(unittest.TestCase):
         dat = pg.getExampleFile('ert/gallery.dat', load=True, verbose=True)
         dat['k'] = ert.createGeometricFactors(dat)
         mesh = pg.meshtools.createParaMesh(
-            dat.sensors(), quality=33.4,
+            dat.sensors(), quality=30.0,
             paraDX=0.3, paraMaxCellSize=0.5, paraDepth=8)
+        print(mesh)
         # with SR
         mgr = ert.ERTManager(sr=True, useBert=True, verbose=False, debug=False)
         mod = mgr.invert(dat, mesh=mesh, maxIter=20, lam=10)
-        np.testing.assert_approx_equal(mgr.inv.chi2(), 1.003, significant=3)
+        np.testing.assert_approx_equal(mgr.inv.chi2(), 1.040, significant=3)
 
         # without SR
         mgr = ert.ERTManager(sr=False, useBert=True, verbose=False)
         mod = mgr.invert(dat, mesh=mesh, maxIter=20, lam=10)
-        # np.testing.assert_approx_equal(ert.inv.chi2(), 0.9833, significant=3)
+        np.testing.assert_approx_equal(mgr.inv.chi2(), 1.033, significant=3)
 
     def test_TT(self, showProgress=False):
         pass

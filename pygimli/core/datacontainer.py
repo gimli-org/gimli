@@ -2,7 +2,7 @@
 """Extensions to the core DataContainer class[es]."""
 import numpy as np
 from . logger import critical, verbose
-from .core import (RVector3, DataContainer, DataContainerERT)
+from .core import (RVector, RVector3, DataContainer, DataContainerERT)
 
 
 def __DataContainer_str(self):
@@ -48,10 +48,22 @@ def __DataContainer_setSensors(self, sensors):
 DataContainer.setSensors = __DataContainer_setSensors
 
 
+def __DataContainer_copy(self):
+    return type(self)(self)
+
+
+DataContainer.copy = __DataContainer_copy
+
+
 def __DC_setVal(self, key, val):
+    """Set datacontainer values for specific token: data[token] = x."""
+    if isinstance(val, (float, int)):
+        val = RVector(self.size(), val)
+
     if len(val) > self.size():
         verbose("DataContainer resized to:", len(val))
         self.resize(len(val))
+
     self.set(key, val)
 
 

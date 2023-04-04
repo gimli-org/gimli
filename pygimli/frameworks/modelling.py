@@ -43,7 +43,8 @@ class Modelling(pg.core.ModellingBase):
     Abstract Forward Operator that is or can use a Modelling instance.
     Can be seen as some kind of proxy Forward Operator.
 
-    TODO:
+    Todo
+    ----
         * Docu:
             - describe members (model transformation,
                                 dictionary of region properties)

@@ -263,7 +263,7 @@ def interpolateAlongCurve(curve, t, **kwargs):
 
     Parameters
     ----------
-    curve : [[x,z]] | [[x,y,z]] | [:gimliapi:`GIMLI::RVector3`] | :gimliapi:`GIMLI::R3Vector`
+    curve : [[x,z]] | [[x,y,z]] | [:gimliapi:`GIMLI::Pos`] | :gimliapi:`GIMLI::PosVector`
         Discrete curve for 2D :math:`x,z` curve=[[x,z]], 3D :math:`x,y,z`
 
     t: 1D iterable
@@ -530,8 +530,8 @@ def interpolate(*args, **kwargs):
         if isinstance(args[0], pg.Mesh):
             if len(args) == 2 and isinstance(args[1], pg.Mesh):
                 return pg.core.interpolate(args[0], args[1],
-                                                  fillValue=fallback,
-                                                  verbose=verbose)
+                                           fillValue=fallback,
+                                           verbose=verbose)
 
             if len(args) == 3 and isinstance(args[1], pg.Mesh):
                 pgcore = False  # (outMesh, inMesh, vals)
@@ -545,46 +545,46 @@ def interpolate(*args, **kwargs):
 
                 outMat = pg.Matrix()
                 pg.core.interpolate(args[0], inMat=np.array(args[1]),
-                                           destPos=args[2], outMat=outMat,
-                                           fillValue=fallback,
-                                           verbose=verbose)
+                                    destPos=args[2], outMat=outMat,
+                                    fillValue=fallback,
+                                    verbose=verbose)
                 return np.array(outMat)
 
         if len(args) == 4:  # args: (inMesh, inData, outPos, outData)
 
             if args[1].ndim == 1 and args[2].ndim == 1 and args[3].ndim == 1:
                 return pg.core.interpolate(args[0], inVec=args[1],
-                                                  x=args[2], y=args[3],
-                                                  fillValue=fallback,
-                                                  verbose=verbose)
+                                           x=args[2], y=args[3],
+                                           fillValue=fallback,
+                                           verbose=verbose)
 
             if isinstance(args[1], pg.Matrix) and \
                isinstance(args[3], pg.Matrix):
                 return pg.core.interpolate(args[0], inMat=args[1],
-                                                  destPos=args[2],
-                                                  outMat=args[3],
-                                                  fillValue=fallback,
-                                                  verbose=verbose)
+                                           destPos=args[2],
+                                           outMat=args[3],
+                                           fillValue=fallback,
+                                           verbose=verbose)
             if isinstance(args[1], pg.Vector) and \
                isinstance(args[3], pg.Vector):
                 return pg.core.interpolate(args[0], inVec=args[1],
-                                                  destPos=args[2],
-                                                  outVec=args[3],
-                                                  fillValue=fallback,
-                                                  verbose=verbose)
+                                           destPos=args[2],
+                                           outVec=args[3],
+                                           fillValue=fallback,
+                                           verbose=verbose)
 
         if len(args) == 5:
             if args[1].ndim == 1 and args[2].ndim == 1 and \
                args[3].ndim == 1 and args[4].ndim == 1:
                 return pg.core.interpolate(args[0], inVec=args[1],
-                                                  x=args[2], y=args[3],
-                                                  z=args[4],
-                                                  fillValue=fallback,
-                                                  verbose=verbose)
+                                           x=args[2], y=args[3],
+                                           z=args[4],
+                                           fillValue=fallback,
+                                           verbose=verbose)
 
         return pg.core.interpolate(*args, **kwargs,
-                                          fillValue=fallback,
-                                          verbose=verbose)
+                                   fillValue=fallback,
+                                   verbose=verbose)
         # end if pg.core:
 
     if len(args) == 3:
