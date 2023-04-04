@@ -24,6 +24,7 @@ CASTXML_URL=https://github.com/CastXML/CastXML.git
 # Check for updates https://data.kitware.com/#search/results?query=castxml&mode=text
 CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/item/57b5de948d777f10f2696371/download
 CASTXML_BIN_MAC=https://data.kitware.com/api/v1/item/57b5de948d777f10f2696373/download
+CASTXML_BIN_MAC=https://data.kitware.com/api/v1/item/63c469666d3fc641a02d80ca/download # ARM
 CASTXML_BIN_WIN=https://data.kitware.com/api/v1/item/57b5de948d777f10f2696372/download
 
 PYGCCXML_URL=https://github.com/CastXML/pygccxml
@@ -505,6 +506,9 @@ buildCASTXMLBIN(){
         cp -r $CASTXML_SRC/castxml/* $CASTXML_DIST
         CASTXMLBIN=castxml.exe
     elif [ "$SYSTEM" == "MAC" ]; then
+        if [ -n "$CLEAN" ]; then
+            rm -f $SRC_DIR/castxml-macosx.tar.gz
+        fi
         getWITH_WGET $CASTXML_BIN_MAC $CASTXML_SRC castxml-macosx.tar.gz
         cp -r $CASTXML_SRC/* $CASTXML_DIST
         CASTXMLBIN=castxml

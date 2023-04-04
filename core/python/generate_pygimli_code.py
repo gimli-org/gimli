@@ -199,6 +199,7 @@ def generate(defined_symbols, extraIncludes):
     compiler_path = options.clang
 
     cflags = '-std=c++11'
+    cflags = ''
 
     if platform.system() == 'Windows':
         if platform.architecture()[0] == '64bit':
