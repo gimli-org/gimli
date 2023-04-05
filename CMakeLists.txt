@@ -95,8 +95,8 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX OR ${CMAKE_CXX_COMPILE
             # If it's libc++ and you're on <= 10.8, you need to compile with 
             # clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later, 
             # you need to compile with clang++ -stdlib=libstdc++.
-            # add_compile_options(-stdlib=libstdc++)
-            # add_compile_options(-stdlib=libc++)
+            add_compile_options(-stdlib=libstdc++)
+            add_compile_options(-stdlib=libc++)
         endif()
     else() # if not clang but gcc
 
@@ -595,14 +595,6 @@ endif()
 message(STATUS "**********************************************************************")
 message(STATUS "************************* Dependencies found *************************")
 message(STATUS "**********************************************************************")
-if (CONDA_BUILD)
-    message(STATUS "CONDA_BUILD: ${CONDA_BUILD}")
-    if(EXISTS ${Python_LIBRARIES})
-       message(${Python_LIBRARIES} " exits")
-    else()
-       message(${Python_LIBRARIES} "does not exits")
-    endif()
-endif()
 
 message(STATUS "THREADS             : ${THREADS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_THREAD_LIBRARIES}")
 message(STATUS "USE_OPENBLAS        : ${OPENBLAS_FOUND} OPENBLAS_CBLAS_FOUND :${OPENBLAS_CBLAS_FOUND} OpenBLAS_INCLUDE_DIR :${OpenBLAS_INCLUDE_DIR}")

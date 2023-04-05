@@ -22,20 +22,19 @@ CASTXML_URL=https://github.com/CastXML/CastXML.git
 #CASTXML_REV=9d7a46d639ce921b8ddd36ecaa23c567d003294a #last functional
 
 # Check for updates https://data.kitware.com/#search/results?query=castxml&mode=text
-CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/file/5b6c5b4d8d777f06857c323b/download
-#CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/item/57b5de948d777f10f2696371/download # seems broken
-#CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/file/57b5dea08d777f10f2696379/download # old ok
-CASTXML_BIN_MAC=https://data.kitware.com/api/v1/file/57b5de9f8d777f10f2696378/download
-CASTXML_BIN_WIN=https://data.kitware.com/api/v1/file/5b68bfc28d777f06857c1f44/download
+CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/item/57b5de948d777f10f2696371/download
+CASTXML_BIN_MAC=https://data.kitware.com/api/v1/item/57b5de948d777f10f2696373/download
+CASTXML_BIN_MAC=https://data.kitware.com/api/v1/item/63c469666d3fc641a02d80ca/download # ARM
+CASTXML_BIN_WIN=https://data.kitware.com/api/v1/item/57b5de948d777f10f2696372/download
 
-PYGCCXML_URL=https://github.com/gccxml/pygccxml
-PYGCCXML_REV=84be3367bf43cb494512f343068cb23704a47460 # for py3.8
+PYGCCXML_URL=https://github.com/CastXML/pygccxml
+PYGCCXML_REV=v2.2.1
 
 # old bitbucked project not working anymore and moved to github
 # PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
 # PYPLUSPLUS_REV=1e30641 # tag 1.8.3 for py3.8
 PYPLUSPLUS_URL=https://github.com/ompl/pyplusplus
-PYPLUSPLUS_REV=d4811c8 # tag 1.8.3 for py3.8
+PYPLUSPLUS_REV=1.8.5
 
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
 
@@ -208,7 +207,7 @@ getWITH_WGET(){
     fi
 
     copySRC_From_EXT_PATH
-    
+
     if [ ! -d $_SRC_ ]; then
         echo "Copying sources into $_SRC_"
         pushd $SRC_DIR
@@ -226,7 +225,7 @@ getWITH_WGET(){
                 echo "cp download.dir/$_PAC_ ."
                 mv download.dir/$_PAC_ .
             fi
-            
+
             if [ "${_PAC_##*.}" = "zip" ]; then
                 mkdir -p $_SRC_
                 pushd $_SRC_
@@ -351,7 +350,7 @@ needPYTHON(){
     PYTHONVERSION=`"$PYTHONEXE" -c 'import sys; print(sys.version)'`
     PYTHONMAJOR=`"$PYTHONEXE" -c 'import sys; print(sys.version_info.major)'`
     PYTHONMINOR=`"$PYTHONEXE" -c 'import sys; print(sys.version_info.minor)'`
-    echo "Python version found py" $PYTHONMAJOR $PYTHONMINOR $PYTHONVERSION 
+    echo "Python version found py" $PYTHONMAJOR $PYTHONMINOR $PYTHONVERSION
 
     PYTHON_HOME=`which $PYTHONEXE`
     PYTHON_HOME=${PYTHON_HOME%/*}
@@ -425,7 +424,7 @@ prepBOOST(){
 }
 buildBOOST(){
     echo "*** building boost ... "
-    
+
     checkTOOLSET
     prepBOOST
 
@@ -474,10 +473,10 @@ buildBOOST(){
         --platform=msys \
         --layout=tagged \
         --debug-configuration \
-        $WITHPYTHON 
-    
+        $WITHPYTHON
+
     	#--with-system \
-        #--with-thread 
+        #--with-thread
 
         # --with-date_time \
         # --with-chrono \
@@ -507,6 +506,9 @@ buildCASTXMLBIN(){
         cp -r $CASTXML_SRC/castxml/* $CASTXML_DIST
         CASTXMLBIN=castxml.exe
     elif [ "$SYSTEM" == "MAC" ]; then
+        if [ -n "$CLEAN" ]; then
+            rm -f $SRC_DIR/castxml-macosx.tar.gz
+        fi
         getWITH_WGET $CASTXML_BIN_MAC $CASTXML_SRC castxml-macosx.tar.gz
         cp -r $CASTXML_SRC/* $CASTXML_DIST
         CASTXMLBIN=castxml

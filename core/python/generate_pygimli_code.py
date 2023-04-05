@@ -199,8 +199,6 @@ def generate(defined_symbols, extraIncludes):
     compiler_path = options.clang
 
     cflags = '-std=c++11'
-    if sys.platform == 'darwin':
-        compiler_path = "/usr/bin/clang++"
 
     if platform.system() == 'Windows':
         if platform.architecture()[0] == '64bit':
@@ -413,7 +411,7 @@ def generate(defined_symbols, extraIncludes):
                 #'::GIMLI::VectorIterator<double>',
                 #'::GIMLI::VectorIterator<long>',
                 # ::GIMLI::VectorIterator<unsigned long>', needed
-                #'::GIMLI::VectorIterator<std::complex<double> >', 
+                #'::GIMLI::VectorIterator<std::complex<double> >',
                   ]
             )
 
