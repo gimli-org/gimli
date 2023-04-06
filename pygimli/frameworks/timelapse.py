@@ -7,6 +7,7 @@ from .modelling import MeshModelling
 
 class MultiFrameModelling(MeshModelling):
     """Full frame (multiple fop parallel) forward modelling."""
+
     def __init__(self, modellingOperator, scalef=1.0):
         """Init class and jacobian matrix."""
         super().__init__()
@@ -24,6 +25,7 @@ class MultiFrameModelling(MeshModelling):
             self.fops.append(fopi)
 
     def setMeshPost(self, mesh):
+        """Set mesh to all forward operators."""
         for i, fop in enumerate(self.fops):
             fop.setMesh(mesh, ignoreRegionManager=True)
 
@@ -41,6 +43,7 @@ class MultiFrameModelling(MeshModelling):
 
     @property
     def parameterCount(self):
+        """Return number of parameters."""
         return self.regionManager().parameterCount() * len(self.fops)
 
     def prepareJacobian(self):
@@ -71,22 +74,25 @@ class MultiFrameModelling(MeshModelling):
         self.setConstraints(self.C)
         # cw = self.regionManager().constraintWeights()
         # self.regionManager().setConstraintsWeights(np.tile(cw, self.nf))
-        ## switch off automagic inside core.inversion which checks for local modeltransform of the regionManager
+        # switch off automagic inside core.inversion which checks for
+        # local modeltransform of the regionManager
         self.regionManager().setLocalTransFlag(False)
 
     def response(self, model):
+        """Forward response."""
         mod = np.reshape(model, [len(self.fops), -1])
         return np.concatenate([fop.response(mo) for fop, mo in
                                zip(self.fops, mod)])
 
     def createJacobian(self, model):
+        """Create Jacobian matrix."""
         mod = np.reshape(model, [len(self.fops), -1])
         for i, fop in enumerate(self.fops):
             fop.createJacobian(mod[i])
 
     def createDefaultStartModel(self):  # , dataVals):
+        """Create standard starting model."""
         return pg.Vector(self.nm*self.nf, 10.0)  # look up in fop
-    #     return np.concatenate([fop.createDefaultStartModel() for fop in self.fops])
 
     def createStartModel(self, dataVals):
         # return np.concatenate([fop.createStartModel() for fop in self.fops])
