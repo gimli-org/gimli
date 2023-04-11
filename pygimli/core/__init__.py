@@ -1098,7 +1098,7 @@ def x(instance):
     """Syntactic sugar to find all x-coordinates of a given class instance.
 
     Convenience function to return all associated x-coordinates
-    of a given class instance.
+    of a given class instance. If instance is 1D array its returned itself.
 
     Parameters
     ----------
@@ -1114,6 +1114,8 @@ def x(instance):
     >>> pg.x([[0, 0], [1, 0]])
     2 [0.0, 1.0]
     """
+    if isArray(instance) and not isPos(instance):
+        return instance
     return __getCoords('x', 0, instance)
 
 
