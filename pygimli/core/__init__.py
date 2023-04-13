@@ -1055,8 +1055,10 @@ def __getCoords(coord, dim, ent):
     """Syntactic sugar to find all x-coordinates of a given entity.
     """
     # if isinstance(ent, stdVectorR3Vector):
+    # std::vector< pg.Vector<Pos> >(n)
     #     return getattr(pgcore, coord)(ent)
     if isinstance(ent, R3Vector) or isinstance(ent, stdVectorRVector3):
+        # pg.Vector<Pos>(n) or std::vector<Pos>(n)
         return getattr(pgcore, coord)(ent)
     if isinstance(ent, list) and isinstance(ent[0], RVector3):
         return getattr(pgcore, coord)(ent)

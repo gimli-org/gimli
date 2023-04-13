@@ -40,21 +40,41 @@ void ElementMatrixMap::push_back(const ElementMatrix < double > & Ai){
 
 template < class ValueType >
 void _T_integrateLConst(const ElementMatrixMap * self,
-                     const ValueType & f, RVector & R, const double & scale){
+                     const ValueType & f, RVector & R, const double & alpha){
     ASSERT_NON_EMPTY(R)
     for (auto &m : self->mats()){
-        m.integrate(f, R, scale);
+        m.integrate(f, R, alpha);
+    }
+}
+template < class ValueType >
+void _T_integrateLConst(const ElementMatrixMap * self,
+                     const ValueType & f, RVector & R, const RVector & alpha){
+    ASSERT_NON_EMPTY(R)
+    ASSERT_EQUAL_SIZE(self->mats(), alpha)
+    for (auto &m : self->mats()){
+        m.integrate(f, R, alpha[m.entity()->id()]);
     }
 }
 
 template < class ValueType >
 void _T_integrateLPerCell(const ElementMatrixMap * self,
-                        const ValueType & f, RVector & R, const double & scale){
+                        const ValueType & f, RVector & R, const double & alpha){
     ASSERT_NON_EMPTY(R)
     ASSERT_EQUAL_SIZE(self->mats(), f)
 
     for (auto &m : self->mats()){
-        m.integrate(f[m.entity()->id()], R, scale);
+        m.integrate(f[m.entity()->id()], R, alpha);
+    }
+}
+template < class ValueType >
+void _T_integrateLPerCell(const ElementMatrixMap * self,
+                        const ValueType & f, RVector & R, const RVector & alpha){
+    ASSERT_NON_EMPTY(R)
+    ASSERT_EQUAL_SIZE(self->mats(), f)
+    ASSERT_EQUAL_SIZE(self->mats(), alpha)
+
+    for (auto &m : self->mats()){
+        m.integrate(f[m.entity()->id()], R, alpha[m.entity()->id()]);
     }
 }
 
@@ -221,8 +241,12 @@ void _T_integrateBLPerCell(const ElementMatrixMap & A,
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(A_TYPE) \
 void ElementMatrixMap::integrate(const A_TYPE & f, \
-                                 RVector & R, const double & scale) const {\
-    _T_integrateLConst(this, f, R, scale); \
+                                 RVector & R, const double & alpha) const {\
+    _T_integrateLConst(this, f, R, alpha); \
+} \
+void ElementMatrixMap::integrate(const A_TYPE & f, \
+                                 RVector & R, const RVector & alpha) const {\
+    _T_integrateLConst(this, f, R, alpha); \
 } \
 void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const { \
     ret.resize(this->size());\
@@ -261,8 +285,11 @@ void ElementMatrixMap::add(const ElementMatrixMap & B,
 
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(A_TYPE) \
-void ElementMatrixMap::integrate(const A_TYPE & f, RVector & R, const double & scale) const { \
-    _T_integrateLPerCell(this, f, R, scale); \
+void ElementMatrixMap::integrate(const A_TYPE & f, RVector & R, const double & alpha) const { \
+    _T_integrateLPerCell(this, f, R, alpha); \
+} \
+void ElementMatrixMap::integrate(const A_TYPE & f, RVector & R, const RVector & alpha) const { \
+    _T_integrateLPerCell(this, f, R, alpha); \
 } \
 void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const { \
     ret.resize(this->size()); \

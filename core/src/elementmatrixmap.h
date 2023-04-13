@@ -40,17 +40,21 @@ public:
     void resize(Index size);
 
     #define DEFINE_INTEGRATOR(A_TYPE) \
-        /*! R = \int_mesh this * f \d mesh and R = RVector(dof) and \
+        /*! R = \int_mesh this * f \d d mesh and R = RVector(dof) and \
             f = A_TYPE \
         */ \
-        void integrate(const A_TYPE & f, RVector & R, const double & scale=1.0) const; \
-        /*! Integrate into bilinear form R = \int_mesh this * f * R \d mesh an\
-        R = RSparseMapMatrix(dof, dof) and \
-            f = A_TYPE \
+        void integrate(const A_TYPE & f, RVector & R, const double & alpha=1.0) const; \
+        /*! Integrate into linear form R = alpha * \int_mesh this * f * R \d d mesh and \
+        R = RVector(dof) and f = A_TYPE \
         */ \
-        RVector integrate(const A_TYPE & f, const double & scale=1.0) const; \
+        void integrate(const A_TYPE & f, RVector & R, const RVector & alpha) const; \
+        /*! Integrate into linear form R = alpha[cellID]*\int_mesh this * f * R \d d mesh and \
+        R = RVector(dof) and f = A_TYPE \
+        */ \
+        RVector integrate(const A_TYPE & f, const double & alpha=1.0) const; \
         /*! R = this * f */ \
         void mult(const A_TYPE & f, ElementMatrixMap & ret) const;
+       
 
     DEFINE_INTEGRATOR(double)   // const scalar for all cells
     DEFINE_INTEGRATOR(RSmallMatrix)  // const Matrix for all cells

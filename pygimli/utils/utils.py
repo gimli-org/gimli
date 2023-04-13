@@ -254,6 +254,10 @@ def prettyFloat(value, roundValue=None, mathtex=False):
     """
     ## test-cases:
     # if change things her, look that they are still good (mod-dc-2d)
+
+    if np.isnan(value):
+        return 'NaN'
+
     if isinstance(roundValue, int) and abs(round(value)-value) < 1e-4 and abs(value) < 1e3 and 0:
         string = str(int(round(value, roundValue)))
     elif abs(value) < 1e-14:
