@@ -8,20 +8,22 @@ from .modelling import MeshModelling
 class MultiFrameModelling(MeshModelling):
     """Full frame (multiple fop parallel) forward modelling."""
 
-    def __init__(self, modellingOperator, scalef=1.0):
+    def __init__(self, modellingOperator, scalef=1.0, **ini):
         """Init class and jacobian matrix."""
         super().__init__()
+        self.ini = ini
         self.modellingOperator = modellingOperator
         self.jac = pg.matrix.BlockMatrix()
         self.scalef = scalef
 
-    def setData(self, alldata, modellingOperator=None):
+    def setData(self, alldata, modellingOperator=None, **ini):
         """Distribute the data containers amongst the fops."""
         modellingOperator = modellingOperator or self.modellingOperator
+        ini = self.ini or ini
         self.fops = []
         for i, data in enumerate(alldata):
-            fopi = modellingOperator()
-            fopi.setData(data)
+            fopi = modellingOperator(**ini)
+            fopi.setData(pg.Vector(data))
             self.fops.append(fopi)
 
     def setMeshPost(self, mesh):
@@ -44,12 +46,19 @@ class MultiFrameModelling(MeshModelling):
     @property
     def parameterCount(self):
         """Return number of parameters."""
-        return self.regionManager().parameterCount() * len(self.fops)
+        pc = self.regionManager().parameterCount() * 0
+        if pc == 0:
+            pc = self.fops[0].parameterCount
+
+        return pc * len(self.fops)
 
     def prepareJacobian(self):
         """Build up Jacobian block matrix (once the sizes are known)."""
         self.jac.clear()
         self.nm = self.regionManager().parameterCount()
+        if self.nm == 0:
+            self.nm = self.fops[0].parameterCount
+
         self.nf = len(self.fops)
         print(self.nm, "model cells")
         nd = 0
@@ -95,6 +104,7 @@ class MultiFrameModelling(MeshModelling):
         return pg.Vector(self.nm*self.nf, 10.0)  # look up in fop
 
     def createStartModel(self, dataVals):
-        # return np.concatenate([fop.createStartModel() for fop in self.fops])
+        """Create a starting model from mean data values."""
+        # return np.concatenate([f.createStartModel() for f in self.fops])
         self.nm = self.regionManager().parameterCount()
         return pg.Vector(self.nm*len(self.fops), np.median(dataVals))
