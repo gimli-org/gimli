@@ -11,7 +11,8 @@ import numpy as np
 from .core import pgcore
 from .core import *
 from .logger import error, critical
-from .base import isInt
+from .base import (isInt, isScalar, isArray, isPos, isR3Array,
+                   isPosList, isComplex, isMatrix)
 
 # #######################################
 # ###  Global convenience functions #####
@@ -372,7 +373,7 @@ pgcore.IndexArray.setVal = __newIndexArraySetVal__
 #                          RVector3, R3Vector, RMatrix, CMatrix
 ############################
 def __getVal(self, idx):
-    """Hell slow"""
+    """Get vector value at index. Hell slow."""
     if isinstance(idx, pgcore.BVector):
         return self.get_(idx)
     elif isinstance(idx, pgcore.IVector):
@@ -401,7 +402,7 @@ def __getVal(self, idx):
                 return self.getVSI_(ids)
             else:
                 return self.get_(0)
-                #raise Exception("slice invalid")
+                # raise Exception("slice invalid")
 
     elif isinstance(idx, list) or hasattr(idx, '__iter__'):
         if isinstance(idx[0], int):
@@ -650,7 +651,7 @@ pgcore.CMatrix.__iter__ = __MatIterCall__
 
 
 class Vector3Iter():
-    """Simple iterator for RVector3.
+    """Simple iterator for RVector3/PosVector.
 
     Because it lacks the core function .beginPyIter()
     """
@@ -935,7 +936,7 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
     dModel = pgcore.RVector(len(model))
     nProcs = self.multiThreadJacobian()
 
-    if sys.platform == 'win32a' or 'darwin':
+    if sys.platform == 'win32' or sys.platform == 'darwin':
         # strange pickle problem: see  python test_PhysicsManagers.py ves
         from .logger import warn
         warn('Multiprocess Jacobian currently unavailable for Win32 and Mac.')
@@ -1158,9 +1159,6 @@ def search(what):
     """Utility function to search docstrings for string `what`."""
     np.lookfor(what, module="pygimli", import_modules=False)
 
-
-from .base import (isInt, isScalar, isArray, isPos, isR3Array,
-                   isPosList, isComplex, isMatrix)
 
 # Import from submodules at the end
 from .mesh import Mesh, MeshEntity, Node
