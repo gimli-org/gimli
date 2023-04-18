@@ -1079,7 +1079,7 @@ def __getCoords(coord, dim, ent):
     """Syntactic sugar to find all x-coordinates of a given entity."""
     if isinstance(ent, (pgcore.R3Vector, pgcore.stdVectorRVector3)):
         return getattr(pgcore, coord)(ent)
-    if isinstance(ent, list) and isinstance(ent[0], pgcore.Vector3):
+    if isinstance(ent, list) and isinstance(ent[0], pgcore.RVector3):
         return getattr(pgcore, coord)(ent)
     if isinstance(ent, list) and isPos(ent[0]):
         return getattr(pgcore, coord)(ent)
