@@ -539,7 +539,6 @@ def __Mesh_cutBoundary__(self, marker, boundaryMarker=None):
     ------------
         * 2D p1
         * one connected path at once
-        * starting node need to be on an outer boundary
         * end node needs to be inside the mesh
 
     TODO
@@ -561,24 +560,22 @@ def __Mesh_cutBoundary__(self, marker, boundaryMarker=None):
     >>> import pygimli.meshtools as mt
     >>> plc = mt.createCircle(nSegments=24)
     >>> l1 = mt.createLine(start=[0, -1], end=[0, -0.1], boundaryMarker=2)
-    >>> l2 = mt.createLine(start=[-0.3, 0.25], end=[0.3, 0.25], boundaryMarker=4)
-    >>> mesh = mt.createMesh([plc, l1, l2], area=0.1)
+    >>> l2 = mt.createLine(start=[-0.3, 0.25], end=[0.3, 0.25], boundaryMarker=3)
+    >>> mesh = mt.createMesh([plc, l1, l2], area=0.1, quality=32.0)
     >>> fig, axs= pg.plt.subplots(1, 2)
     >>> ax ,_ = pg.show(mesh, boundaryMarkers=True, ax=axs[0])
     >>> oldNodeCount = mesh.nodeCount()
     >>> print(mesh)
-    Mesh: Nodes: 43 Cells: 60 Boundaries: 102
-    >>> mesh.cutBoundary(marker=2, boundaryMarker=3)
-    >>> mesh.cutBoundary(marker=4, boundaryMarker=5)
-    >>> print(mesh)
     Mesh: Nodes: 50 Cells: 74 Boundaries: 123
+    >>> mesh.cutBoundary(marker=2, boundaryMarker=4)
+    >>> mesh.cutBoundary(marker=3, boundaryMarker=5)
+    >>> print(mesh)
+    Mesh: Nodes: 54 Cells: 74 Boundaries: 128
     >>> ## just move the new nodes a little to see the cuts
     >>> for n in range(oldNodeCount, mesh.nodeCount()):
     ...     no = mesh.node(n)
-    ...     pg._g(no)
     ...     for b in no.boundSet():
-    ...         if b.marker() == 3 or b.marker() == 5:
-    ...              pg._b(b)                  
+    ...         if b.marker() == 4 or b.marker() == 5:
     ...              no.translate(b.norm()*-0.1)
     ...              break;
     >>> ax, _ = pg.show(mesh, data=range(mesh.cellCount()),
@@ -679,19 +676,21 @@ def __Mesh_cutBoundary__(self, marker, boundaryMarker=None):
         # pg._y(b.node(0).id(), b.node(1).id(), 'N', nA1.id(), nB1.id(), ':', lC.id(), rC.id())
 
         ### only if on outer boundary .. need check!!
-        if i == 0 and 0:
+        if i == 0:
             ## check the first node
             onOtherBoundary = False
-            for b in nA1.boundSet():
-                if b.marker() > 0 and b.marker() != marker:
+            for _b in nA1.boundSet():
+                if _b.marker() > 0 and _b.marker() != marker:
                     onOtherBoundary = True
             
             if onOtherBoundary == False:
                 # there is no other (or outer) boundary on the first node so we skip them
+                newNodes.append(nA1)
+                b.setRightCell(None)
+                rightCells.append(rC)
                 continue
             
         nA2 = mesh.createNode(nA1.pos(), nA1.marker())
-        pg._r('create', nA2)
         newNodes.append(nA2)
 
         if rC is not None:
@@ -700,11 +699,12 @@ def __Mesh_cutBoundary__(self, marker, boundaryMarker=None):
             replaceNode_(mesh, rC, nA1, nA2, marker=b.marker())
 
     newNodes.append(mesh.node(paths[0][-1]))
+
     for i in range(len(newNodes)-1):
         b = mesh.createBoundary([newNodes[i+1].id(), newNodes[i].id()],
                                 marker=boundaryMarker)
-        print(b)
         b.setLeftCell(rightCells[i])
+
 Mesh.cutBoundary = __Mesh_cutBoundary__
 
 def __Mesh__align__(self, pnts):
