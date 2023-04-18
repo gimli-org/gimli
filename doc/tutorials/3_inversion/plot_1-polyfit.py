@@ -115,16 +115,35 @@ y += np.random.randn(len(y)) * noise
 
 fop = FunctionModelling(3, x)
 # initialize inversion with data and forward operator and set options
-inv = pg.Inversion(fop=fop)
+inv = pg.frameworks.MarquardtInversion(fop=fop)
 # We set model transformation to linear to allow for negative values
+# (by default model parameters are expected to be positive!)
 inv.modelTrans = pg.trans.Trans()
+
+
+###############################################################################
 # the problem is well-posed and does not need any regularization (lam=0)
-coeff = inv.run(dataVals=y, errorVals=noise/y, lam=0, verbose=True)
 # actual inversion run yielding coefficient model
-print(coeff)
+
+coeff = inv.run(dataVals=y, absoluteError=noise, lam=0, verbose=True)
 
 ###############################################################################
 # The data and model response are plotted by
 
-plt.plot(x, y, 'rx', x, inv.response, 'b-')
+plt.plot(x, y, 'x', x, inv.response, '-')
+plt.show()
+
+###############################################################################
+# The model contains the inverted coefficients
+
+print(coeff)
+
+###############################################################################
+# Of course the model can also be fit by higher or lower polynomials
+
+fop = FunctionModelling(4, x)
+inv = pg.frameworks.MarquardtInversion(fop=fop)
+inv.modelTrans = pg.trans.Trans()
+coeff = inv.run(dataVals=y, absoluteError=noise, lam=0, verbose=True)
+plt.plot(x, y, 'x', x, inv.response, '-')
 plt.show()
