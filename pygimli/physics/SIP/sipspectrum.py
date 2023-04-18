@@ -793,7 +793,7 @@ class SIPSpectrum(object):
 
     def fitDebyeModel(self, ePhi=0.001, lam=1e3, lamFactor=0.8,
                       tau=None, mint=None, maxt=None, nt=None, new=True,
-                      showFit=False, cType=1, verbose=False):
+                      showFit=False, verbose=False, **kwargs):
         """Fit a (smooth) continuous Debye model (Debye decomposition).
 
         Parameters
@@ -828,31 +828,38 @@ class SIPSpectrum(object):
             self.tau = tau
         # discretize tau, setup DD and perform DD inversion
         phi = self.phi
-        tLin = pg.trans.Trans()
-        tM = pg.trans.TransLog()  # pg.trans.TransLogLU(0., 1.)
+        # tLin = pg.trans.Trans()
+        # tM = pg.trans.TransLog()  # pg.trans.TransLogLU(0., 1.)
         # should be refactored to pg 1.1 (frameworks) style (no core)
+        startModel = pg.Vector(len(self.tau), 0.01)
         if new:
             reNorm, imNorm = self.zNorm()
             fDD = DebyeComplex(self.f, self.tau)
             Znorm = pg.cat(reNorm, imNorm)
-            IDD = pg.core.Inversion(Znorm, fDD, tLin, tM, False)
-            IDD.setAbsoluteError(max(Znorm)*0.003+ePhi)
+            # IDD = pg.core.Inversion(Znorm, fDD, tLin, tM, False)
+            IDD = pg.Inversion(fop=fDD)
+            absErr = max(Znorm)*0.003+ePhi
+            # IDD.setAbsoluteError()
+            # fDD.regionManager().setConstraintType(cType)
+            # IDD.stopAtChi1(False)
+            # IDD.setModel(startModel)
+            # IDD.setLambda(lam)
+            # IDD.setLambdaFactor(lamFactor)
+            self.mDD = IDD.run(Znorm, absoluteError=absErr,
+                               startModel=startModel, lam=lam, **kwargs)
+            IDD.echoStatus()
         else:
             fDD = DebyePhi(self.f, self.tau)
-            IDD = pg.core.Inversion(phi, fDD, tLin, tM, True)
-            IDD.setAbsoluteError(ePhi)  # 1 mrad
+            IDD = pg.Inversion(fop=fDD)
+            # IDD = pg.core.Inversion(phi, fDD, tLin, tM, True)
+            # IDD.setAbsoluteError(ePhi)  # 1 mrad
 
-        fDD.regionManager().setConstraintType(cType)
-        IDD.stopAtChi1(False)
-        startModel = pg.Vector(len(self.tau), 0.01)
-        IDD.setModel(startModel)
-        IDD.setLambda(lam)
-        IDD.setLambdaFactor(lamFactor)
-        self.mDD = IDD.run()
-        IDD.echoStatus()
+            self.mDD = IDD.run(phi, absoluteError=ePhi, startModel=startModel,
+                               lam=lam, **kwargs)
+
         if new:
             print("ARMS=", IDD.absrms(), "RRMS=", IDD.absrms()/max(Znorm)*100)
-            resp = np.array(IDD.response())
+            resp = np.array(IDD.response)
             respRe = resp[:nf]
             respIm = resp[nf:]
             respC = ((1 - respRe) + respIm * 1j) * max(self.amp)
@@ -871,7 +878,7 @@ class SIPSpectrum(object):
                 ax[2].set_ylabel('$m$ (-)')
 
         else:
-            self.phiDD = IDD.response()
+            self.phiDD = IDD.response
             if showFit:
                 fig, ax = self.showData(nrows=3)
                 self.fig['DebyeSpectrum'] = fig
