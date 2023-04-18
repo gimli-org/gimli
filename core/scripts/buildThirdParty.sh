@@ -23,9 +23,14 @@ CASTXML_URL=https://github.com/CastXML/CastXML.git
 
 # Check for updates https://data.kitware.com/#search/results?query=castxml&mode=text
 CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/item/57b5de948d777f10f2696371/download
-CASTXML_BIN_MAC=https://data.kitware.com/api/v1/item/57b5de948d777f10f2696373/download
-CASTXML_BIN_MAC=https://data.kitware.com/api/v1/item/63c469666d3fc641a02d80ca/download # ARM
 CASTXML_BIN_WIN=https://data.kitware.com/api/v1/item/57b5de948d777f10f2696372/download
+
+if [[ $(uname -m) == 'arm64' ]]; then
+    CASTXML_BIN_MAC=https://data.kitware.com/api/v1/item/63c469666d3fc641a02d80ca/download
+    # ARM (M1, M2 chips)
+else
+    CASTXML_BIN_MAC=https://data.kitware.com/api/v1/item/63bed7726d3fc641a02d7e9e/download # Intel chips
+fi
 
 PYGCCXML_URL=https://github.com/CastXML/pygccxml
 PYGCCXML_REV=v2.2.1
