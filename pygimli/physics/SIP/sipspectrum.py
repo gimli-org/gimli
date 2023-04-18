@@ -792,7 +792,7 @@ class SIPSpectrum(object):
             self.phiCC = two
 
     def fitDebyeModel(self, ePhi=0.001, lam=1e3, lamFactor=0.8,
-                      tau=None, mint=None, maxt=None, nt=None, new=True,
+                      tau=None, mint=None, maxt=None, nt=None, useComplex=True,
                       showFit=False, verbose=False, **kwargs):
         """Fit a (smooth) continuous Debye model (Debye decomposition).
 
@@ -814,6 +814,8 @@ class SIPSpectrum(object):
             show fit
         cType : int
             constraint type (1/2=smoothness 1st/2nd order, 0=minimum norm)
+        phi : iterable
+            use phi instead of self.phi
         """
         nf = len(self.f)
         if tau is None:
@@ -827,36 +829,27 @@ class SIPSpectrum(object):
         else:
             self.tau = tau
         # discretize tau, setup DD and perform DD inversion
-        phi = self.phi
-        # tLin = pg.trans.Trans()
-        # tM = pg.trans.TransLog()  # pg.trans.TransLogLU(0., 1.)
-        # should be refactored to pg 1.1 (frameworks) style (no core)
         startModel = pg.Vector(len(self.tau), 0.01)
+        new = kwargs.pop("new", useComplex)  # renamed kwargs
         if new:
             reNorm, imNorm = self.zNorm()
             fDD = DebyeComplex(self.f, self.tau)
             Znorm = pg.cat(reNorm, imNorm)
-            # IDD = pg.core.Inversion(Znorm, fDD, tLin, tM, False)
             IDD = pg.Inversion(fop=fDD)
             absErr = max(Znorm)*0.003+ePhi
-            # IDD.setAbsoluteError()
-            # fDD.regionManager().setConstraintType(cType)
-            # IDD.stopAtChi1(False)
-            # IDD.setModel(startModel)
-            # IDD.setLambda(lam)
-            # IDD.setLambdaFactor(lamFactor)
             self.mDD = IDD.run(Znorm, absoluteError=absErr,
-                               startModel=startModel, lam=lam, **kwargs)
+                               startModel=startModel,
+                               lam=lam, lambdaFactor=lamFactor,
+                               **kwargs)
             IDD.echoStatus()
         else:
             fDD = DebyePhi(self.f, self.tau)
             IDD = pg.Inversion(fop=fDD)
-            # IDD = pg.core.Inversion(phi, fDD, tLin, tM, True)
-            # IDD.setAbsoluteError(ePhi)  # 1 mrad
-
+            phi = kwargs.pop("phi", self.phi)
             self.mDD = IDD.run(phi, absoluteError=ePhi, startModel=startModel,
-                               lam=lam, **kwargs)
+                               lam=lam, lambdaFactor=lamFactor, **kwargs)
 
+        self.invDD = IDD
         if new:
             print("ARMS=", IDD.absrms(), "RRMS=", IDD.absrms()/max(Znorm)*100)
             resp = np.array(IDD.response)

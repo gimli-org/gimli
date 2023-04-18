@@ -545,7 +545,6 @@ class Inversion(object):
             absErr = kwargs.pop("absoluteError", 0)
             relErr = kwargs.pop("relativeError",
                                 0.01 if np.allclose(absErr, 0) else 0)
-            pg.verbose(absErr, relErr)
             errorVals = pg.abs(absErr / dataVals) + relErr
 
         if self.isFrameWork:
