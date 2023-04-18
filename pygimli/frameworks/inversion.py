@@ -490,7 +490,7 @@ class Inversion(object):
         if len(kwargs) > 0:
             self.fop.setRegionProperties(*args, **kwargs)
 
-    def run(self, dataVals, errorVals, **kwargs):
+    def run(self, dataVals, errorVals=None, **kwargs):
         """Run inversion.
 
         The inversion will always start from the starting model taken from
@@ -506,9 +506,14 @@ class Inversion(object):
             Data values
         errorVals : iterable
             Relative error values. dv / v
+            Can be omitted if absoluteError and/or relativeError kwargs given
 
         Keyword Arguments
         -----------------
+        absoluteError : float | iterable
+            absolute error in units of dataVals
+        relativeError : float | iterable
+            relative error related to dataVals
         maxIter : int
             Overwrite class settings for maximal iterations number.
         dPhi : float [1]
@@ -536,6 +541,13 @@ class Inversion(object):
             even verboser console and file output
         """
         self.reset()
+        if errorVals is None:  # use absoluteError and/or relativeError instead
+            absErr = kwargs.pop("absoluteError", 0)
+            relErr = kwargs.pop("relativeError",
+                                0.01 if np.allclose(absErr, 0) else 0)
+            pg.verbose(absErr, relErr)
+            errorVals = pg.abs(absErr / dataVals) + relErr
+
         if self.isFrameWork:
             pg.critical('in use?')
             return self._inv.run(dataVals, errorVals, **kwargs)
