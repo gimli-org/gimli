@@ -209,20 +209,18 @@ class TravelTimeManager(MeshMethodManager):
         Parameters
         ----------
         data : pg.DataContainer()
-            Data container with at least SensorIndieces 's g' and
-            data values 't' (traveltime in ms) and 'err' (absolute error in ms)
+            Data container with at least SensorIndices 's g' (shot/geophone) &
+            data values 't' (traveltime in s) and 'err' (absolute error in s)
         useGradient: bool [True]
-            Use a gradient like starting model suited for standard flat
-            earth cases. [Default]
-            For cross tomography geometry you should set this to False for a
-            non gradient startind model.
+            Use gradient starting model typical for refraction cases. 
+            For crosshole tomography geometry you should set this to False for
+            a non-gradient (e.g. homogeneous) starting model.
         vTop: float
-            Top velocity for gradient stating model.
+            Top velocity for gradient starting model.
         vBottom: float
-            Bottom velocity for gradient stating model.
+            Bottom velocity for gradient starting model.
         secNodes: int [2]
-            Amount of secondary nodes used for ensure accuracy of the forward
-            operator.
+            Number of secondary nodes for accuracy of forward computation.
 
         Keyword Arguments
         -----------------
