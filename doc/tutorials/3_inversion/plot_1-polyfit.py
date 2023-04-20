@@ -169,7 +169,7 @@ print(inv.chi2(), inv.absrms(), inv.relrms())
 ###############################################################################
 # As there is often misunderstanding among the terms, we are giving some
 # background here. The root-mean-square of a vector is, as the name says, the
-# root of the mean squared elements
+# root of the mean squared elements (N being the length of the vector)
 #
 # .. math::
 #
@@ -223,7 +223,9 @@ print(np.sqrt(np.mean((weighted_misfit**2))))
 #
 # .. math::
 #
-#     ERMS^2 = \frac{1}{N} \sum_i^N \left(\frac{d_i-f_i(m)}{e_i}\right)^2
+#     \chi^2 = \frac{1}{N} \sum_i^N \left(\frac{d_i-f_i(m)}{e_i}\right)^2
+#            = \Phi_d / N
 #
+# whereas :math:`\Phi_d` is the data objective function minimized in inversion.
 
 print(np.mean((weighted_misfit**2)))
