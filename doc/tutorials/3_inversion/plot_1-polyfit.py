@@ -107,8 +107,16 @@ class FunctionModelling(pg.Modelling):
 
 x = np.arange(0., 10., 0.5)
 y = 1.1 + 2.1 * x - 0.2 * x**2
-noise = 0.5
-y += np.random.randn(len(y)) * noise
+error = 0.5
+np.random.seed(1337)  # make noise reproducible
+noise = np.random.randn(len(y)) * error
+y += noise
+
+###############################################################################
+# Note the difference between error and noise. The error model is a scalar or
+# a vector containing the standard deviations of the noise, which is an unknown
+# realization of it. Errors are sometimes derived by stacking or estimated by
+# using a relative and an absolute error contribution.
 
 ###############################################################################
 # We now start by setting up the modelling operator, and inversion and run it.
@@ -141,9 +149,81 @@ print(coeff)
 ###############################################################################
 # Of course the model can also be fit by higher or lower polynomials
 
-fop = FunctionModelling(4, x)
+fop = FunctionModelling(8, x)
 inv = pg.frameworks.MarquardtInversion(fop=fop)
 inv.modelTrans = pg.trans.Trans()
 coeff = inv.run(dataVals=y, absoluteError=noise, lam=0, verbose=True)
+print(coeff)
 plt.plot(x, y, 'x', x, inv.response, '-')
 plt.show()
+
+###############################################################################
+# Note that the function tries to fit the noise which is also expressed in a
+# chi-square value below 1, whereas the previous one was above 1. For small
+# data vectors it is hard to reach exactly 1 (data fitted within noise).
+# The chi-square value can be returned from the inversion object just like the
+# absolute and relative RMS (root-mean-square) misfits.
+
+print(inv.chi2(), inv.absrms(), inv.relrms())
+
+###############################################################################
+# As there is often misunderstanding among the terms, we are giving some
+# background here. The root-mean-square of a vector is, as the name says, the
+# root of the mean squared elements
+#
+# .. math::
+#
+#     rms(v) = \sqrt{\frac{1}{N} \sum_i^N v_i^2}
+#
+# We consider the misfit between data vector d and the forward response f(m).
+# The simplest (absolute) measure is therefore called absolute RMS (ARMS):
+#
+# .. math::
+#
+#     ARMS = \sqrt{\frac{1}{N} \sum_i^N \left(d_i-f_i(m)\right)^2}
+#
+# which can also be computed by simple numpy functions
+
+absmisfit = y - inv.response
+print(np.sqrt(np.mean(absmisfit**2)))
+
+###############################################################################
+# In case of a large magnitude range (e.g. TEM voltages) one uses a logarithmic
+# view (and axis) to look at the data values. Often the relative errors
+# (absolute log errors) make more sense. For the relative RMS, the misfit
+# values are divided by the data points itself:
+#
+# .. math::
+#
+#     RRMS = \sqrt{\frac{1}{N} \sum_i^N \left(\frac{d_i-f_i(m)}{d_i}\right)^2}
+
+relmisfit = (y - inv.response) / y
+print(np.sqrt(np.mean(relmisfit**2))*100)  # in %
+logmisfit = np.log(y) - np.log(inv.response)
+print(np.sqrt(np.mean(logmisfit**2))*100)
+
+###############################################################################
+# So the absolut logarithmic misfit is close to the relative misfit.
+# In inversion, neither of the quantities is minimized. Instead, we use the
+# error to compute an error-weighted misfit (ERMS), sometimes also referred to
+# as inversion RMS (to recognize since it is without data unit or %).
+#
+# .. math::
+#
+#     ERMS = \sqrt{\frac{1}{N} \sum_i^N \left(\frac{d_i-f_i(m)}{e_i}\right)^2}
+#
+# It represents the standard deviation of the error-weighted misfit.
+
+weighted_misfit = (y - inv.response) / error
+print(np.sqrt(np.mean((weighted_misfit**2))))
+
+###############################################################################
+# For historical statistical reasons, instead of the standard deviation the
+# variance is used and referred to as chi square.
+#
+# .. math::
+#
+#     ERMS^2 = \frac{1}{N} \sum_i^N \left(\frac{d_i-f_i(m)}{e_i}\right)^2
+#
+
+print(np.mean((weighted_misfit**2)))
