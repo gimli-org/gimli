@@ -202,10 +202,12 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
                 }
             }
         }
-        if (forceUmfpack_) useUmfpack_ = true;
+        
+        if (forceUmfpack_ || getEnvironment("BERTUSEUMFPACK", 0) == 1) useUmfpack_ = true;
 
         if (useUmfpack_){
 #if USE_UMFPACK
+            log(Info, "Using umfpack.");
             int * ApT = (int*)S.colPtr();
             int * AiT = (int*)S.rowIdx();
             double * AxT = &S.vecVals()[0];
