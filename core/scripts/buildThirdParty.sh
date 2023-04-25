@@ -22,8 +22,14 @@ CASTXML_URL=https://github.com/CastXML/CastXML.git
 #CASTXML_REV=9d7a46d639ce921b8ddd36ecaa23c567d003294a #last functional
 
 # Check for updates https://data.kitware.com/#search/results?query=castxml&mode=text
-CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/item/57b5de948d777f10f2696371/download
-CASTXML_BIN_WIN=https://data.kitware.com/api/v1/item/57b5de948d777f10f2696372/download
+#CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/file/5b6c5b4d8d777f06857c323b/download # 0.1
+#CASTXML_BIN_MAC=https://data.kitware.com/api/v1/file/57b5de9f8d777f10f2696378/download # 0.1.0
+CASTXML_BIN_WIN=https://data.kitware.com/api/v1/file/5b68bfc28d777f06857c1f44/download # 0.1.0
+
+CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/item/63bed74d6d3fc641a02d7e98/download # 0.5.0
+CASTXML_BIN_MAC=https://data.kitware.com/api/v1/item/63bed7726d3fc641a02d7e9e/download # 0.5.0
+
+
 
 if [[ $(uname -m) == 'arm64' ]]; then
     CASTXML_BIN_MAC=https://data.kitware.com/api/v1/item/63c469666d3fc641a02d80ca/download
@@ -543,6 +549,8 @@ prepCASTXML(){
 }
 
 buildCASTXML(){
+    echo "Better use castxmlbin"
+    return
     checkTOOLSET
     prepCASTXML
 
