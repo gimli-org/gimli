@@ -606,19 +606,24 @@ template < > DLLEXPORT \
 void ElementMatrix < double >::integrate(A_TYPE f, \
                                          RVector & R, double scale) const; \
 
-DEFINE_DOT_MULT(double)
-DEFINE_DOT_MULT(const RVector &)
-DEFINE_DOT_MULT(const Pos &) // check Pos before RVector
-DEFINE_DOT_MULT(const PosVector &)
-DEFINE_DOT_MULT(const RSmallMatrix  &)
-DEFINE_DOT_MULT(const std::vector < RSmallMatrix  > &)
-DEFINE_DOT_MULT(const FEAFunction &)
+DEFINE_DOT_MULT(double)             // scalar per cell
+DEFINE_DOT_MULT(const RVector &)    // scalar per quad
+DEFINE_DOT_MULT(const Pos &)        // vector per cell .. check Pos before RVector
+DEFINE_DOT_MULT(const PosVector &)  // vector per quad
+DEFINE_DOT_MULT(const RSmallMatrix  &) // matrix per cell
+DEFINE_DOT_MULT(const std::vector < RSmallMatrix  > &) // matrix per quad
+DEFINE_DOT_MULT(const FEAFunction &)  // aribrary function 
 #undef DEFINE_DOT_MULT
 
 // Special declares to handle ambiguities for the python binding
 /*! scalar per quadrature point */
 DLLEXPORT inline void mult_s_q(const ElementMatrix < double > & A, 
                                const RVector & b,
+                               ElementMatrix < double > & C){
+    mult(A, b, C);
+}
+DLLEXPORT inline void mult_v_q(const ElementMatrix < double > & A, 
+                               const PosVector & b,
                                ElementMatrix < double > & C){
     mult(A, b, C);
 }

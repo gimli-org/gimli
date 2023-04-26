@@ -113,11 +113,12 @@ def __ElementMatrix_str(self):
             for v in self.row_RM(i):
                 s += pg.pf(v*self.multR).rjust(9)
         elif pg.isPos(self.multR):
-            if self.mat().cols() == len(self.multR):
-                for v in self.row_RM(i)*self.multR:
+            if self.mat().cols() <= len(self.multR):
+                for v in self.row_RM(i) * self.multR[0:self.mat().cols()]:
                     s += pg.pf(v).rjust(9)
             else:
-                print(self.row_RM)
+                print(self.mat())
+                print(self.row_RM(i))
                 print(self.multR)
                 pg.critical('invalid element multR.')
         elif pg.isArray(self.multR, self.mat.cols()):

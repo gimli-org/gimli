@@ -6,6 +6,7 @@ import numpy as np
 
 from .core import (RVector3, R3Vector, RMatrix)
 
+
 def isInt(v, val=None):
     """Check if v is int , i.e. int, np.int32, np.int64.
 
@@ -22,6 +23,7 @@ def isInt(v, val=None):
     if val is None:
         return isinstance(v, (int, np.int32, np.int64))
     return isInt(v) and v == val
+
 
 def isScalar(v, val=None):
     """Check if v is scalar, i.e. int, float or complex.
@@ -48,6 +50,24 @@ def isScalar(v, val=None):
         return isinstance(v, (int, float, complex, np.integer, np.complex128))
     # maybe add some tolerance check
     return isinstance(v, (int, float, complex, np.integer, np.complex128)) and v == val
+
+
+def isIterable(v, N=None):
+    """Check if `v` is iterable with optional size `N`.
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> import numpy as np
+    >>> print(pg.isIterable([0, 1]))
+    True
+    >>> print(pg.isIterable([pg.Vector(5), pg.Vector(2)], N=2))
+    True
+    """
+    if N is None:
+        return hasattr(v, '__iter__')
+
+    return isIterable(v) and len(v) == N
 
 
 def isArray(v, N=None):
