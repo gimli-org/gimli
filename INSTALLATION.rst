@@ -5,10 +5,10 @@ Installation
 
    <p style="height:22px">
      <a href="https://anaconda.org/gimli/pygimli" >
-       <img src="https://anaconda.org/gimli/pygimli/badges/installer/conda.svg?style=flat-square"/>
+       <img src="https://anaconda.org/gimli/pygimli/badges/license.svg"/>
      </a>
      <a href="https://anaconda.org/gimli/pygimli" >
-       <img src="https://anaconda.org/gimli/pygimli/badges/installer/conda.svg?style=flat-square"/>
+       <img src="https://anaconda.org/gimli/pygimli/badges/downloads.svg"/>
     <a href="https://anaconda.org/gimli/pygimli" >
        <img src="https://anaconda.org/gimli/pygimli/badges/version.svg?style=flat-square"/>
      </a>
