@@ -11,7 +11,7 @@ import numpy as np
 from .core import pgcore
 from .core import *
 from .logger import error, critical
-from .base import (isInt, isScalar, isArray, isPos, isR3Array,
+from .base import (isInt, isScalar, isIterable, isArray, isPos, isR3Array,
                    isPosList, isComplex, isMatrix)
 
 # #######################################
