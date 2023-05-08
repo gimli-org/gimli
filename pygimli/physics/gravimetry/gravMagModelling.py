@@ -39,11 +39,10 @@ adot = lambda M__, x__: np.asarray([(a__.dot(M__)) for a__ in x__])
 
 
 def BZPoly(pnts, poly, mag, openPoly=False):
-    """TODO WRITEME.
+    """Vertical magnetic gradient for polygone.
 
     Parameters
     ----------
-
     pnts : list
         Measurement points [[p1x, p1z], [p2x, p2z],...]
     poly : list
@@ -53,13 +52,12 @@ def BZPoly(pnts, poly, mag, openPoly=False):
     """
     dgz = calcPolyGz(pnts, poly, density=1.0, openPoly=openPoly)[1]
 
-    dgz[:,2] *= -1
+    dgz[:, 2] *= -1
     return poissonEoetvoes(adot(mag, -dgz))
 
 
 def BaZSphere(pnts, R, pos, M):
-    """
-    Magnetic anomaly for a sphere.
+    """Magnetic anomaly for a sphere.
 
     Calculate the vertical component of the anomalous magnetic field Bz for a
     buried sphere at position pos with radius R for a given magnetization M at
@@ -75,10 +73,9 @@ def BaZSphere(pnts, R, pos, M):
         [x,y,z] -- sphere center
     M : [float, float, float]
         [Mx, My, Mz] -- magnetization
-
     """
     return poissonEoetvoes(
-            adot(M, gradGZSphere(pnts, R, rho=1.0, pos=pos)))
+        adot(M, gradGZSphere(pnts, R, rho=1.0, pos=pos)))
 
 
 def BaZCylinderHoriz(pnts, R, pos, M):
@@ -107,9 +104,9 @@ def BaZCylinderHoriz(pnts, R, pos, M):
 
 
 def poissonEoetvoes(dg):
-    """TODO WRITEME."""
+    """Conversion of gravity to magnetic anomaly."""
     # (4.0 * pi * 1e-7) / (4.0 * np.pi * G) * dg
-    #return mu0 / (4.0 * np.pi * G) * dg
+    # return mu0 / (4.0 * np.pi * G) * dg
     return 1e-7 / G * dg
 
 
@@ -158,8 +155,8 @@ def gradUSphere(r, rad, rho, pos=(0., 0., 0.)):
         gravitational acceleration (note that gz points negative)
     """
     # gesucht eigentlich g_z aber nach unten als -z
-    return [1., 1., -1.] * (gradR(r - pos) * - G *
-                            deltaMSph(rad, rho) * 1. / (rabs(r - pos)**2)).T
+    return [1., 1., -1.] * (
+        gradR(r - pos) * - G * deltaMSph(rad, rho) * 1. / (rabs(r - pos)**2)).T
 # def gSphere(...)
 
 
@@ -189,17 +186,23 @@ def gradGZSphere(r, rad, rho, pos=(0., 0., 0.)):
     return (G * deltaMSph(rad, rho) / rabs(r - pos)**5. * gzxyz).T
 
 
-def uCylinderHoriz(pnts, rad, rho, pos=(0., 0.)):
+def uCylinderHoriz(pnts, rad, rho, pos=[0., 0.]):
     """Gravitational potential of horizonzal cylinder.
-
-    TODO
 
     Parameters
     ----------
+    pnts : iterable
+        measuring point locations
+    rad : float
+        radius of the cylinder
+    rho : float
+        density contrast in kg/m^3
+    pos : [float, float]
+        x,z position of the cylinder axis
 
     Returns
     -------
-
+    gravimetric potential at the given points
     """
     u = np.zeros(len(pnts))
     for i, r in enumerate(rabs(pnts - pos)):
@@ -212,8 +215,7 @@ def uCylinderHoriz(pnts, rad, rho, pos=(0., 0.)):
 
 
 def gradUCylinderHoriz(r, a, rho, pos=(0., 0.)):
-    r"""2D Gradient of gravimetric potential of horizontal cylinder (in mGal at
-    position `pos`).
+    r"""2D Gradient of gravimetric potential of horizontal cylinder.
 
     .. math::
         g = -G[m^3/(kg s^2)] * dM[kg/m] * 1/r[1/m] * grad(r)[1/1] =
@@ -232,15 +234,13 @@ def gradUCylinderHoriz(r, a, rho, pos=(0., 0.)):
 
     Returns
     -------
-
     g : [dudx, dudz]
-        Gradient of gravimetry potential.
-
+        Gradient of gravimetry potential [mGal].
     """
     p = np.array(pos)
     ra = np.array(r)
-    return [1., -1.0] * (gradR(ra - p) * -G *
-                         deltaACyl(a, rho) * 1. / (rabs(ra - p))).T
+    return [1., -1.0] * (
+        gradR(ra - p) * -G * deltaACyl(a, rho) * 1. / (rabs(ra - p))).T
 
 
 def gradGZCylinderHoriz(r, a, rho, pos=(0., 0.)):
@@ -312,7 +312,6 @@ def gradGZHalfPlateHoriz(pnts, t, rho, pos=(0.0, 0.0)):
 
     Parameters
     ----------
-
     pnts : array (:math:`n\times 2`)
         n 2 dimensional measurement points
     t : float
@@ -322,7 +321,6 @@ def gradGZHalfPlateHoriz(pnts, t, rho, pos=(0.0, 0.0)):
 
     Returns
     -------
-
     gz : array
         Gradient of z-component of g
         :math:`\nabla(\frac{\partial u}{\partial\vec{r}}_z)`
@@ -353,8 +351,8 @@ def lineIntegralZ_WonBevis(p1, p2):
     dg = pg.RVector3(0.0, 0.0, 0.0)
     dgz = pg.RVector3(0.0, 0.0, 0.0)
     pg.core.lineIntegralZ_WonBevis(p1, p2, dg, dgz)
-    return np.asarray((dg[0], dg[1], dg[2])), \
-           np.asarray((dgz[0], dgz[1], dgz[2]))
+    return (np.asarray((dg[0], dg[1], dg[2])),
+            np.asarray((dgz[0], dgz[1], dgz[2])))
 
 #     x1 = p1[0]
 #     z1 = p1[1]
@@ -587,7 +585,7 @@ def gravMagBoundarySinghGup(boundary):
 
         b = 2. * (vr1[0] * Lx + vr1[1] * Ly + vr1[2] * Lz)
 
-        b2 = b / (2.*L)
+        b2 = b / (2. * L)
         if abs(r1 + b2) < 1e-10:
             I = (1.0 / L) * np.log(abs(L - r1) / r1)
         else:
@@ -629,8 +627,6 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
 
     3D with :py:mod:`pygimli.physics.gravimetry.gravMagBoundarySinghGup`
 
-    TOWRITE
-
     Parameters
     ----------
     mesh : :gimliapi:`GIMLI::Mesh`
@@ -649,11 +645,12 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
         List of measurement positions.
 
     complete : bool [False]
-        If True return whole solution or matrix for [dgx, dgy, dgz] and ...
-        TODO
+        If True return whole solution or matrix for [dgx, dgy, dgz]
 
     Returns
     -------
+    dg : array OR
+    dz, dgz : arrays (if complete)
     """
     if pnts is None:
         pnts = [[0.0, 0.0]]
@@ -694,7 +691,7 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
                         dgzi *= -2.0
                     else:
                         dgi = pg.core.lineIntegralZ_WonBevis(b.node(0).pos(),
-                                                        b.node(1).pos())
+                                                             b.node(1).pos())
                         dgi *= -2.0 * G
                 else:
                     if complete:
@@ -747,37 +744,49 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
     return dg
 
 
-class GravimetryModelling(pg.core.ModellingBase):
+# class GravimetryModelling(pg.core.ModellingBase):
+class GravityModelling2D(pg.Modelling):
     """Gravimetry modelling operator."""
 
-    def __init__(self, verbose=True):
+    def __init__(self, **kwargs):
         """Constructor."""
-        super(GravimetryModelling, self).__init__(verbose)
+        super().__init__(**kwargs)
         self._J = pg.Matrix()
+        self.setJacobian(self._J)
         # unless doing reference counting we need to hold the reference here
         self.sensorPositions = None
-        self.setJacobian(self._J)
+        if "mesh" in kwargs:
+            self.setMesh(kwargs["mesh"])
+        if "pnts" in kwargs:
+            self.setSensorPositions(kwargs["pnts"])
 
-    def createStartmodel(self):
+    def createStartmodel(self, *args):
         """Create the default starting model."""
         return pg.Vector(self.regionManger().parameterCount(), 0.0)
 
     def setSensorPositions(self, pnts):
         """Set measurement locations. [[x,y,z],...]."""
         self.sensorPositions = pnts
+        self.calcMatrix()
 
-    def response(self, dDensity):
+    def response(self, model):
         """Calculate response for a given density distribution."""
-        return solveGravimetry(self.regionManager().paraDomain(),
-                               dDensity, pnts=self.sensorPositions,
-                               complete=False)
+        if (self._J.rows() == len(self.sensorPositions) and
+                self._J.cols() == len(model)):
+            return self._J * model
+        else:
+            solveGravimetry(self.regionManager().paraDomain(),
+                            model, pnts=self.sensorPositions,
+                            complete=False)
 
     def createJacobian(self, model):
-        """Create Jacobian matrix for a density model.
+        """Create Jacobian."""
+        if (self._J.rows() != len(self.sensorPositions) or
+                self._J.cols() != len(model)):
+            self.calcMatrix()
 
-        Create Jacobian matrix for a density distribution (model) and
-        store it internal.
-        """
+    def calcMatrix(self):
+        """Create Jacobian matrix (density-independent)."""
         gdz = solveGravimetry(self.regionManager().paraDomain(),
                               dDensity=None,
                               pnts=self.sensorPositions,
@@ -785,10 +794,10 @@ class GravimetryModelling(pg.core.ModellingBase):
         self._J.resize(len(gdz), len(gdz[0]))
 
         for i, gdzi in enumerate(gdz):
-            self._J.setVal(gdzi, i)
+            self._J.setVal(i, gdzi)
 
-        raise BaseException('Scale with model??', model)
 
+GravimetryModelling = GravityModelling2D  # backward compatibility
 
 if __name__ == "__main__":
     print(sys.argv[1:])
