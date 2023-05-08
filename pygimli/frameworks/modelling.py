@@ -326,7 +326,6 @@ class Modelling(pg.core.ModellingBase):
         #  __applyRegionProperies itself
         rMgr = super().regionManager()
         for rID, vals in self._regionProperties.items():
-
             if vals['fix'] is not None:
                 if rMgr.region(rID).fixValue() != vals['fix']:
                     vals['background'] = True
@@ -360,10 +359,10 @@ class Modelling(pg.core.ModellingBase):
 
             rMgr.region(rID).setModelControl(vals['modelControl'])
 
-            if vals['limits'][0] > 0:
+            if vals['limits'][0] != 0:
                 rMgr.region(rID).setLowerBound(vals['limits'][0])
 
-            if vals['limits'][1] > 0:
+            if vals['limits'][1] > vals['limits'][0]:
                 rMgr.region(rID).setUpperBound(vals['limits'][1])
 
             if vals['correlationLengths'] is not None:
