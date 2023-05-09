@@ -119,7 +119,7 @@ retrieve the source code by git (and checking out the development branch)
 
 .. code-block:: bash
 
-    git clone https://github.com/gimli-org/gimli dev
+    git clone --branch dev https://github.com/gimli-org/gimli
     cd gimli
 
 and install pygimli as a development package
