@@ -153,7 +153,7 @@ class Modelling(pg.core.ModellingBase):
 
     @property
     def modelTrans(self):
-        """Model transformation."""
+        """Return model transformation."""
         self._applyRegionProperties()
         if self.regionManager().haveLocalTrans():
             return self.regionManager().transModel()
@@ -161,7 +161,15 @@ class Modelling(pg.core.ModellingBase):
 
     @modelTrans.setter
     def modelTrans(self, tm):
-        """Return model transformation."""
+        """Set model transformation."""
+        if isinstance(tm, str):
+            if tm.lower() == "log":
+                tm = pg.trans.TransLog()
+            elif tm.lower() == "linear" or tm.lower() == "lin":
+                tm = pg.trans.Trans()
+            else:  # something like "10-1000"
+                raise("Could not use transformation" + tm)
+
         self._modelTrans = tm
 
     def regionManager(self):
