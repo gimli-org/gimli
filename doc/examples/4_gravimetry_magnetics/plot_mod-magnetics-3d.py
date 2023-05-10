@@ -168,7 +168,7 @@ _ = ax[1].scatter(px, py, c=inv.response*1e9, cmap="bwr", vmin=-mm, vmax=mm);
 # Alternatively, we can also plot the error-weighted misfit.
 #
 
-misfit = (inv.response*1e9-vals) / noise_level
+misfit = (inv.response - data) / noise_level
 _ = pg.plt.scatter(py, px, c=misfit, cmap="bwr", vmin=-3, vmax=3);
 
 # %%%
