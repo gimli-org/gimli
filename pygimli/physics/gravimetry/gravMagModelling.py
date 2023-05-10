@@ -744,7 +744,6 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
     return dg
 
 
-# class GravimetryModelling(pg.core.ModellingBase):
 class GravityModelling2D(pg.frameworks.MeshModelling):
     """Gravimetry modelling operator."""
 
