@@ -490,6 +490,10 @@ class Inversion(object):
         if len(kwargs) > 0:
             self.fop.setRegionProperties(*args, **kwargs)
 
+    def setConstraintWeights(self, cWeight):
+        """Set weighting factors for the invidual rows of the C matrix."""
+        self.inv.setCWeight(cWeight)
+
     def run(self, dataVals, errorVals=None, **kwargs):
         """Run inversion.
 
