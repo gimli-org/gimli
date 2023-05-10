@@ -745,20 +745,28 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
 
 
 # class GravimetryModelling(pg.core.ModellingBase):
-class GravityModelling2D(pg.Modelling):
+class GravityModelling2D(pg.frameworks.MeshModelling):
     """Gravimetry modelling operator."""
 
-    def __init__(self, **kwargs):
-        """Constructor."""
+    def __init__(self, points=None, **kwargs):
+        """Initialize forward operator, optional with mesh and points.
+
+        You can specify both the mesh and the measuring points, or set the
+        latter after the mesh has been set.
+
+        Parameters
+        ----------
+        mesh : pg.Mesh
+            mesh for forward computation
+        points : array[x,y]
+            measuring points
+        """
         super().__init__(**kwargs)
         self._J = pg.Matrix()
         self.setJacobian(self._J)
-        # unless doing reference counting we need to hold the reference here
         self.sensorPositions = None
-        if "mesh" in kwargs:
-            self.setMesh(kwargs["mesh"])
-        if "pnts" in kwargs:
-            self.setSensorPositions(kwargs["pnts"])
+        if points is not None:
+            self.setSensorPositions(points)
 
     def createStartmodel(self, *args):
         """Create the default starting model."""
