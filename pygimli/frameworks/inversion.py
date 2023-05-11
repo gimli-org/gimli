@@ -490,6 +490,10 @@ class Inversion(object):
         if len(kwargs) > 0:
             self.fop.setRegionProperties(*args, **kwargs)
 
+    def setConstraintWeights(self, cWeight):
+        """Set weighting factors for the invidual rows of the C matrix."""
+        self.inv.setCWeight(cWeight)
+
     def run(self, dataVals, errorVals=None, **kwargs):
         """Run inversion.
 
@@ -620,7 +624,8 @@ class Inversion(object):
             print("min/max (data): {0}/{1}".format(pf(min(self._dataVals)),
                                                    pf(max(self._dataVals))))
             print("min/max (error): {0}%/{1}%".format(
-                pf(100*min(self._errorVals)), pf(100*max(self._errorVals))))
+                pf(100 * min(self._errorVals)),
+                pf(100 * max(self._errorVals))))
             print("min/max (start model): {0}/{1}".format(
                 pf(min(startModel)), pf(max(startModel))))
 
@@ -692,11 +697,11 @@ class Inversion(object):
                 self.inv.constrainBlocky()
 
             phi = self.phi()
-            dPhi = phi/lastPhi
+            dPhi = phi / lastPhi
 
             if self.verbose:
                 print("chi² = {0} (dPhi = {1}%) lam: {2}".format(
-                    round(chi2, 2), round((1-dPhi)*100, 2), lam))
+                    round(chi2, 2), round((1 - dPhi) * 100, 2), lam))
 
             if chi2 <= 1 and self.stopAtChi1:
                 print("\n")
@@ -710,7 +715,7 @@ class Inversion(object):
                 if self.verbose:
                     pg.boxprint(
                         "Abort criteria reached: dPhi = {0} (< {1}%)".format(
-                            round((1-dPhi)*100, 2), minDPhi))
+                            round((1 - dPhi) * 100, 2), minDPhi))
                 break
 
             lastPhi = phi
@@ -871,7 +876,7 @@ class Block1DInversion(MarquardtInversion):
                 if len(fixLayers) != self.fop.nLayers:
                     print("fixLayers:", fixLayers)
                     pg.error("fixlayers needs to have a length of nLayers-1=" +
-                             str(self.fop.nLayers-1))
+                             str(self.fop.nLayers - 1))
                 self.fop.setRegionProperties(0, startModel=fixLayers)
 
     def setLayerLimits(self, limits):
@@ -892,7 +897,7 @@ class Block1DInversion(MarquardtInversion):
             if self.fop.nPara == 1:
                 self.fop.setRegionProperties(i, limits=limits, trans='log')
             else:
-                self.fop.setRegionProperties(i, limits=limits[i-1],
+                self.fop.setRegionProperties(i, limits=limits[i - 1],
                                              trans='log')
 
     def run(self, dataVals, errorVals,

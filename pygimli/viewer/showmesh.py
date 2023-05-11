@@ -502,7 +502,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             cBar.set_ticklabels(labels)
 
     if coverage is not None:
-        if isinstance(coverage, float):
+        if isinstance(coverage, (float, int)):
             gci.set_alpha(coverage)
         elif len(data) == len(coverage) == mesh.cellCount():
             addCoverageAlpha(gci, coverage,
@@ -513,7 +513,8 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             # addCoverageAlpha(gci, pg.core.cellDataToPointData(mesh,
             #                                                   coverage))
 
-    if not hold or block is not False and pg.plt.get_backend().lower() != "agg":
+    if not hold or block is not False and \
+            pg.plt.get_backend().lower() != "agg":
         if data is not None:
             if len(data) == mesh.cellCount():
                 CellBrowser(mesh, data, ax=ax)
