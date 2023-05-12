@@ -196,7 +196,7 @@ def __SparseMatrix_str(self):
     s = "{0} size = {1} x {2}, nVals = {3}".format(type(self),
                                        S.rows(), S.cols(), S.nVals())
 
-    if S.cols() < 20:
+    if S.cols() < 25:
         s += '\n'
 
         M = pg.utils.toDense(self)
