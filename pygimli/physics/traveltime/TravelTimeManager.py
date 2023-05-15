@@ -31,7 +31,7 @@ class TravelTimeManager(MeshMethodManager):
         self._useFMM = kwargs.pop("fatray", False)
         self.secNodes = 2  # default number of secondary nodes for inversion
 
-        super(TravelTimeManager, self).__init__(data=data, **kwargs)
+        super().__init__(data=data, **kwargs)
 
         self.inv.dataTrans = pg.trans.Trans()
 
@@ -355,10 +355,9 @@ class TravelTimeManager(MeshMethodManager):
         >>> data = tt.createRAData([(0, 0)] + [(x, i) for i in range(y)],
         ...                       shotDistance=y+1)
         >>> data["t"] = 1.0
-        >>> tt = tt.Manager()
-        >>> tt.fop.setData(data)
-        >>> tt.applyMesh(mesh, secNodes=10)
-        >>> ax, cb = tt.showRayPaths(showMesh=True, diam=0.1)
+        >>> mgr = tt.Manager(data)
+        >>> mgr.applyMesh(mesh, secNodes=10)
+        >>> ax, cb = mgr.showRayPaths(showMesh=True, diam=0.1)
         """
         if model is None:
             if self.fop.jacobian().size() == 0:

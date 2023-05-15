@@ -746,12 +746,12 @@ class MeshModelling(Modelling):
         elif hasattr(model, "isParaModel") and model.isParaModel is True:
             pg._g(model.isParaModel)
             mod = model
-        elif len(model) == self.paraDomain.nodeCount(): 
-            ## why nodeCount? a field as model result?
-            pg._b('node count')
+        elif len(model) == self.paraDomain.nodeCount():
+            # why nodeCount? a field as model result?
+            # pg._b('node count')
             mod = model
-        elif len(model) == self.paraDomain.cellCount(): 
-            pg._b('cell count')
+        elif len(model) == self.paraDomain.cellCount():
+            # pg._b('cell count')
             mod = model
         else:
             mod = self.paraModel(model)
