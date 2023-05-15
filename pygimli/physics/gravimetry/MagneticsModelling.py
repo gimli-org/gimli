@@ -3,7 +3,7 @@ import pygimli as pg
 from .kernel import SolveGravMagHolstein
 
 
-class MagneticsModelling(pg.Modelling):
+class MagneticsModelling(pg.frameworks.MeshModelling):
     """Magnetics modelling operator using Holstein (2007)."""
 
     def __init__(self, mesh, points, cmp, igrf, foot=None):
@@ -24,17 +24,17 @@ class MagneticsModelling(pg.Modelling):
             [X, Y, Z] - X/Y/Z components
         """
         # check if components do not contain g!
-        super().__init__()
-        self.mesh = mesh
+        super().__init__(mesh=mesh)
+        self.createRefinedForwardMesh(refine=False, pRefine=False)
+        self.mesh_ = mesh
         self.sensorPositions = points
         self.components = cmp
         self.igrf = igrf
         self.footprint = foot
-        self.kernel = SolveGravMagHolstein(self.mesh,
+        self.kernel = SolveGravMagHolstein(self.mesh_,
                                            pnts=self.sensorPositions,
                                            cmp=self.components, igrf=self.igrf,
                                            foot=self.footprint)
-        self.setMesh(mesh)
         self.J = pg.matrix.BlockMatrix()
         self.Ki = []
         self.Ji = []
