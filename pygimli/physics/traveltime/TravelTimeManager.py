@@ -212,7 +212,7 @@ class TravelTimeManager(MeshMethodManager):
             Data container with at least SensorIndices 's g' (shot/geophone) &
             data values 't' (traveltime in s) and 'err' (absolute error in s)
         useGradient: bool [True]
-            Use gradient starting model typical for refraction cases. 
+            Use gradient starting model typical for refraction cases.
             For crosshole tomography geometry you should set this to False for
             a non-gradient (e.g. homogeneous) starting model.
         vTop: float
@@ -254,7 +254,7 @@ class TravelTimeManager(MeshMethodManager):
         slowness = super().invert(data, mesh, **kwargs)
         velocity = 1.0 / slowness
         velocity.isParaModel = slowness.isParaModel
-        self.fw.model = 1.0 / self.fw.model #C42 self.fw only hold non-mapped model 
+        self.fw.model = 1.0 / self.fw.model #C42 self.fw only hold non-mapped model
         # that needs to be compatible to self.fw.mesh
         return velocity
 
@@ -347,17 +347,15 @@ class TravelTimeManager(MeshMethodManager):
 
         Examples
         --------
-        >>> # No reason to import matplotlib
         >>> import pygimli as pg
-        >>> from pygimli.physics import TravelTimeManager
-        >>> from pygimli.physics.traveltime import createRAData
+        >>> from pygimli.physics import traveltime as tt
         >>>
         >>> x, y = 8, 6
         >>> mesh = pg.createGrid(x, y)
-        >>> data = createRAData([(0,0)] + [(x, i) for i in range(y)],
-        ...                     shotDistance=y+1)
-        >>> data.set("t", pg.Vector(data.size(), 1.0))
-        >>> tt = TravelTimeManager()
+        >>> data = tt.createRAData([(0, 0)] + [(x, i) for i in range(y)],
+        ...                       shotDistance=y+1)
+        >>> data["t"] = 1.0
+        >>> tt = tt.Manager()
         >>> tt.fop.setData(data)
         >>> tt.applyMesh(mesh, secNodes=10)
         >>> ax, cb = tt.showRayPaths(showMesh=True, diam=0.1)
