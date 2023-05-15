@@ -90,6 +90,7 @@ class Modelling(pg.core.ModellingBase):
         self._regionsNeedUpdate = False
         self._regionChanged = True
         self._regionManagerInUse = False
+
         self.modelTrans = pg.trans.TransLog()  # Model transformation operator
 
     def __hash__(self):
@@ -739,8 +740,18 @@ class MeshModelling(Modelling):
         mod = None
         # TODO needs to be checked if mapping is always ok (region example)
         # is (len(model) == self.paraDomain.cellCount() or \
-        if (hasattr(model, "isParaModel") and model.isParaModel) or \
-                (len(model) == self.paraDomain.nodeCount()):
+        if hasattr(model, "isParaModel") and model.isParaModel is False:
+            pg._y(model.isParaModel)
+            mod = self.paraModel(model)
+        elif hasattr(model, "isParaModel") and model.isParaModel is True:
+            pg._g(model.isParaModel)
+            mod = model
+        elif len(model) == self.paraDomain.nodeCount(): 
+            ## why nodeCount? a field as model result?
+            pg._b('node count')
+            mod = model
+        elif len(model) == self.paraDomain.cellCount(): 
+            pg._b('cell count')
             mod = model
         else:
             mod = self.paraModel(model)

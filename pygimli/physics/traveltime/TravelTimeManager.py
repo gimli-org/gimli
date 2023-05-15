@@ -222,6 +222,11 @@ class TravelTimeManager(MeshMethodManager):
         secNodes: int [2]
             Number of secondary nodes for accuracy of forward computation.
 
+        Returns
+        -------
+        model:
+            Mapped (for paradomain) velocity model.
+
         Keyword Arguments
         -----------------
         ** kwargs:
@@ -245,9 +250,12 @@ class TravelTimeManager(MeshMethodManager):
         else:
             self.fop._useGradient = None
 
+        ### invert return mapped models
         slowness = super().invert(data, mesh, **kwargs)
         velocity = 1.0 / slowness
-        self.fw.model = velocity
+        velocity.isParaModel = slowness.isParaModel
+        self.fw.model = 1.0 / self.fw.model #C42 self.fw only hold non-mapped model 
+        # that needs to be compatible to self.fw.mesh
         return velocity
 
     def getRayPaths(self, model=None):

@@ -120,19 +120,21 @@ class MethodManager(object):
         self._verbose = kwargs.pop('verbose', False)
         self._debug = kwargs.pop('debug', False)
 
-        self.data = None
-        if data is not None:
-            if isinstance(data, str):
-                self.load(data)
-            else:
-                self.data = data
-
         # The inversion framework
         self._initInversionFramework(verbose=self._verbose,
                                      debug=self._debug)
 
         # The forward operator is stored in self._fw
         self._initForwardOperator(verbose=self._verbose, **kwargs)
+
+        self._data = None
+
+        if data is not None:
+            if isinstance(data, str):
+                self.load(data)
+            else:
+                #self.data = data
+                self.setData(data)
 
         # maybe obsolete
         self.figs = {}
@@ -310,10 +312,18 @@ class MethodManager(object):
 
         return ra
 
+    @property
+    def data(self):
+        return self._data
+    
+    @data.setter
+    def data(self, d):
+        return self.setData(d)
+
     def setData(self, data):
         """Set data and distribute it to the forward operator."""
-        self.data = data
-        self.applyData(data)
+        self._data = data
+        self.applyData(self._data)
 
     def applyData(self, data):
         """Pass the data to the forward operator."""
@@ -558,7 +568,10 @@ class MethodManager(object):
             fig.suptitle(kwargs['title'])
 
         self.showResult(ax=ax, model=self.model, **kwargs)
+        fig.modelAX = ax
         self.showFit(axs=[ax1, ax2], **kwargs)
+        fig.dataAX = ax1
+        fig.respAX = ax2
 
         fig.tight_layout()
 
@@ -806,7 +819,7 @@ class MeshMethodManager(MethodManager):
         self.fw.run(dataVals, errorVals, **kwargs)
         self.postRun(**kwargs)
         return self.paraModel(self.fw.model)
-
+        
     def showFit(self, axs=None, **kwargs):
         """Show data and the inversion result model response."""
         orientation = 'vertical'
