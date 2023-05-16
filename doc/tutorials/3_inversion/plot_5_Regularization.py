@@ -231,7 +231,7 @@ inv.setRegularization(correlationLengths=[2, 2])
 result = inv.run(**invkw)
 ax, _ = pg.show(mesh, result, **plotkw)
 [ax.plot(*po, "kx") for po in pos]
-ax.set_title("geostat I=2")
+ax.set_title("geostat I=2m")
 
 # %%%
 # This look structurally similar to the second-order smoothness, but can
@@ -243,7 +243,7 @@ inv.setRegularization(correlationLengths=[2, 0.5, 2], dip=-20)
 result = inv.run(**invkw)
 ax, _ = pg.show(mesh, result, **plotkw)
 [ax.plot(*po, "kx") for po in pos]
-ax.set_title("geostat I=(2, 0.5), dip=-20")
+ax.set_title("geostat I=(2m, 0.5m), dip=-20°")
 
 # %%%
 # We now add many more points.
@@ -261,9 +261,10 @@ v = np.random.rand(N) * 10 + 10
 fop = PriorModelling(mesh, zip(x, y))
 inv = pg.Inversion(fop=fop, verbose=True)
 inv.setRegularization(correlationLengths=[4, 4])
-result = inv.run(v, relativeError=0.03, startModel=10, lam=10, verbose=True)
+result = inv.run(v, relativeError=0.03, startModel=10, lam=10)
 ax, _ = pg.show(mesh, result, **plotkw)
 out = ax.plot(x, y, "kx")
+ax.set_title("geostat I=4m")
 
 # %%%
 # Comparing the data with the model response is always a good idea.
@@ -293,8 +294,9 @@ ax, _ = pg.show(C)
 #
 
 fop.setConstraints(C)
-result = inv.run(**invkw)
+result = inv.run(v, relativeError=0.03, startModel=17, isReference=1, lam=10)
 ax, _ = pg.show(mesh, result, **plotkw)
+out = ax.plot(x, y, "kx")
 ax.set_title("geostat + reference")
 
 # %%%
