@@ -550,6 +550,8 @@ class Inversion(object):
             relErr = kwargs.pop("relativeError",
                                 0.01 if np.allclose(absErr, 0) else 0)
             errorVals = pg.abs(absErr / dataVals) + relErr
+            if isinstance(errorVals, (float, int)):
+                errorVals = np.ones_like(dataVals) * errorVals
 
         if self.isFrameWork:
             pg.critical('in use?')
