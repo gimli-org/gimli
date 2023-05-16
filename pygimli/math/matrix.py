@@ -435,7 +435,8 @@ class Cm05Matrix(MatrixBase):
         if isinstance(A, str):
             self.load(A)
         else:
-            from scipy.linalg import eigh  # , get_blas_funcs
+            import scipy
+            from packaging import version
 
             if A.shape[0] != A.shape[1]:  # rows/cols for pgcore matrix
                 raise Exception("Matrix must by square (and symmetric)!")
@@ -443,7 +444,11 @@ class Cm05Matrix(MatrixBase):
             if verbose:
                 pg.tic(key='init cm05')
 
-            self.ew, self.EV = eigh(A, subset_by_value=[1e-6, np.inf])
+            eigkw = {}
+            if version.parse(scipy.__version__) >= version.parse("1.5"):
+                eigkw["subset_by_value"] = [1e-6, np.inf]
+                self.ew, self.EV = scipy.linalg.eigh(A, **eigkw)
+            
             # self.ew, self.EV = eigh(A)
             # self.ew[self.ew <= 0] = 0
 
