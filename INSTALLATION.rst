@@ -115,11 +115,11 @@ should create an environment with the latest pyGIMLi C++ core only,
 
     conda create -n pgcore -c gimli -c conda-forge pgcore
     
-retrieve the source code by git (and checking out the development branch)
+retrieve the source code by git
 
 .. code-block:: bash
 
-    git clone --branch dev https://github.com/gimli-org/gimli
+    git clone https://github.com/gimli-org/gimli
     cd gimli
 
 and install pygimli as a development package
