@@ -450,7 +450,7 @@ class Cm05Matrix(MatrixBase):
                 eigkw["subset_by_value"] = [thrsh, np.inf]
                 self.ew, self.EV = scipy.linalg.eigh(A, **eigkw)
             else:
-                self.ew, self.EV = eigh(A)
+                self.ew, self.EV = scipy.linalg.eigh(A)
                 self.EV = self.EV[:, self.ew > thrsh]
                 self.ew = self.ew[self.ew > thrsh]
 
