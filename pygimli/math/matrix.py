@@ -445,12 +445,14 @@ class Cm05Matrix(MatrixBase):
                 pg.tic(key='init cm05')
 
             eigkw = {}
+            thrsh = 1e-6
             if version.parse(scipy.__version__) >= version.parse("1.5"):
-                eigkw["subset_by_value"] = [1e-6, np.inf]
+                eigkw["subset_by_value"] = [thrsh, np.inf]
                 self.ew, self.EV = scipy.linalg.eigh(A, **eigkw)
-            
-            # self.ew, self.EV = eigh(A)
-            # self.ew[self.ew <= 0] = 0
+            else:
+                self.ew, self.EV = eigh(A)
+                self.EV = self.EV[:, self.ew > thrsh]
+                self.ew = self.ew[self.ew > thrsh]
 
             if verbose:
                 pg.info('(C) Time for eigenvalue decomposition {:.1f}s'.format(
