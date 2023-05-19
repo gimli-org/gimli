@@ -523,6 +523,7 @@ def interpolate(*args, **kwargs):
     fallback = kwargs.pop('fallback', 0.0)
     verbose = kwargs.pop('verbose', False)
     pgcore = False
+
     if 'srcMesh' in kwargs:
         pgcore = True
 
@@ -536,12 +537,13 @@ def interpolate(*args, **kwargs):
             if len(args) == 3 and isinstance(args[1], pg.Mesh):
                 pgcore = False  # (outMesh, inMesh, vals)
             else:
-                pgcore = True
+                pgcore = True   # (inMesh, *args)
 
     if pgcore:
         if len(args) == 3:  # args: outData = (inMesh, inData, outPos)
 
-            if args[1].ndim == 2:  # outData = (inMesh, mat, vR3)
+            if args[1].ndim == 2:  # outData = (inMesh, mat(dim>1), vR3)
+
 
                 outMat = pg.Matrix()
                 pg.core.interpolate(args[0], inMat=np.array(args[1]),
@@ -550,7 +552,7 @@ def interpolate(*args, **kwargs):
                                     verbose=verbose)
                 return np.array(outMat)
 
-        if len(args) == 4:  # args: (inMesh, inData, outPos, outData)
+        if len(args) == 4:  # args: (inMesh, inData(dim==1), outPos, outData)
 
             if args[1].ndim == 1 and args[2].ndim == 1 and args[3].ndim == 1:
                 return pg.core.interpolate(args[0], inVec=args[1],
@@ -582,10 +584,17 @@ def interpolate(*args, **kwargs):
                                            fillValue=fallback,
                                            verbose=verbose)
 
+        if len(args) == 3 and pg.isPosList(args[2]):
+            # args: (inMesh, inData(dim==1), posList)
+            return pg.core.interpolate(args[0], args[1], destPos=args[2],
+                                   fillValue=fallback,
+                                   verbose=verbose)
+
         return pg.core.interpolate(*args, **kwargs,
                                    fillValue=fallback,
                                    verbose=verbose)
-        # end if pg.core:
+    
+    # end if pg.core:
 
     if len(args) == 3:
 
