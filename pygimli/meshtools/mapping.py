@@ -663,15 +663,18 @@ def interpolate(*args, **kwargs):
         return interpolateAlongCurve(curve, t, **kwargs)
 
 
-def extract2dSlice(mesh, origin=None, angle=0, dip=0):
+def extract2dSlice(mesh, origin=None, normal=[0, 1, 0], angle=None, dip=None):
     """Extract slice from 3D mesh as triangle mesh.
 
     Parameters
     ----------
     mesh : pg.Mesh
         Input mesh
-    origin : [x, y, z]
-        origin to be shifted
+    origin : [float, float, float]
+        origin to be shifted [x, y, z]
+    normal : [float, float, float] | str
+        normal vector for extracting plane, or
+        "x", "y", "z" equal to "yz", "xz", "yz", OR
     angle : float [0]
         azimuth of plane in the xy plane (0=x, 90=y)
     dip : float [0]
@@ -688,9 +691,21 @@ def extract2dSlice(mesh, origin=None, angle=0, dip=0):
     if origin:
         meshtmp.translate(-pg.Pos(origin))
 
-    meshtmp.rotate(pg.Pos(0, np.deg2rad(dip), np.deg2rad(angle)))
+    if isinstance(normal, str):  # "x", "yz" etc.
+        if normal == "z" or normal == "xy":
+            normal = [0, 0, 1]
+        elif normal == "y" or normal == "xz":
+            normal = [0, 1, 0]
+        elif normal == "x" or normal == "yz":
+            normal = [1, 0, 0]
+ 
+    if angle:    
+        meshtmp.rotate(pg.Pos(0, 0, np.deg2rad(-angle)))
+    if dip:
+        meshtmp.rotate(pg.Pos(0, np.deg2rad(-dip), 0))
+
     pvmesh = pgMesh2pvMesh(meshtmp)
-    pvs = pvmesh.slice(normal=[0, 1, 0], origin=[0, 0, 0],
+    pvs = pvmesh.slice(normal=normal, origin=[0, 0, 0],
                        generate_triangles=True)
     # return convertPVPolyData(pvs)  # that's the better way
     tri = pvs.faces.reshape((-1, 4))[:, 1:]

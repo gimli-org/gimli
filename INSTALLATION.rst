@@ -5,10 +5,10 @@ Installation
 
    <p style="height:22px">
      <a href="https://anaconda.org/gimli/pygimli" >
-       <img src="https://anaconda.org/gimli/pygimli/badges/installer/conda.svg?style=flat-square"/>
+       <img src="https://anaconda.org/gimli/pygimli/badges/license.svg"/>
      </a>
      <a href="https://anaconda.org/gimli/pygimli" >
-       <img src="https://anaconda.org/gimli/pygimli/badges/installer/conda.svg?style=flat-square"/>
+       <img src="https://anaconda.org/gimli/pygimli/badges/downloads.svg"/>
     <a href="https://anaconda.org/gimli/pygimli" >
        <img src="https://anaconda.org/gimli/pygimli/badges/version.svg?style=flat-square"/>
      </a>
@@ -36,7 +36,7 @@ Open a terminal (Linux & Mac) or the Anaconda Prompt (Windows) and type:
 
 .. code-block:: bash
 
-    conda create -n pg -c gimli -c conda-forge pygimli=1.3.1
+    conda create -n pg -c gimli -c conda-forge pygimli=1.4.0
 
 If you are using Windows or Mac, a new environment named "pg" should be visible
 in the Anaconda Navigator. If you want to use pyGIMLi from the command line, you
@@ -78,13 +78,13 @@ condacolab package by
     condacolab.install()
 
 After doing so, the kernel is automatically restarted, so  import condacolab
-again and install pygimli using mamba just as mentioned above.
+again and install pygimli using conda just as mentioned above.
 
 .. code:: Python
 
     import condacolab
     condacolab.check()
-    !mamba install -c gimli pygimli=1.3.1
+    !conda install -c gimli pygimli=1.4.0
 
 Testing the installation
 ------------------------
@@ -119,7 +119,7 @@ retrieve the source code by git (and checking out the development branch)
 
 .. code-block:: bash
 
-    git clone https://github.com/gimli-org/gimli dev
+    git clone --branch dev https://github.com/gimli-org/gimli
     cd gimli
 
 and install pygimli as a development package

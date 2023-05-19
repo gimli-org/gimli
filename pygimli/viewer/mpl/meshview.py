@@ -1320,7 +1320,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
     sensors : vector or list of RVector3
         List of positions to plot.
     diam : float [None]
-        Diameter of circles (None leads to point distance by 4).
+        Diameter (absolute in m) of circles (None leads to point distance by 4).
     coords: (int, int) [0, 1]
         Coordinates to take (usually x and y).
 

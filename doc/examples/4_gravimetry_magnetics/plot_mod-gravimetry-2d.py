@@ -41,14 +41,14 @@ gz_p = solveGravimetry(circ, dRho, pnts, complete=False)
 
 ###############################################################################
 # Integration for complete 2D mesh after :cite:`WonBev1987`
-world = createWorld(start=[-20, 0], end=[20, -10], marker=1)
+world = createWorld(start=[-20, -10], end=[20, 0], marker=1)
 mesh = createMesh([world, circ])
 dRhoC = pg.solver.parseMapToCellArray([[1, 0.0], [2, dRho]], mesh)
 gc_m = solveGravimetry(mesh, dRhoC, pnts)
 
 ###############################################################################
 # Finite Element solution for :math:`u`
-world = createWorld(start=[-200, 200], end=[200, -200], marker=1)
+world = createWorld(start=[-200, -200], end=[200, 200], marker=1)
 
 # Add some nodes to the measurement points to increase the accuracy a bit
 [world.createNode(x_, 0.0,  1) for x_ in x]
@@ -57,7 +57,7 @@ mesh = createMesh(plc, quality=34)
 mesh = mesh.createP2()
 
 density = pg.solver.parseMapToCellArray([[1, 0.0], [2, dRho]], mesh)
-u = pg.solver.solve(mesh, a=1, f=density, bc={'Dirichlet': {-2:0, -1:0}})
+u = pg.solver.solve(mesh, a=1, f=density, bc={'Dirichlet': {-2: 0, -1: 0}})
 
 ###############################################################################
 # Calculate gradient of gravimetric potential
@@ -71,25 +71,23 @@ for i, p in enumerate(pnts):
 
 ###############################################################################
 # Finishing the plots
-
-ax1 = pg.plt.subplot(2, 1, 1)
+fig, (ax1, ax2) = pg.plt.subplots(2, 1, sharex=True, figsize=(7, 6))
 ax1.plot(x, gz_a, '-b', marker='.', label='Analytical')
 ax1.plot(x, gz_p, label='Integration: Polygon ')
 ax1.plot(x, gc_m, label='Integration: Mesh')
 ax1.plot(x, dudz, label=r'FEM: $\frac{\partial u}{\partial z}$')
 
-ax2 = pg.plt.subplot(2, 1, 2)
-pg.show(plc, ax=ax2)
-ax2.plot(x, x*0,  'bv')
+pg.show(circ, ax=ax2)
+ax2.plot(x, x*0, 'bv')
 
 ax1.set_ylabel(r'$\frac{\partial u}{\partial z}$ [mGal]')
-ax1.set_xlabel('$x$-coordinate [m]')
+ax1.set_xlabel('$x$ [m]')
 ax1.grid()
 ax1.legend()
 
 ax2.set_aspect(1)
-ax2.set_xlabel('$x$-coordinate [m]')
-ax2.set_ylabel('$z$-coordinate [m]')
+ax2.set_xlabel('$x$ [m]')
+ax2.set_ylabel('$z$ [m]')
 ax2.set_ylim((-9, 1))
 ax2.set_xlim((-20, 20))
 

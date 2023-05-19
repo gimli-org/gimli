@@ -490,7 +490,11 @@ class Inversion(object):
         if len(kwargs) > 0:
             self.fop.setRegionProperties(*args, **kwargs)
 
-    def run(self, dataVals, errorVals, **kwargs):
+    def setConstraintWeights(self, cWeight):
+        """Set weighting factors for the invidual rows of the C matrix."""
+        self.inv.setCWeight(cWeight)
+
+    def run(self, dataVals, errorVals=None, **kwargs):
         """Run inversion.
 
         The inversion will always start from the starting model taken from
@@ -506,9 +510,14 @@ class Inversion(object):
             Data values
         errorVals : iterable
             Relative error values. dv / v
+            Can be omitted if absoluteError and/or relativeError kwargs given
 
         Keyword Arguments
         -----------------
+        absoluteError : float | iterable
+            absolute error in units of dataVals
+        relativeError : float | iterable
+            relative error related to dataVals
         maxIter : int
             Overwrite class settings for maximal iterations number.
         dPhi : float [1]
@@ -536,6 +545,14 @@ class Inversion(object):
             even verboser console and file output
         """
         self.reset()
+        if errorVals is None:  # use absoluteError and/or relativeError instead
+            absErr = kwargs.pop("absoluteError", 0)
+            relErr = kwargs.pop("relativeError",
+                                0.01 if np.allclose(absErr, 0) else 0)
+            errorVals = pg.abs(absErr / dataVals) + relErr
+            if isinstance(errorVals, (float, int)):
+                errorVals = np.ones_like(dataVals) * errorVals
+
         if self.isFrameWork:
             pg.critical('in use?')
             return self._inv.run(dataVals, errorVals, **kwargs)
@@ -609,7 +626,8 @@ class Inversion(object):
             print("min/max (data): {0}/{1}".format(pf(min(self._dataVals)),
                                                    pf(max(self._dataVals))))
             print("min/max (error): {0}%/{1}%".format(
-                pf(100*min(self._errorVals)), pf(100*max(self._errorVals))))
+                pf(100 * min(self._errorVals)),
+                pf(100 * max(self._errorVals))))
             print("min/max (start model): {0}/{1}".format(
                 pf(min(startModel)), pf(max(startModel))))
 
@@ -681,11 +699,11 @@ class Inversion(object):
                 self.inv.constrainBlocky()
 
             phi = self.phi()
-            dPhi = phi/lastPhi
+            dPhi = phi / lastPhi
 
             if self.verbose:
                 print("chi² = {0} (dPhi = {1}%) lam: {2}".format(
-                    round(chi2, 2), round((1-dPhi)*100, 2), lam))
+                    round(chi2, 2), round((1 - dPhi) * 100, 2), lam))
 
             if chi2 <= 1 and self.stopAtChi1:
                 print("\n")
@@ -699,7 +717,7 @@ class Inversion(object):
                 if self.verbose:
                     pg.boxprint(
                         "Abort criteria reached: dPhi = {0} (< {1}%)".format(
-                            round((1-dPhi)*100, 2), minDPhi))
+                            round((1 - dPhi) * 100, 2), minDPhi))
                 break
 
             lastPhi = phi
@@ -791,7 +809,7 @@ class MarquardtInversion(Inversion):
         self.inv.setLambdaFactor(0.8)
         self.inv.setDeltaPhiAbortPercent(0.5)
 
-    def run(self, dataVals, errorVals, **kwargs):
+    def run(self, dataVals, errorVals=None, **kwargs):
         r"""Run inversion with given data and error vectors.
 
         Parameters
@@ -799,11 +817,21 @@ class MarquardtInversion(Inversion):
         dataVals : iterable
             data vector
         errorVals : iterable
-            error vector (relative errors)
+            error vector (relative errors), can also be computed from
+        absoluteError : float | iterable
+            absolute error in units of dataVals
+        relativeError : float | iterable
+            relative error related to dataVals
         **kwargs:
             Forwarded to the parent class.
             See: :py:mod:`pygimli.modelling.Inversion`
         """
+        if errorVals is None:  # use absoluteError and/or relativeError instead
+            absErr = kwargs.pop("absoluteError", 0)
+            relErr = kwargs.pop("relativeError",
+                                0.01 if np.allclose(absErr, 0) else 0)
+            errorVals = pg.abs(absErr / dataVals) + relErr
+
         self.fop.regionManager().setConstraintType(0)
         self.fop.setRegionProperties('*', cType=0)
 
@@ -850,7 +878,7 @@ class Block1DInversion(MarquardtInversion):
                 if len(fixLayers) != self.fop.nLayers:
                     print("fixLayers:", fixLayers)
                     pg.error("fixlayers needs to have a length of nLayers-1=" +
-                             str(self.fop.nLayers-1))
+                             str(self.fop.nLayers - 1))
                 self.fop.setRegionProperties(0, startModel=fixLayers)
 
     def setLayerLimits(self, limits):
@@ -871,7 +899,7 @@ class Block1DInversion(MarquardtInversion):
             if self.fop.nPara == 1:
                 self.fop.setRegionProperties(i, limits=limits, trans='log')
             else:
-                self.fop.setRegionProperties(i, limits=limits[i-1],
+                self.fop.setRegionProperties(i, limits=limits[i - 1],
                                              trans='log')
 
     def run(self, dataVals, errorVals,
