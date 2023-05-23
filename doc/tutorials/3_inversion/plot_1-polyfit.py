@@ -229,3 +229,8 @@ print(np.sqrt(np.mean((weighted_misfit**2))))
 # whereas :math:`\Phi_d` is the data objective function minimized in inversion.
 
 print(np.mean((weighted_misfit**2)))
+
+###############################################################################
+# The whole history of the chi-square fit can be looked at by
+
+print(inv.chi2History)
