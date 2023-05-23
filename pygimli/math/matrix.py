@@ -519,7 +519,7 @@ class RepeatVMatrix(BlockMatrix):
         self.A_ = A
         self.Aid = self.addMatrix(self.A_)
         nr = 0
-        for i in range(num):
+        for _ in range(num):
             self.addMatrixEntry(self.Aid, nr, 0)
             nr += A.rows()
 
@@ -546,7 +546,7 @@ class RepeatHMatrix(BlockMatrix):
         self.A_ = A
         self.Aid = self.addMatrix(self.A_)
         nc = 0
-        for i in range(num):
+        for _ in range(num):
             self.addMatrixEntry(self.Aid, 0, nc)
             nc += A.cols()
 
@@ -576,7 +576,7 @@ class RepeatDMatrix(BlockMatrix):
         self.Aid = self.addMatrix(self.A_)
         nc = 0
         nr = 0
-        for i in range(num):
+        for _ in range(num):
             self.addMatrixEntry(self.Aid, nr, nc)
             nc += A.cols()
             nr += A.rows()
@@ -855,13 +855,10 @@ def dstack(mats):
 
 
 if __name__ == "__main__":
-    A = pg.Matrix(3, 4)
-    B = TransposedMatrix(A)
-    x = pg.Vector(3, 1.0)
-    print(B*x)
-    y = pg.Vector(4, 1.0)
-    C = SquaredMatrix(A)
-    print(C*y)
-    # pg.test(vstack)
-    # pg.test(hstack)
-    # pg.test(dstack)
+    Amat = pg.Matrix(3, 4)
+    Bmat = TransposedMatrix(Amat)
+    xvec = pg.Vector(3, 1.0)
+    print(Bmat*xvec)
+    yvec = pg.Vector(4, 1.0)
+    Cmat = SquaredMatrix(Amat)
+    print(Cmat*yvec)
