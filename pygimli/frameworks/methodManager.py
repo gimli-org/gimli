@@ -786,7 +786,7 @@ class MeshMethodManager(MethodManager):
         if mesh is None and self.mesh is None:
             mesh = self.createMesh(data, **kwargs)
 
-        if mesh.dim() == 2:
+        if isinstance(data, pg.DataContainer) and mesh.dim() == 2:
             data.ensure2D()
 
         # a mesh was given or created so we forward it to the fop
