@@ -125,7 +125,6 @@ TT = tt.TravelTimeManager(verbose=False)
 velInv = TT.invert(ttData, mesh=pMesh, lam=100, useGradient=0, zWeight=1.0)
 TT.inv.echoStatus()
 
-showModel(pMesh, velInv, **velKW)
 ax, _ = pg.show(pMesh, velInv, **velKW)
 
 ###############################################################################
