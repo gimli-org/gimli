@@ -123,7 +123,6 @@ ax, cb = pg.show(mesh, pg.abs(Cdip * vec), **kwLog)
 # that projects the model vector to the forward response.
 # This matrix is also the Jacobian matrix for the inversion.
 
-
 # %%
 # Inversion with geostatistical constraints
 # -----------------------------------------
@@ -141,7 +140,7 @@ kw = dict(
     logScale=True)
 
 # We want to use a homogenenous starting model
-vals = [30, 50, 300, 100, 200]
+vals = np.array([30, 50, 300, 100, 200])
 # We assume a 5% relative accuracy of the values
 relError = 0.05
 # set up data and model transformation log-scaled

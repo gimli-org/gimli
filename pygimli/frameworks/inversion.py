@@ -549,7 +549,7 @@ class Inversion(object):
             absErr = kwargs.pop("absoluteError", 0)
             relErr = kwargs.pop("relativeError",
                                 0.01 if np.allclose(absErr, 0) else 0)
-            errorVals = pg.abs(absErr / dataVals) + relErr
+            errorVals = pg.abs(absErr / np.asarray(dataVals)) + relErr
             if isinstance(errorVals, (float, int)):
                 errorVals = np.ones_like(dataVals) * errorVals
 
