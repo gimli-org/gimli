@@ -72,12 +72,12 @@ class TravelTimeManager(MeshMethodManager):
         ------------
         Forwarded to `:py:func:pygimli.meshtools.createParaMesh`
         """
-        d = data or self.data
+        data = data or self.data
 
-        if d is None:
-            pg.critical('Please provide a data file for mesh generation')
+        if not hasattr(data, 'sensors'):
+            pg.critical('Please provide a data container for mesh generation')
 
-        return pg.meshtools.createParaMesh(d.sensors(),
+        return pg.meshtools.createParaMesh(data.sensors(), paraBoundary=0,
                                            boundary=0, **kwargs)
 
     def checkData(self, data):
