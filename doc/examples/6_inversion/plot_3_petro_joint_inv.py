@@ -62,7 +62,7 @@ pMesh.scale(0.2)
 saturation = pg.solver.parseArgToArray([[1, 0.6], [2, 0.9], [3, 0.3]],
                                        mMesh.cellCount(), mMesh)
 
-satKW = dict(cMin=0.3, cMax=0.9, logScale=False, cMap="plasma")
+satKW = dict(cMin=0.3, cMax=0.9, logScale=False, cMap="plasma_r")
 ax, _ = pg.show(mMesh, saturation, **satKW,
              showMesh=True, label=r'Saturation (${\tt petro}$)')
 
