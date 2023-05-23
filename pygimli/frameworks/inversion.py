@@ -234,8 +234,8 @@ class Inversion(object):
                 if len(self.inv.model()) > 0:
                     return self.inv.model()
                 else:
-                    raise pg.critical(
-                        "There was no inversion run so there is no last model")
+                    raise Exception(pg.critical(
+                        "There was no inversion run so there is no last model"))
             else:
                 return self.inv.model
         return self._model

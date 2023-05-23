@@ -169,7 +169,7 @@ class Modelling(pg.core.ModellingBase):
             elif tm.lower() == "linear" or tm.lower() == "lin":
                 tm = pg.trans.Trans()
             else:  # something like "10-1000"
-                raise("Could not use transformation" + tm)
+                raise Exception("Could not use transformation" + tm)
 
         self._modelTrans = tm
 
@@ -278,8 +278,7 @@ class Modelling(pg.core.ModellingBase):
                 self.setRegionProperties(r, **kwargs)
             return
 
-        pg.verbose('Set property for region: {0}: {1}'.format(regionNr,
-                                                              kwargs))
+        pg.verbose(f'Set property for region: {regionNr}: {kwargs}')
         if regionNr not in self._regionProperties:
             self._regionProperties[regionNr] = {'startModel': None,
                                                 'modelControl': 1.0,
@@ -643,7 +642,7 @@ class MeshModelling(Modelling):
         # Need to call this once to be sure the mesh is initialized when needed
         self.mesh()
 
-    def setMeshPost(self, data):
+    def setMeshPost(self, mesh):
         """Interface to be called when the mesh has been set successfully.
 
         Might be overwritten by child classes.
