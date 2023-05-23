@@ -58,7 +58,7 @@ class TravelTimeManager(MeshMethodManager):
         self.data = pg.physics.traveltime.load(fileName)
         return self.data
 
-    def createMesh(self, data=None, **kwargs):
+    def createMeshMovedToMeshManager(self, data=None, **kwargs):
         """Create default inversion mesh.
 
         Inversion mesh for traveltime inversion does not need boundary region.

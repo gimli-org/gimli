@@ -721,9 +721,28 @@ class MeshMethodManager(MethodManager):
         return self.fop.paraModel(model)
 
     def createMesh(self, data=None, **kwargs):
-        """Create mesh class, must be implemented in derived classes."""
-        pg.critical('no default mesh generation defined .. implement in '
-                    'derived class')
+        """Create default inversion mesh.
+
+        Inversion mesh for traveltime inversion does not need boundary region.
+
+        Args
+        ----
+        data: DataContainer
+            Data container to read sensors from.
+
+        Keyword Args
+        ------------
+        Forwarded to `:py:func:pygimli.meshtools.createParaMesh`
+        """
+        data = data or self.data
+
+        if not hasattr(data, 'sensors'):
+            pg.critical('Please provide a data container for mesh generation')
+
+        mesh = pg.meshtools.createParaMesh(data.sensors(), paraBoundary=0,
+                                           boundary=0, **kwargs)
+        self.setMesh(mesh)
+        return mesh
 
     def setMesh(self, mesh, **kwargs):
         """Set a mesh and distribute it to the forward operator."""
