@@ -431,7 +431,7 @@ def importAsciiColumns(filename, verbose=False, return_header=False):
                     if not re.search('([x-z])', key) and key not in abmn:
                         data.set(key.replace(' ', '_'), d[key])
 
-        r = data('u') / data('i')
+        r = data['u'] / data['i']
         if hasattr(d, 'R(0)'):
             if np.linalg.norm(r-d['R(O)']) < 1e4:  # no idea what's that for
                 data.set('r', r)

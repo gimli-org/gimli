@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Electrical resistivity tomography"""
 
@@ -485,21 +484,21 @@ def estimateError(data, absoluteError=0.001, relativeError=0.03,
             pg.critical("We need apparent resistivity values "
                         "(rhoa) in the data to estimate a "
                         "data error.")
-        error = relativeError + pg.abs(absoluteError / data('rhoa'))
+        error = relativeError + pg.abs(absoluteError / data['rhoa'])
     else:
         u = None
         i = absoluteCurrent
-        if data.haveData("i"):
-            i = data('i')
+        if data.haveData('i'):
+            i = data['i']
 
-        if data.haveData("u"):
-            u = data('u')
+        if data.haveData('u'):
+            u = data['u']
         else:
-            if data.haveData("r"):
-                u = data('r') * i
-            elif data.haveData("rhoa"):
-                if data.haveData("k"):
-                    u = data('rhoa') / data('k') * i
+            if data.haveData('r'):
+                u = data['r'] * i
+            elif data.haveData('rhoa'):
+                if data.haveData('k'):
+                    u = data['rhoa'] / data['k'] * i
                 else:
                     pg.critical("We need (rhoa) and (k) in the"
                                 "data to estimate data error.")
