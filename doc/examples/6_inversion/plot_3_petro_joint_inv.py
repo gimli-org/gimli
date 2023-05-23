@@ -112,12 +112,12 @@ ax, cb = tt.showVA(ttData, **velKW)
 ###############################################################################
 # Conventional inversion
 # ----------------------
+
 pg.info("ERT Inversion")
 ERT = ert.ERTManager(verbose=False, sr=False)
 resInv = ERT.invert(ertData, mesh=pMesh, zWeight=1, lam=20, verbose=False)
 ERT.inv.echoStatus()
 
-# showModel(pMesh, resInv, **resKW)
 ax, _ = pg.show(pMesh, resInv, **resKW)
 
 pg.info("Traveltime Inversion")
@@ -131,13 +131,13 @@ ax, _ = pg.show(pMesh, velInv, **velKW)
 ###############################################################################
 # Petrophysical inversion (individually)
 # --------------------------------------
+
 pg.info("ERT Petrogeophysical Inversion")
 ERTPetro = PetroInversionManager(petro=ertTrans, mgr=ERT)
 satERT = ERTPetro.invert(ertData, mesh=pMesh, limits=[0., 1.], lam=10,
                          verbose=False)
 ERTPetro.inv.echoStatus()
 
-# ax = showModel(pMesh, satERT, label=r'Saturation (${\tt satERT}$)')
 ax, _ = pg.show(pMesh, satERT, **satKW, label=r'Saturation (${\tt satERT}$)')
 pg.viewer.mpl.drawPLC(ax, poly, fillRegion=False)
 
@@ -146,13 +146,13 @@ TTPetro = PetroInversionManager(petro=ttTrans, mgr=TT)
 satTT = TTPetro.invert(ttData, mesh=pMesh, limits=[0., 1.], lam=5)
 TTPetro.inv.echoStatus()
 
-# ax = showModel(pMesh, satTT, label=r'Saturation (${\tt satTT}$)')
 ax, _ = pg.show(pMesh, satTT, **satKW, label=r'Saturation (${\tt satTT}$)')
 pg.viewer.mpl.drawPLC(ax, poly, fillRegion=False)
 
 ###############################################################################
 # Petrophysical joint inversion
 # -----------------------------
+
 pg.info("Petrophysical Joint-Inversion TT-ERT")
 JointPetro = JointPetroInversionManager(petros=[ertTrans, ttTrans],
                                         mgrs=[ERT, TT])
@@ -160,18 +160,5 @@ satJoint = JointPetro.invert([ertData, ttData], mesh=pMesh,
                              limits=[0., 1.], lam=5, verbose=False)
 JointPetro.inv.echoStatus()
 
-# ax = showModel(pMesh, satJoint, label=r'Saturation (${\tt satJoint}$)')
 ax, _ = pg.show(pMesh, satJoint, **satKW, label=r'Saturation (${\tt satJoint}$)')
 pg.viewer.mpl.drawPLC(ax, poly, fillRegion=False)
-
-###############################################################################
-# Visualization
-# -------------
-
-# %
-
-# %
-# ax = showModel(None, satJoint, pMesh, label=r'Saturation (${\tt satJoint}$)')
-# ax, _ = pg.show(pMesh, satJoint, label=r'Saturation (${\tt satJoint}$)')
-# pg.viewer.mpl.drawPLC(ax, poly, fillRegion=False)  # , color="white")
-# %
