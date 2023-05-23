@@ -41,11 +41,19 @@ def showERTData(data, vals=None, **kwargs):
 
     **kwargs :
 
-        * axes : matplotlib.axes
-            Axes to plot into. Default is None and a new figure and
-            axes are created.
-        * vals : Array[nData]
+        * vals : Array[nData] | str
             Values to be plotted. Default is data['rhoa'].
+            Can be a string whose data field is extracted.
+        * axes : matplotlib.axes
+            Axes to plot into. By default (None), a new figure with
+            a single Axes is created.
+    
+    Returns
+    -------
+    ax : matplotlib.axes
+        axis containing the plots
+    cb : matplotlib.colorbar
+        colorbar instance
     """
     var = kwargs.pop('var', 0)
     if var > 0:
