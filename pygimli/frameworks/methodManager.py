@@ -776,9 +776,7 @@ class MeshMethodManager(MethodManager):
             Model mapped for match the paraDomain Cell markers.
             The calculated model vector (unmapped) is in self.fw.model.
         """
-        if data is None:
-            data = self.data
-
+        data = data or self.data
         if data is None:
             pg.critical('No data given for inversion')
 
@@ -788,9 +786,12 @@ class MeshMethodManager(MethodManager):
         if mesh is None and self.mesh is None:
             mesh = self.createMesh(data, **kwargs)
 
+        if mesh.dim() == 2:
+            data.ensure2D()
+
         # a mesh was given or created so we forward it to the fop
         if mesh is not None:
-            self.setMesh(mesh)
+            self.setMesh(mesh)  # could be done by createMesh
 
         # remove unused keyword argument .. need better kwargfs
         self.fop._refineP2 = kwargs.pop('refineP2', False)
@@ -870,9 +871,9 @@ class MeshMethodManager(MethodManager):
         nCells = self.fop.paraDomain.cellCount()
         return np.log10(covTrans[:nCells] / self.fop.paraDomain.cellSizes())
 
-    def standardizedCoverage(self, threshhold=0.01):
+    def standardizedCoverage(self, threshold=0.01):
         """Standardized coverage vector (0|1) using thresholding."""
-        return 1.0*(abs(self.coverage()) > threshhold)
+        return 1.0*(abs(self.coverage()) > threshold)
 
 
 class PetroInversionManager(MeshMethodManager):
