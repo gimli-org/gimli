@@ -786,12 +786,11 @@ class MeshMethodManager(MethodManager):
         if mesh is None and self.mesh is None:
             mesh = self.createMesh(data, **kwargs)
 
-        if isinstance(data, pg.DataContainer) and mesh.dim() == 2:
-            data.ensure2D()
-
         # a mesh was given or created so we forward it to the fop
         if mesh is not None:
             self.setMesh(mesh)  # could be done by createMesh
+            if isinstance(data, pg.DataContainer) and mesh.dim() == 2:
+                data.ensure2D()
 
         # remove unused keyword argument .. need better kwargfs
         self.fop._refineP2 = kwargs.pop('refineP2', False)
