@@ -25,6 +25,7 @@ def createERTData(*args, **kwargs):
 
 showData = showERTData
 show = showERTData  # better create a function that can also handle mgr
+pg.core.DataContainerERT.show.__doc__ = showERTData.__doc__
 geometricFactor = pg.core.geometricFactors
 geometricFactors = geometricFactor
 
