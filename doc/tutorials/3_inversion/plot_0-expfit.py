@@ -22,9 +22,9 @@ library numpy. Additionally we load the python plotting module of the library
 matplotlib. Both are contained in most python distributions and systems.
 """
 
-import pygimli as pg
 import numpy as np
 import matplotlib.pyplot as plt
+import pygimli as pg
 
 
 ###############################################################################
@@ -111,7 +111,15 @@ plt.plot(x, data, 'x', x, inv.response, '-')
 plt.grid(True)
 
 ###############################################################################
-# The resulting model vector consists of the searched A and X values that are
-# close to the synthetic values, being equivalent within error bounds.
+# The resulting model vector has a length of 2 and consists of the inverted A 
+# and X values that are close to the synthetic values, being equivalent within 
+# error bounds.
 
 print(coeff)
+
+###############################################################################
+# If you are interested which way the inversion took, you can have a look at
+# the model history.
+
+for model in inv.modelHistory:
+    print(model)
