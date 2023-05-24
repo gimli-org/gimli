@@ -523,6 +523,7 @@ def interpolate(*args, **kwargs):
     fallback = kwargs.pop('fallback', 0.0)
     verbose = kwargs.pop('verbose', False)
     pgcore = False
+
     if 'srcMesh' in kwargs:
         pgcore = True
 
@@ -536,12 +537,13 @@ def interpolate(*args, **kwargs):
             if len(args) == 3 and isinstance(args[1], pg.Mesh):
                 pgcore = False  # (outMesh, inMesh, vals)
             else:
-                pgcore = True
+                pgcore = True   # (inMesh, *args)
 
     if pgcore:
         if len(args) == 3:  # args: outData = (inMesh, inData, outPos)
 
-            if args[1].ndim == 2:  # outData = (inMesh, mat, vR3)
+            if args[1].ndim == 2:  # outData = (inMesh, mat(dim>1), vR3)
+
 
                 outMat = pg.Matrix()
                 pg.core.interpolate(args[0], inMat=np.array(args[1]),
@@ -550,7 +552,7 @@ def interpolate(*args, **kwargs):
                                     verbose=verbose)
                 return np.array(outMat)
 
-        if len(args) == 4:  # args: (inMesh, inData, outPos, outData)
+        if len(args) == 4:  # args: (inMesh, inData(dim==1), outPos, outData)
 
             if args[1].ndim == 1 and args[2].ndim == 1 and args[3].ndim == 1:
                 return pg.core.interpolate(args[0], inVec=args[1],
@@ -582,10 +584,17 @@ def interpolate(*args, **kwargs):
                                            fillValue=fallback,
                                            verbose=verbose)
 
+        if len(args) == 3 and pg.isPosList(args[2]):
+            # args: (inMesh, inData(dim==1), posList)
+            return pg.core.interpolate(args[0], args[1], destPos=args[2],
+                                   fillValue=fallback,
+                                   verbose=verbose)
+
         return pg.core.interpolate(*args, **kwargs,
                                    fillValue=fallback,
                                    verbose=verbose)
-        # end if pg.core:
+    
+    # end if pg.core:
 
     if len(args) == 3:
 
@@ -654,15 +663,18 @@ def interpolate(*args, **kwargs):
         return interpolateAlongCurve(curve, t, **kwargs)
 
 
-def extract2dSlice(mesh, origin=None, angle=0, dip=0):
+def extract2dSlice(mesh, origin=None, normal=[0, 1, 0], angle=None, dip=None):
     """Extract slice from 3D mesh as triangle mesh.
 
     Parameters
     ----------
     mesh : pg.Mesh
         Input mesh
-    origin : [x, y, z]
-        origin to be shifted
+    origin : [float, float, float]
+        origin to be shifted [x, y, z]
+    normal : [float, float, float] | str
+        normal vector for extracting plane, or
+        "x", "y", "z" equal to "yz", "xz", "yz", OR
     angle : float [0]
         azimuth of plane in the xy plane (0=x, 90=y)
     dip : float [0]
@@ -679,9 +691,21 @@ def extract2dSlice(mesh, origin=None, angle=0, dip=0):
     if origin:
         meshtmp.translate(-pg.Pos(origin))
 
-    meshtmp.rotate(pg.Pos(0, np.deg2rad(dip), np.deg2rad(angle)))
+    if isinstance(normal, str):  # "x", "yz" etc.
+        if normal == "z" or normal == "xy":
+            normal = [0, 0, 1]
+        elif normal == "y" or normal == "xz":
+            normal = [0, 1, 0]
+        elif normal == "x" or normal == "yz":
+            normal = [1, 0, 0]
+ 
+    if angle:    
+        meshtmp.rotate(pg.Pos(0, 0, np.deg2rad(-angle)))
+    if dip:
+        meshtmp.rotate(pg.Pos(0, np.deg2rad(-dip), 0))
+
     pvmesh = pgMesh2pvMesh(meshtmp)
-    pvs = pvmesh.slice(normal=[0, 1, 0], origin=[0, 0, 0],
+    pvs = pvmesh.slice(normal=normal, origin=[0, 0, 0],
                        generate_triangles=True)
     # return convertPVPolyData(pvs)  # that's the better way
     tri = pvs.faces.reshape((-1, 4))[:, 1:]

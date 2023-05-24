@@ -204,7 +204,7 @@ void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, d
     //** implement with openblas dgemm too and check performance
     // __MS("matTransMult: "<< A.rows() << " " << A.cols() << " : "
     //     << B.rows() << " " << B.cols() << " " << a << " " << b)
-    //bool retTrans = false;
+    // bool retTrans = false;
 
     // A(k, m).T * B(k, n) = C(m, n)
 
@@ -272,7 +272,8 @@ void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, d
                 for (Index k = 0; k < A.rows(); k ++){
                     c += A[k][i] * B[k][j];
                 }
-                if (retTrans){
+                // if (retTrans){
+                if (0){
                     THROW_TO_IMPL
                     C[j][i] = a * c + C[j][i]*b;
                 } else {

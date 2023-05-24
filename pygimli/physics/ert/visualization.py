@@ -45,7 +45,7 @@ def showERTData(data, vals=None, **kwargs):
             Axes to plot into. Default is None and a new figure and
             axes are created.
         * vals : Array[nData]
-            Values to be plotted. Default is data('rhoa').
+            Values to be plotted. Default is data['rhoa'].
     """
     var = kwargs.pop('var', 0)
     if var > 0:
@@ -130,7 +130,7 @@ def drawERTData(ax, data, vals=None, **kwargs):
     ----------
     data : DataContainerERT
         data container with sensorPositions and a/b/m/n fields
-    vals : iterable of data.size() [data('rhoa')]
+    vals : iterable of data.size() [data['rhoa']]
         vector containing the vals to show
     ax : mpl.axis
         axis to plot, if not given a new figure is created
@@ -156,7 +156,7 @@ def drawERTData(ax, data, vals=None, **kwargs):
         The used Colorbar or None
     """
     if vals is None:
-        vals = data('rhoa')
+        vals = data['rhoa']
 
     valid = data.get("valid").array().astype("bool")
     vals = ma.array(vals, mask=~valid)
@@ -283,7 +283,7 @@ def midconfERT(data, ind=None, rnum=1, circular=False, switch=False):
         de = np.median(np.diff(ux)).round(1)
         ne = np.array(xe/de, dtype=int)
 
-    # a, b, m, n = data('a'), data('b'), data('m'), data('n')
+    # a, b, m, n = data['a'], data['b'], data['m'], data['n']
     # check if xe[a]/a is better suited (has similar size)
     if circular:
         # for circle geometry
@@ -312,10 +312,10 @@ def midconfERT(data, ind=None, rnum=1, circular=False, switch=False):
         n = np.unwrap(n) % (np.pi*2)
 
     else:
-        a = np.array([ne[int(i)] for i in data('a')])
-        b = np.array([ne[int(i)] for i in data('b')])
-        m = np.array([ne[int(i)] for i in data('m')])
-        n = np.array([ne[int(i)] for i in data('n')])
+        a = np.array([ne[int(i)] for i in data['a']])
+        b = np.array([ne[int(i)] for i in data['b']])
+        m = np.array([ne[int(i)] for i in data['m']])
+        n = np.array([ne[int(i)] for i in data['n']])
 
     if ind is not None:
         a = a[ind]

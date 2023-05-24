@@ -498,7 +498,7 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
                                                  const RVector & slowness) {
     if (min(this->mesh_->cellMarkers()) < 0){
         __M
-        log(Error, "There are cells with marker -1. "
+        log(Warning, "There are cells with marker -1. "
                 "Did you define a boundary region? (This is not needed).");
     }
     Stopwatch swatch(true);

@@ -90,6 +90,7 @@ class Modelling(pg.core.ModellingBase):
         self._regionsNeedUpdate = False
         self._regionChanged = True
         self._regionManagerInUse = False
+
         self.modelTrans = pg.trans.TransLog()  # Model transformation operator
 
     def __hash__(self):
@@ -153,7 +154,7 @@ class Modelling(pg.core.ModellingBase):
 
     @property
     def modelTrans(self):
-        """Model transformation."""
+        """Return model transformation."""
         self._applyRegionProperties()
         if self.regionManager().haveLocalTrans():
             return self.regionManager().transModel()
@@ -161,7 +162,15 @@ class Modelling(pg.core.ModellingBase):
 
     @modelTrans.setter
     def modelTrans(self, tm):
-        """Return model transformation."""
+        """Set model transformation."""
+        if isinstance(tm, str):
+            if tm.lower() == "log":
+                tm = pg.trans.TransLog()
+            elif tm.lower() == "linear" or tm.lower() == "lin":
+                tm = pg.trans.Trans()
+            else:  # something like "10-1000"
+                raise Exception("Could not use transformation" + tm)
+
         self._modelTrans = tm
 
     def regionManager(self):
@@ -269,8 +278,7 @@ class Modelling(pg.core.ModellingBase):
                 self.setRegionProperties(r, **kwargs)
             return
 
-        pg.verbose('Set property for region: {0}: {1}'.format(regionNr,
-                                                              kwargs))
+        pg.verbose(f'Set property for region: {regionNr}: {kwargs}')
         if regionNr not in self._regionProperties:
             self._regionProperties[regionNr] = {'startModel': None,
                                                 'modelControl': 1.0,
@@ -326,7 +334,6 @@ class Modelling(pg.core.ModellingBase):
         #  __applyRegionProperies itself
         rMgr = super().regionManager()
         for rID, vals in self._regionProperties.items():
-
             if vals['fix'] is not None:
                 if rMgr.region(rID).fixValue() != vals['fix']:
                     vals['background'] = True
@@ -360,10 +367,10 @@ class Modelling(pg.core.ModellingBase):
 
             rMgr.region(rID).setModelControl(vals['modelControl'])
 
-            if vals['limits'][0] > 0:
+            if vals['limits'][0] != 0:
                 rMgr.region(rID).setLowerBound(vals['limits'][0])
 
-            if vals['limits'][1] > 0:
+            if vals['limits'][1] > vals['limits'][0]:
                 rMgr.region(rID).setUpperBound(vals['limits'][1])
 
             if vals['correlationLengths'] is not None:
@@ -635,7 +642,7 @@ class MeshModelling(Modelling):
         # Need to call this once to be sure the mesh is initialized when needed
         self.mesh()
 
-    def setMeshPost(self, data):
+    def setMeshPost(self, mesh):
         """Interface to be called when the mesh has been set successfully.
 
         Might be overwritten by child classes.
@@ -732,8 +739,18 @@ class MeshModelling(Modelling):
         mod = None
         # TODO needs to be checked if mapping is always ok (region example)
         # is (len(model) == self.paraDomain.cellCount() or \
-        if (hasattr(model, "isParaModel") and model.isParaModel) or \
-                (len(model) == self.paraDomain.nodeCount()):
+        if hasattr(model, "isParaModel") and model.isParaModel is False:
+            pg._y(model.isParaModel)
+            mod = self.paraModel(model)
+        elif hasattr(model, "isParaModel") and model.isParaModel is True:
+            pg._g(model.isParaModel)
+            mod = model
+        elif len(model) == self.paraDomain.nodeCount():
+            # why nodeCount? a field as model result?
+            # pg._b('node count')
+            mod = model
+        elif len(model) == self.paraDomain.cellCount():
+            # pg._b('cell count')
             mod = model
         else:
             mod = self.paraModel(model)

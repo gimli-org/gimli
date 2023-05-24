@@ -31,7 +31,7 @@ class TravelTimeManager(MeshMethodManager):
         self._useFMM = kwargs.pop("fatray", False)
         self.secNodes = 2  # default number of secondary nodes for inversion
 
-        super(TravelTimeManager, self).__init__(data=data, **kwargs)
+        super().__init__(data=data, **kwargs)
 
         self.inv.dataTrans = pg.trans.Trans()
 
@@ -58,7 +58,7 @@ class TravelTimeManager(MeshMethodManager):
         self.data = pg.physics.traveltime.load(fileName)
         return self.data
 
-    def createMesh(self, data=None, **kwargs):
+    def createMeshMovedToMeshManager(self, data=None, **kwargs):
         """Create default inversion mesh.
 
         Inversion mesh for traveltime inversion does not need boundary region.
@@ -72,12 +72,12 @@ class TravelTimeManager(MeshMethodManager):
         ------------
         Forwarded to `:py:func:pygimli.meshtools.createParaMesh`
         """
-        d = data or self.data
+        data = data or self.data
 
-        if d is None:
-            pg.critical('Please provide a data file for mesh generation')
+        if not hasattr(data, 'sensors'):
+            pg.critical('Please provide a data container for mesh generation')
 
-        return pg.meshtools.createParaMesh(d.sensors(),
+        return pg.meshtools.createParaMesh(data.sensors(), paraBoundary=0,
                                            boundary=0, **kwargs)
 
     def checkData(self, data):
@@ -209,20 +209,23 @@ class TravelTimeManager(MeshMethodManager):
         Parameters
         ----------
         data : pg.DataContainer()
-            Data container with at least SensorIndieces 's g' and
-            data values 't' (traveltime in ms) and 'err' (absolute error in ms)
+            Data container with at least SensorIndices 's g' (shot/geophone) &
+            data values 't' (traveltime in s) and 'err' (absolute error in s)
         useGradient: bool [True]
-            Use a gradient like starting model suited for standard flat
-            earth cases. [Default]
-            For cross tomography geometry you should set this to False for a
-            non gradient startind model.
+            Use gradient starting model typical for refraction cases.
+            For crosshole tomography geometry you should set this to False for
+            a non-gradient (e.g. homogeneous) starting model.
         vTop: float
-            Top velocity for gradient stating model.
+            Top velocity for gradient starting model.
         vBottom: float
-            Bottom velocity for gradient stating model.
+            Bottom velocity for gradient starting model.
         secNodes: int [2]
-            Amount of secondary nodes used for ensure accuracy of the forward
-            operator.
+            Number of secondary nodes for accuracy of forward computation.
+
+        Returns
+        -------
+        model:
+            Mapped (for paradomain) velocity model.
 
         Keyword Arguments
         -----------------
@@ -247,9 +250,12 @@ class TravelTimeManager(MeshMethodManager):
         else:
             self.fop._useGradient = None
 
+        ### invert return mapped models
         slowness = super().invert(data, mesh, **kwargs)
         velocity = 1.0 / slowness
-        self.fw.model = velocity
+        velocity.isParaModel = slowness.isParaModel
+        self.fw.model = 1.0 / self.fw.model #C42 self.fw only hold non-mapped model
+        # that needs to be compatible to self.fw.mesh
         return velocity
 
     def getRayPaths(self, model=None):
@@ -341,20 +347,17 @@ class TravelTimeManager(MeshMethodManager):
 
         Examples
         --------
-        >>> # No reason to import matplotlib
         >>> import pygimli as pg
-        >>> from pygimli.physics import TravelTimeManager
-        >>> from pygimli.physics.traveltime import createRAData
+        >>> from pygimli.physics import traveltime as tt
         >>>
         >>> x, y = 8, 6
         >>> mesh = pg.createGrid(x, y)
-        >>> data = createRAData([(0,0)] + [(x, i) for i in range(y)],
-        ...                     shotDistance=y+1)
-        >>> data.set("t", pg.Vector(data.size(), 1.0))
-        >>> tt = TravelTimeManager()
-        >>> tt.fop.setData(data)
-        >>> tt.applyMesh(mesh, secNodes=10)
-        >>> ax, cb = tt.showRayPaths(showMesh=True, diam=0.1)
+        >>> data = tt.createRAData([(0, 0)] + [(x, i) for i in range(y)],
+        ...                       shotDistance=y+1)
+        >>> data["t"] = 1.0
+        >>> mgr = tt.Manager(data)
+        >>> mgr.applyMesh(mesh, secNodes=10)
+        >>> ax, cb = mgr.showRayPaths(showMesh=True, diam=0.1)
         """
         if model is None:
             if self.fop.jacobian().size() == 0:

@@ -9,16 +9,15 @@ import numpy as np
 
 import pygimli as pg
 from pygimli.frameworks import MeshModelling
-from .visualization import showERTData
-
 from pygimli import pf
+from .visualization import showERTData
 
 
 class ERTModellingBase(MeshModelling):
     """Modelling base class for ERT modelling."""
 
-    def __init__(self, **kwargs):
-        super(ERTModellingBase, self).__init__(**kwargs)
+    def __init__(self, **kwargs):  # actually useless def
+        super().__init__(**kwargs)
 
     def drawData(self, ax, data=None, **kwargs):
         """Draw data on given axes.
@@ -216,7 +215,7 @@ class ERTModellingReference(ERTModellingBase):
     """Reference implementation for 2.5D Electrical Resistivity Tomography."""
 
     def __init__(self, **kwargs):
-        super(ERTModelling, self).__init__()
+        super().__init__()
 
         self.subPotentials = None
         self.lastResponse = None
@@ -236,7 +235,7 @@ class ERTModellingReference(ERTModellingBase):
         if not self.data.allNonZero('k'):
             pg.error('Need valid geometric factors: "k".')
             pg.warn('Fallback "k" values to -sign("rhoa")')
-            self.data.set('k', -pg.math.sign(self.data('rhoa')))
+            self.data.set('k', -pg.math.sign(self.data['rhoa']))
 
         mesh = self.mesh()
 
@@ -287,15 +286,15 @@ class ERTModellingReference(ERTModellingBase):
         r = np.zeros(nData)
 
         for i in range(nData):
-            iA = int(self.data('a')[i])
-            iB = int(self.data('b')[i])
-            iM = int(self.data('m')[i])
-            iN = int(self.data('n')[i])
+            iA = int(self.data['a'][i])
+            iB = int(self.data['b'][i])
+            iM = int(self.data['m'][i])
+            iN = int(self.data['n'][i])
 
             uAB = pM[iA] - pM[iB]
             r[i] = uAB[iM] - uAB[iN]
 
-        self.lastResponse = r * self.data('k')
+        self.lastResponse = r * self.data['k']
 
         if self.verbose:
             print("Resp min/max: {0} {1} {2}s".format(min(self.lastResponse),
@@ -305,7 +304,7 @@ class ERTModellingReference(ERTModellingBase):
         return self.lastResponse
 
     def createJacobian(self, model):
-        """TODO WRITEME."""
+        """Create Jacobian matrix for model and store it in self.jacobian()."""
         if self.subPotentials is None:
             self.response(model)
 
@@ -347,17 +346,17 @@ class ERTModellingReference(ERTModellingBase):
 
             for dataIdx in range(self.data.size()):
 
-                a = int(self.data('a')[dataIdx])
-                b = int(self.data('b')[dataIdx])
-                m = int(self.data('m')[dataIdx])
-                n = int(self.data('n')[dataIdx])
+                a = int(self.data['a'][dataIdx])
+                b = int(self.data['b'][dataIdx])
+                m = int(self.data['m'][dataIdx])
+                n = int(self.data['n'][dataIdx])
                 Jt[dataIdx] = A.mult(u[kIdx][a] - u[kIdx][b],
                                      u[kIdx][m] - u[kIdx][n])
 
             J += w * Jt
 
         m2 = model*model
-        k = self.data('k')
+        k = self.data['k']
 
         for i in range(J.rows()):
             J[i] /= (m2 / k[i])
@@ -375,10 +374,10 @@ class ERTModellingReference(ERTModellingBase):
         if pg.y(data.sensorPositions()) == pg.z(data.sensorPositions()):
             k = np.zeros(data.size())
             for i in range(data.size()):
-                a = data.sensorPosition(data('a')[i])
-                b = data.sensorPosition(data('b')[i])
-                m = data.sensorPosition(data('m')[i])
-                n = data.sensorPosition(data('n')[i])
+                a = data.sensorPosition(data['a'][i])
+                b = data.sensorPosition(data['b'][i])
+                m = data.sensorPosition(data['m'][i])
+                n = data.sensorPosition(data['n'][i])
                 k[i] = 1./(2.*np.pi) * (1./a.dist(m) - 1./a.dist(n) -
                                         1./b.dist(m) + 1./b.dist(n))
             return k

@@ -96,12 +96,14 @@ class ERTManager(MeshMethodManager):
 
         Forwarded to :py:mod:`pygimli.physics.ert.createInversionMesh`
         """
-        d = data or self.data
+        data = data or self.data
 
-        if d is None:
+        if data is None:
             pg.critical('Please provide a data file for mesh generation')
 
-        return createInversionMesh(d, **kwargs)
+        mesh = createInversionMesh(data, **kwargs)
+        self.setMesh(mesh)
+        return mesh
 
     def setPrimPot(self, pot):
         """Set primary potential from external is not supported anymore."""

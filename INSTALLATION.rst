@@ -5,10 +5,10 @@ Installation
 
    <p style="height:22px">
      <a href="https://anaconda.org/gimli/pygimli" >
-       <img src="https://anaconda.org/gimli/pygimli/badges/installer/conda.svg?style=flat-square"/>
+       <img src="https://anaconda.org/gimli/pygimli/badges/license.svg"/>
      </a>
      <a href="https://anaconda.org/gimli/pygimli" >
-       <img src="https://anaconda.org/gimli/pygimli/badges/installer/conda.svg?style=flat-square"/>
+       <img src="https://anaconda.org/gimli/pygimli/badges/downloads.svg"/>
     <a href="https://anaconda.org/gimli/pygimli" >
        <img src="https://anaconda.org/gimli/pygimli/badges/version.svg?style=flat-square"/>
      </a>
@@ -115,11 +115,11 @@ should create an environment with the latest pyGIMLi C++ core only,
 
     conda create -n pgcore -c gimli -c conda-forge pgcore
     
-retrieve the source code by git (and checking out the development branch)
+retrieve the source code by git
 
 .. code-block:: bash
 
-    git clone https://github.com/gimli-org/gimli dev
+    git clone https://github.com/gimli-org/gimli
     cd gimli
 
 and install pygimli as a development package

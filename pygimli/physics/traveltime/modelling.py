@@ -15,9 +15,12 @@ class TravelTimeDijkstraModelling(MeshModelling):
     """Forward modelling class for traveltime using Dijsktras method."""
 
     def __init__(self, **kwargs):
-        self._core = pg.core.TravelTimeDijkstraModelling()
 
         super(TravelTimeDijkstraModelling, self).__init__(**kwargs)
+        
+        self._core = pg.core.TravelTimeDijkstraModelling()
+        self._core.setRegionManager(self.regionManagerRef())
+        
         self._useGradient = None  # assumed to be [vTop, vBot] if set
         self._refineSecNodes = 3
         self.jacobian = self._core.jacobian
@@ -30,9 +33,9 @@ class TravelTimeDijkstraModelling(MeshModelling):
         """Return current Dijkstra graph associated to mesh and model."""
         return self._core.dijkstra()
 
-    def regionManagerRef(self):
-        """Region manager reference (core Dijkstra has an own!)."""
-        return self._core.regionManagerRef()
+    # def regionManagerRef(self):
+    #     """Region manager reference (core Dijkstra has an own!)."""
+    #     return self._core.regionManagerRef()
 
     def createRefinedFwdMesh(self, mesh):
         """Refine the current mesh for higher accuracy.
@@ -48,7 +51,7 @@ class TravelTimeDijkstraModelling(MeshModelling):
 
     def setMeshPost(self, mesh):
         """Set mesh after forward operator has been initalized."""
-        self._core.setMesh(mesh)
+        self._core.setMesh(mesh, ignoreRegionManager=True)
 
     def setDataPost(self, data):
         """Set data after forward operator has been initalized."""

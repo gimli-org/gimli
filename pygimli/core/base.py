@@ -49,6 +49,25 @@ def isScalar(v, val=None):
     # maybe add some tolerance check
     return isinstance(v, (int, float, complex, np.complex128)) and v == val
 
+
+def isIterable(v, N=None):
+    """Check if `v` is iterable with optional size `N`.
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> import numpy as np
+    >>> print(pg.isIterable([0, 1]))
+    True
+    >>> print(pg.isIterable([pg.Vector(5), pg.Vector(2)], N=2))
+    True
+    """
+    if N is None:
+        return hasattr(v, '__iter__')
+
+    return isIterable(v) and len(v) == N
+
+
 def isArray(v, N=None):
     """Check if `v` is a 1D array or a vector, with optional size `N`.
 

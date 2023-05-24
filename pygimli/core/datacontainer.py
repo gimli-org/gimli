@@ -3,6 +3,7 @@
 import numpy as np
 from . logger import critical, verbose
 from .core import (RVector, RVector3, DataContainer, DataContainerERT)
+from .core import (yVari, zVari, swapYZ, y, z)
 
 
 def __DataContainer_str(self):
@@ -78,6 +79,17 @@ def __DC_getVal(self, key):
 
 
 DataContainer.__getitem__ = __DC_getVal
+
+
+def __DataContainer_ensure2D(self):
+    sen = self.sensors()
+    if ((zVari(sen) or max(abs(z(sen))) > 0) and
+            (not yVari(sen) and max(abs(y(sen))) < 1e-8)):
+        swapYZ(sen)
+        self.setSensorPositions(sen)
+
+
+DataContainer.ensure2D = __DataContainer_ensure2D
 
 
 def __DataContainerERT_addFourPointData(self, *args,

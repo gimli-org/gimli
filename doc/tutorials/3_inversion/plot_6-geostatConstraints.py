@@ -123,7 +123,6 @@ ax, cb = pg.show(mesh, pg.abs(Cdip * vec), **kwLog)
 # that projects the model vector to the forward response.
 # This matrix is also the Jacobian matrix for the inversion.
 
-
 # %%
 # Inversion with geostatistical constraints
 # -----------------------------------------
@@ -141,9 +140,9 @@ kw = dict(
     logScale=True)
 
 # We want to use a homogenenous starting model
-vals = [30, 50, 300, 100, 200]
+vals = np.array([30, 50, 300, 100, 200])
 # We assume a 5% relative accuracy of the values
-error = pg.Vector(len(vals), 0.05)
+relError = 0.05
 # set up data and model transformation log-scaled
 tLog = pg.trans.TransLog()
 inv = pg.Inversion(fop=fop)
@@ -153,28 +152,28 @@ inv.startModel = 30  # for all
 
 # Initially, we use the first-order constraints (default)
 # inv.setRegularization(cType=2)
-res = inv.run(vals, error, cType=1, lam=30)
+res = inv.run(vals, relativeError=relError, cType=1, lam=30)
 print(('Ctype=1: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[0, 0], **kw)
 ax[0, 0].set_title("1st order")
 np.testing.assert_array_less(inv.chi2(), 1.2)
 
 # Next, we use the second order (curvature) constraint type
-res = inv.run(vals, error, cType=2, lam=25)
+res = inv.run(vals, relativeError=relError, cType=2, lam=25)
 print(('Ctype=2: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[0, 1], **kw)
 ax[0, 1].set_title("2nd order")
 np.testing.assert_array_less(inv.chi2(), 1.2)
 
 # Now we set the geostatistic isotropic operator with 5m correlation length
-res = inv.run(vals, error, lam=15, C=C)
+res = inv.run(vals, relativeError=relError, lam=15, C=C)
 print(('Cg-5/5m: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[1, 0], **kw)
 ax[1, 0].set_title("I=5")
 np.testing.assert_array_less(inv.chi2(), 1.2)
 
 # and finally we use the dipping constraint matrix
-res = inv.run(vals, error, lam=15, C=Cdip)
+res = inv.run(vals, relativeError=relError, lam=15, C=Cdip)
 print(('Cg-9/2m: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[1, 1], **kw)
 ax[1, 1].set_title("I=[10/2], dip=25")

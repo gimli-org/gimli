@@ -120,19 +120,21 @@ class MethodManager(object):
         self._verbose = kwargs.pop('verbose', False)
         self._debug = kwargs.pop('debug', False)
 
-        self.data = None
-        if data is not None:
-            if isinstance(data, str):
-                self.load(data)
-            else:
-                self.data = data
-
         # The inversion framework
         self._initInversionFramework(verbose=self._verbose,
                                      debug=self._debug)
 
         # The forward operator is stored in self._fw
         self._initForwardOperator(verbose=self._verbose, **kwargs)
+
+        self._data = None
+
+        if data is not None:
+            if isinstance(data, str):
+                self.load(data)
+            else:
+                #self.data = data
+                self.setData(data)
 
         # maybe obsolete
         self.figs = {}
@@ -310,10 +312,18 @@ class MethodManager(object):
 
         return ra
 
+    @property
+    def data(self):
+        return self._data
+    
+    @data.setter
+    def data(self, d):
+        return self.setData(d)
+
     def setData(self, data):
         """Set data and distribute it to the forward operator."""
-        self.data = data
-        self.applyData(data)
+        self._data = data
+        self.applyData(self._data)
 
     def applyData(self, data):
         """Pass the data to the forward operator."""
@@ -558,7 +568,10 @@ class MethodManager(object):
             fig.suptitle(kwargs['title'])
 
         self.showResult(ax=ax, model=self.model, **kwargs)
+        fig.modelAX = ax
         self.showFit(axs=[ax1, ax2], **kwargs)
+        fig.dataAX = ax1
+        fig.respAX = ax2
 
         fig.tight_layout()
 
@@ -708,9 +721,28 @@ class MeshMethodManager(MethodManager):
         return self.fop.paraModel(model)
 
     def createMesh(self, data=None, **kwargs):
-        """Create mesh class, must be implemented in derived classes."""
-        pg.critical('no default mesh generation defined .. implement in '
-                    'derived class')
+        """Create default inversion mesh.
+
+        Inversion mesh for traveltime inversion does not need boundary region.
+
+        Args
+        ----
+        data: DataContainer
+            Data container to read sensors from.
+
+        Keyword Args
+        ------------
+        Forwarded to `:py:func:pygimli.meshtools.createParaMesh`
+        """
+        data = data or self.data
+
+        if not hasattr(data, 'sensors'):
+            pg.critical('Please provide a data container for mesh generation')
+
+        mesh = pg.meshtools.createParaMesh(data.sensors(), paraBoundary=0,
+                                           boundary=0, **kwargs)
+        self.setMesh(mesh)
+        return mesh
 
     def setMesh(self, mesh, **kwargs):
         """Set a mesh and distribute it to the forward operator."""
@@ -763,9 +795,7 @@ class MeshMethodManager(MethodManager):
             Model mapped for match the paraDomain Cell markers.
             The calculated model vector (unmapped) is in self.fw.model.
         """
-        if data is None:
-            data = self.data
-
+        data = data or self.data
         if data is None:
             pg.critical('No data given for inversion')
 
@@ -777,7 +807,9 @@ class MeshMethodManager(MethodManager):
 
         # a mesh was given or created so we forward it to the fop
         if mesh is not None:
-            self.setMesh(mesh)
+            self.setMesh(mesh)  # could be done by createMesh
+            if isinstance(data, pg.DataContainer) and mesh.dim() == 2:
+                data.ensure2D()
 
         # remove unused keyword argument .. need better kwargfs
         self.fop._refineP2 = kwargs.pop('refineP2', False)
@@ -806,7 +838,7 @@ class MeshMethodManager(MethodManager):
         self.fw.run(dataVals, errorVals, **kwargs)
         self.postRun(**kwargs)
         return self.paraModel(self.fw.model)
-
+        
     def showFit(self, axs=None, **kwargs):
         """Show data and the inversion result model response."""
         orientation = 'vertical'
@@ -857,9 +889,9 @@ class MeshMethodManager(MethodManager):
         nCells = self.fop.paraDomain.cellCount()
         return np.log10(covTrans[:nCells] / self.fop.paraDomain.cellSizes())
 
-    def standardizedCoverage(self, threshhold=0.01):
+    def standardizedCoverage(self, threshold=0.01):
         """Standardized coverage vector (0|1) using thresholding."""
-        return 1.0*(abs(self.coverage()) > threshhold)
+        return 1.0*(abs(self.coverage()) > threshold)
 
 
 class PetroInversionManager(MeshMethodManager):

@@ -435,7 +435,8 @@ class Cm05Matrix(MatrixBase):
         if isinstance(A, str):
             self.load(A)
         else:
-            from scipy.linalg import eigh  # , get_blas_funcs
+            import scipy
+            from packaging import version
 
             if A.shape[0] != A.shape[1]:  # rows/cols for pgcore matrix
                 raise Exception("Matrix must by square (and symmetric)!")
@@ -443,7 +444,15 @@ class Cm05Matrix(MatrixBase):
             if verbose:
                 pg.tic(key='init cm05')
 
-            self.ew, self.EV = eigh(A)
+            eigkw = {}
+            thrsh = 1e-6
+            if version.parse(scipy.__version__) >= version.parse("1.5"):
+                eigkw["subset_by_value"] = [thrsh, np.inf]
+                self.ew, self.EV = scipy.linalg.eigh(A, **eigkw)
+            else:
+                self.ew, self.EV = scipy.linalg.eigh(A)
+                self.EV = self.EV[:, self.ew > thrsh]
+                self.ew = self.ew[self.ew > thrsh]
 
             if verbose:
                 pg.info('(C) Time for eigenvalue decomposition {:.1f}s'.format(
@@ -481,9 +490,7 @@ class Cm05Matrix(MatrixBase):
 
     def mult(self, x):
         """Multiplication from right-hand side (dot product)."""
-        part1 = (np.dot(np.transpose(x), self.EV).T*self.mul).reshape(-1, 1)
-        return self.EV.dot(part1).reshape(-1,)
-#        return self.EV.dot((x.T.dot(self.EV)*self.mul).T)
+        return self.EV.dot(np.dot(np.transpose(x), self.EV).T*self.mul)
 
     def transMult(self, x):
         """Multiplication from right-hand side (dot product)."""
@@ -674,6 +681,7 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
         super().__init__(kwargs.pop('verbose', False))
         self.withRef = kwargs.pop('withRef', False)
         self._spur = None
+        self.Cm05 = None
 
         if isinstance(CM, str):
             self.load(CM)
@@ -701,10 +709,7 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
 
     @property
     def nModel(self):
-        try:
-            return self.Cm05.size()
-        except Exception:
-            return 0
+        return self.Cm05.EV.shape[0] if hasattr(self.Cm05, "EV") else 0
 
     def save(self, fileName):
         """Save content of this matrix.

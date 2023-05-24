@@ -67,7 +67,7 @@ void ModellingBase::init_() {
     regionManager_      = new RegionManager(verbose_);
     regionManagerInUse_ = false;
 
-    // __MS("create: " << this)
+    // __MS("ModellingBase::init_: " << this <<  " rm:" << regionManager_)
 
     mesh_               = 0;
     jacobian_           = 0;
@@ -405,8 +405,9 @@ RVector ModellingBase::createMappedModel(const RVector & model,
                                          double background) const {
     if (mesh_ == 0) throwError("ModellingBase has no mesh for ModellingBase::createMappedModel");
 
-    // __MS("createMappedModel: " << model.size() << " " <<  mesh_->cellCount())
-
+    // __MS("ModellingBase::createMappedModel: " << this << " rm: " << regionManager_
+    //             << " " << model.size() << " " <<  mesh_->cellCount())
+    
     if (model.size() == mesh_->cellCount()) {
         IVector cM(mesh_->cellMarkers());
 
@@ -457,6 +458,8 @@ RVector ModellingBase::createMappedModel(const RVector & model,
     if (background != 0.0){
         mesh_->prolongateEmptyCellsValues(cellAtts, background);
     }
+    // __MS(regionManager_->regionCount())
+    // exit(1);
 
     bool warned = false;
     // search for fixed regions
@@ -469,19 +472,23 @@ RVector ModellingBase::createMappedModel(const RVector & model,
 
             // __MS(regionManagerInUse_ << " " << this <<  " " << 
             //         regionManager_->region(regionMarker)->fixValue())
+
             if (regionManagerInUse_){
                 double val = regionManager_->region(regionMarker)->fixValue();
                 if (warned == false){
-                    log(Warning, "fixing region: ", regionMarker," to: ", val);
+                    log(Info, "fixing region: ", regionMarker," to: ", val);
                     warned = true;
                 }
                 cellAtts[i] = val;
+                // __MS(val)
             } else {
                 // temporay hack until fixed in modelling.py
                 if (warned == false){
                     // __MS(cellAtts[i])
                     log(Warning, "** TMP HACk ** fixing region: ", regionMarker, " to: ", 1/0.058);
                     warned = true;
+                    __MS(this << " rm:" << regionManager_)
+                    THROW_TO_IMPL
                 }
                 cellAtts[i] = 1./0.058;
             }
@@ -499,13 +506,14 @@ void ModellingBase::mapModel(const RVector & model, double background){
 
 void ModellingBase::initRegionManager() {
     // clean this up .. this will fail for second try with mesh
+
     if (!regionManagerInUse_){
         if (mesh_){
             regionManager_->setMesh(*mesh_);
             this->setMesh_(regionManager_->mesh());
         }
         regionManagerInUse_ = true;
-        // __MS(regionManagerInUse_ << " " << this)
+        // __MS("ModellingBase::initRegionManager " << this << " rm: " << regionManager_)
     }
 }
 
@@ -515,13 +523,16 @@ void ModellingBase::setRegionManager(RegionManager * reg){
         delete regionManager_;
         regionManager_ = reg;
         ownRegionManager_ = false;
-
+        // __MS("ModellingBase::setRegionManager reg " << this << " rm: " << regionManager_)
     } else {
         regionManagerInUse_ = false;
         regionManager_      = new RegionManager(verbose_);
-        ownRegionManager_   = true; // we really refcounter
+        ownRegionManager_   = true; 
+        // __MS("ModellingBase::setRegionManager new " << this << " rm: " << regionManager_)
     }
+    // __MS("MB:setRegionManager: " << this << " rm: " << regionManager_)
     // __MS(regionManagerInUse_ << " " << this)
+    // THROW_TO_IMPL
 }
 
 const RegionManager & ModellingBase::regionManager() const {
