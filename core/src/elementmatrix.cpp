@@ -2266,7 +2266,7 @@ DEFINE_DOT_MULT_WITH_RETURN(const FEAFunction &)
 void mult(const ElementMatrix < double > & A, 
           double f,
           ElementMatrix < double > & C){
-
+    __MS("** mult(A, d)")
     C.copyFrom(A, false);
     const RVector &w = *A.w();
     Index nRules(w.size());
@@ -2286,6 +2286,7 @@ void mult(const ElementMatrix < double > & A,
 void mult(const ElementMatrix < double > & A, 
           const Pos & f,
           ElementMatrix < double > & C){
+    __MS("** mult(A, p)")
 // __MS(f)
     C.copyFrom(A, false);
 
@@ -2307,6 +2308,7 @@ void mult(const ElementMatrix < double > & A,
 void mult(const ElementMatrix < double > & A, 
           const RVector & b,
           ElementMatrix < double > & C){
+    __MS("** mult(A, rv)")
 // __MS(b)
     C.copyFrom(A, false);
     //const PosVector &x = *A.x();
@@ -2351,6 +2353,7 @@ void mult(const ElementMatrix < double > & A,
           const PosVector & f,
           ElementMatrix < double > & C){
     // result is no bilinear form, so keep it a rowMatrix check!!
+    __MS("** mult(A, pv)")
     C.copyFrom(A, false);
     const PosVector &x = *A.x();
 
@@ -2362,8 +2365,9 @@ void mult(const ElementMatrix < double > & A,
     for (Index r = 0; r < nRules; r++){
         RSmallMatrix & iC = (*C.pMatX())[r];
         for (Index k = 0; k < iC.rows(); k ++){
-            // __MS(r << " " << k << " " << b[r][k])
+            // __MS(r ," ", k ," ", f[r][k])
             iC.row(k) *= f[r][k];
+            // iC.row(k) *= f[k][r];
         }
         // __MS(iC)
     }
@@ -2373,7 +2377,7 @@ void mult(const ElementMatrix < double > & A,
 void mult(const ElementMatrix < double > & A, 
           const RSmallMatrix  &  b,
           ElementMatrix < double > & C){
-
+    __MS("** mult(A, rm)")
     // __MS("b:\n", b)
 
     if (b.rows()*b.cols() == A.cols()){
@@ -2444,6 +2448,7 @@ void mult(const ElementMatrix < double > & A,
 void mult(const ElementMatrix < double > & A, 
           const std::vector < RSmallMatrix  > & b,
           ElementMatrix < double > & C){
+    __MS("** mult(A, vrm)")
     C.copyFrom(A, false);
     const PosVector &x = *A.x();
 
@@ -2547,8 +2552,10 @@ ElementMatrix < double >::integrate(const RVector & f,
 template < >
 void ElementMatrix < double >::integrate(const PosVector & f,
                                          RVector & R, double scale) const {
+    __MS("** M.integrate(rv, ->R)") 
     ASSERT_VEC_SIZE(f, this->_w->size())
-    INTEGRATE_LINFORM(*f[r][k])
+    INTEGRATE_LINFORM(*f[r][k]) // #orig
+    //INTEGRATE_LINFORM(*f[r][k])
     rt *= this->_ent->size() * scale;
     R.addVal(rt, this->rowIDs());
 }

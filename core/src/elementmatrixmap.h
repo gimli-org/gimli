@@ -39,32 +39,32 @@ public:
 
     void resize(Index size);
 
-    #define DEFINE_INTEGRATOR(A_TYPE) \
+    #define DEFINE_INTEGRATOR(A_TYPE, varname) \
         /*! R = \int_mesh this * f \d d mesh and R = RVector(dof) and \
             f = A_TYPE \
         */ \
-        void integrate(const A_TYPE & f, RVector & R, const double & alpha=1.0) const; \
+        void integrate(const A_TYPE & varname, RVector & R, const double & alpha=1.0) const; \
         /*! Integrate into linear form R = alpha * \int_mesh this * f * R \d d mesh and \
         R = RVector(dof) and f = A_TYPE \
         */ \
-        void integrate(const A_TYPE & f, RVector & R, const RVector & alpha) const; \
+        void integrate(const A_TYPE & varname, RVector & R, const RVector & alpha) const; \
         /*! Integrate into linear form R = alpha[cellID]*\int_mesh this * f * R \d d mesh and \
         R = RVector(dof) and f = A_TYPE \
         */ \
-        RVector integrate(const A_TYPE & f, const double & alpha=1.0) const; \
+        RVector integrate(const A_TYPE & varname, const double & alpha=1.0) const; \
         /*! R = this * f */ \
-        void mult(const A_TYPE & f, ElementMatrixMap & ret) const;
+        void mult(const A_TYPE & varname, ElementMatrixMap & ret) const;
        
 
-    DEFINE_INTEGRATOR(double)   // const scalar for all cells
-    DEFINE_INTEGRATOR(RSmallMatrix)  // const Matrix for all cells
-    DEFINE_INTEGRATOR(RVector)      // const scalar for each cells
-    DEFINE_INTEGRATOR(Pos)      // const vector for all cells //!calling order!
-    DEFINE_INTEGRATOR(PosVector)    // const vector for each cells
-    DEFINE_INTEGRATOR(std::vector< RSmallMatrix >)// const matrix for each cells
-    DEFINE_INTEGRATOR(std::vector< RVector >)// scalar for quadr. on each cells
-    DEFINE_INTEGRATOR(std::vector< PosVector >)// vector for quadr. on each cells
-    DEFINE_INTEGRATOR(std::vector< std::vector< RSmallMatrix > >)// mat for quadr. on each cells
+    DEFINE_INTEGRATOR(double, d)   // const scalar for all cells
+    DEFINE_INTEGRATOR(RSmallMatrix, rm)  // const Matrix for all cells
+    DEFINE_INTEGRATOR(RVector, rv)      // const scalar for each cells
+    DEFINE_INTEGRATOR(Pos, p)      // const vector for all cells //!calling order!
+    DEFINE_INTEGRATOR(PosVector, pv)    // const vector for each cells
+    DEFINE_INTEGRATOR(std::vector< RSmallMatrix >, vrm)// const matrix for each cells
+    DEFINE_INTEGRATOR(std::vector< RVector >, vrv)// scalar for quadr. on each cells
+    DEFINE_INTEGRATOR(std::vector< PosVector >, vpv)// vector for quadr. on each cells
+    DEFINE_INTEGRATOR(std::vector< std::vector< RSmallMatrix > >, vvrm)// mat for quadr. on each cells
 
     #undef DEFINE_INTEGRATOR
 
