@@ -59,7 +59,7 @@ void _T_integrateLConst(const ElementMatrixMap * self,
 template < class ValueType >
 void _T_integrateLPerCell(const ElementMatrixMap * self,
                         const ValueType & f, RVector & R, const double & alpha){
-    __MS("** EMM.intLPerCell(A, ??)") 
+    // __MS("** EMM.intLPerCell(A, ??)") 
     ASSERT_NON_EMPTY(R)
     ASSERT_EQUAL_SIZE(self->mats(), f)
 
