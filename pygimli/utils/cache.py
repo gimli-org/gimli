@@ -135,8 +135,17 @@ class Cache(object):
             np.save(self._name, v, allow_pickle=True)
         elif hasattr(v, 'save') and hasattr(v, 'load'):
             v.save(self._name)
+        elif isinstance(v, tuple) and 0:
+            pass
+            # pg._r(v)
+            # with open(self._name + '.npy', 'wb') as f:
+            #     for i in range(len(v)):
+            #         pg._b(i, len(v), '#'*60)
+            #         pg._g(v[i])
+            #         np.save(f, v[i])
+           
         else:
-            np.save(self._name, v, allow_pickle=True)
+            np.save(self._name, np.array(v, dtype=object), allow_pickle=True)
             # pg.warn('ascii save of type', self.info['type'], 'might by dangerous')
             # v.save(self._name)
 
@@ -185,6 +194,17 @@ class Cache(object):
                 elif self.info['type'] == 'GeostatisticConstraintsMatrix':
                     self._value = pg.matrix.GeostatisticConstraintsMatrix(
                                                             self.info['file'])
+                elif self.info['type'] == 'tuple' and 0:
+                    r = []
+                    with open(self.info['file'] + '.npy', 'rb') as f:
+                        v = np.load(f)
+                        pg._g(v)
+                        pg._b('--------')
+                        r.append(v)
+                    pg._r(self._value)
+                    self._value = (*r,)
+                    pg._y(self._value)
+
                 else:
                     self._value = np.load(self.info['file'] + '.npy',
                                           allow_pickle=True)
@@ -267,7 +287,13 @@ class CacheManager(object):
         cached.info['codeinfo'] = self.functInfo(funct)
         cached.info['version'] = pg.versionStr()
         cached.info['args'] = str(args)
-        cached.info['kwargs'] = str(kwargs)
+        #cached.info['kwargs'] = pg.pf(kwargs)
+
+        kw = dict(kwargs)
+        for k, v in kw.items():
+            if isinstance(v, np.ndarray):
+                kw[k] = 'ndarray' 
+        cached.info['kwargs'] = str(kw)
 
         return cached
 

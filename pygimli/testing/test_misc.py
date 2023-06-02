@@ -203,7 +203,15 @@ class TestMisc(unittest.TestCase):
         m2.node(0).setPos([1.0, 0.0])
         self.assertTrue(m1.hash() == m2.hash())
 
-        
+    def test_Cache(self):
+
+        @pg.cache
+        def c1(N):
+            return np.linspace(0, 1, N)
+
+        c_ = c1(10)
+
+
     # does not work .. need time to implement          
     # def test_DataContainerWrite(self):
     #     data = pg.DataContainer()

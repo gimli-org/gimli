@@ -763,8 +763,6 @@ PosList = PosVector
 ############################
 # non automatic exposed functions
 ############################
-__pyabs__ = abs
-
 __PY_ABS__ = abs
 
 def abs(v):
@@ -829,17 +827,18 @@ def abs(v):
         for i in range(len(v)):
             v[i] = pgcore.abs(v[i])
         return v
-    elif isinstance(v, (float, int)):
-        return __pyabs__(v)
     elif hasattr(v, 'values'):
         #import pygimli as pg
         return abs(v.values)
     elif hasattr(v, 'vals'):
         return abs(v.vals)
-    elif isinstance(v, (int, float, np.integer, np.float)):
+    elif isinstance(v, (int, float)):
         return __PY_ABS__(v)
-
-    return pgcore.fabs(v)
+    
+    try:
+        return __PY_ABS__(v)
+    except:
+        return pgcore.fabs(v)
 
 # default BVector operator == (RVector, int) will be casted to
 # BVector operator == (RVector, RVector(int)) and fails
