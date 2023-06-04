@@ -177,29 +177,29 @@ class TravelTimeManager(MeshMethodManager):
 
         if len(slowness) == self.fop.mesh().cellCount():
             t = fop.response(slowness)
+            if verbose:
+                print('min/max t:', min(t), max(t))
         else:
             print(self.fop.mesh())
             print("slowness: ", slowness)
             pg.critical("Simulate called with wrong slowness array.")
 
         ret = pg.DataContainer(scheme)
-        ret.set('t', t)
 
         if noiseLevel > 0 or noiseAbs > 0:
             if not ret.allNonZero('err'):
-                ret.set('t', t)
                 err = noiseAbs + t * noiseLevel
-                ret.set('err', err)
+                ret['err'] = err
 
             pg.verbose("Absolute error estimates (min:max) {0}:{1}".format(
-                min(ret('err')), max(ret('err'))))
+                min(ret['err']), max(ret['err'])))
 
             t += pg.randn(ret.size(), seed=seed) * ret('err')
-            ret.set('t', t)
 
         if kwargs.pop('returnArray', False) is True:
             return t
 
+        ret['t'] = t
         return ret
 
     def invert(self, data=None, useGradient=True, vTop=500, vBottom=5000,
