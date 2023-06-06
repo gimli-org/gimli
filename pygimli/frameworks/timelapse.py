@@ -15,20 +15,22 @@ class MultiFrameModelling(MeshModelling):
         self.modellingOperator = modellingOperator
         self.jac = pg.matrix.BlockMatrix()
         self.scalef = scalef
+        self.fops = []
 
-    def setData(self, alldata, modellingOperator=None, **ini):
+    def setData(self, data, modellingOperator=None, **ini):
         """Distribute the data containers amongst the fops."""
         modellingOperator = modellingOperator or self.modellingOperator
         ini = self.ini or ini
         self.fops = []
-        for i, data in enumerate(alldata):
+        for datai in data:
             fopi = modellingOperator(**ini)
-            fopi.setData(pg.Vector(data))
+            fopi.setData(datai)
+            # fopi.setData(pg.Vector(datai))
             self.fops.append(fopi)
 
     def setMeshPost(self, mesh):
         """Set mesh to all forward operators."""
-        for i, fop in enumerate(self.fops):
+        for fop in self.fops:
             fop.setMesh(mesh, ignoreRegionManager=True)
 
         self.prepareJacobian()
