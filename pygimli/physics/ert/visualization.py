@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""View ERT data
-"""
+"""View ERT data."""
 
 from math import pi
 import numpy as np
@@ -85,6 +84,7 @@ def showERTData(data, vals=None, **kwargs):
 
     if isinstance(vals, str):
         if data.haveData(vals):
+            kwargs.setdefault('label', pg.utils.unit(vals))
             vals = data(vals)
         else:
             pg.critical('field not in data container: ', vals)
