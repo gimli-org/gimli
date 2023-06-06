@@ -608,11 +608,16 @@ __Animation_Keeper__ = None
 def showAnimation(mesh, data, ax=None, **kwargs):
     """Show timelapse mesh data.
 
-    Time will be annotated if the mesh contains a valid 'times' data array.
+    Time will be annotated if the mesh contains a valid 'times' data array. 
+    Note, there can be only one animation per time. 
+
+    Best viewed in a notebook, because of caching and better animation control 
+    elements.
 
     TODO
     ----
         * 3D
+        * allow for multiple animations per script
 
     Parameters
     ----------
@@ -640,7 +645,9 @@ def showAnimation(mesh, data, ax=None, **kwargs):
 
     plt.ioff()
 
-    pg.show(mesh, data[0], ax=ax)
+    pg.show(mesh, data[0], ax=ax, **kwargs)
+    if flux is not None:
+        pg.show(mesh, flux[0], ax=ax)
 
     try:
         times = mesh['times']
@@ -653,6 +660,7 @@ def showAnimation(mesh, data, ax=None, **kwargs):
         p.update(t)
         ax.clear()
         pg.show(mesh, data[t], ax=ax, **kwargs)
+
         if flux is not None:
             pg.show(mesh, flux[t], ax=ax)
 
