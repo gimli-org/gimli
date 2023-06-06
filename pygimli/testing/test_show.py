@@ -312,6 +312,15 @@ def testCoverage():
     pg.show(grid, data, coverage=cov)
 
 
+def testAnimations():
+    mesh = pg.createGrid(20,20)
+    data = np.random.randn(10, mesh.cellCount())
+    pg.show(mesh, data, cMin=0, cMax=1)
+
+    # data = np.random.randn(10, mesh.nodeCount())
+    # pg.show(mesh, data)
+
+
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         locals()[sys.argv[1]]()
