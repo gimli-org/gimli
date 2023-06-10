@@ -705,6 +705,7 @@ def extract2dSlice(mesh, origin=None, normal=[0, 1, 0], angle=None, dip=None):
         meshtmp.rotate(pg.Pos(0, np.deg2rad(-dip), 0))
 
     pvmesh = pgMesh2pvMesh(meshtmp)
+
     pvs = pvmesh.slice(normal=normal, origin=[0, 0, 0],
                        generate_triangles=True)
     # return convertPVPolyData(pvs)  # that's the better way
@@ -719,6 +720,7 @@ def extract2dSlice(mesh, origin=None, normal=[0, 1, 0], angle=None, dip=None):
     for key in mesh.dataKeys():
         mesh2d[key] = pvs[key]
 
+    mesh2d.setCellMarkers(pvs["Cell Marker"])
     mesh2d.swapCoordinates(1, 2)
     return mesh2d
 
