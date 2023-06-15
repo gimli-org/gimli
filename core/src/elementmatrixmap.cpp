@@ -55,11 +55,34 @@ void _T_integrateLConst(const ElementMatrixMap * self,
         m.integrate(f, R, alpha[m.entity()->id()]);
     }
 }
+template < class ValueType >
+void _T_integrate_LF_PerNode(const ElementMatrixMap * self,
+                          const ValueType & f, RVector & R, const double & alpha){
+    ASSERT_VEC_SIZE(f, self->dof())
+    __MS("** EMM.intLPerNode(A, ??)") 
+    __M
+    // assuming per node values
+    for (auto &m : self->mats()){
+        m.integrate_n(f, R, alpha);
+    }
+}
+template < class ValueType >
+void _T_integrate_LF_PerNode(const ElementMatrixMap * self,
+                          const ValueType & f, RVector & R, const RVector & alpha){
+    ASSERT_EQUAL_SIZE(self->mats(), alpha)
+    ASSERT_VEC_SIZE(f, self->dof())
+    __MS("** EMM.intLPerNode(A, ??)") 
+    __M 
+    // assuming per node values
+    for (auto &m : self->mats()){
+        m.integrate_n(f, R, alpha[m.entity()->id()]);
+    }
+}
 
 template < class ValueType >
-void _T_integrateLPerCell(const ElementMatrixMap * self,
-                        const ValueType & f, RVector & R, const double & alpha){
-    // __MS("** EMM.intLPerCell(A, ??)") 
+void _T_integrate_LF_PerCell(const ElementMatrixMap * self,
+                             const ValueType & f, RVector & R, 
+                             const double & alpha){
     ASSERT_NON_EMPTY(R)
     ASSERT_EQUAL_SIZE(self->mats(), f)
 
@@ -68,8 +91,9 @@ void _T_integrateLPerCell(const ElementMatrixMap * self,
     }
 }
 template < class ValueType >
-void _T_integrateLPerCell(const ElementMatrixMap * self,
-                        const ValueType & f, RVector & R, const RVector & alpha){
+void _T_integrate_LF_PerCell(const ElementMatrixMap * self,
+                             const ValueType & f, RVector & R,
+                             const RVector & alpha){
     ASSERT_NON_EMPTY(R)
     ASSERT_EQUAL_SIZE(self->mats(), f)
     ASSERT_EQUAL_SIZE(self->mats(), alpha)
@@ -257,8 +281,7 @@ void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const { \
         GIMLI::mult(m, f, *ret.pMat(i)); \
         i++; \
     } \
-} \
-
+} 
 DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(double)
 DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(Pos)
 DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(RSmallMatrix)
@@ -284,32 +307,70 @@ void ElementMatrixMap::add(const ElementMatrixMap & B,
     // __MS(*ret.pMat(0))
 }
 
-
-#define DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(A_TYPE) \
+#define DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL(A_TYPE) \
 void ElementMatrixMap::integrate(const A_TYPE & f, RVector & R, const double & alpha) const { \
-    _T_integrateLPerCell(this, f, R, alpha); \
+    _T_integrate_LF_PerCell(this, f, R, alpha); \
 } \
 void ElementMatrixMap::integrate(const A_TYPE & f, RVector & R, const RVector & alpha) const { \
-    _T_integrateLPerCell(this, f, R, alpha); \
+    _T_integrate_LF_PerCell(this, f, R, alpha); \
 } \
 void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const { \
     ret.resize(this->size()); \
     ret.setDof(this->dofA(), this->dofB()); \
-    Index i = 0; \
-    for (auto const &m : this->mats_){ \
-        GIMLI::mult(m, f[m.entity()->id()], *ret.pMat(i)); \
-        i++; \
+    if (f.size() == this->dofA()){ \
+        Index i = 0; \
+        for (auto const &m : this->mats_){ \
+            GIMLI::mult_n(m, f, *ret.pMat(i)); \
+            i++; \
+        } \
+    } else if (f.size() == this->size()) { \
+    \
+        Index i = 0; \
+        for (auto const &m : this->mats_){ \
+            GIMLI::mult(m, f[m.entity()->id()], *ret.pMat(i)); \
+            i++; \
+        } \
+    } else { \
+        THROW_TO_IMPL \
     } \
-} \
+} 
+DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL(RVector)
+DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL(PosVector)
+DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL(std::vector< RSmallMatrix >)
+DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL(std::vector< RVector >)
+DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL(std::vector< PosVector >)
+DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL(std::vector< std::vector< RSmallMatrix > >)
+#undef DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL
 
-DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(RVector)
-DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(PosVector)
-DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< RSmallMatrix >)
-DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< RVector >)
-DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< PosVector >)
-DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< std::vector< RSmallMatrix > >)
-#undef DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL
-// 
+
+#define DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_NODE_IMPL(A_TYPE) \
+void ElementMatrixMap::integrate_n(const A_TYPE & f, RVector & R, const double & alpha) const { \
+    _T_integrate_LF_PerNode(this, f, R, alpha); \
+} \
+void ElementMatrixMap::integrate_n(const A_TYPE & f, RVector & R, const RVector & alpha) const { \
+    _T_integrate_LF_PerNode(this, f, R, alpha); \
+} 
+DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_NODE_IMPL(RVector)
+DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_NODE_IMPL(PosVector)
+DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_NODE_IMPL(std::vector< RSmallMatrix >)
+DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_NODE_IMPL(std::vector< RVector >)
+DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_NODE_IMPL(std::vector< PosVector >)
+DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_NODE_IMPL(std::vector< std::vector< RSmallMatrix > >)
+#undef DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_NODE_IMPL
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(A_TYPE) \
 void ElementMatrixMap::integrate(const ElementMatrixMap & B, const A_TYPE & f, \

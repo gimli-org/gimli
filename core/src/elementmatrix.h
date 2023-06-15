@@ -444,45 +444,52 @@ public:
 
     bool oldStyle() const { return !this->_newStyle; }
 
-    #define DEFINE_INTEGRATOR(A_TYPE) \
+    #define DEFINE_INTEGRATOR_LF(A_TYPE) \
         /*! Integrate linear form: r = \int_entity this * f \d entity \
         with r = RVector(final form) and f = A_TYPE */ \
-        void integrate(A_TYPE f, RVector & r, double scale) const; \
+        void integrate(A_TYPE f, RVector & r, double scale) const; 
+    DEFINE_INTEGRATOR_LF(double)   // const scalar
+    DEFINE_INTEGRATOR_LF(const RSmallMatrix  &)  // const Matrix
+    DEFINE_INTEGRATOR_LF(const RVector &)  // scalar for each quadr
+    DEFINE_INTEGRATOR_LF(const Pos &)      // const vector //!calling order!
+    DEFINE_INTEGRATOR_LF(const PosVector &)  // vector for each quadr
+    DEFINE_INTEGRATOR_LF(const std::vector< RSmallMatrix  > &) // matrix for each quadr
+    DEFINE_INTEGRATOR_LF(const FEAFunction &) // matrix for each quadrs
+    #undef DEFINE_INTEGRATOR_LF
 
-    DEFINE_INTEGRATOR(double)   // const scalar
-    DEFINE_INTEGRATOR(const RSmallMatrix  &)  // const Matrix
-    DEFINE_INTEGRATOR(const RVector &)  // scalar for each quadr
-    DEFINE_INTEGRATOR(const Pos &)      // const vector //!calling order!
-    DEFINE_INTEGRATOR(const PosVector &)  // vector for each quadr
-    DEFINE_INTEGRATOR(const std::vector< RSmallMatrix  > &) // matrix for each quadrs
-    DEFINE_INTEGRATOR(const FEAFunction &) // matrix for each quadrs
+    #define DEFINE_INTEGRATOR_LF_N(A_TYPE) \
+        /*! Integrate linear form: r = \int_entity this * f \d entity \
+        with r = RVector(final form) and f = A_TYPE(NodeCount())*/ \
+        void integrate_n(A_TYPE f, RVector & r, double scale) const; 
+    DEFINE_INTEGRATOR_LF_N(const RVector &)                  // scalar for each node
+    DEFINE_INTEGRATOR_LF_N(const PosVector &)
+    DEFINE_INTEGRATOR_LF_N(const std::vector< PosVector > &)
+    DEFINE_INTEGRATOR_LF_N(const std::vector< RVector  > &) 
+    DEFINE_INTEGRATOR_LF_N(const std::vector< RSmallMatrix  > &)         
+    DEFINE_INTEGRATOR_LF_N(const std::vector< std::vector< RSmallMatrix > > &) 
+    #undef DEFINE_INTEGRATOR_LF_N
 
-    #undef DEFINE_INTEGRATOR
-
-    #define DEFINE_INTEGRATOR(A_TYPE) \
+    #define DEFINE_INTEGRATOR_BF(A_TYPE) \
         /*! Integrate bilinear form A = \int_mesh this * f * R \d entity \
         with A = SparseMatrix(final form, final form) and f = A_TYPE */ \
         void integrate(const ElementMatrix < double > & R, \
-                       A_TYPE f, SparseMatrixBase & A, double scale) const; \
+                       A_TYPE f, SparseMatrixBase & A, double scale) const; 
+    DEFINE_INTEGRATOR_BF(double)   // const scalar
+    DEFINE_INTEGRATOR_BF(const RSmallMatrix  &)  // const Matrix
+    DEFINE_INTEGRATOR_BF(const RVector &)  // scalar for each quadr
+    DEFINE_INTEGRATOR_BF(const std::vector< RSmallMatrix  > &) // matrix for each quadrs
+    DEFINE_INTEGRATOR_BF(const FEAFunction &) // matrix for each quadrs
+    #undef DEFINE_INTEGRATOR_BF
 
-    DEFINE_INTEGRATOR(double)   // const scalar
-    DEFINE_INTEGRATOR(const RSmallMatrix  &)  // const Matrix
-    DEFINE_INTEGRATOR(const RVector &)  // scalar for each quadr
-    DEFINE_INTEGRATOR(const std::vector< RSmallMatrix  > &) // matrix for each quadrs
-    DEFINE_INTEGRATOR(const FEAFunction &) // matrix for each quadrs
-
-    #undef DEFINE_INTEGRATOR
-
-    #define DEFINE_INTEGRATOR(A_TYPE) \
+    // define them later for right order of python bindings
+    #define DEFINE_INTEGRATOR_BF(A_TYPE) \
         /*! Integrate bilinear form A = \int_mesh this * f * R \d entity \
         with A = SparseMatrix(final form, final form) and f = A_TYPE */ \
         void integrate(const ElementMatrix < double > & R, \
-                       A_TYPE v, SparseMatrixBase & A, double scale) const; \
-
-    DEFINE_INTEGRATOR(const Pos &)   // const Pos for u * (pos * v)
-    DEFINE_INTEGRATOR(const PosVector &) // vector for each quadrs
-
-    #undef DEFINE_INTEGRATOR
+                       A_TYPE v, SparseMatrixBase & A, double scale) const;
+    DEFINE_INTEGRATOR_BF(const Pos &)   // const Pos for u * (pos * v)
+    DEFINE_INTEGRATOR_BF(const PosVector &) // vector for each quadrs
+    #undef DEFINE_INTEGRATOR_BF
 
 protected:
     mutable RSmallMatrix mat_;
@@ -615,6 +622,30 @@ DEFINE_DOT_MULT(const std::vector < RSmallMatrix  > &) // matrix per quad
 DEFINE_DOT_MULT(const FEAFunction &)  // aribrary function 
 #undef DEFINE_DOT_MULT
 
+#define DEFINE_DOT_MULT(A_TYPE) \
+DLLEXPORT void mult_n(const ElementMatrix < double > & A, \
+                      A_TYPE b, \
+                      ElementMatrix < double > & C); 
+DEFINE_DOT_MULT(const RVector &)    // scalar per quad
+DEFINE_DOT_MULT(const PosVector &)    // scalar per quad
+DEFINE_DOT_MULT(const std::vector < RVector > &)    // scalar per quad
+DEFINE_DOT_MULT(const std::vector < PosVector > &)  // vector per quad
+DEFINE_DOT_MULT(const std::vector < RSmallMatrix  > &) // matrix per quad
+DEFINE_DOT_MULT(const std::vector < std::vector < RSmallMatrix  > > &) // matrix per quad
+#undef DEFINE_DOT_MULT
+
+#define DEFINE_INTEGRATOR_LF_N(A_TYPE) \
+template < > DLLEXPORT void ElementMatrix < double >:: \
+    integrate_n(A_TYPE f, RVector & r, double scale) const; 
+DEFINE_INTEGRATOR_LF_N(const RVector &)                 
+DEFINE_INTEGRATOR_LF_N(const PosVector &) 
+DEFINE_INTEGRATOR_LF_N(const std::vector< PosVector > &)
+DEFINE_INTEGRATOR_LF_N(const std::vector< RVector  > &) 
+DEFINE_INTEGRATOR_LF_N(const std::vector< RSmallMatrix  > &)         
+DEFINE_INTEGRATOR_LF_N(const std::vector< std::vector< RSmallMatrix > > &) 
+#undef DEFINE_INTEGRATOR_LF_N
+
+
 // Special declares to handle ambiguities for the python binding
 /*! scalar per quadrature point */
 DLLEXPORT inline void mult_s_q(const ElementMatrix < double > & A, 
@@ -622,11 +653,16 @@ DLLEXPORT inline void mult_s_q(const ElementMatrix < double > & A,
                                ElementMatrix < double > & C){
     mult(A, b, C);
 }
+/*! vector per quadrature */
 DLLEXPORT inline void mult_v_q(const ElementMatrix < double > & A, 
                                const PosVector & b,
                                ElementMatrix < double > & C){
     mult(A, b, C);
 }
+/*! scalar per node */
+DLLEXPORT void mult_s_n(const ElementMatrix < double > & A, 
+                        const RVector & b,
+                        ElementMatrix < double > & C);
 
 
 #define DEFINE_INTEGRATE(A_TYPE) \

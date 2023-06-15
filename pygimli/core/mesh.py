@@ -443,6 +443,12 @@ def __Boundary_outside__(self):
 Boundary.outside = __Boundary_outside__
 
 def __Mesh_h__(self):
+    """ Returns the maximal node distance for each cell.
+
+    TODO
+    ----
+        * different name since this is not cell size for p2 cells
+    """
     return np.array([c.shape().h() for c in self.cells()])
 Mesh.h = __Mesh_h__
 

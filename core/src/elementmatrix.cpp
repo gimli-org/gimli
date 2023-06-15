@@ -2262,6 +2262,7 @@ DEFINE_DOT_MULT_WITH_RETURN(const FEAFunction &)
 
 #undef DEFINE_DOT_MULT_WITH_RETURN
 
+
 // this *= const. Scalar
 void mult(const ElementMatrix < double > & A, 
           double f,
@@ -2505,6 +2506,75 @@ void mult(const ElementMatrix < double > & A, const FEAFunction & b,
     return;
 }
 
+#define DEFINE_DOT_MULT(A_TYPE) \
+void mult_n(const ElementMatrix < double > & A, \
+            A_TYPE b, ElementMatrix < double > & C){ \
+    THROW_TO_IMPL \
+}
+DEFINE_DOT_MULT(const PosVector &)   
+DEFINE_DOT_MULT(const std::vector < RVector > &)    
+DEFINE_DOT_MULT(const std::vector < PosVector > &)  
+DEFINE_DOT_MULT(const std::vector < RSmallMatrix > &)
+DEFINE_DOT_MULT(const std::vector < std::vector < RSmallMatrix  > > &) 
+#undef DEFINE_DOT_MULT
+
+void mult_n(const ElementMatrix < double > & A, \
+            const RVector & b, ElementMatrix < double > & C){
+__M
+    mult_s_n(A, b, C);
+}
+// this *= scalar per node
+void mult_s_n(const ElementMatrix < double > & A, 
+              const RVector & b,
+              ElementMatrix < double > & C){
+    __M
+    C.copyFrom(A, false);
+
+    Index nRules(C.w()->size());
+
+    if (b.size() == A.rows()){
+        //** b already sub of whole b
+        
+        for (Index r = 0; r < nRules; r++){
+            RSmallMatrix & iC = (*C.pMatX())[r];
+            // print("iC:", iC);
+            for (Index k = 0; k < iC.rows(); k ++){
+                // print('r', r, 'k', k, mr(k), b[r]);
+                iC.row(k) *= b;
+            }
+        }    
+        C.integrate();
+        return;
+    } else {
+        if (b.size() == A.nCoeff()*A.dofPerCoeff()){
+            // can be optimzed
+            return mult_s_n(A, b[A.rowIDs()], C);
+            // //** b is whole b
+            // for (Index r = 0; r < nRules; r++){
+            //     RSmallMatrix & iC = (*C.pMatX())[r];
+            //     // print("iC:", iC);
+            //     for (Index k = 0; k < iC.rows(); k ++){
+            //         // print('r', r, 'k', k, mr(k), b[r]);
+            //         iC.row(k) *= b[A.rowIDs()];
+            //     }
+            // }           
+            // C.integrate();
+            // return;
+
+        } else {
+
+            print(b.size(), A.cols(), A.rows());
+            print(A.nCoeff(), A.dofPerCoeff());
+            print("A:", A);
+            print("b:", b);
+            THROW_TO_IMPL
+        }
+    }
+}
+
+//******************************************************************************
+// LINEAR-FORM -- integration template -- per CELL || QUADRATURE
+//******************************************************************************
 #define INTEGRATE_LINFORM(_F)\
     const RVector &w = *this->_w; \
     Index nRules(w.size()); \
@@ -2521,7 +2591,9 @@ void mult(const ElementMatrix < double > & A, const FEAFunction & b,
         }\
     }
 
-//** R = mult * const. scalar (R final form)
+//******************************************************************************
+// LINEAR-FORM -- integration -- const Scalar
+//******************************************************************************
 template < > void 
 ElementMatrix < double >::integrate(double f,
                                     RVector & R, double scale) const {
@@ -2531,7 +2603,9 @@ ElementMatrix < double >::integrate(double f,
     // rt *= this->_ent->size() * f * scale;
     // R.addVal(rt, this->rowIDs());
 }
-//** R = mult * const. vector (R final form)
+//******************************************************************************
+// LINEAR-FORM -- integration -- const Vector
+//******************************************************************************
 template < > void 
 ElementMatrix < double >::integrate(const Pos & f,
                                     RVector & R, double scale) const {
@@ -2539,7 +2613,9 @@ ElementMatrix < double >::integrate(const Pos & f,
     rt *= this->_ent->size() * scale;
     R.addVal(rt, this->rowIDs());
 }
-//** R = mult * scalar per quadr. (R final form)
+//******************************************************************************
+// LINEAR-FORM -- integration -- scalar per QUADRATURE
+//******************************************************************************
 template < > void 
 ElementMatrix < double >::integrate(const RVector & f,
                                     RVector & R, double scale) const {
@@ -2548,7 +2624,9 @@ ElementMatrix < double >::integrate(const RVector & f,
     rt *= this->_ent->size() * scale;
     R.addVal(rt, this->rowIDs());
 }
-//** R = mult * vector per quadr. (R final form)
+//******************************************************************************
+// LINEAR-FORM -- integration -- vector per QUADRATURE
+//******************************************************************************
 template < >
 void ElementMatrix < double >::integrate(const PosVector & f,
                                          RVector & R, double scale) const {
@@ -2560,23 +2638,63 @@ void ElementMatrix < double >::integrate(const PosVector & f,
     rt *= this->_ent->size() * scale;
     R.addVal(rt, this->rowIDs());
 }
-
-#define DEFINE_INTEGRATOR(A_TYPE) \
+//******************************************************************************
+// LINEAR-FORM -- integration -- FALLBACK per CELL || QUADRATURE
+//******************************************************************************
+#define DEFINE_INTEGRATOR_LF(A_TYPE) \
 template < > \
 void ElementMatrix < double >::integrate(A_TYPE f, \
                                          RVector & R, double scale) const { \
     THROW_TO_IMPL \
-}\
+}
+DEFINE_INTEGRATOR_LF(const RSmallMatrix & )  // const Matrix
+DEFINE_INTEGRATOR_LF(const std::vector< RSmallMatrix  > &)// matrix for each quadrs
+DEFINE_INTEGRATOR_LF(const FEAFunction &)
+#undef DEFINE_INTEGRATOR_LF
 
-// DEFINE_INTEGRATOR(double)   // const scalar
-// DEFINE_INTEGRATOR(Pos)      // const vector
-// DEFINE_INTEGRATOR(RVector)  // scalar for each quadr
-// DEFINE_INTEGRATOR(PosVector)  // vector for each quadr
-DEFINE_INTEGRATOR(const RSmallMatrix  & )  // const Matrix
-DEFINE_INTEGRATOR(const std::vector< RSmallMatrix  > &)// matrix for each quadrs
-DEFINE_INTEGRATOR(const FEAFunction &)
-#undef DEFINE_INTEGRATOR
 
+//*****************************************************************************
+// LINEAR-FORM -- integration  -- scalar per NODE
+//*****************************************************************************
+template < > void 
+ElementMatrix < double >::integrate_n(const RVector & f,
+                                      RVector & R, double scale) const {
+    if (f.size() == R.size()){
+        __MS("integrate per node", f.size(), R.size())
+        // per node case
+        // INTEGRATE_LINFORM(*f[rowIDs_[k]])
+        // rt *= this->_ent->size() * scale;
+        // R.addVal(rt, this->rowIDs());
+        this->integrate();
+        if (scale != 1.0) {
+            R.add(*this, f*scale);    
+        } else {
+            R.add(*this, f);    
+        }
+        return;
+    }
+    THROW_TO_IMPL
+}
+//*****************************************************************************
+// LINEAR-FORM -- integration  -- FALLBACK per NODE
+//*****************************************************************************
+#define DEFINE_INTEGRATOR_LF_N(A_TYPE) \
+template < > \
+void ElementMatrix < double >::integrate_n(A_TYPE f, \
+                                           RVector & R, double scale) const { \
+    THROW_TO_IMPL \
+}
+DEFINE_INTEGRATOR_LF_N(const PosVector & )                                   // unused
+DEFINE_INTEGRATOR_LF_N(const std::vector< RSmallMatrix > &)                  // unused
+DEFINE_INTEGRATOR_LF_N(const std::vector< RVector > &)                       // unused
+DEFINE_INTEGRATOR_LF_N(const std::vector< PosVector > & )                    // unused
+DEFINE_INTEGRATOR_LF_N(const std::vector< std::vector< RSmallMatrix  > > &)  // unused
+#undef DEFINE_INTEGRATOR_LF_N
+
+
+//*****************************************************************************
+// BILINEAR-FORM -- Per CELL and QAUD integration 
+//*****************************************************************************
 #define DEFINE_INTEGRATOR(A_TYPE) \
 template < > \
 void ElementMatrix < double >::integrate(const ElementMatrix < double > & B, \

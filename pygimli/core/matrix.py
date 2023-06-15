@@ -135,12 +135,20 @@ def __ElementMatrix_str(self):
                 print(self.multR)
                 pg.critical('invalid matrix element multR.')
 
+        elif pg.isArray(self.multR):
+            # per node vals
+            # print(i, self.row_RM(i))
+            # print(self.rowIDs())
+            for v in (self.row_RM(i) * self.multR[self.rowIDs()[i]]):
+                s += pg.pf(v).rjust(9)
+
         elif self.multR is not None:
             print('mat:', self.mat())
             print('multR:', self.multR)
-            # try:
-            #     print(multE(self, f=self.multR))
-            # except:
+            try:
+                print(multE(self, f=self.multR))
+            except:
+                pass
             pg.warn('invalid element multR. should be evaluated with multE?')
             return '' 
 

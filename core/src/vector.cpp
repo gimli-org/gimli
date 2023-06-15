@@ -113,8 +113,14 @@ void Vector< double >::add(const ElementMatrix < double > & A,
                            const RVector & scale){
     
     if (!A.oldStyle()){
-        __MS("inuse?")
-        THROW_TO_IMPL
+        Index jID = 0;
+        for (Index j = 0; j < A.rows(); j++){
+            jID = A.rowIDs()[j];
+            for (Index i = 0; i < A.cols(); i++){
+                data_[jID] += A.mat()(j, i) * scale[jID];
+            }
+        }
+        return;
     }
     A.integrate();
     //!! warning this will lead to incorrect results with non constant scale
