@@ -740,10 +740,10 @@ class MeshModelling(Modelling):
         # TODO needs to be checked if mapping is always ok (region example)
         # is (len(model) == self.paraDomain.cellCount() or \
         if hasattr(model, "isParaModel") and model.isParaModel is False:
-            pg._y(model.isParaModel)
+            # pg._y(model.isParaModel)
             mod = self.paraModel(model)
         elif hasattr(model, "isParaModel") and model.isParaModel is True:
-            pg._g(model.isParaModel)
+            # pg._g(model.isParaModel)
             mod = model
         elif len(model) == self.paraDomain.nodeCount():
             # why nodeCount? a field as model result?
