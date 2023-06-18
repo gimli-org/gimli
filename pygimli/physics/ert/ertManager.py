@@ -8,7 +8,7 @@ import numpy as np
 import pygimli as pg
 from pygimli.frameworks import MeshMethodManager
 from .ertModelling import ERTModelling, ERTModellingReference
-from .ert import createInversionMesh, estimateError
+from .ert import createInversionMesh, estimateError, simulate
 from pygimli.utils import getSavePath
 
 
@@ -109,7 +109,8 @@ class ERTManager(MeshMethodManager):
         """Set primary potential from external is not supported anymore."""
         pg.critical("Not implemented.")
 
-    def simulate(self, mesh, scheme, res, **kwargs):
+    def simulate(self, *args, **kwargs):
+    # def simulate(self, mesh, scheme, res, **kwargs):
         """Simulate an ERT measurement.
 
         Perform the forward task for a given mesh, resistivity distribution &
@@ -202,6 +203,7 @@ class ERTManager(MeshMethodManager):
         # >>> phia = data.get('phia').array()
         """
         pg.warn('Obsolete, do not use!. Use ert.simulate instead')
+        return simulate(*args, **kwargs)
 
         # verbose = kwargs.pop('verbose', self.verbose)
         # calcOnly = kwargs.pop('calcOnly', False)
