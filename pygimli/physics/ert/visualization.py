@@ -19,15 +19,15 @@ def generateDataPDF(data, filename="data.pdf"):
     from matplotlib.backends.backend_pdf import PdfPages
     logToks = ["Uout(V)", "u", "i", "r", "rhoa"]
     with PdfPages(filename) as pdf:
-        fig, ax = pg.plt.subplots()
+        fig = pg.plt.figure()
         for tok in data.tokenList().split():
             if data.haveData(tok):
                 vals = data[tok]
                 logScale = min(vals) > 0 and tok in logToks
+                ax = fig.add_subplot()
                 pg.show(data, vals, ax=ax, label=tok, logScale=logScale)
                 fig.savefig(pdf, format='pdf')
-                ax.cla()
-
+                fig.clf()
 
 def showERTData(data, vals=None, **kwargs):
     """Plot ERT data as pseudosection matrix (position over separation).
