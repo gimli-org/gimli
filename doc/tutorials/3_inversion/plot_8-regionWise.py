@@ -108,7 +108,7 @@ pg.show(mesh, markers=True, showMesh=True);
 
 mgr = ert.ERTManager(data, verbose=True)
 mgr.setMesh(mesh)  # use this mesh for all subsequent runs
-mgr.invert()
+mgr.invert(maxIter=1)
 # mgr.invert(mesh=mesh) would only temporally use the mesh
 
 # %%%
@@ -136,12 +136,17 @@ ax, cb = mgr.showResult(**kw)
 # %%%
 # Apparently, the two regions are already decoupled from each other which
 # makes sense. Let us look in detail at the water cells by extracting the
-# water body.
+# water body. 
+# Note. The manager class performs a model value permutation to fit 
+# the parametric mesh cell. So if you want to relate model values to the input
+# mesh, you need to use the unpermutated model values directly from the
+# inversion framework instance: `mgr.fw.model``
 #
 
 water = mesh.createSubMesh(mesh.cells(mesh.cellMarkers() == 3))
-resWater = mgr.model[len(mgr.model)-water.cellCount():]
+resWater = mgr.fw.model[len(mgr.model)-water.cellCount():]
 ax, cb = pg.show(water, resWater)
+
 
 # %%%
 # Apparently, all values are below the expected 22.5\ $\Omega$\ m
