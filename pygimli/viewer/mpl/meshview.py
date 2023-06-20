@@ -3,7 +3,6 @@
 
 import textwrap
 import numpy as np
-
 import pygimli as pg
 
 from pygimli.utils import streamline
@@ -121,6 +120,8 @@ class CellBrowser(object):
             self._connected = False
 
     def initText(self):
+        """Initialize hint text properties."""
+        import matplotlib as mpl
         bbox = dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
         arrowprops = dict(arrowstyle='->', connectionstyle='arc3,rad=0.5')
         kwargs = dict(fontproperties='monospace', visible=False,
@@ -131,6 +132,7 @@ class CellBrowser(object):
         self.text = self.ax.annotate(None, xy=(0, 0), **kwargs)
 
     def setMesh(self, mesh):
+        """Set mesh."""
         self.mesh = mesh
 
     def setData(self, data=None):
@@ -167,6 +169,7 @@ class CellBrowser(object):
 
     def highlightCell(self, cell):
         """Highlight selected cell."""
+        import matplotlib as mpl
         self.removeHighlightCell()
         self.highLight = mpl.collections.PolyCollection(
             [_createCellPolygon(cell)])
@@ -402,7 +405,7 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
 
 
 def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0,
-                               linestyles="-", **kwargs):
+                               linestyle="-", **kwargs):
     """Draw mesh boundaries into a given axes.
 
     Parameters
@@ -445,7 +448,7 @@ def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0,
         lineCollection.set_color(color)
 
     lineCollection.set_linewidth(linewidth)
-    lineCollection.set_linestyles(linestyles)
+    lineCollection.set_linestyle(linestyle)
     ax.add_collection(lineCollection)
 
     updateAxes_(ax)
@@ -706,7 +709,6 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True,
     if fillRegion and mesh.boundaryCount() > 2:
         tmpMesh = pg.meshtools.createMesh(mesh, quality=20, area=0)
         if tmpMesh.cellCount() == 0:
-            pass
             gci = None
         else:
             markers = np.array(tmpMesh.cellMarkers())
@@ -773,7 +775,6 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True,
     #    ax.add_collection(p)
 
     if regionMarker:
-
         for hole in mesh.holeMarker():
             ax.text(hole[0], hole[1], 'H', color='black',
                     va="center", ha="center")
@@ -1355,7 +1356,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
         eSpacing = pg.Pos(sensors[0]).distance(sensors[1])
         diam = eSpacing / 2.5
 
-    for i, e in enumerate(sensors):
+    for e in sensors:
         eCircles.append(mpl.patches.Circle((e[coords[0]],
                                             e[coords[1]]), diam/2, **kwargs))
 

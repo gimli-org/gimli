@@ -513,5 +513,22 @@ def estimateError(data, absoluteError=0.001, relativeError=0.03,
     return error
 
 
+def __DataContainerERT_createGeometricFactors(self, *args,**kwargs):
+    self['k'] = createGeometricFactors(self, *args, **kwargs)
+
+pg.DataContainerERT.createGeometricFactors = __DataContainerERT_createGeometricFactors
+pg.DataContainerERT.createGeometricFactors.__doc__ = createGeometricFactors.__doc__
+
+
+def __DataContainerERT_estimateError(self, *args,**kwargs):
+    if not self.haveData('k'):
+        self.createGeometricFactors()
+    
+    self['err'] = estimateError(self, *args, **kwargs)
+
+pg.DataContainerERT.estimateError = __DataContainerERT_estimateError
+pg.DataContainerERT.estimateError.__doc__ = estimateError.__doc__
+
+
 if __name__ == "__main__":
     pass

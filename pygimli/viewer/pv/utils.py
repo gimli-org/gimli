@@ -42,7 +42,7 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
         
         if mesh.cellCount() == 0:
             ### mesh is already a boundary mesh
-            return pgMesh2pvMesh(mesh, data, label)    
+            return pgMesh2pvMesh(mesh, data, label)
 
         b = mesh.createSubMesh(mesh.boundaries([b.id() for b in mesh.boundaries() if b.outside() or b.marker() != 0]))
         return pgMesh2pvMesh(b, data, label)

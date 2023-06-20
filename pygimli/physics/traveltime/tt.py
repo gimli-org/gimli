@@ -11,10 +11,10 @@ from .plotting import drawTravelTimeData, drawVA, drawFirstPicks
 # Manager = TravelTimeManager  # convenience alias
 
 
-def simulate(mesh, scheme, slowness=None, vel=None, **kwargs):
+def simulate(mesh, scheme, slowness=None, **kwargs):
     """Simulate traveltime data."""
     mgr = TravelTimeManager()
-    return mgr.simulate(mesh, scheme, slowness=slowness, vel=vel, **kwargs)
+    return mgr.simulate(mesh=mesh, scheme=scheme, slowness=slowness, **kwargs)
 
 
 simulate.__doc__ = TravelTimeManager.simulate.__doc__

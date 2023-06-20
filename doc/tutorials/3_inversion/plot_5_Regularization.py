@@ -258,7 +258,8 @@ v = np.random.rand(N) * 10 + 10
 # and repeat the above computations
 #
 
-fop = PriorModelling(mesh, zip(x, y))
+pos = [pg.Pos(xi, yi) for xi, yi in zip(x, y)]
+fop = PriorModelling(mesh, pos)
 inv = pg.Inversion(fop=fop, verbose=True)
 inv.setRegularization(correlationLengths=[4, 4])
 result = inv.run(v, relativeError=0.03, startModel=10, lam=10)

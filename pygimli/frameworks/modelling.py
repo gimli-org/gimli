@@ -740,10 +740,10 @@ class MeshModelling(Modelling):
         # TODO needs to be checked if mapping is always ok (region example)
         # is (len(model) == self.paraDomain.cellCount() or \
         if hasattr(model, "isParaModel") and model.isParaModel is False:
-            pg._y(model.isParaModel)
+            # pg._y(model.isParaModel)
             mod = self.paraModel(model)
         elif hasattr(model, "isParaModel") and model.isParaModel is True:
-            pg._g(model.isParaModel)
+            # pg._g(model.isParaModel)
             mod = model
         elif len(model) == self.paraDomain.nodeCount():
             # why nodeCount? a field as model result?
@@ -1170,7 +1170,15 @@ class PriorModelling(MeshModelling):
     def setMesh(self, mesh):
         """Set mesh, save index vector and compute Jacobian."""
         super().setMesh(mesh)
-        self.ind = np.array([mesh.findCell(po).id() for po in self.pos])
+        self.ind = np.zeros(len(self.pos), dtype=np.int32)
+        for i, po in enumerate(self.pos):
+            cell = mesh.findCell(po)
+            if cell is None:
+                raise Exception("Could not find cell at position {pos}!")
+            else:
+                self.ind[i] = cell.id()
+
+        # self.ind = np.array([mesh.findCell(po).id() for po in self.pos])
         self.J = pg.SparseMapMatrix()
         self.J.resize(len(self.ind), mesh.cellCount())
         for i, ii in enumerate(self.ind):

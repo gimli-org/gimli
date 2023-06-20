@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""View ERT data
-"""
+"""View ERT data."""
 
 from math import pi
 import numpy as np
@@ -20,15 +19,15 @@ def generateDataPDF(data, filename="data.pdf"):
     from matplotlib.backends.backend_pdf import PdfPages
     logToks = ["Uout(V)", "u", "i", "r", "rhoa"]
     with PdfPages(filename) as pdf:
-        fig, ax = pg.plt.subplots()
+        fig = pg.plt.figure()
         for tok in data.tokenList().split():
             if data.haveData(tok):
                 vals = data[tok]
                 logScale = min(vals) > 0 and tok in logToks
+                ax = fig.add_subplot()
                 pg.show(data, vals, ax=ax, label=tok, logScale=logScale)
                 fig.savefig(pdf, format='pdf')
-                ax.cla()
-
+                fig.clf()
 
 def showERTData(data, vals=None, **kwargs):
     """Plot ERT data as pseudosection matrix (position over separation).
@@ -41,11 +40,19 @@ def showERTData(data, vals=None, **kwargs):
 
     **kwargs :
 
-        * axes : matplotlib.axes
-            Axes to plot into. Default is None and a new figure and
-            axes are created.
-        * vals : Array[nData]
+        * vals : Array[nData] | str
             Values to be plotted. Default is data['rhoa'].
+            Can be a string whose data field is extracted.
+        * axes : matplotlib.axes
+            Axes to plot into. By default (None), a new figure with
+            a single Axes is created.
+    
+    Returns
+    -------
+    ax : matplotlib.axes
+        axis containing the plots
+    cb : matplotlib.colorbar
+        colorbar instance
     """
     var = kwargs.pop('var', 0)
     if var > 0:
@@ -77,6 +84,7 @@ def showERTData(data, vals=None, **kwargs):
 
     if isinstance(vals, str):
         if data.haveData(vals):
+            kwargs.setdefault('label', pg.utils.unit(vals))
             vals = data(vals)
         else:
             pg.critical('field not in data container: ', vals)

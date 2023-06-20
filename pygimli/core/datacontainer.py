@@ -153,3 +153,10 @@ def __DataContainerERT_addFourPointData(self, *args,
 
 
 DataContainerERT.addFourPointData = __DataContainerERT_addFourPointData
+
+def __DataContainer_show(self, *args, **kwargs):
+    """Use data.show(**) instead of pg.show(data, *) syntactic sugar."""
+    import pygimli as pg
+    return pg.show(self, *args, **kwargs)
+
+DataContainer.show = __DataContainer_show

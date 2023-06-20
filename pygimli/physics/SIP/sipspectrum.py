@@ -325,7 +325,7 @@ class SIPSpectrum(object):
             if verbose:
                 pg.info("Reading SIP Quad file")
             self.f, self.amp, self.phi, self.header = readFuchs3File(
-                filename, verbose=verbose, quad=True, **kwargs)
+                filename, verbose=verbose, **kwargs)
             self.phi *= -np.pi/180.
         elif 'SIP-Fuchs' in firstLine:
             if verbose:

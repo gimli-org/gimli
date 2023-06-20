@@ -710,6 +710,11 @@ class MeshMethodManager(MethodManager):
         self.mesh = None
 
     @property
+    def model(self):
+        """Inversion model."""
+        return self.paraModel(self.fw.model)
+
+    @property
     def paraDomain(self):
         """Parameter (inversion) domain mesh."""
         return self.fop.paraDomain
