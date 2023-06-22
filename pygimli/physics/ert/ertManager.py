@@ -446,7 +446,7 @@ class ERTManager(MeshMethodManager):
                 ipe = None
 
                 if err.haveData('iperr'):
-                    amp, phi = pg.utils.toPolar(dataVals)
+                    _, phi = pg.utils.toPolar(dataVals)
                     # assuming ipErr are absolute dPhi in mrad
                     ipe = err['iperr'] / abs((phi*1000))
                 else:
@@ -522,7 +522,7 @@ class ERTManager(MeshMethodManager):
 
         self.showData(vals=misfit, **kwargs)
 
-    def showModel(self, model=None, elecs=True, ax=None, **kwargs):
+    def showModel(self, model=None, ax=None, elecs=True, **kwargs):
         """Show the last inversion result.
 
         Parameters
@@ -541,7 +541,7 @@ class ERTManager(MeshMethodManager):
             model = self.model
         
         if ax is None:
-            fig, ax = pg.plt.subplots()
+            _, ax = pg.plt.subplots()
 
         kwargs.setdefault("coverage", self.coverage())
         ax, cBar = self.fop.drawModel(ax, model, **kwargs)

@@ -1,10 +1,8 @@
 """Utility functions for ERT data processing."""
-import pygimli as pg
-import pybert as pb
-
-# import matplotlib.pyplot as plt
 import numpy as np
 # from numpy import ma
+
+import pygimli as pg
 
 
 def uniqueERTIndex(data, nI=0, reverse=False):
@@ -82,6 +80,7 @@ def getReciprocals(data, change=False, remove=False):
 
 
 def extractReciprocals(fwd, bwd):
+    """Extract reciprocal data from forward/backward DataContainers."""
     nMax = max(fwd.sensorCount(), bwd.sensorCount())
     unF = uniqueERTIndex(fwd, nI=nMax)
     unB = uniqueERTIndex(bwd, nI=nMax, reverse=True)
@@ -107,5 +106,3 @@ def extractReciprocals(fwd, bwd):
     back.removeInvalid()
     both.add(back)
     return rec, both
-
-
