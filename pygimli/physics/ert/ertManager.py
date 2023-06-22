@@ -58,7 +58,7 @@ class ERTManager(MeshMethodManager):
 
     def setSingularityRemoval(self, sr=True):
         """Turn singularity removal on or off."""
-        self.reinitForwardOperator(sr=True)
+        self.reinitForwardOperator(sr=sr)
 
     def createForwardOperator(self, **kwargs):
         """Create and choose forward operator."""
