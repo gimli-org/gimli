@@ -70,6 +70,7 @@ CHOLMODWrapper::~CHOLMODWrapper(){
     if (Numeric_) umfpack_zi_free_numeric (&Numeric_);
     if (NumericD_) umfpack_di_free_numeric (&NumericD_);
 #endif
+    // try allways
     if (AxV_) delete AxV_;
     if (AzV_) delete AzV_;
 
@@ -141,6 +142,7 @@ int CHOLMODWrapper::initializeMatrix_(CSparseMatrix & S){
 
         if (useUmfpack_){
 #if USE_UMFPACK
+__MS("new C")
             Ap_ = (int*)S.colPtr();
             Ai_ = (int*)S.rowIdx();
             AxV_ = new RVector(real(S.vecVals()));
@@ -207,6 +209,7 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
 
         if (useUmfpack_){
 #if USE_UMFPACK
+
             log(Info, "Using umfpack.");
             int * ApT = (int*)S.colPtr();
             int * AiT = (int*)S.rowIdx();
@@ -218,7 +221,7 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
 
             ApR_ = new int[S.vecColPtr().size()];
             AiR_ = new int[S.vecRowIdx().size()];
-            double *Ax_ =  new double[S.vecVals().size()];
+            double *Ax_ =  new double[S.vecVals().size()]; // delete me!!
             //our crs format need to be transposed first
 
             int *P=0, *Q=0;
@@ -230,9 +233,14 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
 
             // if (verbose_) std::cout << "Using umfpack .. " << std::endl;
             // beware transposed matrix here
+            Stopwatch sw;
+            __MS(sw.duration(true))
             (void) umfpack_di_symbolic(S.nCols(), S.nRows(), ApR_, AiR_, Ax_, &Symbolic, null, null) ;
+            __MS(sw.duration(true)) // test maybe just 1% ??
             (void) umfpack_di_numeric(ApR_, AiR_, Ax_, Symbolic, &NumericD_, null, null) ;
-            umfpack_di_free_symbolic (&Symbolic);
+            __MS(sw.duration(true))
+            umfpack_di_free_symbolic(&Symbolic);
+            __MS(sw.duration(true))
             name_ = "Umfpack";
 
             return 1;
