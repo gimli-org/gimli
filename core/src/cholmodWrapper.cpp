@@ -142,7 +142,7 @@ int CHOLMODWrapper::initializeMatrix_(CSparseMatrix & S){
 
         if (useUmfpack_){
 #if USE_UMFPACK
-__MS("new C")
+// __MS("new C")
             Ap_ = (int*)S.colPtr();
             Ai_ = (int*)S.rowIdx();
             AxV_ = new RVector(real(S.vecVals()));
@@ -234,13 +234,13 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
             // if (verbose_) std::cout << "Using umfpack .. " << std::endl;
             // beware transposed matrix here
             Stopwatch sw;
-            __MS(sw.duration(true))
+            // __MS(sw.duration(true))
             (void) umfpack_di_symbolic(S.nCols(), S.nRows(), ApR_, AiR_, Ax_, &Symbolic, null, null) ;
-            __MS(sw.duration(true)) // test maybe just 1% ??
+            // __MS(sw.duration(true)) // test maybe just 1% ??
             (void) umfpack_di_numeric(ApR_, AiR_, Ax_, Symbolic, &NumericD_, null, null) ;
-            __MS(sw.duration(true))
+            // __MS(sw.duration(true))
             umfpack_di_free_symbolic(&Symbolic);
-            __MS(sw.duration(true))
+            // __MS(sw.duration(true))
             name_ = "Umfpack";
 
             return 1;
