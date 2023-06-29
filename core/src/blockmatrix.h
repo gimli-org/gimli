@@ -89,9 +89,8 @@ public:
         return *matrices_[idx];
     }
 
-    std::vector< BlockMatrixEntry < ValueType > > entries() const {
-        return entries_; }
-
+    std::vector< BlockMatrixEntry < ValueType > > entries() const;
+    
     /*! Syntaxtic sugar for addMatrix */
     Index add(MatrixBase * matrix, Index rowStart, Index colStart){
         return addMatrix(matrix, rowStart, colStart);
@@ -232,6 +231,14 @@ inline DLLEXPORT RVector transMult(const BlockMatrix < double > & A, const RVect
 inline DLLEXPORT RVector operator * (const BlockMatrix < double >  & A, const RVector & b){
     return A.mult(b);
 }
+
+template <> DLLEXPORT 
+std::vector< BlockMatrixEntry < double > > BlockMatrix < double >::entries() const;
+template <> DLLEXPORT 
+std::vector< BlockMatrixEntry < Complex > > BlockMatrix < Complex >::entries() const;
+
+
+
 
 #ifndef PYTEST
 /*! Simple example for tutorial purposes. */

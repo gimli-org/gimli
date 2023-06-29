@@ -469,7 +469,6 @@ template <> void SparseMatrix< Complex >
 }
 
 
-
 template <class ValueType> void
 mult_T_impl(const SparseMatrix< ValueType > & A,
             const Vector < ValueType > & b, Vector < ValueType > & c,
@@ -579,31 +578,6 @@ mult_T_impl(const SparseMatrix< ValueType > & A,
 //         }
 //         return ret;
 //     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 void mult(const SparseMatrix< double > & A,
           const RVector & b, RVector & c,

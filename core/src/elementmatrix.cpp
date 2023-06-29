@@ -2520,14 +2520,12 @@ DEFINE_DOT_MULT(const std::vector < std::vector < RSmallMatrix  > > &)
 
 void mult_n(const ElementMatrix < double > & A, \
             const RVector & b, ElementMatrix < double > & C){
-__M
     mult_s_n(A, b, C);
 }
 // this *= scalar per node
 void mult_s_n(const ElementMatrix < double > & A, 
               const RVector & b,
               ElementMatrix < double > & C){
-    __M
     C.copyFrom(A, false);
 
     Index nRules(C.w()->size());

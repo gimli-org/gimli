@@ -1165,3 +1165,11 @@ from .trans import *  # why do we need that?
 #                      MultLeftRightMatrix, MultRightMatrix, RMultRMatrix)
 from .matrix import (BlockMatrix, SparseMatrix, SparseMapMatrix, IdentityMatrix,
                      Matrix)
+
+from .matrix import (convertCRSIndex2Map, sparseMatrix2Array,
+                     sparseMatrix2coo, sparseMatrix2csr, 
+                     sparseMatrix2Dense, sparseMatrix2csc, 
+                     toSparseMatrix, toSparseMapMatrix,
+                     toCSC, toCSR, toCOO,
+                     toDense, reduceEntries,
+                     )

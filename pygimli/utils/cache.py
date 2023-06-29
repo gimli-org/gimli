@@ -73,6 +73,10 @@ def valHash(a):
         # pg._r('has hash: ', a, hash(a))
         return hash(a)    
     elif callable(a):
+        if hasattr(a, '_funct'):
+            ## FEAFunctions or any other wrapper containing lambda as _funct
+            # pg._g(inspect.getsource(a._funct))
+            return strHash(inspect.getsource(a._funct))    
         # for lambdas
         # pg._r('callable: ', inspect.getsource(a))
         return strHash(inspect.getsource(a))
@@ -302,7 +306,10 @@ def cache(funct):
     """Cache decorator."""
     def wrapper(*args, **kwargs):
 
-        if '--noCache' in sys.argv or '-N' in sys.argv or __NO_CACHE__ is True:
+        skip = kwargs.pop('skipCache', False)
+        
+        if any(('--noCache' in sys.argv,
+                '-N' in sys.argv, skip is True, __NO_CACHE__)):
             return funct(*args, **kwargs)
 
         cache = CacheManager().cache(funct, *args, **kwargs)

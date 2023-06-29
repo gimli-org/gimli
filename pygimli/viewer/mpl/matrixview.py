@@ -39,11 +39,12 @@ def drawSparseMatrix(ax, mat, **kwargs):
     row = kwargs.pop('rowOffset', 0)
     col = kwargs.pop('colOffset', 0)
     color = kwargs.pop('color', None)
+    ms = kwargs.pop('ms', kwargs.pop('markersize', 0.5))
 
     mat = pg.utils.sparseMatrix2coo(mat)
     mat.row += row
     mat.col += col
-    gci = ax.spy(mat, color=color, **kwargs)
+    gci = ax.spy(mat, color=color, ms=ms, **kwargs)
 
     ax.autoscale(enable=True, axis='both', tight=True)
     return gci
@@ -103,7 +104,8 @@ def drawBlockMatrix(ax, mat, **kwargs):
             gci.append(drawSparseMatrix(ax, mati,
                                         rowOffset=e.rowStart,
                                         colOffset=e.colStart,
-                                        color=cMap(mid)))
+                                        color=cMap(mid), **kwargs))
+
 
         return gci, None
     else:

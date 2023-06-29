@@ -130,6 +130,15 @@ BlockMatrix< Complex >::sparseMatrix() const {
     return CSparseMatrix(this->sparseMapMatrix());
 }
 
+template <> std::vector< BlockMatrixEntry < double > > 
+BlockMatrix < double >::entries() const{
+    return this->entries_; 
+}
+template <> std::vector< BlockMatrixEntry < Complex > > 
+BlockMatrix < Complex >::entries() const{
+    return this->entries_; 
+}
+
 
 
 } // namespace GIMLI

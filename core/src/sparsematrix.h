@@ -195,7 +195,7 @@ public:
 
         for (Index i = 0, imax = A.rows(); i < imax; i++){
             for (Index j = 0, jmax = A.cols(); j < jmax; j++){
-                    this->addVal(A.rowIDs()[i], A.colIDs()[j], b * A.getVal(i, j));
+                this->addVal(A.rowIDs()[i], A.colIDs()[j], b * A.getVal(i, j));
             }
         }
     }
@@ -372,8 +372,22 @@ public:
 
     /*! Just set the matrix dimensions, not usefull until proper fill of pattern. Only use for internal use.*/
     inline virtual void resize(Index rows, Index cols){
-        _rows = rows;
-        _cols = cols;
+            // __MS(_rows, colPtr_.size() - 1, rows)
+            // __MS(_cols, max(rowIdx_) + 1, cols)
+        if (_rows != rows || _cols != cols){
+
+
+            if (_cols != cols){
+                // __M
+                // colPtr_.resize(_rows + 1, 0);
+            } 
+            if (_rows != rows){
+                // __M
+                colPtr_.resize(_rows + 1, 0);
+            } 
+            _rows = rows;
+            _cols = cols;
+        }
     }
 
 protected:

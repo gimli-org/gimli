@@ -29,15 +29,13 @@ SparseMapMatrix< double, Index >::copy_(const SparseMatrix< double > & S){
     _cols = S.cols();
     stype_ = S.stype();
 
-    // std::vector < int > colPtr(S.vecColPtr());
-    // std::vector < int > rowIdx(S.vecRowIdx());
-    // Vector < ValueType > vals(S.vecVals());
-
     for (Index i = 0; i < S.rows(); i++){
         for (int j = S.vecColPtr()[i]; j < S.vecColPtr()[i + 1]; j ++){
             (*this)[i][S.vecRowIdx()[j]] = S.vecVals()[j];
         }
     }
+    
+
 }
 template<>
 void SparseMapMatrix< Complex, Index >::copy_(const SparseMatrix< Complex > & S){

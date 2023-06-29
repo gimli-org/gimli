@@ -59,8 +59,7 @@ template < class ValueType >
 void _T_integrate_LF_PerNode(const ElementMatrixMap * self,
                           const ValueType & f, RVector & R, const double & alpha){
     ASSERT_VEC_SIZE(f, self->dof())
-    __MS("** EMM.intLPerNode(A, ??)") 
-    __M
+    __MS("** EMM.intLPerNode(A, ...)") 
     // assuming per node values
     for (auto &m : self->mats()){
         m.integrate_n(f, R, alpha);
@@ -71,8 +70,7 @@ void _T_integrate_LF_PerNode(const ElementMatrixMap * self,
                           const ValueType & f, RVector & R, const RVector & alpha){
     ASSERT_EQUAL_SIZE(self->mats(), alpha)
     ASSERT_VEC_SIZE(f, self->dof())
-    __MS("** EMM.intLPerNode(A, ??)") 
-    __M 
+    __MS("** EMM.intLPerNode(A, ...)") 
     // assuming per node values
     for (auto &m : self->mats()){
         m.integrate_n(f, R, alpha[m.entity()->id()]);

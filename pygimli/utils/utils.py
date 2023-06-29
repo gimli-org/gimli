@@ -72,7 +72,7 @@ class ProgressBar(object):
         self._swatch = pg.core.Stopwatch()
         self._nbProgress = None
         self._iter = -1
-
+        
         if pg.isNotebook():
             tqdm = pg.optImport('tqdm', requiredFor="use a nice progressbar in jupyter notebook")
             if tqdm is not None:
@@ -123,7 +123,7 @@ class ProgressBar(object):
     def _setbar(self, elapsed_it):
         """Reset pBar based on current iteration number."""
         self._amount((elapsed_it / float(self.its)) * 100.0)
-        self.pBar += " %d of %s complete" % (elapsed_it, self.its)
+        self.pBar += f" {int(elapsed_it)} of {self.its} complete"
 
     def _amount(self, new_amount):
         """Calculate amount by which to update the pBar."""
@@ -219,21 +219,24 @@ def logDropTol(p, dropTol=1e-3):
     return tmp
 
 
+import json
+class PFjsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if hasattr(obj, 'dumps'):
+            return obj.dumps()
+        if isinstance(obj, complex):
+            return [obj.real, obj.imag]
+        try:
+            return json.JSONEncoder.default(self, obj)
+        except:
+            return f'{type(obj)}: {obj}'
+
+
 def prettify(value, roundValue=False, mathtex=False):
     """Return prettified string for value .. if possible."""
     if isinstance(value, dict):
-        import json
-        # class CustomEncoder(json.JSONEncoder):
-        #     def __init__(self, *args, **kwargs):
-        #         super().__init__(*args, **kwargs)
-
-        #     def _iterencode(self, o):
-        #         try:
-        #             return super()._iterencode(o)
-        #         except:
-        #             return "{0} is not JSON serializable".format(type(o))
         try:
-            return json.dumps(value, indent=4)
+            return json.dumps(value, indent=4, cls=PFjsonEncoder)
         except Exception as e:
             pg.warning('prettify fails:', e)
             return str(value)
