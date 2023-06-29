@@ -16,7 +16,8 @@ def simulate(mesh, scheme, res, **kwargs):
     Perform the forward task for a given mesh, resistivity distribution &
     measuring scheme and return data (apparent resistivity) or potentials.
 
-    For complex resistivity, the apparent resistivities is complex as well.
+    For complex resistivity, the data contains an apparent phase or the
+    returned potentials are complex.
 
     The forward operator itself only calculates potential values for the
     electrodes in the given data scheme.
@@ -114,6 +115,7 @@ def simulate(mesh, scheme, res, **kwargs):
     noiseAbs = kwargs.pop('noiseAbs', 1e-4)
     seed = kwargs.pop('seed', None)
     sr = kwargs.pop('sr', True)
+    returnFOP = kwargs.pop("returnFOP", False)
 
     fop = ERTModelling(sr=sr, verbose=verbose)
     # fop = self.createForwardOperator(useBert=True, sr=sr, verbose=verbose)
@@ -259,7 +261,10 @@ def simulate(mesh, scheme, res, **kwargs):
         else:
             return rhoa
 
-    return ret
+    if returnFOP:
+        return ret, fop
+    else:
+        return ret
 
 
 def simulateOld(mesh, scheme, res, sr=True, useBert=True,
