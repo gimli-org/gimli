@@ -11,6 +11,7 @@ class IPSeigelModelling(pg.frameworks.MeshModelling):
         # self.setMesh(mesh)
         self.f = f
         self.rhoDC = rho  # DC resistivity
+        self.rhoAC = rho * 1  # AC resistivity
         self.drhodm = -self.rhoDC
         if response is None:
             response = f.response(self.rhoDC)
@@ -76,12 +77,14 @@ class DCIPMModelling(pg.frameworks.MeshModelling):
         self.setMesh(mesh)
         self.f = f
         self.rhoDC = rho  # DC resistivity
+        self.rhoAC = rho * 1  # AC resistivity
         self.drhodm = -self.rhoDC
         if response is None:
             self.rhoaDC = f.response(self.rhoDC)
         else:
             self.rhoaDC = response
 
+        self.rhoaAC = self.rhoaDC * 1
         self.dmdrhoa = -1.0 / self.rhoaDC
         self.J = pg.matrix.MultLeftRightMatrix(f.jacobian(), self.dmdrhoa,
                                                self.drhodm)
