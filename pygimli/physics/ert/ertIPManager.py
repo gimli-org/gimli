@@ -86,6 +86,35 @@ class ERTIPManager(ERTManager):
         else:
             self.invertTDIP()
 
-    def simulate(self, *args, **kwargs):
+    def simulate(self, mesh, res, m, scheme, **kwargs):
         """."""
-        pass
+        from pygimli.physics.ert import ERTModelling
+        data = scheme or pg.DataContainerERT(self.data)
+        if hasattr(res[0], '__iter__'):  # ndim == 2
+            if len(res[0]) == 2:  # res seems to be a res map
+                resVec = pg.solver.parseArgToArray(res, mesh.cellCount(), mesh)
+        elif len(res) == mesh.cellCount():
+            resVec = res
+        else:
+            resVec = res[mesh.cellMarkers()]
+
+        if hasattr(m[0], '__iter__'):  # ndim == 2
+            if len(m[0]) == 2:  # res seems to be a res map
+                mVec = pg.solver.parseArgToArray(m, mesh.cellCount(), mesh)
+        elif len(m) == mesh.cellCount():
+            mVec = m
+        else:
+            mVec = m[mesh.cellMarkers()]
+
+        print(mesh, len(resVec), len(mVec))
+        mesh0 = pg.Mesh(mesh)
+        mesh0.setCellMarkers(mesh0.cellCount())
+        fopDC = ERTModelling()
+        fopDC.setData(scheme)
+        fopDC.setMesh(mesh0)
+        data["rhoa"] = fopDC.response(resVec)
+        fopDC.createJacobian(resVec)
+        fopIP = DCIPMModelling(fopDC, mesh, resVec)
+        data["ma"] = fopIP.response(mVec)  # SI
+        data["ip"] = data["ma"] * 1000  # mV/V
+        return data
