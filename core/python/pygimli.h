@@ -396,10 +396,6 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
                         bool verbose = true);
     extern template bool load(RMatrix & A, const std::string & filename);
 
-    extern template bool loadMatrixSingleBin(RMatrix & A, const std::string & filename);
-    extern template bool loadMatrixVectorsBin(RMatrix & A, const std::string & filenameBody,
-                                        uint kCount = 1);
-
     extern template bool saveMatrixCol(const RMatrix & A, const std::string & filename);
     extern template bool saveMatrixCol(const RMatrix & A, const std::string & filename,
                                  const std::string & comments);
