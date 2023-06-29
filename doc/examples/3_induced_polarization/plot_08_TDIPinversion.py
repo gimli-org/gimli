@@ -1,4 +1,6 @@
-"""
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+r"""
 Synthetic TDIP modelling and inversion
 ======================================
 This example demonstrates the ERTIPManager introduced in
