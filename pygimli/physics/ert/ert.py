@@ -105,7 +105,6 @@ def simulate(mesh, scheme, res, **kwargs):
     ...    [3, 10.+ 1j],
     ... ]
     >>> data = ert.simulate(mesh, res=rhomap, scheme=scheme, verbose=True)
-        Data: Sensors: 21 data: 171, nonzero entries: ['a', 'b', 'k', 'm', 'n', 'phia', 'rhoa', 'valid']
     """
     verbose = kwargs.pop('verbose', True)
     calcOnly = kwargs.pop('calcOnly', False)
