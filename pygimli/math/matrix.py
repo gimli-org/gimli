@@ -264,7 +264,7 @@ class MultLeftRightMatrix(MultMatrix):
             left and right side vectors to weight individual rows & columns
         """
         if A.cols() != len(right):
-            raise Exception("Matrix columns do not fit right vector length!")
+                raise Exception("Matrix columns do not fit right vector length!")
         if A.rows() != len(left):
             raise Exception("Matrix rows do not fit left vector length!")
 
