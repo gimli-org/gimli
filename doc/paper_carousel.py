@@ -1,6 +1,10 @@
 # Paper examples on start page. Images have to be in _static/usecases.
 # Order does not matter, will be shuffled on doc build.
 showcase = [
+    dict(img="nazari2023.png",
+         title="3D SAEM survey design",
+         subtitle="Nazari et al. (2023), Minerals",
+         link="https://doi.org/10.3390/min13060796"),
     dict(img="rochlitz2023.png",
          title="3D CSEM inversion",
          subtitle="Rochlitz et al. (2023), Geophysical Journal International",
