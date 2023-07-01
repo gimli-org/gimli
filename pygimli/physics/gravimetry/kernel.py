@@ -1,9 +1,9 @@
+"""Kernel computation for gravity and magnetics."""
 import numpy as np
-import pygimli as pg
 from pygimli.utils import ProgressBar
 
 
-def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
+def SolveGravMagHolstein(mesh, pnts, cmp, igrf=None, foot=np.inf):
     """Solve gravity and/or magnetics problem after Holstein (1997).
 
     Parameters
@@ -33,20 +33,19 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
     B_tens = None
 
     kernel = np.zeros((mesh.cellCount(), len(pnts), len(cmp)))
-    # org: this does not make sense as igrf is either 3 or 7 long
-    # B_dir = np.array(igrf / np.linalg.norm(igrf))
-    # fakt = igrf[6] / (4*np.pi)
-    # rather do like this:
-    if len(igrf) == 3:  # an X, Y, Z vector
-        F = np.linalg.norm(igrf)
-        fakt = F / (4*np.pi)
-        B_dir = np.array(igrf) / F
-    elif len(igrf) == 7:  # an IGRF vector (D, I, H, X, Y, Z, F)
-        fakt = igrf[6] / (4*np.pi)
-        myigrf = np.array(igrf[3:6])
-        B_dir = myigrf / np.linalg.norm(myigrf)
-    else:
-        raise Exception("Could not use IGRF vector. Len must be 3 or 7!")
+    if igrf:
+        if len(igrf) == 3:  # an X, Y, Z vector
+            F = np.linalg.norm(igrf)
+            fakt = F / (4*np.pi)
+            B_dir = np.array(igrf) / F
+        elif len(igrf) == 7:  # an IGRF vector (D, I, H, X, Y, Z, F)
+            fakt = igrf[6] / (4*np.pi)
+            myigrf = np.array(igrf[3:6])
+            B_dir = myigrf / np.linalg.norm(myigrf)
+        else:
+            raise Exception("Could not use IGRF vector. Len must be 3 or 7!")
+    elif doB or doB:
+        raise Exception("Specify IGRF!")
 
     b_list, n_list, c_list = [], [], []
     for bd in mesh.boundaries():
@@ -74,15 +73,11 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
     rr = range(0, mesh.cellCount())
     rs = np.roll(range(0, lb[1]), -1)
 
-    itest = 0
     temp = np.zeros((len(pnts), lb[0], len(cmp)))
     pBar = ProgressBar(its=len(pnts), width=40, sign='+')
+    nb = n_list[b_list]
     for i, p in enumerate(pnts):
-        # if np.floor(100*i/len(pnts)) > itest:
-        #     itest = np.floor(100 * i / len(pnts))
-        #     print('.', end="")
-
-        r1 = n_list[b_list] - p
+        r1 = nb - p
         r2 = r1[:, rs, :]
         r0 = r2 - r1
         u = np.sum(np.cross(r1, r2), 1)
@@ -108,11 +103,11 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
         b = h*np.expand_dims(np.arctanh(lumbda), axis=2) - \
             ut*np.expand_dims(np.sign(v)*np.arctan2(
                 hn*lumbda, (rm*(1-lumbda**2)+abs(v))), axis=2)
+        if doB or doBT:
+            P = np.dot(u, B_dir)
+            B_vec = np.expand_dims(P, 1) * np.sum(b, 1)
+            B_vec = 2 * np.expand_dims(P, 1) * np.sum(b, 1)
 
-        P = np.dot(u, B_dir)
-        B_vec = np.expand_dims(P, 1) * np.sum(b, 1)
-        B_vec = 2 * np.expand_dims(P, 1) * np.sum(b, 1)
-        pBar.update(i)
         if doBT:  # magnetic gradient tensor
             d = (-2*lumbda*hn) / (r1n*r2n*(1-lumbda**2))
             e = (-2*lumbda*lm) / (r1n*r2n)
@@ -131,7 +126,12 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
 
             B_tens = np.expand_dims(P, (1, 2)) * np.sum(B, 1)
 
+        pBar.update(i)
         jj = 0
+        if 'g' in cmp:
+            temp[i, :, jj] = g
+            jj += 0
+
         if 'gx' in cmp:
             temp[i, :, jj] = g_vec[:, 0]
             jj += 1
