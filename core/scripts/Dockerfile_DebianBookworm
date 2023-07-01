@@ -1,5 +1,5 @@
 # Dockerfile used to create a build environment for PyGimli based on the
-# official Debian stretch base image
+# official Debian bookworm base image
 
 # before proceeding, copy to an empty directory and rename to "Dockerfile"
 
