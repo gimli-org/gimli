@@ -24,9 +24,10 @@ class ERTIPManager(ERTManager):
         self.isfd = kwargs.pop("fd", False)
         super().__init__(*args, **kwargs)
 
-    def invertTDIP(self, ipdata=None, **kwargs):
+    def invertTDIP(self, ipdata='ip', **kwargs):
         """IP inversion in time domain."""
-        ipdata = ipdata or self.data["ip"]
+        if isinstance(ipdata, str):
+            ipdata = self.data[ipdata]
         if max(ipdata) > 1:  # mV/V
             ipdata /= 1000
         mesh0 = pg.Mesh(self.paraDomain)
@@ -35,7 +36,9 @@ class ERTIPManager(ERTManager):
         fopIP.createRefinedForwardMesh(True)
         invIP = pg.Inversion(fop=fopIP, verbose=True)
         invIP.modelTrans = pg.trans.TransLogLU(0.0, 1.0)
-        errorIP = pg.Vector(self.data.size(), 0.03) + 0.001 / ipdata  # absolute ma 1mV/V plus 3%
+        relErr = kwargs.pop("relativeError", 0.03)
+        absErr = kwargs.pop("relativeError", 0.001)
+        errorIP = pg.Vector(self.data.size(), relErr) + absErr / pg.abs(ipdata)
         kwargs.setdefault("lam", 100)
         kwargs.setdefault("startModel", pg.median(ipdata))
         kwargs.setdefault("verbose", True)
@@ -55,7 +58,7 @@ class ERTIPManager(ERTManager):
             kwargs.setdefault("label", r"$m$ (mV/V)")
             kwargs.setdefault("cMap", "magma_r")
 
-        self.showModel(self.modelIP*1000, **kwargs)
+        return self.showModel(self.modelIP*1000, **kwargs)
 
     def showResults(self, reskw={}, ipkw={}, **kwargs):
         """Show DC and IP results.
@@ -71,12 +74,15 @@ class ERTIPManager(ERTManager):
         """
         _, ax = pg.plt.subplots(nrows=2, sharex=True)
         kwargs.setdefault("orientation", "vertical")
+        kwargs.setdefault("xlabel", "x (m)")
+        kwargs.setdefault("ylabel", "z (m)")
         reskw.setdefault("ax", ax[0])
         super().showResult(**reskw, **kwargs)
         ipkw.setdefault("ax", ax[1])
         ipkw.setdefault("logScale", False)
         ipkw.setdefault("cMin", 0)
         self.showIPModel(**ipkw, **kwargs)
+        return ax
 
     def invert(self, *args, **kwargs):
         """Carry out DC and IP inversion."""
