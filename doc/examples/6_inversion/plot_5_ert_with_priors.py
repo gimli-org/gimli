@@ -14,6 +14,7 @@ import numpy as np
 import pygimli as pg
 from pygimli.physics import ert
 from pygimli.frameworks import PriorModelling, JointModelling
+from pygimli.viewer.mpl import draw1DColumn
 
 # %%%
 # The prior data
@@ -59,10 +60,8 @@ ax, cb = ert.show(data)
 
 data["k"] = ert.geometricFactors(data)
 data["err"] = ert.estimateError(data, relativeError=0.02, absoluteUError=50e-6)
-# ax, cb = ert.show(data, data["err"]*100, label="error (%)")
 mgr = ert.ERTManager(data, verbose=True)
 mgr.invert(paraDepth=80, quality=34.6, paraMaxCellSize=100)
-# mgr.showFit()
 
 # %%%
 # For reasons of comparability, we define a unique colormap and store all
@@ -77,8 +76,7 @@ ax, cb = mgr.showResult(**kw)
 zz = np.abs(z)
 iz = np.argsort(zz)
 thk = np.hstack([0, np.diff(zz[iz])])
-pg.viewer.mpl.draw1DColumn(ax, x=x[0], val=r[iz], thk=thk,
-                           width=4, **kw)
+draw1DColumn(ax, x=x[0], val=r[iz], thk=thk, width=4, **kw)
 ax.grid(True)
 
 # %%%
@@ -118,6 +116,7 @@ ax.legend()
 mgr.inv.setRegularization(zWeight=0.2)
 mgr.invert()
 ax, cb = mgr.showResult(**kw)
+draw1DColumn(ax, x=x[0], val=r[iz], thk=thk, width=4, **kw)
 res2 = fopDP(mgr.model)
 
 # %%%
@@ -133,6 +132,7 @@ res2 = fopDP(mgr.model)
 mgr.inv.setRegularization(2, correlationLengths=[50, 5])
 mgr.invert()
 ax, cb = mgr.showResult(**kw)
+draw1DColumn(ax, x=x[0], val=r[iz], thk=thk, width=4, **kw)
 res3 = fopDP(mgr.model)
 
 # %%%
@@ -175,6 +175,7 @@ inv.setRegularization(correlationLengths=[50, 5])
 rError = np.ones_like(r)*0.1
 model = inv.run(r, rError)
 ax, cb = pg.show(para, model, **kw)
+draw1DColumn(ax, x=x[0], val=r[iz], thk=thk, width=4, **kw)
 
 
 # %%%
@@ -237,8 +238,9 @@ transLog = pg.trans.TransLog()
 inv.modelTrans = transLog
 inv.dataTrans = transLog
 inv.run(dataVec, errorVec, startModel=model)
-
 ax, cb = pg.show(para, inv.model, **kw)
+draw1DColumn(ax, x=x[0], val=r[iz], thk=thk, width=4, **kw)
+
 
 # %%%
 # We have a local improvement of the model in the neighborhood of the
@@ -249,6 +251,8 @@ ax, cb = pg.show(para, inv.model, **kw)
 inv.setRegularization(2, correlationLengths=[50, 5])
 model = inv.run(dataVec, errorVec, startModel=model)
 ax, cb = pg.show(para, model, **kw)
+draw1DColumn(ax, x=x[0], val=r[iz], thk=thk, width=4, **kw)
+
 
 # %%%
 # This model much better resembles the subsurface from all data and our
