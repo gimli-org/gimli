@@ -48,7 +48,7 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf=None, foot=np.inf):
     elif doB or doB:
         raise Exception("Specify IGRF!")
 
-    b_list, n_list, c_list = [], [], []
+    b_list, c_list = [], []
     for bd in mesh.boundaries():
         b_list.append([n.id() for n in bd.allNodes()])
         c_list.append([bd.leftCell(), bd.rightCell()])
@@ -56,10 +56,7 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf=None, foot=np.inf):
     b_list = np.array(b_list)
     lb = b_list.shape
 
-    for nd in mesh.nodes():
-        n_list.append(nd.pos())
-
-    n_list = np.array(n_list)
+    n_list = np.array([n.pos() for n in mesh.nodes()])
 
     cl, cr = [], []
     for i, c in enumerate(c_list):
