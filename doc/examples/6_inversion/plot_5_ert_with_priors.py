@@ -8,6 +8,7 @@ Here we demonstrate the use of direct push (DP) data in an ERT inversion of
 data collected at the surface.
 """
 
+# %%
 import matplotlib.pyplot as plt
 import numpy as np
 import pygimli as pg
@@ -73,7 +74,11 @@ mgr.invert(paraDepth=80, quality=34.6, paraMaxCellSize=100)
 kw = dict(cMin=20, cMax=500, logScale=True, cMap="Spectral_r",
           xlabel="x (m)", ylabel="y (m)")
 ax, cb = mgr.showResult(**kw)
-ax.plot(x, z, ".", color="black", linestyle="None", markersize=2)
+zz = np.abs(z)
+iz = np.argsort(zz)
+thk = np.hstack([0, np.diff(zz[iz])])
+pg.viewer.mpl.draw1DColumn(ax, x=x[0], val=r[iz], thk=thk,
+                           width=4, **kw)
 ax.grid(True)
 
 # %%%
