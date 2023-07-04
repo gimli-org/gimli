@@ -121,8 +121,8 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
     ax.grid(True)
 
 
-def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
-                 cmap=None, name=None, textoffset=0.0):
+def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cMin=1, cMax=1000,
+                 cMap=None, name=None, textoffset=0.0, **kwargs):
     """Draw a 1D column (e.g., from a 1D inversion) on a given ax.
 
     Examples
@@ -137,7 +137,7 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     <matplotlib.collections.PatchCollection object at ...>
     >>> _ = ax.set_ylim(-np.sum(thk), 0)
     """
-    z = -np.hstack((0., np.cumsum(thk), np.sum(thk) * 1.5)) + ztopo
+    z = -np.hstack([0., np.cumsum(thk), np.sum(thk) * 1.5]) + ztopo
     recs = []
     for i in range(len(val)):
         recs.append(Rectangle((x - width / 2., z[i]), width, z[i + 1] - z[i]))
@@ -146,17 +146,19 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     col = ax.add_collection(pp)
 
     pp.set_edgecolor(None)
-    pp.set_linewidths(0.0)
+    pp.set_linewidth(0.0)
 
-    if cmap is not None:
-        if isinstance(cmap, str):
-            pp.set_cmap(pg.viewer.mpl.cmapFromName(cmap))
+    if cMap is not None:
+        if isinstance(cMap, str):
+            pp.set_cmap(pg.viewer.mpl.cmapFromName(cMap))
         else:
-            pp.set_cmap(cmap)
+            pp.set_cmap(cMap)
 
-    pp.set_norm(LogNorm(cmin, cmax))
+    if kwargs.pop("logScale", True):
+        pp.set_norm(LogNorm(cMin, cMax))
+    
     pp.set_array(np.array(val))
-    pp.set_clim(cmin, cmax)
+    pp.set_clim(cMin, cMax)
     if name:
         ax.text(x+textoffset, ztopo, name, ha='center', va='bottom')
 
