@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 r"""
-3D magnetics modelling and inversion
-====================================
+3D gravity modelling and inversion
+==================================
 
 Based on the synthetic model of Li & Oldenburg (1998), we demonstrate 3D
 inversion of magnetic data. The forward operator bases on the formula given by
@@ -113,7 +113,7 @@ inv = pg.Inversion(fop=fop, verbose=True)  # , debug=True)
 inv.modelTrans = pg.trans.TransCotLU(-2, 2)
 # inv.setRegularization(correlationLengths=[500, 500, 100])
 inv.setConstraintWeights(wz)
-invmodel = inv.run(data, absoluteError=noise_level, lam=1e6,  # zWeight=0.3,
+invmodel = inv.run(data, absoluteError=noise_level, lam=3e4,  # zWeight=0.3,
                    startModel=0.1, verbose=True)
 grid["inv"] = invmodel
 
@@ -138,13 +138,12 @@ pl.camera.zoom(1.2)
 _ = pl.show()
 
 # %%%
-# The model can nicely outline the top part of the anomalous body, but not
-# its depth extent.
-#
-# We compare the data and model response by means of scatter plots:
+# The model can outline the top part of the anomalous body and its lateral extent,
+# but not its depth extent due to the ambiguity of gravity.
+# We use a vertical slice to illustrate that.
 #
 
-slice = pg.meshtools.extract2dSlice(grid, origin=[500, 500, 0], normal=[0, 1, 0])
+slice = pg.meshtools.extract2dSlice(grid, origin=[500, 500, 0], normal=[1, 1, 0])
 _, ax = plt.subplots(ncols=2, sharex=True, sharey=True)
 pg.show(slice, "synth", ax=ax[0])
 pg.show(slice, "inv", ax=ax[1])
@@ -153,7 +152,6 @@ ax[0].set_ylim(ax[0].get_ylim()[::-1])
 # %%%
 # References
 # ----------
-#
 # -  Li, Y. & Oldenburg, D. (1998): 3-D inversion of gravity data. Geophysics 63(1), 109-119.
 # -  Holstein, H., Sherratt, E.M., Reid, A.B.  (2007): Gravimagnetic field
 #    tensor gradiometry formulas for uniform polyhedra, SEG Ext. Abstr.
