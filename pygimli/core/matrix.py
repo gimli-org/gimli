@@ -157,7 +157,7 @@ def __ElementMatrix_str(self):
                 print(multE(self, f=self.multR))
             except:
                 pass
-            pg.warn('invalid element multR. should be evaluated with multE?')
+            warn('invalid element multR. should be evaluated with multE?')
             return '' 
 
 
@@ -590,7 +590,7 @@ def sparseMatrix2csc(A):
 
     elif isinstance(A, BlockMatrix):
         M = A.sparseMapMatrix()
-        pg.warn('bad efficency BlockMatrix->csc')
+        warn('bad efficency BlockMatrix->csc')
         return sparseMatrix2csc(M)
 
     return csc_matrix(A)

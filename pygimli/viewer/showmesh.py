@@ -99,13 +99,19 @@ def show(obj=None, data=None, **kwargs):
 
     ### obj containes a mesh and data has values
     if hasattr(obj, 'mesh') and hasattr(obj, 'values'):
-        return pg.show(obj.mesh, obj.values,
+        if obj.mesh.dim() > 1:
+            return pg.show(obj.mesh, obj.values,
                        label=kwargs.pop('label', obj.name),
                         **kwargs)
+        else:
+            return show1D(obj.mesh, obj, **kwargs)                    
     ### obj containes a mesh and data need to be evaluated 
     if hasattr(obj, 'mesh') and hasattr(obj, 'eval'):
-        return pg.show(obj.mesh, obj.eval(),
-                       **kwargs)
+        if obj.mesh.dim() > 1:
+            return pg.show(obj.mesh, obj.eval(),
+                           **kwargs)
+        else:
+            return show1D(obj.mesh, obj, **kwargs)
 
     # try to check if obj containes a mesh
     if hasattr(obj, 'mesh'):
@@ -644,6 +650,40 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
         ax.plot([c1[0], c2[0]], [c1[1], c2[1]], color=col, **kwargs)
 
     time.sleep(0.05)
+
+    return ax
+
+
+def show1D(mesh, obj, **kwargs):
+    """Show simple plot for 1D modelling results
+    """
+    ax = kwargs.pop('ax', pg.show()[0])
+
+    xLabel = kwargs.pop('xl', 'x in m')
+    yLabel = kwargs.pop('yl', str(obj))
+    label = kwargs.pop('label', None)
+    grid = kwargs.pop('grid', True)
+
+    if hasattr(obj, 'eval'):
+        x = pg.sort(pg.x(mesh))
+        ax.plot(x, obj(x), label=label, **kwargs)
+   
+    elif hasattr(obj, 'values'):
+        pg._r(kwargs)
+        pg._r(mesh)
+        pg._r(obj)
+        pg.critical('implementme')
+    else:
+        pg._r(kwargs)
+        pg._r(mesh)
+        pg._r(obj)
+        pg.critical('implementme')
+
+    ax.set_xlabel(xLabel)
+    ax.set_ylabel(yLabel)
+
+    ax.legend()
+    ax.grid(grid)
 
     return ax
 

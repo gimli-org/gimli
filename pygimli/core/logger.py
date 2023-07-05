@@ -297,6 +297,9 @@ def verbose(*args):   # isn't this a refinition of line 253?
 
 
 def critical(*args):
+    if len(args) > 0 and isinstance(args[-1], type(Exception)):
+        raise args[-1](_msg(*args[:-1]))
+
     logger.critical(whereAmI(nr=2) + "\n" + _msg(*args))
     raise Exception(_msg(*args))
 
