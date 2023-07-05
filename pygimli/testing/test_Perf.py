@@ -31,7 +31,7 @@ class TestPerf(unittest.TestCase):
         """
         #pg.setDebug(True)
         
-        sw = pg.core.Stopwatch(True)
+        sw = pg.Stopwatch(True)
         #print(timeit.repeat('r = grid.cellSizes() * np1', setup=setup, number=1000))
         #print(timeit.repeat('r = c * np1', setup=setup, number=1000))
 

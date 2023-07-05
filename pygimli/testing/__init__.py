@@ -5,7 +5,7 @@ Testing utilities
 In Python you can call `pygimli.test()` to run all docstring
 examples.
 
-Writing tests for pygimli
+Writing tests for pyGIMLi
 -------------------------
 
 Please check: https://docs.pytest.org/en/latest/
@@ -121,7 +121,7 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
                 print("Exiting with exitcode", exitcode)
                 sys.exit(exitcode)
 
-        if show:  # Keep figure openend if single function is tested
+        if show:  # Keep figure opened if single function is tested
             plt.ioff()
 
         import doctest

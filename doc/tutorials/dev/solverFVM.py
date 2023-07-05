@@ -88,7 +88,7 @@ def divergence(mesh, V, span=None):
     div = mesh.divergence(V)
     return div
 
-    swatch = pg.core.Stopwatch(True)
+    swatch = pg.Stopwatch(True)
     ret = np.zeros((mesh.cellCount(), 3))
 
     for b in mesh.boundaries():
@@ -507,7 +507,7 @@ def solveFiniteVolume(mesh, a=1.0, f=0.0, fn=0.0, vel=0.0, u0=None,
     """
     """
     # The Workspace is to hold temporary data or preserve matrix rebuild
-    swatch = pg.core.Stopwatch(True)
+    swatch = pg.Stopwatch(True)
     sparse = True
 
     workspace = WorkSpace()
@@ -866,7 +866,7 @@ if __name__ == '__main__':
             b7 = b
     b7.setMarker(7)
 
-    swatch = pg.core.Stopwatch(True)
+    swatch = pg.Stopwatch(True)
     velBoundary = [[1, [0.0, 0.0]],
                    [2, [0.0, 0.0]],
                    [3, [1.0, 0.0]],

@@ -181,8 +181,9 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
             gci.set_norm(norm)
 
         if cbar is not None:
-            cbar.on_mappable_changed(gci)
-            # cbar.update_normal(gci)
+            #cbar.on_mappable_changed(gci)
+            cbar.update_normal(gci)
+
         mappable = gci
     else:
         mappable = cbar.mappable
@@ -295,12 +296,12 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
             pass
 
     cbar = None
-    if hasattr(ax, '__cBar__'):
-        # update colorbar is broken and will not work as supposed so we need
-        # to remove them for now
-        ax.__cBar__.remove()
-        delattr(ax, '__cBar__')
-        pass
+    # if hasattr(ax, '__cBar__'):
+    #     # update colorbar is broken and will not work as supposed so we need
+    #     # to remove them for now
+    #     #ax.__cBar__.remove()
+    #     # delattr(ax, '__cBar__')
+    #     pass
 
     if hasattr(ax, '__cBar__'):
         cbar = ax.__cBar__

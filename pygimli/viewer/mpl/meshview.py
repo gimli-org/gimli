@@ -3,7 +3,6 @@
 
 import textwrap
 import numpy as np
-
 import pygimli as pg
 
 from pygimli.utils import streamline
@@ -121,6 +120,8 @@ class CellBrowser(object):
             self._connected = False
 
     def initText(self):
+        """Initialize hint text properties."""
+        import matplotlib as mpl
         bbox = dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
         arrowprops = dict(arrowstyle='->', connectionstyle='arc3,rad=0.5')
         kwargs = dict(fontproperties='monospace', visible=False,
@@ -131,6 +132,7 @@ class CellBrowser(object):
         self.text = self.ax.annotate(None, xy=(0, 0), **kwargs)
 
     def setMesh(self, mesh):
+        """Set mesh."""
         self.mesh = mesh
 
     def setData(self, data=None):
@@ -167,6 +169,7 @@ class CellBrowser(object):
 
     def highlightCell(self, cell):
         """Highlight selected cell."""
+        import matplotlib as mpl
         self.removeHighlightCell()
         self.highLight = mpl.collections.PolyCollection(
             [_createCellPolygon(cell)])
@@ -401,7 +404,7 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
 
 
 def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0,
-                               linestyles="-", **kwargs):
+                               linestyle="-", **kwargs):
     """Draw mesh boundaries into a given axes.
 
     Parameters
@@ -444,7 +447,7 @@ def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0,
         lineCollection.set_color(color)
 
     lineCollection.set_linewidth(linewidth)
-    lineCollection.set_linestyles(linestyles)
+    lineCollection.set_linestyle(linestyle)
     ax.add_collection(lineCollection)
 
     updateAxes_(ax)
@@ -644,9 +647,6 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
     if fitView is True:
         ax.autoscale(enable=True, axis='both', tight=True)
 
-
-#    drawAA = True
-#    swatch = pg.core.Stopwatch(True)
     mesh.createNeighborInfos()
 
     if not hideMesh:
@@ -730,7 +730,6 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True,
     if fillRegion and mesh.boundaryCount() > 2:
         tmpMesh = pg.meshtools.createMesh(mesh, quality=20, area=0)
         if tmpMesh.cellCount() == 0:
-            pass
             gci = None
         else:
             markers = np.array(tmpMesh.cellMarkers())
@@ -755,6 +754,10 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True,
                 areas = {}
                 for reg in mesh.regionMarkers():
                     areas[reg.marker()] = reg.area()
+                    ax.plot(reg.x(), reg.y(), "mx", alpha=0.5)
+                    ax.text(reg.x(), reg.y(), str(reg.marker()), color="m",
+                            ha="center", va="center")
+
                 labels = []
                 for marker in uniquemarkers:
                     label = "{:d}".format(marker)
@@ -787,7 +790,6 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True,
     #    ax.add_collection(p)
 
     if regionMarker:
-
         for hole in mesh.holeMarker():
             ax.text(hole[0], hole[1], 'H', color='black',
                     va="center", ha="center")
@@ -910,7 +912,7 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
 
     Parameters
     ----------
-    ax : mpl axe
+    ax : Matplotlib axis object
 
     mesh : :gimliapi:`GIMLI::Mesh`
         2D mesh
@@ -958,8 +960,7 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
     >>> ny = pg.y(mesh.positions())
     >>> data = np.cos(1.5 * nx) * np.sin(1.5 * ny)
     >>> fig, ax = plt.subplots()
-    >>> drawField(ax, mesh, data)
-    <matplotlib.tri.tricontour.TriContourSet ...>
+    >>> tri = drawField(ax, mesh, data)
     """
     x, y, triangles, _, dataIndex = createTriangles(mesh)
     if len(data) == mesh.cellCount():
@@ -1205,7 +1206,7 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
         ax to draw into
     mesh : :gimliapi:`GIMLI::Mesh`
         2d mesh
-    data : iterable float | [float, float] | pg.core.R3Vector
+    data : iterable float | [float, float] | pg.PosVector
         If data is an array (per cell or node) gradients are calculated
         otherwise the data will be interpreted as vector field per nodes or
         cell centers.
@@ -1262,7 +1263,7 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
             x = pg.x(mesh.boundaryCenters())
             y = pg.y(mesh.boundaryCenters())
 
-        if isinstance(data, pg.core.R3Vector):
+        if isinstance(data, pg.PosVector):
             u = pg.x(data)
             v = pg.y(data)
         else:
@@ -1335,7 +1336,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
     sensors : vector or list of RVector3
         List of positions to plot.
     diam : float [None]
-        Diameter of circles (None leads to point distance by 4).
+        Diameter (absolute in m) of circles (None leads to point distance by 4).
     coords: (int, int) [0, 1]
         Coordinates to take (usually x and y).
 
@@ -1370,7 +1371,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
         eSpacing = pg.Pos(sensors[0]).distance(sensors[1])
         diam = eSpacing / 2.5
 
-    for i, e in enumerate(sensors):
+    for e in sensors:
         eCircles.append(mpl.patches.Circle((e[coords[0]],
                                             e[coords[1]]), diam/2, **kwargs))
 

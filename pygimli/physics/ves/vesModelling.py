@@ -2,8 +2,7 @@
 import numpy as np
 
 import pygimli as pg
-# from pygimli.frameworks import Modelling, Block1DModelling
-from pygimli.frameworks import Block1DModelling, MethodManager1d
+from pygimli.frameworks import Block1DModelling
 from pygimli.frameworks.modelling import DEFAULT_STYLES
 
 
@@ -12,33 +11,33 @@ class VESModelling(Block1DModelling):
 
     Attributes
     ----------
-    am :
-        Part of data basis. Distances between A and M electrodes.
-        A is first power, M is first potential electrode.
-    bm :
-        Part of data basis. Distances between B and M electrodes.
-        B is second power, M is first potential electrode.
-    an :
-        Part of data basis. Distances between A and N electrodes.
-        A is first power, N is second potential electrode.
-    bn :
-        Part of data basis. Distances between B and N electrodes.
-        B is second power, N is second potential electrode.
     ab2 :
         Half distance between the current electrodes A and B.
     mn2 :
         Half distance between the potential electrodes M and N.
-        Only used for input (feeding am etc.).
+        Only used for input (feeding am etc.) or plotting.
+    am :
+        Part of data basis. Distances between A and M electrodes.
+        A is first current, M is first potential electrode.
+    bm :
+        Part of data basis. Distances between B and M electrodes.
+        B is second current, M is first potential electrode.
+    an :
+        Part of data basis. Distances between A and N electrodes.
+        A is first current, N is second potential electrode.
+    bn :
+        Part of data basis. Distances between B and N electrodes.
+        B is second current, N is second potential electrode.
     """
 
     def __init__(self, ab2=None, mn2=None, **kwargs):
         """Initialize with distances."""
-        self.am = None
-        self.bm = None
-        self.an = None
-        self.bn = None
-        self.ab2 = None
-        self.mn2 = None
+        self.am = kwargs.pop("am", None)
+        self.bm = kwargs.pop("bm", None)
+        self.an = kwargs.pop("an", None)
+        self.bn = kwargs.pop("bn", None)
+        self.ab2 = ab2
+        self.mn2 = mn2
 
         super(VESModelling, self).__init__(**kwargs)
 
@@ -95,7 +94,10 @@ class VESModelling(Block1DModelling):
         self.an = an
         self.bm = bm
         self.bn = bn
-        if ab2 is not None and mn2 is not None:  # overrides am etc.
+        if ab2 is not None:
+            if mn2 is None:
+                mn2 = np.array(ab2) / 3
+
             if isinstance(mn2, float):
                 mn2 = np.ones(len(ab2))*mn2
 
@@ -163,7 +165,7 @@ class VESModelling(Block1DModelling):
         error: iterable [None]
             Adds an error bar if you have error values.
 
-        label: str ['$\varrho_a$']
+        label: str ['$\rho_a$']
             Set legend label for the amplitude.
 
         Other Parameters
@@ -187,7 +189,7 @@ class VESModelling(Block1DModelling):
         style.update(kwargs)
 
         if label is None:
-            label = r'$\varrho_a$'
+            label = r'$\rho_a$'
 
         plot(ra, ab2, label=label, **style)
 
@@ -206,7 +208,7 @@ class VESModelling(Block1DModelling):
         ax.set_ylabel(r'AB/2 (m)')
         ax.grid(True)
         ax.legend()
-        return ax, None
+        return ax, None  # should return gci and not ax&cb
 
 
 class VESCModelling(VESModelling):
@@ -232,10 +234,10 @@ class VESCModelling(VESModelling):
 
     def createStartModel(self, rhoa):
         """Create starting model of nlay-1 thicknesses & nlay resistivities."""
-        startThicks = np.logspace(np.log10(min(self.mn2)/2),
+        startDepths = np.logspace(np.log10(min(self.mn2)/2),
                                   np.log10(max(self.ab2)/5),
                                   self._nLayers-1)
-        startThicks = pg.utils.diff(pg.cat([0.0], startThicks))
+        startThicks = pg.utils.diff(pg.cat([0.0], startDepths))
 
         # layer thickness properties
         self.setRegionProperties(0, startModel=startThicks,
@@ -382,204 +384,56 @@ class VESCModelling(VESModelling):
         a2.grid(True)
 
 
-class VESManager(MethodManager1d):
-    r"""Vertical electrical sounding (VES) manager class.
+# class VESRhoModelling(VESModelling):  # not working due to Block1dModelling
+class VESRhoModelling(pg.frameworks.MeshModelling):
+    """Vertical electrical sounding (VES) modelling with fixed layers."""
 
-    Examples
-    --------
-    >>> import numpy as np
-    >>> import pygimli as pg
-    >>> from pygimli.physics import VESManager
-    >>> ab2 = np.logspace(np.log10(1.5), np.log10(100), 32)
-    >>> mn2 = 1.0
-    >>> # 3 layer with 100, 500 and 20 Ohmm
-    >>> # and layer thickness of 4, 6, 10 m
-    >>> # over a Halfspace of 800 Ohmm
-    >>> synthModel = pg.cat([4., 6., 10.], [100., 5., 20., 800.])
-    >>> ves = VESManager()
-    >>> ra, err = ves.simulate(synthModel, ab2=ab2, mn2=mn2, noiseLevel=0.01)
-    >>> ax = ves.showData(ra, error=err)
-    >>> # _= ves.invert(ra, err, nLayer=4, showProgress=0, verbose=0)
-    >>> # ax = ves.showModel(synthModel)
-    >>> # ax = ves.showResult(ax=ax)
-    >>> pg.wait()
-    """
-
-    def __init__(self, **kwargs):
-        """Initialize instance.
+    def __init__(self, thk, verbose=False, **kwargs):
+        """Initialize modelling operator by passing model and data space.
 
         Parameters
         ----------
-        complex : bool
-            Accept complex resistivities.
-
-        Attributes
-        ----------
-        complex : bool
-            Accept complex resistivities.
+        thk : iterable, optional
+            Thickness vector of the individual layers.
+        verbose : bool, optional
+            some output. The default is False.
+        **kwargs : geometric definition of the sounding, either
+            ab2 : iterable
+                AB/2 distances
+            mn2 : iterable
+                MN/2 distances (if not specified, ab2/3 by default) OR
+            am : iterable
+                A-M distance AND
+            an : iterable
+                A-N distance AND
+            bm : iterable
+                N-M distance AND
+            bn : iterable
+                B-N distance OR
+            dataContainer : pg.DataContainerERT
+                ERT data container to determine the AM/AN/BM/BN distances
         """
-        self._complex = kwargs.pop('complex', False)
+        super().__init__(verbose=verbose)
+        # better do the following in a function like setDataSpace/setModelSpace
+        self.bfop = VESModelling(**kwargs)  # just to sort out AM, AN etc.
+        self.thk = thk
+        self.fwd = pg.core.DC1dRhoModelling(thk, self.bfop.am, self.bfop.bm,
+                                            self.bfop.an, self.bfop.bn,
+                                            verbose=verbose)
+        self.mesh_ = pg.meshtools.createMesh1D(len(thk)+1)
+        self.setMesh(self.mesh_)
+        # self.mesh = self.mesh_  # could work with MeshModelling parent
 
-        super(VESManager, self).__init__(**kwargs)
+    def response(self, par):
+        """Forward response (app. resistivity for given resistivity vector)."""
+        return self.fwd.response(par)
 
-        self.inv.setDeltaPhiStop(1)
+    def response_mt(self, par):
+        """Forward response."""
+        fwd = pg.core.DC1dRhoModelling(self.thk, self.bfop.am, self.bfop.bm,
+                                       self.bfop.an, self.bfop.bn, False)
+        return fwd.response(par)
 
-        self.dataTrans = None
-        self.rhoaTrans = pg.trans.TransLog()
-        self.phiaTrans = pg.trans.TransLin()
-
-    @property
-    def complex(self):
-        """Return whether the computations are complex."""
-        return self._complex
-
-    @complex.setter
-    def complex(self, c):
-        self._complex = c
-        self.reinitForwardOperator()
-
-    def createForwardOperator(self, **kwargs):
-        """Create Forward Operator.
-
-        Create Forward Operator based on complex attribute.
-        """
-        if self.complex:
-            return VESCModelling(**kwargs)
-        else:
-            return VESModelling(**kwargs)
-
-    def simulate(self, model, ab2=None, mn2=None, **kwargs):
-        """Simulate measurement data."""
-        if ab2 is not None and mn2 is not None:
-            self._fw.fop.setDataSpace(ab2=ab2, mn2=mn2)
-
-        return super(VESManager, self).simulate(model, **kwargs)
-
-    def preErrorCheck(self, err, dataVals=None):
-        """Fct to be called before the validity check of the error values."""
-        err = np.atleast_1d(err)
-        if self.complex:
-            if len(err) == 2:
-                nData = len(dataVals) // 2
-                err = pg.cat(np.ones(nData)*err[0],
-                             np.abs(err[1] / dataVals[nData:]))
-        else:
-            if len(err) == 1:
-                err = np.ones(nData)*err[0]
-
-        return err
-
-    def invert(self, data=None, err=None, ab2=None, mn2=None, **kwargs):
-        """Invert measured data.
-
-        Parameters
-        ----------
-        data : iterable
-            data vector
-        err : iterable
-            error vector
-        ab2: iterable
-            AB/2 vector (otherwise taken from data)
-        mn2: iterable
-            MN/2 vector (otherwise taken from data)
-
-        Keyword Arguments
-        ----------------
-        **kwargs
-            Additional kwargs inherited from %(MethodManager1d.invert) and
-            %(Inversion.run)
-
-        Returns
-        -------
-        model : pg.Vector
-            inversion result
-        """
-        if ab2 is not None and mn2 is not None:
-            self.fop.setDataSpace(ab2=ab2, mn2=mn2)
-
-        if data is not None:
-            if self.complex:
-                nData = len(data)//2
-                self.dataTrans = pg.trans.TransCumulative()
-                self.dataTrans.add(self.rhoaTrans, nData)
-                self.dataTrans.add(self.phiaTrans, nData)
-            else:
-                self.dataTrans = pg.trans.TransLog()
-
-            self.inv.dataTrans = self.dataTrans
-
-        if 'layerLimits' not in kwargs:
-            kwargs['layerLimits'] = [min(self.fop.mn2)/5,
-                                     max(self.fop.ab2)/2]
-
-        if 'paraLimits' in kwargs and self.complex:
-            pL = kwargs['paraLimits'][1]
-            kwargs['paraLimits'][1] = [pL[0]/1000, pL[1]/1000]
-
-        return super(VESManager, self).invert(data=data, err=err, **kwargs)
-
-    def loadData(self, fileName, **kwargs):
-        """Load simple data matrix."""
-        mat = np.loadtxt(fileName)
-        if len(mat[0]) == 4:
-            self.fop.setDataSpace(ab2=mat[:, 0], mn2=mat[:, 1])
-            return mat.T
-        if len(mat[0]) == 6:
-            self.complex = True
-            self.fop.setDataSpace(ab2=mat[:, 0], mn2=mat[:, 1])
-            return (mat[:, 0], mat[:, 1],
-                    np.array(pg.cat(mat[:, 2], mat[:, 4])),
-                    np.array(pg.cat(mat[:, 3], mat[:, 5])))
-
-    def exportData(self, fileName, data=None, error=None):
-        """Export data into simple ascii matrix.
-
-        Usefull?
-        """
-        mn2 = np.abs((self.fop.am - self.fop.an) / 2.)
-        ab2 = (self.fop.am + self.fop.bm) / 2.
-        mat = None
-        if data is None:
-            data = self.inv.dataVals
-
-        if error is None:
-            error = self.inv.errorVals
-
-        if self.complex:
-            nData = len(data)//2
-            mat = np.array([ab2, mn2,
-                            data[:nData], error[:nData],
-                            data[nData:], error[nData:]
-                            ]).T
-            np.savetxt(fileName, mat,
-                       header=r'ab/2\tmn/2\trhoa\terr\tphia\terrphi')
-        else:
-            mat = np.array([ab2, mn2, data, error]).T
-            np.savetxt(fileName, mat, header=r'ab/2\tmn/2\trhoa\terr')
-
-
-def VESManagerApp():
-    """Call VESManager as console app."""
-    parser = VESManager.createArgParser(dataSuffix='ves')
-    options = parser.parse_args()
-
-    verbose = not options.quiet
-    if verbose:
-        print("VES Manager console application.")
-        print(options._get_kwargs())
-
-    mgr = VESManager(verbose=verbose, debug=pg.debug())
-
-    ab2, mn2, ra, err = mgr.loadData(options.dataFileName)
-
-    mgr.showData(ra, err)
-    mgr.invert(ra, err, ab2, mn2,
-               maxIter=options.maxIter,
-               lam=options.lam,
-               )
-    mgr.showResultAndFit()
-    pg.wait()
-
-
-if __name__ == '__main__':
-    VESManagerApp()
+    def createStartModel(self, rhoa):
+        """Create starting model."""
+        return pg.Vector(len(self.thk)+1, np.median(rhoa))

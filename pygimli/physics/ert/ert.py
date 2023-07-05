@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Electrical resistivity tomography"""
 
@@ -17,7 +16,8 @@ def simulate(mesh, scheme, res, **kwargs):
     Perform the forward task for a given mesh, resistivity distribution &
     measuring scheme and return data (apparent resistivity) or potentials.
 
-    For complex resistivity, the apparent resistivities is complex as well.
+    For complex resistivity, the data contains an apparent phase or the
+    returned potentials are complex.
 
     The forward operator itself only calculates potential values for the
     electrodes in the given data scheme.
@@ -67,42 +67,44 @@ def simulate(mesh, scheme, res, **kwargs):
     returnFields: bool [False]
         Returns a matrix of all potential values (per mesh nodes)
         for each injection electrodes.
+    sr : bool
+        use secondary field (singularity removal)
+    seed : int
+        numpy.random seed for repeatable noise in synthetic experiments
+    phiErr : float|iterable 
+        absolute phase error, if not given, data['iperr'] or noiseLevel is used
 
     Returns
     -------
     DataContainerERT | array(data.size()) | array(N, data.size()) |
     array(N, mesh.nodeCount()):
-        Data container with resulting apparent resistivity data and
+        Data container with resulting apparent resistivity data['rhoa'] and
         errors (if noiseLevel or noiseAbs is set).
-        Optional returns a Matrix of rhoa values
+        Optionally return a Matrix of rhoa values
         (for returnArray==True forces noiseLevel=0).
-        In case of a complex valued resistivity model, phase values are
-        returned in the DataContainerERT (see example below), or as an
-        additionally returned array.
+        In case of complex-valued resistivity, phase values are contained in
+        data['phia'] or returned as additionally returned array.
 
     Examples
     --------
-    # >>> from pygimli.physics import ert
-    # >>> import pygimli as pg
-    # >>> import pygimli.meshtools as mt
-    # >>> world = mt.createWorld(start=[-50, 0], end=[50, -50],
-    # ...                        layers=[-1, -5], worldMarker=True)
-    # >>> scheme = ert.createData(
-    # ...                     elecs=pg.utils.grange(start=-10, end=10, n=21),
-    # ...                     schemeName='dd')
-    # >>> for pos in scheme.sensorPositions():
-    # ...     _= world.createNode(pos)
-    # ...     _= world.createNode(pos + [0.0, -0.1])
-    # >>> mesh = mt.createMesh(world, quality=34)
-    # >>> rhomap = [
-    # ...    [1, 100. + 0j],
-    # ...    [2, 50. + 0j],
-    # ...    [3, 10.+ 0j],
-    # ... ]
-    # >>> ert = pg.ERTManager()
-    # >>> data = ert.simulate(mesh, res=rhomap, scheme=scheme, verbose=True)
-    # >>> rhoa = data.get('rhoa').array()
-    # >>> phia = data.get('phia').array()
+    >>> from pygimli.physics import ert
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> world = mt.createWorld(start=[-50, 0], end=[50, -50],
+    ...                        layers=[-1, -5], worldMarker=True)
+    >>> scheme = ert.createData(
+    ...                     elecs=pg.utils.grange(start=-10, end=10, n=21),
+    ...                     schemeName='dd')
+    >>> for pos in scheme.sensorPositions():
+    ...     _= world.createNode(pos)
+    ...     _= world.createNode(pos + [0.0, -0.1])
+    >>> mesh = mt.createMesh(world, quality=34)
+    >>> rhomap = [
+    ...    [1, 100. + 0j],
+    ...    [2, 50. + 0j],
+    ...    [3, 10.+ 1j],
+    ... ]
+    >>> data = ert.simulate(mesh, res=rhomap, scheme=scheme, verbose=True)
     """
     verbose = kwargs.pop('verbose', True)
     calcOnly = kwargs.pop('calcOnly', False)
@@ -111,12 +113,11 @@ def simulate(mesh, scheme, res, **kwargs):
     noiseLevel = kwargs.pop('noiseLevel', 0.0)
     noiseAbs = kwargs.pop('noiseAbs', 1e-4)
     seed = kwargs.pop('seed', None)
-    sr = kwargs.pop('sr', True)  # self.sr)
+    sr = kwargs.pop('sr', True)
+    returnFOP = kwargs.pop("returnFOP", False)
 
-    # segfaults with self.fop (test & fix)
     fop = ERTModelling(sr=sr, verbose=verbose)
-    # fop = self.createForwardOperator(useBert=True,  # self.useBert,
-    #                                   sr=sr, verbose=verbose)
+    # fop = self.createForwardOperator(useBert=True, sr=sr, verbose=verbose)
     fop.data = scheme
     fop.setMesh(mesh, ignoreRegionManager=True)
 
@@ -125,7 +126,7 @@ def simulate(mesh, scheme, res, **kwargs):
 
     isArrayData = False
     # parse the given res into mesh-cell-sized array
-    if isinstance(res, int) or isinstance(res, float):
+    if isinstance(res, (int, float)):
         res = np.ones(mesh.cellCount()) * float(res)
     elif isinstance(res, complex):
         res = np.ones(mesh.cellCount()) * res
@@ -259,7 +260,10 @@ def simulate(mesh, scheme, res, **kwargs):
         else:
             return rhoa
 
-    return ret
+    if returnFOP:
+        return ret, fop
+    else:
+        return ret
 
 
 def simulateOld(mesh, scheme, res, sr=True, useBert=True,
@@ -485,21 +489,21 @@ def estimateError(data, absoluteError=0.001, relativeError=0.03,
             pg.critical("We need apparent resistivity values "
                         "(rhoa) in the data to estimate a "
                         "data error.")
-        error = relativeError + pg.abs(absoluteError / data('rhoa'))
+        error = relativeError + pg.abs(absoluteError / data['rhoa'])
     else:
         u = None
         i = absoluteCurrent
-        if data.haveData("i"):
-            i = data('i')
+        if data.haveData('i'):
+            i = data['i']
 
-        if data.haveData("u"):
-            u = data('u')
+        if data.haveData('u'):
+            u = data['u']
         else:
-            if data.haveData("r"):
-                u = data('r') * i
-            elif data.haveData("rhoa"):
-                if data.haveData("k"):
-                    u = data('rhoa') / data('k') * i
+            if data.haveData('r'):
+                u = data['r'] * i
+            elif data.haveData('rhoa'):
+                if data.haveData('k'):
+                    u = data['rhoa'] / data['k'] * i
                 else:
                     pg.critical("We need (rhoa) and (k) in the"
                                 "data to estimate data error.")
@@ -512,6 +516,23 @@ def estimateError(data, absoluteError=0.001, relativeError=0.03,
         error = pg.abs(absoluteUError / u) + relativeError
 
     return error
+
+
+def __DataContainerERT_createGeometricFactors(self, *args,**kwargs):
+    self['k'] = createGeometricFactors(self, *args, **kwargs)
+
+pg.DataContainerERT.createGeometricFactors = __DataContainerERT_createGeometricFactors
+pg.DataContainerERT.createGeometricFactors.__doc__ = createGeometricFactors.__doc__
+
+
+def __DataContainerERT_estimateError(self, *args,**kwargs):
+    if not self.haveData('k'):
+        self.createGeometricFactors()
+    
+    self['err'] = estimateError(self, *args, **kwargs)
+
+pg.DataContainerERT.estimateError = __DataContainerERT_estimateError
+pg.DataContainerERT.estimateError.__doc__ = estimateError.__doc__
 
 
 if __name__ == "__main__":

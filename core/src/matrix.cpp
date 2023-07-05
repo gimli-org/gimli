@@ -17,11 +17,11 @@
  ******************************************************************************/
 
 #include "gimli.h"
-#include "vector.h"
+// #include "vector.h"
 #include "elementmatrix.h"
 
 #include "matrix.h"
-// #include "vector.h"
+#include "vector.h"
 #include "stopwatch.h"
 
 #if OPENBLAS_CBLAS_FOUND
@@ -710,95 +710,209 @@ void matMultABA(const RMatrix & A, const RMatrix & B,
     return matMultABA_T(A, B, C, AtB, a, b);
 }
 
-void mult(const CMatrix & A, 
-          const CMatrix & B, CMatrix & C,
-          const Complex & alpha,
-          const Complex & beta){
+void mult(const CMatrix & A, const CMatrix & B, CMatrix & C,
+          const Complex & alpha, const Complex & beta){
     THROW_TO_IMPL
 }
 
-void transMult(const CMatrix & A, 
-               const CMatrix & B, CMatrix & C,
-               const Complex & alpha,
-               const Complex & beta){
+void transMult(const CMatrix & A, const CMatrix & B, CMatrix & C,
+               const Complex & alpha, const Complex & beta){
     THROW_TO_IMPL
 }
 
 void mult(const RMatrix & A, const RMatrix & B,
           RMatrix & C, const double & a, const double & b){
-// #if USE_EIGEN3
-//     if (A.cols() == B.rows()){
-
-//         if (C.rows() != A.rows() || C.cols() != B.cols()){
-//             C.resize(A.rows(), B.cols());
-//         }
-//         if (b == 0.0){
-//             C = a*(A*B);
-//         } else if (b == 1.0){
-//             C += a*(A*B);
-//         } else if (b == -1.0){
-//             C += a*(A*B);
-//         } else {
-//             C = b*C + a*(A*B);
-//         }
-//     } else if (A.cols() == B.cols()){
-//         if (C.rows() != A.rows() || C.cols() != B.rows()){
-//             C.resize(A.rows(), B.rows());
-//         }
-//         if (b == 0.0){
-//             C = a*(A*B.transpose());
-//         } else if (b == 1.0){
-//             C += a*(A*B.transpose());
-//         } else if (b == -1.0){
-//             C += a*(A*B.transpose());
-//         } else {
-//             C = b*C + a*(A*B.transpose());
-//         }
-//     } else {
-//         log(Error, "matMult sizes mismatch. ", A.cols(), "!=", B.rows());
-//     }
-
-// #else
     return mult_MM_T(A, B, C, a, b);
-// #endif
 }
 void transMult(const RMatrix & A, const RMatrix & B,
                RMatrix & C, const double & a, const double & b){
-//** C = a * A.T*B + b*C || C = a * A.T*B.T + b*C
-// #if USE_EIGEN3
-//     if (A.rows() == B.rows()){
+    return transMult_MM_T(A, B, C, a, b);
+}
+
+
+// void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, double b){
+//     //** C = a * A.T*B + b*C|| C = a * A.T*B.T  + b*C
+//     //** C = (a * A.T*B).T + b*C if C has the right dimension
+//     //** implement with openblas dgemm too and check performance
+//     // __MS("matTransMult: "<< A.rows() << " " << A.cols() << " : "
+//     //     << B.rows() << " " << B.cols() << " " << a << " " << b)
+//     // bool retTrans = false;
+
+//     // A(k, m).T * B(k, n) = C(m, n)
+
+//     Index k = A.rows(); // B.rows()
+//     Index m = A.cols(); // C.rows()
+//     Index n = B.cols(); // C.cols()
+
+//     if (k == B.rows()){ // A.T * B
 
 //         if (C.rows() != A.cols() || C.cols() != B.cols()){
-//             C.resize(A.cols(), B.cols());
+
+//             // __MS(C.rows() << " " << C.cols() << " " << A.cols() << " " << B.cols())
+//             //** Target array have wrong dimensions
+//             if (C.rows() == B.cols() && C.cols() == A.cols()){
+//                 // C = a * B.T*A + b*C
+//                 //** Target array seems needed to be transposed
+//                 //** C = a*(A.T*B).T + b * C
+//                 // __MS("ret transmult")
+//                 return matTransMult(B, A, C, a, b);
+
+//                 //retTrans = true;
+//             } else {
+//                 //** resize target array
+//                 C.resize(m, n);
+//             }
 //         }
-//         if (b == 0.0){
-//             C = a*(A.transpose()*B);
-//         } else if (b == 1.0){
-//             C += a*(A.transpose()*B);
-//         } else if (b == -1.0){
-//             C += a*(A.transpose()*B);
-//         } else {
-//             C = b*C + a*(A.transpose()*B);
-//         }
-//     } else if (A.rows() == B.cols()){
-//         if (C.rows() != A.cols() || C.cols() != B.rows()){
-//             C.resize(A.cols(), B.rows());
-//         }
-//         if (b == 0.0){
-//             C = a*(A.transpose()*B.transpose());
-//         } else if (b == 1.0){
-//             C += a*(A.transpose()*B.transpose());
-//         } else if (b == -1.0){
-//             C += a*(A.transpose()*B.transpose());
-//         } else {
-//             C = b*C + a*(A.transpose()*B.transpose());
-//         }
-//     } else {
-//         log(Error, "matTransMult sizes mismatch. ", A.rows(), "!=", B.rows());
-//     }
+
+// #if OPENBLAS_CBLAS_FOUND
+
+//         double *A2 = new double[k * m];
+//         double *B2 = new double[k * n];
+//         double *C2 = new double[m * n];
+
+//         A.dumpData(A2);
+//         B.dumpData(B2);
+//         C.dumpData(C2);
+
+//     // std::cout << "A" << std::endl;
+//     // for (Index i = 0; i < m*k; i ++ ){std::cout << A2[i] << " ";} std::cout << std::endl;
+//     // std::cout << "b" << std::endl;
+//     // for (Index i = 0; i < n*k; i ++ ){std::cout << B2[i] << " ";} std::cout << std::endl;
+//     // std::cout << "C1" << std::endl;
+//     // for (Index i = 0; i < m*n; i ++ ){std::cout << C2[i] << " ";} std::cout << std::endl;
+
+//         cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, m, n, k,
+//                     a, A2, m, B2, n, b, C2, n);
+
+//     // std::cout << "C2" << std::endl;
+//     // for (Index i = 0; i < m*n; i ++ ){std::cout << C2[i] << " ";} std::cout << std::endl;
+
+//         C.fromData(C2, m, n);
+
+//     // std::cout << "C3" << std::endl;
+//     // std::cout << C << std::endl;
+
+//         delete [] A2;
+//         delete [] B2;
+//         delete [] C2;
+
 // #else
-    transMult_MM_T(A, B, C, a, b);
+
+//         for (Index i = 0; i < A.cols(); i ++){
+//             for (Index j = 0; j < B.cols(); j ++){
+//                 double c = 0;
+//                 for (Index k = 0; k < A.rows(); k ++){
+//                     c += A[k][i] * B[k][j];
+//                 }
+//                 // if (retTrans){
+//                 if (0){
+//                     THROW_TO_IMPL
+//                     C[j][i] = a * c + C[j][i]*b;
+//                 } else {
+//                     C[i][j] = a * c + C[i][j]*b;
+//                 }
+//             }
+//         }
 // #endif
+//     } else { // A.T * B.T
+//         __MS(A)
+//         __MS(B)
+//         log(Error, "matTransMult sizes mismatch.", A.rows(), "!=", B.rows());
+//     }
+// }
+
+/*! Force to load single matrix binary file.
+    Format: see \ref save(const Matrix < ValueType > & A, const std::string & filename). */
+template < class ValueType >
+bool loadMatrixSingleBin_T(Matrix < ValueType > & A,
+                          const std::string & filename){
+
+    std::ifstream testFile(filename, std::ios::binary);
+    const auto begin = testFile.tellg();
+    testFile.seekg (0, std::ios::end);
+    const auto end = testFile.tellg();
+    SIndex fsize = (end-begin);
+    testFile.close();
+    FILE *file; file = fopen(filename.c_str(), "r+b");
+    if (!file) {
+        throwError(WHERE_AM_I + " " +
+                   filename + ": " + strerror(errno));
+    }
+
+    Index ret;
+    uint32 rows = 0;
+    ret = fread(&rows, sizeof(uint32), 1, file);
+    if (ret == 0) throwError("fail reading file " + filename);
+    uint32 cols = 0;
+    ret = fread(&cols, sizeof(uint32), 1, file);
+    if (ret == 0) throwError("fail reading file " + filename);
+
+    if ((SIndex)(rows*cols*sizeof(ValueType) + 2*sizeof(uint32)) != fsize){
+        __MS("rows: ", str(rows), " cols: ", cols, " fsize: ",fsize)
+        __MS(" filesize needed: ", rows*cols*sizeof(ValueType)+2*sizeof(uint32))
+        fclose(file);
+        throwError(WHERE_AM_I + " " + filename + ": size invalid");
+    }
+
+    A.resize(rows, cols);
+    for (uint32 i = 0; i < rows; i ++){
+        for (uint32 j = 0; j < cols; j ++){
+            ret = fread((char*)&A[i][j], sizeof(ValueType), 1, file);
+            if (ret == 0) throwError("fail reading file " + filename);
+        }
+    }
+    fclose(file);
+    A.rowFlag().fill(1);
+    return true;
+}
+
+bool loadMatrixSingleBin(RMatrix & A, const std::string & filename){
+    return loadMatrixSingleBin_T(A, filename);
+}
+bool loadMatrixSingleBin(CMatrix & A, const std::string & filename){
+    return loadMatrixSingleBin_T(A, filename);
+}
+
+template < class ValueType >
+bool loadMatrixVectorsBin_T(Matrix < ValueType > & A,
+                            const std::string & filenameBody, uint kCount = 1){
+
+    A.clear();
+    Vector < ValueType > tmp;
+    std::string filename;
+
+    for (Index i = 0; i < kCount; i++){
+        Index count = 0;
+        while (1){ // load as long as posible
+            if (kCount > 1){
+                filename = filenameBody + "." + str(count) + "_" + str(i) + ".pot";
+            } else {
+                filename = filenameBody + "." + str(count) + ".pot";
+            }
+
+            if (!fileExist(filename)){
+                filename = filenameBody + "." + str(count);
+                if (!fileExist(filename)){
+                    if (count == 0) {
+	                    std::cerr << "Can't found: " << filename << std::endl;
+                    }
+                    break;
+                }
+            }
+            if (loadVec(tmp, filename, Binary )) A.push_back(tmp);
+            count ++;
+        } // while files exist
+    } // for each k count
+    return true;
+}
+
+bool loadMatrixVectorsBin(RMatrix & A,
+                           const std::string & filenameBody, uint kCount){
+    return loadMatrixVectorsBin_T(A, filenameBody, kCount);
+}
+bool loadMatrixVectorsBin(CMatrix & A,
+                           const std::string & filenameBody, uint kCount){
+    return loadMatrixVectorsBin_T(A, filenameBody, kCount);
 }
 
 

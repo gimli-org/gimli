@@ -65,7 +65,10 @@ endif()
 
 if (OpenBLAS_INCLUDE_DIR)
     include_directories(${OpenBLAS_INCLUDE_DIR})
-    target_link_libraries(${libgimli_TARGET_NAME} openblas)
+
+    if (NOT APPLE)
+        target_link_libraries(${libgimli_TARGET_NAME} openblas)
+    endif()
 endif()
 
 if (USE_BOOST_THREAD)
@@ -78,6 +81,9 @@ if (USE_BOOST_THREAD)
     endif (Boost_SYSTEM_FOUND)
 endif(USE_BOOST_THREAD)
 
+if (APPLE)
+    target_link_libraries(${libgimli_TARGET_NAME} "-undefined dynamic_lookup")
+endif()
 
 if (WIN32)
     target_link_libraries(${libgimli_TARGET_NAME} psapi)

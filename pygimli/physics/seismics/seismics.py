@@ -242,7 +242,7 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose=False
 
     solver1 = pg.core.LinSolver(S1, verbose=False)
     solver2 = pg.core.LinSolver(S2, verbose=False)
-    swatch = pg.core.Stopwatch(True)
+    swatch = pg.Stopwatch(True)
 
 #    ut = pg.Vector(mesh.nodeCount(), .0)
 #    vt = pg.Vector(mesh.nodeCount(), .0)

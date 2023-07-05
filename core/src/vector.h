@@ -428,7 +428,7 @@ public:
     }
     /*!
      * Return a new vector that based on indices's.
-     * Throws exception if indices's are out of bound
+     * Throws exception if indices's are out of bound. 
      */
     inline Vector < ValueType > operator () (const SIndexArray & siArray) const {
         return get_(siArray);
@@ -458,7 +458,10 @@ public:
     Vector < ValueType > get_(const BVector & bv) const {
         return this->get_(GIMLI::find(bv));
     }
-    Vector < ValueType > getIA_(const IndexArray & iA) const {
+    Vector < ValueType > getVUI_(const IndexArray & iA) const {
+        return this->get_(iA);
+    }
+    Vector < ValueType > getVSI_(const IVector & iA) const {
         return this->get_(iA);
     }
 

@@ -258,13 +258,13 @@ class MultLeftRightMatrix(MultMatrix):
 
         Parameters
         ----------
-        A : pg.core.MatrixBase derived
+        A : pg.matrix.MatrixBase derived matrix
             main matrix
         left, right : pg.Vector
             left and right side vectors to weight individual rows & columns
         """
         if A.cols() != len(right):
-            raise Exception("Matrix columns do not fit right vector length!")
+                raise Exception("Matrix columns do not fit right vector length!")
         if A.rows() != len(left):
             raise Exception("Matrix rows do not fit left vector length!")
 
@@ -435,7 +435,8 @@ class Cm05Matrix(MatrixBase):
         if isinstance(A, str):
             self.load(A)
         else:
-            from scipy.linalg import eigh  # , get_blas_funcs
+            import scipy
+            from packaging import version
 
             if A.shape[0] != A.shape[1]:  # rows/cols for pgcore matrix
                 raise Exception("Matrix must by square (and symmetric)!")
@@ -443,7 +444,15 @@ class Cm05Matrix(MatrixBase):
             if verbose:
                 pg.tic(key='init cm05')
 
-            self.ew, self.EV = eigh(A)
+            eigkw = {}
+            thrsh = 1e-6
+            if version.parse(scipy.__version__) >= version.parse("1.5"):
+                eigkw["subset_by_value"] = [thrsh, np.inf]
+                self.ew, self.EV = scipy.linalg.eigh(A, **eigkw)
+            else:
+                self.ew, self.EV = scipy.linalg.eigh(A)
+                self.EV = self.EV[:, self.ew > thrsh]
+                self.ew = self.ew[self.ew > thrsh]
 
             if verbose:
                 pg.info('(C) Time for eigenvalue decomposition {:.1f}s'.format(
@@ -481,9 +490,7 @@ class Cm05Matrix(MatrixBase):
 
     def mult(self, x):
         """Multiplication from right-hand side (dot product)."""
-        part1 = (np.dot(np.transpose(x), self.EV).T*self.mul).reshape(-1, 1)
-        return self.EV.dot(part1).reshape(-1,)
-#        return self.EV.dot((x.T.dot(self.EV)*self.mul).T)
+        return self.EV.dot(np.dot(np.transpose(x), self.EV).T*self.mul)
 
     def transMult(self, x):
         """Multiplication from right-hand side (dot product)."""
@@ -512,7 +519,7 @@ class RepeatVMatrix(BlockMatrix):
         self.A_ = A
         self.Aid = self.addMatrix(self.A_)
         nr = 0
-        for i in range(num):
+        for _ in range(num):
             self.addMatrixEntry(self.Aid, nr, 0)
             nr += A.rows()
 
@@ -539,7 +546,7 @@ class RepeatHMatrix(BlockMatrix):
         self.A_ = A
         self.Aid = self.addMatrix(self.A_)
         nc = 0
-        for i in range(num):
+        for _ in range(num):
             self.addMatrixEntry(self.Aid, 0, nc)
             nc += A.cols()
 
@@ -569,7 +576,7 @@ class RepeatDMatrix(BlockMatrix):
         self.Aid = self.addMatrix(self.A_)
         nc = 0
         nr = 0
-        for i in range(num):
+        for _ in range(num):
             self.addMatrixEntry(self.Aid, nr, nc)
             nc += A.cols()
             nr += A.rows()
@@ -640,6 +647,56 @@ class NDMatrix(pgcore.BlockMatrix):
         self.recalcMatrixSize()
 
 
+class KroneckerMatrix(pg.core.MatrixBase):
+    """Memory-saving implementation of Kronecker matrix.
+    
+    The Kronecker matrix consists of repetitions of an inner
+    matrix I, multiplied with elements of an outer matrix O.
+        | O_11 I  O_12 I ... ]
+    A = | O_21 I  O_22 I
+        | ...
+    """
+
+    def __init__(self, outer, inner, verbose=False):
+        """Init"""
+        super().__init__(verbose)
+        self._I = inner
+        self._O = outer
+        self.ni = inner.rows()
+        self.no = outer.rows()
+        self.mi = inner.cols()
+        self.mo = outer.cols()
+
+    def rows(self):
+        """Return number of rows (rows(I)*rows(O))."""
+        return self._I.rows() * self._O.rows()
+
+    def cols(self):
+        """Return number of cols (cols(I)*cols(O))."""
+        return self._I.cols() * self._O.cols()
+
+    def mult(self, x):
+        """Multiplication from right-hand-side (A.T*x)."""
+        xx = np.reshape(x, [self.mo, self.mi])
+        yy = np.zeros([self.no, self.ni])
+        for i, xi in enumerate(xx):
+            Ixi = self._I.mult(xi)
+            for j in range(self.no):
+                yy[j] += Ixi * self._O[j, i]
+
+        return yy.ravel()
+
+    def transMult(self, x):
+        """Multiplication from right-hand-side (A*x)"""
+        xx = np.reshape(x, [self.no, self.ni])
+        yy = np.zeros([self.mo, self.mi])
+        for i, xi in enumerate(xx):
+            Ixi = self._I.transMult(xi)
+            for j in range(self.mo):
+                yy[j] += Ixi * self._O[i, j]
+
+        return yy.ravel()
+
 class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
     """Geostatistic constraints matrix
 
@@ -674,6 +731,7 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
         super().__init__(kwargs.pop('verbose', False))
         self.withRef = kwargs.pop('withRef', False)
         self._spur = None
+        self.Cm05 = None
 
         if isinstance(CM, str):
             self.load(CM)
@@ -701,10 +759,7 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
 
     @property
     def nModel(self):
-        try:
-            return self.Cm05.size()
-        except Exception:
-            return 0
+        return self.Cm05.EV.shape[0] if hasattr(self.Cm05, "EV") else 0
 
     def save(self, fileName):
         """Save content of this matrix.
@@ -850,13 +905,10 @@ def dstack(mats):
 
 
 if __name__ == "__main__":
-    A = pg.Matrix(3, 4)
-    B = TransposedMatrix(A)
-    x = pg.Vector(3, 1.0)
-    print(B*x)
-    y = pg.Vector(4, 1.0)
-    C = SquaredMatrix(A)
-    print(C*y)
-    # pg.test(vstack)
-    # pg.test(hstack)
-    # pg.test(dstack)
+    Amat = pg.Matrix(3, 4)
+    Bmat = TransposedMatrix(Amat)
+    xvec = pg.Vector(3, 1.0)
+    print(Bmat*xvec)
+    yvec = pg.Vector(4, 1.0)
+    Cmat = SquaredMatrix(Amat)
+    print(Cmat*yvec)

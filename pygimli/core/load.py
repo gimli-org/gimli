@@ -67,6 +67,7 @@ def optImport(module, requiredFor="use the full functionality"):
 
 
 def opt_import(*args, **kwargs):
+    """Optionally import module (deprecated)."""
     pg.deprecated()  # last vis: 20190903
     return optImport(*args, **kwargs)
 
@@ -216,8 +217,7 @@ def load(fname, verbose=False, testAll=True, realName=None):
 
 
 def getMD5(fileName):
-    """ Return md5 checksum for given fileName.
-    """
+    """Return md5 checksum for given fileName."""
     import hashlib
     md5 = hashlib.md5()
 
@@ -229,8 +229,7 @@ def getMD5(fileName):
 
 
 def getUrlFile(url, fileName, timeout=10, verbose=False):
-    """ Write file from url. Path will be created.
-    """
+    """Write file from url. Path will be created."""
     import hashlib
     md5_hash = hashlib.md5()
 

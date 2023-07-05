@@ -306,10 +306,11 @@ def cache(funct):
     """Cache decorator."""
     def wrapper(*args, **kwargs):
 
-        skip = kwargs.pop('skipCache', False)
+        nc = kwargs.pop('skipCache', False)
         
         if any(('--noCache' in sys.argv,
-                '-N' in sys.argv, skip is True, __NO_CACHE__)):
+                '-N' in sys.argv, nc is True, __NO_CACHE__)):
+
             return funct(*args, **kwargs)
 
         cache = CacheManager().cache(funct, *args, **kwargs)
@@ -318,7 +319,7 @@ def cache(funct):
             return cache.value
         else:
             # pg.tic will not work because there is only one global __swatch__
-            sw = pg.core.Stopwatch(True)
+            sw = pg.Stopwatch(True)
             rv = funct(*args, **kwargs)
             cache.info['date'] = time.time()
             cache.info['dur'] = sw.duration()

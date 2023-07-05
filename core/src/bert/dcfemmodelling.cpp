@@ -177,7 +177,7 @@ void dcfemDomainAssembleStiffnessMatrix(SparseMatrix < ValueType > & S, const Me
     }
     ValueType rho = 0.0;
     Stopwatch swatch(true);
-    unsigned long sCount = 0;
+    //unsigned long sCount = 0;
 
     for (uint i = 0; i < mesh.cellCount(); i++){
         rho = atts[mesh.cell(i).id()];
@@ -190,7 +190,7 @@ void dcfemDomainAssembleStiffnessMatrix(SparseMatrix < ValueType > & S, const Me
 
                 Stopwatch s(true);
                 Se.u2(mesh.cell(i));
-                sCount += s.cycleCounter().toc();
+                //sCount += s.cycleCounter().toc();
 
                 Se *= k * k;
                 Se += Stmp.ux2uy2uz2(mesh.cell(i));
@@ -2108,6 +2108,7 @@ void DCSRMultiElectrodeModelling::checkPrimpotentials_(const std::vector < Elect
                     // PLS CHECK some redundancy here see DCMultiElectrodeModelling::calculateKAnalyt
                     if (eA[i]) (*primPot_)[potID]  = exactDCSolution(*mesh_, eA[i], k, surfaceZ_, setSingValue_);
                     if (eB[i]) (*primPot_)[potID] -= exactDCSolution(*mesh_, eB[i], k, surfaceZ_, setSingValue_);
+                    //print("\r", k , "/", kValues_.size(), "/", nCurrentPattern);
 
                 } else {
                     if (initVerbose){

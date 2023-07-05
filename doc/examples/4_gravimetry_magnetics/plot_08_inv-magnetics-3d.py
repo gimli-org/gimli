@@ -12,7 +12,7 @@ In the following, we will build the model, create synthetic data, and do
 inversion using a depth-weighting function as outlined in the paper.
 
 """
-
+# %%%
 import numpy as np
 import pygimli as pg
 from pygimli.viewer import pv
@@ -61,7 +61,7 @@ pl.camera.roll = 90
 pl.camera.azimuth = 180 - 15
 pl.camera.elevation = 10
 pl.camera.zoom(1.2)
-pl.show()
+_ = pl.show()
 
 # %%%
 # For the computation of the total field, we define the global magnetic
@@ -95,8 +95,7 @@ data = fop.response(grid["synth"])
 
 err = 0.01
 noise_level = 1e-9
-relError = noise_level / np.abs(data) + err
-data *= np.random.randn(*data.shape)*relError + 1.0
+data += np.random.randn(len(data)) * noise_level
 
 # %%%
 # Depth weighting
@@ -115,7 +114,6 @@ data *= np.random.randn(*data.shape)*relError + 1.0
 bz = np.array([b.center().z() for b in grid.boundaries() if not b.outside()])
 z0 = 25
 wz = 10 / (bz+z0)**1.5
-fop.region(0).setConstraintWeights(wz)
 
 # %%%
 # Inversion
@@ -126,9 +124,9 @@ fop.region(0).setConstraintWeights(wz)
 #
 
 inv = pg.Inversion(fop=fop, verbose=True)  # , debug=True)
-inv.setRegularization(limits=[0, 0.1])  # to limit values
-startModel = pg.Vector(grid.cellCount(), 0.001)
-invmodel = inv.run(data, relError, lam=10., startModel=1e-3, verbose=True)
+inv.setRegularization(limits=[0, 0.07])  # to limit values
+inv.setConstraintWeights(wz)
+invmodel = inv.run(data, absoluteError=noise_level, lam=1e4, startModel=1e-3, verbose=True)
 grid["inv"] = invmodel
 
 # %%%
@@ -151,7 +149,7 @@ pl.camera.roll = 90
 pl.camera.azimuth = 180 - 15
 pl.camera.elevation = 10
 pl.camera.zoom(1.2)
-pl.show()
+_ = pl.show()
 
 # %%%
 # The model can nicely outline the top part of the anomalous body, but not
@@ -164,14 +162,14 @@ fig, ax = pg.plt.subplots(ncols=2, figsize=(12, 5), sharex=True, sharey=True)
 vals = data * 1e9
 mm = np.max(np.abs(vals))
 ax[0].scatter(px, py, c=vals, cmap="bwr", vmin=-mm, vmax=mm);
-ax[1].scatter(px, py, c=inv.response*1e9, cmap="bwr", vmin=-mm, vmax=mm);
+_ = ax[1].scatter(px, py, c=inv.response*1e9, cmap="bwr", vmin=-mm, vmax=mm);
 
 # %%%
 # Alternatively, we can also plot the error-weighted misfit.
 #
 
-misfit = (inv.response*1e9-vals) / (relError * np.abs(data) * 1e9)
-pg.plt.scatter(py, px, c=misfit, cmap="bwr", vmin=-3, vmax=3);
+misfit = (inv.response - data) / noise_level
+_ = pg.plt.scatter(py, px, c=misfit, cmap="bwr", vmin=-3, vmax=3);
 
 # %%%
 # References

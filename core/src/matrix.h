@@ -1507,52 +1507,8 @@ bool load(Matrix < ValueType > & A, const std::string & filename){
     return loadMatrixVectorsBin(A, filename);
 }
 
-/*! Force to load single matrix binary file.
-    Format: see \ref save(const Matrix < ValueType > & A, const std::string & filename). */
-template < class ValueType >
-bool loadMatrixSingleBin(Matrix < ValueType > & A,
-                          const std::string & filename){
-
-    std::ifstream testFile(filename, std::ios::binary);
-    const auto begin = testFile.tellg();
-    testFile.seekg (0, std::ios::end);
-    const auto end = testFile.tellg();
-    const auto fsize = (end-begin);
-    testFile.close();
-
-    FILE *file; file = fopen(filename.c_str(), "r+b");
-
-    if (!file) {
-        throwError(WHERE_AM_I + " " +
-                   filename + ": " + strerror(errno));
-    }
-
-    Index ret;
-    uint32 rows = 0;
-    ret = fread(&rows, sizeof(uint32), 1, file);
-    if (ret == 0) throwError("fail reading file " + filename);
-    uint32 cols = 0;
-    ret = fread(&cols, sizeof(uint32), 1, file);
-    if (ret == 0) throwError("fail reading file " + filename);
-
-    if (rows*cols*sizeof(ValueType) + 2*sizeof(uint32) != (uint32)fsize){
-        __MS("rows: ", rows, " cols: ", cols, " fsize: ", fsize)
-        __MS(" filesize needed: ", rows*cols*sizeof(ValueType)+2*sizeof(uint32))
-
-        throwError(WHERE_AM_I + " " + filename + ": size invalid");
-    }
-
-    A.resize(rows, cols);
-    for (uint32 i = 0; i < rows; i ++){
-        for (uint32 j = 0; j < cols; j ++){
-            ret = fread((char*)&A[i][j], sizeof(ValueType), 1, file);
-            if (ret == 0) throwError("fail reading file " + filename);
-        }
-    }
-    fclose(file);
-    A.rowFlag().fill(1);
-    return true;
-}
+DLLEXPORT bool loadMatrixSingleBin(RMatrix & A, const std::string & filename);
+DLLEXPORT bool loadMatrixSingleBin(CMatrix & A, const std::string & filename);
 
 /*! Force to load multiple binary vector files into one matrix (row-based). File name will be determined from filenamebody + successive increased number (read while files exist). \n
 e.g. read "filename.0.* ... filename.n.* -> Matrix[0--n)[0..vector.size())\n
@@ -1560,38 +1516,8 @@ kCount can be given to use as subcounter. \n
 e.g. read "filename.0_0.* ... filename.n_0.* ... filename.0_kCount-1.* ... filename.n_kCount-1.* ->
 Matrix[0--n*kCount)[0..vector.size())
 */
-template < class ValueType >
-bool loadMatrixVectorsBin(Matrix < ValueType > & A,
-                            const std::string & filenameBody, uint kCount = 1){
-
-    A.clear();
-    Vector < ValueType > tmp;
-    std::string filename;
-
-    for (uint i = 0; i < kCount; i++){
-        uint count = 0;
-        while (1){ // load as long as posible
-            if (kCount > 1){
-                filename = filenameBody + "." + str(count) + "_" + str(i) + ".pot";
-            } else {
-                filename = filenameBody + "." + str(count) + ".pot";
-            }
-
-            if (!fileExist(filename)){
-                filename = filenameBody + "." + str(count);
-                if (!fileExist(filename)){
-                    if (count == 0) {
-	               std::cerr << " can not found: " << filename << std::endl;
-                    }
-                    break;
-                }
-            }
-            if (load(tmp, filename, Binary )) A.push_back(tmp);
-            count ++;
-        } // while files exist
-    } // for each k count
-    return true;
-}
+DLLEXPORT bool loadMatrixVectorsBin(RMatrix & A, const std::string & filenameBody, uint kCount=1);
+DLLEXPORT bool loadMatrixVectorsBin(CMatrix & A, const std::string & filenameBody, uint kCount=1);
 
 /*! Save Matrix into Ascii File (column based). */
 template < class ValueType >

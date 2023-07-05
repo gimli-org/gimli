@@ -35,7 +35,8 @@ pyGIMLi API Reference
 
 .. note::
 
-  This documentation is valid for **|version|**. Check your installed version with
+  This documentation is valid for the version printed in the footer.
+  Check your installed version with
 
   .. code-block:: python
 
@@ -44,5 +45,5 @@ pyGIMLi API Reference
 
   and consider updating (e.g., via the conda package manager). If you have a
   newer version, the current documentation of the development version (*dev*
-  branch) before the next release is available at: https://dev.pygimli.org.
+  branch) before the next release is available at: http://dev.pygimli.org.
 

@@ -5,8 +5,9 @@ Module containing submodules for various geophysical methods.
 """
 
 from .constants import Constants
-
-from .ert import ERTManager, ERTModelling, VESManager
+from .complexSpectrum import ComplexSpectrum
+from .ert import ERTManager, ERTModelling
+from .ves import VESManager
 from .em import VMDTimeDomainModelling
 from .traveltime import TravelTimeManager
 

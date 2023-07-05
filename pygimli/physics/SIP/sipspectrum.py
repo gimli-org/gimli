@@ -34,14 +34,25 @@ class SpectrumModelling(ParameterModelling):
     """
 
     def __init__(self, funct=None, **kwargs):
-        self._complex = False
-        super(SpectrumModelling, self).__init__(funct=funct, **kwargs)
+        """Initialize.
 
+        Parameters
+        ----------
+        func : function
+            modelling function
+        complex : bool
+            complex function
+        frequencies : iterable
+            frequency vector
+        """
+        self._complex = kwargs.pop("complex", False)
+        super(SpectrumModelling, self).__init__(funct=funct, **kwargs)
         self.defaultModelTrans = 'log'
-        self._freqs = None
+        self._freqs = kwargs.pop("frequencies", None)
 
     @property
     def complex(self):
+        """Return if spectrum is complex."""
         return self._complex
 
     @complex.setter
@@ -50,6 +61,7 @@ class SpectrumModelling(ParameterModelling):
 
     @property
     def freqs(self):
+        """Return frequency vector."""
         if self._freqs is None:
             pg.critical("No frequencies defined.")
         return self._freqs
@@ -79,7 +91,7 @@ class SpectrumModelling(ParameterModelling):
         return ret
 
     def drawData(self, ax, data, err=None, **kwargs):
-        """"""
+        """Draw data."""
         if self.complex:
             Z = toComplex(data)
             showSpectrum(self.freqs, np.abs(Z), -np.angle(Z)*1000,
@@ -93,7 +105,7 @@ class SpectrumManager(MethodManager):
     """Manager to work with spectra data."""
 
     def __init__(self, fop=None, **kwargs):
-        """Set up spectrum manager
+        """Set up spectrum manager.
 
         Parameters
         ----------
@@ -107,7 +119,7 @@ class SpectrumManager(MethodManager):
         super(SpectrumManager, self).__init__(**kwargs)
 
     def setFunct(self, fop, **kwargs):
-        """Set forward modelling function"""
+        """Set forward modelling function."""
         self._funct = fop
         self.reinitForwardOperator(**kwargs)
 
@@ -124,7 +136,7 @@ class SpectrumManager(MethodManager):
         return pg.frameworks.MarquardtInversion(**kwargs)
 
     def simulate(self):
-        """ """
+        """Make a simulation."""
         pass
 
     def setData(self, freqs=None, amp=None, phi=None, eAmp=0.03, ePhi=0.001):
@@ -162,8 +174,7 @@ class SpectrumManager(MethodManager):
         self.fw.errorVals = self._ensureError(err, self.fw.dataVals)
 
     def _ensureData(self, data):
-        """Check data validity"""
-
+        """Check data validity."""
         if isinstance(data, pg.DataContainer):
             pg.critical("Implement me")
 
@@ -182,7 +193,7 @@ class SpectrumManager(MethodManager):
         return vals
 
     def _ensureError(self, err, dataVals=None):
-        """Check data validity"""
+        """Check data validity."""
         if isinstance(err, pg.DataContainer):
             pg.critical("Implement me")
 
@@ -200,7 +211,7 @@ class SpectrumManager(MethodManager):
         return vals
 
     def invert(self, data=None, f=None, **kwargs):
-        """"""
+        """Invert the spectrum."""
         if f is not None:
             self.fop.freqs = f
 
@@ -220,7 +231,7 @@ class SpectrumManager(MethodManager):
         return super(SpectrumManager, self).invert(data, **kwargs)
 
     def showResult(self):
-        """"""
+        """Show resulting data."""
         ax = None
         if self.fop.complex:
             fig, ax = pg.plt.subplots(nrows=2, ncols=1)
@@ -267,9 +278,9 @@ class SIPSpectrum(object):
             if phi is not None:
                 self.phi = np.asarray(phi)
 
-        if unify:
+        if unify and self.amp is not None:
             self.unifyData(onlydown)
-        if sort:
+        if sort and self.amp is not None:
             self.sortData()
 
         self.ampOrg = None
@@ -314,7 +325,7 @@ class SIPSpectrum(object):
             if verbose:
                 pg.info("Reading SIP Quad file")
             self.f, self.amp, self.phi, self.header = readFuchs3File(
-                filename, verbose=verbose, quad=True, **kwargs)
+                filename, verbose=verbose, **kwargs)
             self.phi *= -np.pi/180.
         elif 'SIP-Fuchs' in firstLine:
             if verbose:
@@ -408,7 +419,7 @@ class SIPSpectrum(object):
         return amp * np.cos(self.phi), amp * np.sin(self.phi)
 
     def zNorm(self):
-        """Normalized real (difference) and imag. z :cite:`NordsiekWel2008`"""
+        """Normalized real (difference) and imag. z :cite:`NordsiekWel2008`."""
         re, im = self.realimag()
         R0 = max(self.amp)
         zNormRe = 1. - re / R0
@@ -425,7 +436,7 @@ class SIPSpectrum(object):
 
     def showData(self, reim=False, znorm=False, cond=False, nrows=2, ax=None,
                  **kwargs):
-        """Show amplitude and phase spectrum in two subplots
+        """Show amplitude and phase spectrum in two subplots.
 
         Parameters
         ----------
@@ -484,7 +495,7 @@ class SIPSpectrum(object):
         return np.arctan2(imKK, re)
 
     def showDataKK(self, use0=False):
-        """Show data as real/imag subplots along with Kramers-Kronig curves"""
+        """Show data as real/imag subplots along with Kramers-Kronig curves."""
         fig, ax = self.showData(reim=True)
         reKK, imKK = self.getKK(use0)
         ax[0].semilogx(self.f, reKK, label='KK')
@@ -497,7 +508,7 @@ class SIPSpectrum(object):
         return fig, ax
 
     def checkCRKK(self, useEps=False, use0=False, ax=None):
-        """Check coupling removal (CR) by Kramers-Kronig (KK) relation"""
+        """Check coupling removal (CR) by Kramers-Kronig (KK) relation."""
         if ax is None:
             fig, ax = pg.plt.subplots()
             self.fig['dataCRKK'] = fig
@@ -530,7 +541,7 @@ class SIPSpectrum(object):
         return fig, ax
 
     def epsilonR(self):
-        """Calculate relative permittivity from imaginary conductivity"""
+        """Calculate relative permittivity from imaginary conductivity."""
         _, sigmaI = self.realimag(cond=True)
 
         return sigmaI / (self.f * 2 * pi * self.epsilon0)
@@ -547,6 +558,7 @@ class SIPSpectrum(object):
                 >0 - take n-th frequency
         sigmaR/sigmaI : float
             real and imaginary conductivity (if not given take data)
+
         Returns
         -------
         er : float
@@ -572,7 +584,7 @@ class SIPSpectrum(object):
         return er
 
     def removeEpsilonEffect(self, er=None, mode=0):
-        """remove effect of (constant high-frequency) epsilon from sigma
+        """Remove effect of (constant high-frequency) epsilon from sigma.
 
         Parameters
         ----------
@@ -661,7 +673,7 @@ class SIPSpectrum(object):
     def fitCCEM(self, ePhi=0.001, lam=1000., remove=True,
                 mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100),
                 cpar=(0.25, 0, 1), empar=(1e-7, 1e-9, 1e-5), verbose=False):
-        """Fit a Cole-Cole term with additional EM term to phase
+        """Fit a Cole-Cole term with additional EM term to phase.
 
         Parameters
         ----------
@@ -684,7 +696,7 @@ class SIPSpectrum(object):
                 np.angle(relaxationTerm(self.f, self.mCC[3]))
 
     def fitColeCole(self, useCond=False, **kwargs):
-        """Fit a Cole-Cole model to the phase data
+        """Fit a Cole-Cole model to the phase data.
 
         Parameters
         ----------
@@ -780,8 +792,8 @@ class SIPSpectrum(object):
             self.phiCC = two
 
     def fitDebyeModel(self, ePhi=0.001, lam=1e3, lamFactor=0.8,
-                      mint=None, maxt=None, nt=None, new=True,
-                      showFit=False, cType=1, verbose=False):
+                      tau=None, mint=None, maxt=None, nt=None, useComplex=True,
+                      showFit=False, verbose=False, **kwargs):
         """Fit a (smooth) continuous Debye model (Debye decomposition).
 
         Parameters
@@ -802,42 +814,45 @@ class SIPSpectrum(object):
             show fit
         cType : int
             constraint type (1/2=smoothness 1st/2nd order, 0=minimum norm)
+        phi : iterable
+            use phi instead of self.phi
         """
         nf = len(self.f)
-        if mint is None:
-            mint = .1 / max(self.f)
-        if maxt is None:
-            maxt = .5 / min(self.f)
-        if nt is None:
-            nt = nf*2
+        if tau is None:
+            if mint is None:
+                mint = .1 / max(self.f)
+            if maxt is None:
+                maxt = .5 / min(self.f)
+            if nt is None:
+                nt = nf*2
+            self.tau = np.logspace(log10(mint), log10(maxt), nt)
+        else:
+            self.tau = tau
         # discretize tau, setup DD and perform DD inversion
-        self.tau = np.logspace(log10(mint), log10(maxt), nt)
-        phi = self.phi
-        tLin = pg.trans.Trans()
-        tM = pg.trans.TransLog()  # pg.trans.TransLogLU(0., 1.)
-        # should be refactored to pg 1.1 (frameworks) style (no core)
+        startModel = pg.Vector(len(self.tau), 0.01)
+        new = kwargs.pop("new", useComplex)  # renamed kwargs
         if new:
             reNorm, imNorm = self.zNorm()
             fDD = DebyeComplex(self.f, self.tau)
             Znorm = pg.cat(reNorm, imNorm)
-            IDD = pg.core.Inversion(Znorm, fDD, tLin, tM, False)
-            IDD.setAbsoluteError(max(Znorm)*0.003+ePhi)
+            IDD = pg.Inversion(fop=fDD)
+            absErr = max(Znorm)*0.003+ePhi
+            self.mDD = IDD.run(Znorm, absoluteError=absErr,
+                               startModel=startModel,
+                               lam=lam, lambdaFactor=lamFactor,
+                               **kwargs)
+            IDD.echoStatus()
         else:
             fDD = DebyePhi(self.f, self.tau)
-            IDD = pg.core.Inversion(phi, fDD, tLin, tM, True)
-            IDD.setAbsoluteError(ePhi)  # 1 mrad
+            IDD = pg.Inversion(fop=fDD)
+            phi = kwargs.pop("phi", self.phi)
+            self.mDD = IDD.run(phi, absoluteError=ePhi, startModel=startModel,
+                               lam=lam, lambdaFactor=lamFactor, **kwargs)
 
-        fDD.regionManager().setConstraintType(cType)
-        IDD.stopAtChi1(False)
-        startModel = pg.Vector(nt, 0.01)
-        IDD.setModel(startModel)
-        IDD.setLambda(lam)
-        IDD.setLambdaFactor(lamFactor)
-        self.mDD = IDD.run()
-        IDD.echoStatus()
+        self.invDD = IDD
         if new:
             print("ARMS=", IDD.absrms(), "RRMS=", IDD.absrms()/max(Znorm)*100)
-            resp = np.array(IDD.response())
+            resp = np.array(IDD.response)
             respRe = resp[:nf]
             respIm = resp[nf:]
             respC = ((1 - respRe) + respIm * 1j) * max(self.amp)
@@ -856,7 +871,7 @@ class SIPSpectrum(object):
                 ax[2].set_ylabel('$m$ (-)')
 
         else:
-            self.phiDD = IDD.response()
+            self.phiDD = IDD.response
             if showFit:
                 fig, ax = self.showData(nrows=3)
                 self.fig['DebyeSpectrum'] = fig
@@ -871,7 +886,7 @@ class SIPSpectrum(object):
         return exp(np.sum(np.log(self.tau) * self.mDD) / sum(self.mDD))
 
     def showAll(self, save=False, ax=None):
-        """Plot spectrum, Cole-Cole fit and Debye distribution"""
+        """Plot spectrum, Cole-Cole fit and Debye distribution."""
         if np.any(self.mCC):  # generate title strings
             mCC = self.mCC
             rstr = r'$\rho$={:.4f} '
@@ -954,11 +969,8 @@ class SIPSpectrum(object):
             self.fig[key].savefig(name+'-'+key+'.'+ext, bbox_inches='tight')
 
 
-def test_SIPSPectrum():
-    run_SIPSPectrum('sipexample.txt')
-
-
 def run_SIPSPectrum(myfile):
+    """Run typical SIP spectrum workflow for a given file."""
     sip = SIPSpectrum(myfile)
     # sip.showData(znorm=True)
     if True:  # Pelton
@@ -975,6 +987,6 @@ def run_SIPSPectrum(myfile):
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("No filename given, falling back to test case")
-        test_SIPSPectrum()
+        run_SIPSPectrum('sipexample.txt')
     else:
         run_SIPSPectrum(sys.argv[1])

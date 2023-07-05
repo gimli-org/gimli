@@ -11,7 +11,7 @@ from .core.decorators import (renamed, singleton, moduleProperty,
 
 # Import everything that should be accessible through main namespace.
 from .core import (BVector, CVector, DataContainer, DataContainerERT,
-                   IVector, Line, Mesh, Plane, Pos,
+                   IVector, Line, Mesh, Plane, Pos, PosVector,
                    RVector3, Vector, PosList, abs, cat, center, exp, find,
                    interpolate, log, log10, logDropTol, max,
                    mean, median, min, search, setThreadCount, sort,

@@ -1,5 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
-#recommanded: cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.15)
 #BOOST_MAX_VERISION: 1.65 UBUNTU:18
 
 if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
@@ -34,13 +33,17 @@ message(STATUS "MSYS:   " ${MSYS} "  using the MSYS developer environment in Win
 message(STATUS "CYGWIN: " ${CYGWIN} " using the CygWin version of cmake")
 message(STATUS "MSVC:   " ${MSVC} " ")
 
+if (POLICY CMP0025) # recognize appleclang
+    cmake_policy(SET CMP0025 NEW)
+endif()
+#if (APPLE) // check if needed!
+#    set(CMAKE_MACOSX_RPATH 1)
+#    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+#endif()
+
 # Check if conda package is created
 if (DEFINED ENV{CONDA_BUILD})
     message(STATUS "Conda package is being created.")
-    if (APPLE)
-	    set(CMAKE_MACOSX_RPATH 1)
-	    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-    endif()
     set(CONDA_BUILD TRUE)
     set(Boost_INCLUDE_DIR "${CMAKE_PREFIX_PATH}/include")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-class-memaccess") # new since gcc.8 maybe need to be checked, not on apple
@@ -58,25 +61,27 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
     add_definitions(-std=c++17)
     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os")
 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-comment") 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-misleading-indentation") 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-class-memaccess") 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-vla") 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-maybe-uninitialized") 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable") 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable") 
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-comment")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-misleading-indentation")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-class-memaccess")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-vla")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-maybe-uninitialized")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-int-in-bool-context")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedefs") # pg build
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations") # loot of boost complaints about bind
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-overloaded-virtual") # loot of boost complaints about bind
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations") # loot of boost complaints about bind   
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-warning-option") # on apple clang 
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undefined-var-template") # on apple clang 
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-overloaded-virtual")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_BIND_GLOBAL_PLACEHOLDERS")
-    
 
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -std=c++11 -ansi -pedantic -fno-omit-frame-pointer -Wall")
-    
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -ansi -pedantic -fno-omit-frame-pointer -Wall")
+    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -std=c++11 -ansi -pedantic -fno-omit-frame-pointer -Wall")
+
     ### debug settings
     # run with -DCMAKE_BUILD_TYPE=Debug
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -p -g -ansi -pedantic -fno-omit-frame-pointer -Wall")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -p -g -ansi -pedantic -fno-common -fno-omit-frame-pointer -Wall")
 
     if (WIN32 OR CONDA_BUILD)
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-parentheses") # from boost since gcc.8 maybe need to be checked
@@ -84,19 +89,21 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
     endif()
 
     # special section for clang compiler
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
         set(CMAKE_CXX_FLAGS_RELEASE
             "${CMAKE_CXX_FLAGS_RELEASE} -Wno-overloaded-virtual")
         set(CMAKE_CXX_FLAGS_RELEASE
             "${CMAKE_CXX_FLAGS_RELEASE} -Qunused-arguments")
 
         if (APPLE)
-            ## needed?
-            # If it's libc++ and you're on <= 10.8, you need to compile with clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later, you need to compile with clang++ -stdlib=libstdc++.
-            # add_compile_options(-stdlib=libstdc++)
-            # add_compile_options(-stdlib=libc++)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-infinite-recursion")
+            # If it's libc++ and you're on <= 10.8, you need to compile with 
+            # clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later, 
+            # you need to compile with clang++ -stdlib=libstdc++.
+            add_compile_options(-stdlib=libstdc++)
+            add_compile_options(-stdlib=libc++)
         endif()
-    else() # if gcc
+    else() # if not clang but gcc
 
     endif()
 
@@ -104,6 +111,9 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
     endif()
 
+    if (APPLE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-infinite-recursion") 
+    endif()
 elseif(MSVC)
 	# MSVC complain a lot of possible unsecure std function
 	add_definitions(-D_SCL_SECURE_NO_WARNINGS)
@@ -369,6 +379,7 @@ if (NOT Boost_PYTHON_LIBRARY)
         endif()
     endif()
 
+    #set(Boost_PYTHON_LIBRARY "/opt/homebrew/Caskroom/mambaforge/base/lib/libboost_python39.dylib")
     if (Boost_PYTHON_FOUND)
         message(STATUS "Boost_PYTHON_FOUND:" ${Boost_PYTHON_FOUND})
         message(STATUS "Boost_PYTHON_LIBRARY:" ${Boost_PYTHON_LIBRARY})
@@ -414,6 +425,11 @@ find_or_build_package(Triangle triangle LOCAL)
 #find_package(Triangle)
 
 set(BLA_VENDOR OpenBLAS)
+#find_package(BLAS)
+#find_package(LAPACK)
+#find_package(blas)
+#find_package(lapack)
+#exit()
 find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
@@ -438,9 +454,9 @@ endif (NOT USE_EIGEN3)
 ################################################################################
 
 #if (";${BLAS_LIBRARIES};" MATCHES "openblas")
-message(STATUS "Blas found:" ${BLAS_FOUND})
+message(STATUS "BLAS found:" ${BLAS_FOUND})
 if (BLAS_FOUND)
-    message(STATUS "openblas is used: ${BLAS_LIBRARIES}")
+    message(STATUS "OpenBLAS is used: ${BLAS_LIBRARIES}")
 
     if (MINGW)
         get_filename_component(MINGW_ROOT ${BLAS_LIBRARIES} PATH)
@@ -470,14 +486,14 @@ if (BLAS_FOUND)
     endif()
 
     if (NOT OpenBLAS_INCLUDE_DIR)
-        message(STATUS "no openblas cblas.h in prefered paths .. searching defaults")
+        message(STATUS "No OpenBLAS cblas.h in prefered paths .. searching defaults")
 
         FIND_PATH(OpenBLAS_INCLUDE_DIR
             NAMES
                 cblas.h
         )
     endif()
-    message(STATUS "openblas cblas.h: ${OpenBLAS_INCLUDE_DIR}")
+    message(STATUS "OpenBLAS cblas.h: ${OpenBLAS_INCLUDE_DIR}")
 
     if (OpenBLAS_INCLUDE_DIR)
     set(OPENBLAS_CBLAS_FOUND TRUE)
@@ -525,6 +541,11 @@ if (NOT CASTER)
     endif()
 endif()
 
+
+find_program(CLANG_EXECUTABLE clang)
+find_or_build_package(castxml castxml LOCAL)
+set(CASTER_EXECUTABLE ${CASTXML_EXECUTABLE})
+
 if (CASTER STREQUAL "gccxml")
     find_or_build_package(gccxml gccxml LOCAL)
     set(CASTER_EXECUTABLE ${GCCXML_EXECUTABLE})
@@ -533,27 +554,22 @@ else()
         find_program(CASTXML castxml)
 
         if (NOT CASTXML OR CASTXML_LOCAL OR CASTXML_LOCALSRC)
-            find_program(CLANG_EXECUTABLE
-                NAMES clang++-3.9 clang++-3.8 clang++-3.7 clang++-3.6 clang
-            )
-            if(CLANG_EXECUTABLE)
-                message(STATUS "clang++ found : ${CLANG_EXECUTABLE}")
-            else()
-                message(FATAL_ERROR "Can't found program: clang")
-            endif()
-
-            find_or_build_package(castxml castxmlbin LOCAL)
             set(CASTER_EXECUTABLE ${CASTXML_EXECUTABLE})
-
-            if (NOT CASTXML_EXECUTABLE OR CASTXML_LOCALSRC)
-                find_or_build_package(castxml castxml LOCAL)
-                set(CASTER_EXECUTABLE ${CASTXML_EXECUTABLE})
-            endif()
         else()
             set(CASTER_EXECUTABLE ${CASTXML})
         endif()
     endif()
 endif()
+
+if(CLANG_EXECUTABLE)
+    message(STATUS "clang++ found : ${CLANG_EXECUTABLE}")
+else()
+    message(FATAL_ERROR "Can't found program: clang")
+endif()
+
+find_or_build_package(castxml castxmlbin LOCAL)
+set(CASTER_EXECUTABLE ${CASTXML_EXECUTABLE})
+
 
 find_or_build_package(pygccxml pygccxml LOCAL)
 find_or_build_package(pyplusplus pygccxml LOCAL)
@@ -598,18 +614,6 @@ endif()
 message(STATUS "**********************************************************************")
 message(STATUS "************************* Dependencies found *************************")
 message(STATUS "**********************************************************************")
-if (CONDA_BUILD)
-    message(STATUS "CONDA_BUILD: ${CONDA_BUILD}")
-    if (APPLE)
-	    set(Python_LIBRARIES "-undefined dynamic_lookup")
-    else()
-        if(EXISTS ${Python_LIBRARIES})
-            message(${Python_LIBRARIES} " exits")
-        else()
-            message(${Python_LIBRARIES} "does not exits")
-        endif()
-    endif()
-endif()
 
 message(STATUS "THREADS             : ${THREADS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_THREAD_LIBRARIES}")
 message(STATUS "USE_OPENBLAS        : ${OPENBLAS_FOUND} OPENBLAS_CBLAS_FOUND :${OPENBLAS_CBLAS_FOUND} OpenBLAS_INCLUDE_DIR :${OpenBLAS_INCLUDE_DIR}")

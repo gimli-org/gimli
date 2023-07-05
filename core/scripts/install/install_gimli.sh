@@ -50,6 +50,17 @@ function boxprint()
   tput sgr 0
 }
 
+function is_virtual_env()
+# Returns 0 if in virtual environment, 1 otherwise
+# See PEP 0668: https://peps.python.org/pep-0668/
+{
+    case "$(python -c "import sys; \\
+        print(sys.base_prefix != sys.prefix or hasattr(sys, 'real_prefix'))")" in
+        "True") return 0 ;;
+        *)      return 1 ;;
+    esac
+}
+
 boxprint "Geophysical Inversion and Modelling Library (www.gimli.org)"
 
 help(){
@@ -181,7 +192,13 @@ getGIMLI(){
 
         chmod +x $PYGIMLI_SOURCE_DIR/apps/*
 
-        pip3 install -r $PYGIMLI_SOURCE_DIR/dev_requirements.txt --user
+        if is_virtual_env; then
+            echo "Installing requirements into virtual enviroment"
+            pip3 install -r $PYGIMLI_SOURCE_DIR/dev_requirements.txt
+        else
+            echo "Installing requirements into user space"
+            pip3 install -r $PYGIMLI_SOURCE_DIR/dev_requirements.txt --user
+        fi
 
     popd
 }
@@ -238,7 +255,7 @@ fi
 echo -e "\n========================================================================="
 echo "BUILD: pyGIMLi for" $SYSTEM
 echo "-------------------------------------------------------------------------"
-#buildGIMLI
+buildGIMLI
 
 echo -e "\n========================================================================="
 echo "TEST: pyGIMLi installation                                                "

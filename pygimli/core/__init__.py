@@ -11,7 +11,8 @@ import numpy as np
 from .core import pgcore
 from .core import *
 from .logger import error, critical
-from .base import isInt
+from .base import (isInt, isScalar, isIterable, isArray, isPos, isR3Array,
+                   isPosList, isComplex, isMatrix)
 
 # #######################################
 # ###  Global convenience functions #####
@@ -22,6 +23,7 @@ pgcore.load = None
 ###########################
 # print function for gimli stuff
 ############################
+
 
 def __RVector_str(self, valsOnly=False):
     s = str()
@@ -55,37 +57,45 @@ def __R3Vector_str(self):
 
     return "R3Vector: n=" + str(self.size())
 
+
 def __Line_str(self):
     return "Line: " + str(self.p0()) + "  " + str(self.p1())
+
 
 def __BoundingBox_str(self):
     s = ''
     s += "BoundingBox [{0}, {1}]".format(self.min(), self.max())
     return s
 
-pgcore.RVector.__repr__ =__RVector_str
-pgcore.CVector.__repr__ =__RVector_str
-pgcore.BVector.__repr__ =__RVector_str
-pgcore.IVector.__repr__ =__RVector_str
-pgcore.IndexArray.__repr__ =__RVector_str
-pgcore.RVector3.__repr__ =__RVector3_str
-pgcore.R3Vector.__repr__ =__R3Vector_str
 
-pgcore.Line.__repr__ =__Line_str
-pgcore.BoundingBox.__repr__ =__BoundingBox_str
+pgcore.RVector.__repr__ = __RVector_str
+pgcore.CVector.__repr__ = __RVector_str
+pgcore.BVector.__repr__ = __RVector_str
+pgcore.IVector.__repr__ = __RVector_str
+pgcore.IndexArray.__repr__ = __RVector_str
+pgcore.RVector3.__repr__ = __RVector3_str
+pgcore.R3Vector.__repr__ = __R3Vector_str
+
+pgcore.Line.__repr__ = __Line_str
+pgcore.BoundingBox.__repr__ = __BoundingBox_str
 
 ############################
 # compatibility stuff
 ############################
 
+
 def nonzero_test(self):
+    """Function to throw a warning if any vector is used as bool vector."""
     raise BaseException("Warning! there is no 'and' and 'or' for "
                         "BVector and RVector. " +
                         "Use binary operators '&' or '|' instead. " +
                         "If you looking for the nonzero test, use len(v) > 0")
 
+
 def np_round__(self, r):
+    """Make numpy.round also work for pg.Vector."""
     return np.round(self.array(), r)
+
 
 pgcore.RVector.__bool__ = nonzero_test
 pgcore.R3Vector.__bool__ = nonzero_test
@@ -112,19 +122,21 @@ pgcore.BVector.__invert__ = _invertBVector_
 pgcore.BVector.__inv__ = _invertBVector_
 
 
-def _lowerThen_(self, v2):
-    """Overwrite bvector = v1 < v2 since there is a wrong operator due to the
+def _lowerThan_(self, v2):
+    """Test whether any vector is lower than another.
+
+    Overwrite bvector = v1 < v2 since there is a wrong operator due to the
     boost binding generation
     """
     return pgcore.inv(self >= v2)
 
 
-pgcore.RVector.__lt__ = _lowerThen_
-pgcore.R3Vector.__lt__ = _lowerThen_
-pgcore.BVector.__lt__ = _lowerThen_
-pgcore.CVector.__lt__ = _lowerThen_
-pgcore.IVector.__lt__ = _lowerThen_
-pgcore.IndexArray.__lt__ = _lowerThen_
+pgcore.RVector.__lt__ = _lowerThan_
+pgcore.R3Vector.__lt__ = _lowerThan_
+pgcore.BVector.__lt__ = _lowerThan_
+pgcore.CVector.__lt__ = _lowerThan_
+pgcore.IVector.__lt__ = _lowerThan_
+pgcore.IndexArray.__lt__ = _lowerThan_
 
 ######################
 # special constructors
@@ -137,8 +149,7 @@ __origIndexArrayInit__ = pgcore.IndexArray.__init__
 
 
 def __newIndexArrayInit__(self, arr, val=None):
-    """"""
-    # print("Custom IndexArray", arr, val)
+    """New index array."""
     if hasattr(arr, 'dtype') and hasattr(arr, '__iter__'):
         __origIndexArrayInit__(self, [int(a) for a in arr])
     else:
@@ -178,45 +189,60 @@ pgcore.BVector.__init__ = __newBVectorInit__
 
 # RVector + int fails .. so we need to tweak this command
 __oldRVectorAdd__ = pgcore.RVector.__add__
+
+
 def __newRVectorAdd__(a, b):
     if isinstance(b, np.ndarray) and b.dtype == complex:
-        return __oldRVectorAdd__(a, CVector(b))
+        return __oldRVectorAdd__(a, pgcore.CVector(b))
     if isInt(b):
         return __oldRVectorAdd__(a, float(b))
     if isInt(a):
         return __oldRVectorAdd__(float(a), b)
     return __oldRVectorAdd__(a, b)
+
+
 pgcore.RVector.__add__ = __newRVectorAdd__
 
 __oldRVectorSub__ = pgcore.RVector.__sub__
+
+
 def __newRVectorSub__(a, b):
     if isInt(b):
         return __oldRVectorSub__(a, float(b))
     if isInt(a):
         return __oldRVectorSub__(float(a), b)
     return __oldRVectorSub__(a, b)
+
+
 pgcore.RVector.__sub__ = __newRVectorSub__
 
 __oldRVectorMul__ = pgcore.RVector.__mul__
+
+
 def __newRVectorMul__(a, b):
     if isInt(b):
         return __oldRVectorMul__(a, float(b))
     if isInt(a):
         return __oldRVectorMul__(float(a), b)
     return __oldRVectorMul__(a, b)
+
+
 pgcore.RVector.__mul__ = __newRVectorMul__
 
 try:
     __oldRVectorTrueDiv__ = pgcore.RVector.__truediv__
+
     def __newRVectorTrueDiv__(a, b):
         if isInt(b):
             return __oldRVectorTrueDiv__(a, float(b))
         if isInt(a):
             return __oldRVectorTrueDiv__(float(a), b)
         return __oldRVectorTrueDiv__(a, b)
+
     pgcore.RVector.__truediv__ = __newRVectorTrueDiv__
 except:
     __oldRVectorTrueDiv__ = pgcore.RVector.__div__
+
     def __newRVectorTrueDiv__(a, b):
         if isInt(b):
             return __oldRVectorTrueDiv__(a, float(b))
@@ -226,27 +252,35 @@ except:
     pgcore.RVector.__div__ = __newRVectorTrueDiv__
 
 __oldRMatMul__ = pgcore.RMatrix.__mul__
+
+
 def __newRMatMul__(a, b):
     if isInt(b):
         return __oldRMatMul__(a, float(b))
     return __oldRMatMul__(a, b)
+
+
 pgcore.RMatrix.__mul__ = __newRMatMul__
 
 __oldRMatAdd__ = pgcore.RMatrix.__add__
+
+
 def __newRMatAdd__(a, b):
     if isInt(b):
         return __oldRMatAdd__(a, float(b))
     return __oldRMatAdd__(a, b)
+
+
 pgcore.RMatrix.__add__ = __newRMatAdd__
 
-################################################################################
-# override wrong default conversion from int to IndexArray(int) for setVal     #
-################################################################################
+###############################################################################
+# override wrong default conversion from int to IndexArray(int) for setVal    #
+###############################################################################
 __origRVectorSetVal__ = pgcore.RVector.setVal
 
 
 def __newRVectorSetVal__(self, *args, **kwargs):
-    #print('__newRVectorSetVal__', *args, **kwargs)
+    # print('__newRVectorSetVal__', *args, **kwargs)
     if len(args) == 2:
         if isinstance(args[1], int):
             if args[1] < 0:
@@ -265,7 +299,7 @@ __origR3VectorSetVal__ = pgcore.R3Vector.setVal
 
 
 def __newR3VectorSetVal__(self, *args, **kwargs):
-    #print('__newRVectorSetVal__', *args, **kwargs)
+    # print('__newRVectorSetVal__', *args, **kwargs)
     if len(args) == 2:
         if isinstance(args[1], int):
             return __origR3VectorSetVal__(self, args[0], i=args[1])
@@ -286,10 +320,14 @@ def __newBVectorSetVal__(self, *args, **kwargs):
         if isinstance(args[1], pgcore.BVector):
             return __origBVectorSetVal__(self, args[0], bv=args[1])
     return __origBVectorSetVal__(self, *args, **kwargs)
+
+
 pgcore.BVector.setVal = __newBVectorSetVal__
 
 
 __origCVectorSetVal__ = pgcore.CVector.setVal
+
+
 def __newCVectorSetVal__(self, *args, **kwargs):
     if len(args) == 2:
         if isinstance(args[1], int):
@@ -297,10 +335,13 @@ def __newCVectorSetVal__(self, *args, **kwargs):
         if isinstance(args[1], pgcore.BVector):
             return __origCVectorSetVal__(self, args[0], bv=args[1])
     return __origCVectorSetVal__(self, *args, **kwargs)
+
+
 pgcore.CVector.setVal = __newCVectorSetVal__
 
-
 __origIVectorSetVal__ = pgcore.IVector.setVal
+
+
 def __newIVectorSetVal__(self, *args, **kwargs):
     if len(args) == 2:
         if isinstance(args[1], int):
@@ -308,10 +349,13 @@ def __newIVectorSetVal__(self, *args, **kwargs):
         if isinstance(args[1], pgcore.BVector):
             return __origIVectorSetVal__(self, args[0], bv=args[1])
     return __origIVectorSetVal__(self, *args, **kwargs)
+
+
 pgcore.IVector.setVal = __newIVectorSetVal__
 
-
 __origIndexArraySetVal__ = pgcore.IndexArray.setVal
+
+
 def __newIndexArraySetVal__(self, *args, **kwargs):
     if len(args) == 2:
         if isinstance(args[1], int):
@@ -329,11 +373,13 @@ pgcore.IndexArray.setVal = __newIndexArraySetVal__
 #                          RVector3, R3Vector, RMatrix, CMatrix
 ############################
 def __getVal(self, idx):
-    """Hell slow"""
-    if isinstance(idx, pgcore.BVector) or isinstance(idx, pgcore.IVector): 
+    """Get vector value at index. Hell slow."""
+    if isinstance(idx, pgcore.BVector):
         return self.get_(idx)
+    elif isinstance(idx, pgcore.IVector):
+        return self.getVSI_(idx)
     elif isinstance(idx, pgcore.IndexArray):
-        return self.getIA_(idx)
+        return self.getVUI_(idx)
     elif isinstance(idx, slice):
 
         s = idx.start
@@ -353,18 +399,18 @@ def __getVal(self, idx):
                 ids = range(s, e, idx.step)
 
             if len(ids):
-                return self.get_(ids)
+                return self.getVSI_(ids)
             else:
                 return self.get_(0)
-                #raise Exception("slice invalid")
+                # raise Exception("slice invalid")
 
     elif isinstance(idx, list) or hasattr(idx, '__iter__'):
         if isinstance(idx[0], int):
-            return self.getIA_(idx)
+            return self.getVSI_(idx)
         elif hasattr(idx[0], 'dtype'):
             # print("numpy: ", idx[0].dtype.str, idx[0].dtype ,type(idx[0]))
             if idx[0].dtype == 'bool':
-                return self.get_([i for i, x in enumerate(idx) if x])
+                return self.getVUI_([i for i, x in enumerate(idx) if x])
                 # return self[np.nonzero(idx)[0]]
         elif isinstance(idx[0], slice):  # try fixing newaxis
             # probably the call x = x[:, np.newaxis]
@@ -373,7 +419,7 @@ def __getVal(self, idx):
         # elif isinstance(idx[0], None) and isinstance(idx[1], slice):
             # return self[idx[1]]
 
-        return self.get_([int(a) for a in idx])
+        return self.getVSI_([int(a) for a in idx])
 
     elif idx < 0:
         idx = len(self) + idx
@@ -382,7 +428,7 @@ def __getVal(self, idx):
 
 
 def __setVal(self, idx, val):
-    """ Index write access [] """
+    """Index write access (x[i]=y)."""
     # print("__setVal", self, 'idx', idx, 'val:', val)
     if isinstance(idx, slice):
         if idx.step is None:
@@ -528,7 +574,7 @@ pgcore.R3Vector.__len__ = lambda self: self.size()
 pgcore.R3Vector.ndim = 2
 pgcore.R3Vector.shape = property(lambda self: (self.size(), 3))
 
-#remove me
+# remove me
 pgcore.stdVectorRVector3.ndim = 2
 
 ############################
@@ -555,6 +601,8 @@ pgcore.Mesh.__hash__ = pgcore.Mesh.hash
 ############################
 # Iterator support for RVector allow to apply python build-ins
 ############################
+
+
 class VectorIter:
 
     def __init__(self, vec):
@@ -620,9 +668,9 @@ pgcore.CMatrix.__iter__ = __MatIterCall__
 
 
 class Vector3Iter():
-    """
-    Simple iterator for RVector3, cause it lacks the core function
-    .beginPyIter()
+    """Simple iterator for RVector3/PosVector.
+
+    Because it lacks the core function .beginPyIter()
     """
 
     def __init__(self, vec):
@@ -647,16 +695,17 @@ class Vector3Iter():
 def __Vector3IterCall__(self):
     return Vector3Iter(self)
 
+
 pgcore.RVector3.__iter__ = __Vector3IterCall__
 
 
 # ######### c to python converter ######
 # default converter from RVector3 to numpy array
 def __RVector3ArrayCall__(self, dtype=None):
-    #if idx:
-    #print(self)
-    #print(idx)
-    #raise Exception("we need to fix this")
+    # if idx:
+    # print(self)
+    # print(idx)
+    # raise Exception("we need to fix this")
     import numpy as np
     return np.array([self.getVal(0), self.getVal(1), self.getVal(2)])
 
@@ -691,8 +740,9 @@ def __CVectorArrayCall__(self, dtype=None):
     # we need to copy the array until we can handle increasing the reference
     # counter in self.array() else it leads to strange behavior
     # test in testRValueConverter.py:testNumpyFromRVec()
-    #return np.array(self.array())
+    # return np.array(self.array())
     return self.array()
+
 
 # default converter from RVector to numpy array
 pgcore.RVector.__array__ = __RVectorArrayCall__
@@ -709,9 +759,9 @@ pgcore.CVector.__array__ = __CVectorArrayCall__
 
 # hackish until stdVectorRVector3 will be removed
 def __stdVectorRVector3ArrayCall(self, dtype=None):
-    #if idx is not None:
-    #print(self)
-    #print(idx)
+    # if idx is not None:
+    # print(self)
+    # print(idx)
     return pgcore.stdVectorRVector3ToR3Vector(self).array()
 
 
@@ -726,6 +776,7 @@ pgcore.stdVectorRVector3.__array__ = __stdVectorRVector3ArrayCall
 
 
 def find(v):
+    """Find a specific entry in vector."""
     if hasattr(v, 'dtype') and hasattr(v, '__iter__'):
         # print('new find', v, pgcore.BVector(v))
         return pgcore.find(pgcore.BVector(v))
@@ -735,13 +786,14 @@ def find(v):
 
 
 def pow(v, p):
-    """
-        pow(v, int) is misinterpreted as pow(v, rvec(int))
-        so we need to fix this
+    """Power function.
+
+    pow(v, int) is misinterpreted as pow(v, rvec(int)), so we need to fix this
     """
     if isinstance(p, int):
         return pgcore.pow(v, float(p))
     return pgcore.pow(v, p)
+
 
 def __RVectorPower(self, m):
     return pow(self, m)
@@ -808,7 +860,7 @@ def abs(v):
     elif isPosList(v):
         return pgcore.absR3(v)
     elif isinstance(v, list):
-        ## possible [x,y,[z]] or [pos, ...]
+        # possible [x,y,[z]] or [pos, ...]
         try:
             return pgcore.RVector3(v).abs()
         except:
@@ -840,15 +892,18 @@ def abs(v):
     except:
         return pgcore.fabs(v)
 
+
 # default BVector operator == (RVector, int) will be casted to
 # BVector operator == (RVector, RVector(int)) and fails
 # this needs a monkey patch for BVector operator == (RVector, int)
 pgcore.__EQ_RVector__ = pgcore.RVector.__eq__
 
+
 def __EQ_RVector__(self, val):
     if isinstance(val, int):
         val = float(val)
     return pgcore.__EQ_RVector__(self, val)
+
 
 pgcore.RVector.__eq__ = __EQ_RVector__
 
@@ -865,20 +920,21 @@ def toIVector(v):
     return ret
 
 
-#__catOrig__ = pgcore.cat
+# __catOrig__ = pgcore.cat
 
-#def __cat__(v1, v2):
-#print("mycat")
-#if isinstance(v1, ndarray) and isinstance(v2, ndarray):
-#return cat(RVector(v1), v2)
-#else:
-#return __catOrig__(v1, v2)
+# def __cat__(v1, v2):
+# print("mycat")
+# if isinstance(v1, ndarray) and isinstance(v2, ndarray):
+# return cat(RVector(v1), v2)
+# else:
+# return __catOrig__(v1, v2)
 
-#pgcore.cat = __cat__
+# pgcore.cat = __cat__
 
 
 # DEPRECATED for backward compatibility should be removed
 def asvector(array):
+    """Convert numpy array into vector (not to be used anymore!)."""
     print("do not use asvector(ndarray) use ndarray directly .. "
           "this method will be removed soon")
     return pgcore.RVector(array)
@@ -909,11 +965,10 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
     dModel = pgcore.RVector(len(model))
     nProcs = self.multiThreadJacobian()
 
-
-    if sys.platform == 'win32':
+    if sys.platform == 'win32' or sys.platform == 'darwin':
         # strange pickle problem: see  python test_PhysicsManagers.py ves
         from .logger import warn
-        warn('Multiprocess jacobian currently unavailable for win build')
+        warn('Multiprocess Jacobian currently unavailable for Win32 and Mac.')
         nProcs = 1
 
     if nProcs == 1:
@@ -925,11 +980,10 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
     oldBertThread = self.threadCount()
     self.setThreadCount(1)
 
-    # print("Model/Data/nProcs", nModel, nData, nProcs, int(ceil(float(nModel)/nProcs)))
+    # print("Model/Data/nProcs", nModel, nData, nProcs,
+    #       int(ceil(float(nModel)/nProcs)))
     for pCount in range(int(ceil(float(nModel) / nProcs))):
         procs = []
-        #if self.verbose():
-        # tic()
         if self.verbose():
             print("Jacobian MT:(", pCount * nProcs, "--",
                   (pCount + 1) * nProcs, ") /", nModel, '... ')
@@ -1025,7 +1079,7 @@ class ModellingBaseMT__(pgcore.ModellingBase):
             pgcore.ModellingBase.__init__(self, mesh=mesh, verbose=verbose)
         elif dataContainer:
             pgcore.ModellingBase.__init__(self, dataContainer=dataContainer,
-                                             verbose=verbose)
+                                          verbose=verbose)
         else:
             pgcore.ModellingBase.__init__(self, verbose=verbose)
 
@@ -1051,15 +1105,10 @@ ModellingBase = ModellingBaseMT__
 
 
 def __getCoords(coord, dim, ent):
-    """Syntactic sugar to find all x-coordinates of a given entity.
-    """
-    # if isinstance(ent, stdVectorR3Vector):
-    # std::vector< pg.Vector<Pos> >(n)
-    #     return getattr(pgcore, coord)(ent)
-    if isinstance(ent, R3Vector) or isinstance(ent, stdVectorRVector3):
-        # pg.Vector<Pos>(n) or std::vector<Pos>(n)
+    """Syntactic sugar to find all x-coordinates of a given entity."""
+    if isinstance(ent, (pgcore.R3Vector, pgcore.stdVectorRVector3)):
         return getattr(pgcore, coord)(ent)
-    if isinstance(ent, list) and isinstance(ent[0], RVector3):
+    if isinstance(ent, list) and isinstance(ent[0], pgcore.RVector3):
         return getattr(pgcore, coord)(ent)
     if isinstance(ent, list) and isPos(ent[0]):
         return getattr(pgcore, coord)(ent)
@@ -1104,7 +1153,7 @@ def x(instance):
     Parameters
     ----------
     instance : DataContainer, Mesh, R3Vector, np.array, list(RVector3)
-        Return the associated coordinate positions for the given class instance.
+        Return the associated coordinate positions for given class instance.
 
     Examples
     --------
@@ -1129,7 +1178,7 @@ def y(instance):
     Parameters
     ----------
     instance : DataContainer, Mesh, R3Vector, np.array, list(RVector3)
-        Return the associated coordinate positions for the given class instance.
+        Return the associated coordinate positions for given class instance.
     """
     return __getCoords('y', 1, instance)
 
@@ -1143,7 +1192,7 @@ def z(instance):
     Parameters
     ----------
     instance : DataContainer, Mesh, R3Vector, np.array, list(RVector3)
-        Return the associated coordinate positions for the given class instance.
+        Return the associated coordinate positions for given class instance.
     """
     return __getCoords('z', 2, instance)
 

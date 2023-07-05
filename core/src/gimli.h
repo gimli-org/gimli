@@ -149,7 +149,6 @@ template< typename T > inline std::string str(const T & v){
 enum LogType {Verbose, Info, Warning, Error, Debug, Critical};
 DLLEXPORT void log(LogType type, const std::string & msg);
 
-
 template<typename Value, typename... Values>
 std::string str(Value v, Values... vs){
     std::ostringstream os;
@@ -158,6 +157,7 @@ std::string str(Value v, Values... vs){
     (void) expander{ 0, (os << " " << vs, void(), 0)... };
     return os.str();
 }
+
 template<typename... Values>
 void log(LogType type, Values... vs){
     return log(type, str(vs...));
@@ -357,6 +357,7 @@ typedef BlockMatrix < Complex > CBlockMatrix;
 template<typename T> using SmallMatrix = DenseMatrix<T>;
 typedef DenseMatrix < double > RSmallMatrix;
 typedef DenseMatrix < Complex > CSmallMatrix;
+
 
 
 //#typedef Vector< unsigned char > BVector;

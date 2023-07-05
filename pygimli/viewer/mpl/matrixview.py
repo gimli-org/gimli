@@ -29,7 +29,7 @@ def drawSparseMatrix(ax, mat, **kwargs):
     >>> import pygimli as pg
     >>> from pygimli.viewer.mpl import drawSparseMatrix
     >>> A = pg.randn((10,10), seed=0)
-    >>> SM = pg.core.SparseMapMatrix()
+    >>> SM = pg.matrix.SparseMapMatrix()
     >>> for i in range(10):
     ...     SM.setVal(i, i, 5.0)
     >>> fig, (ax1, ax2) = pg.plt.subplots(1, 2, sharey=True, sharex=True)
@@ -98,7 +98,7 @@ def drawBlockMatrix(ax, mat, **kwargs):
             mid = e.matrixID
 
             mati = mat.mat(mid)
-            if isinstance(mati, pg.core.IdentityMatrix):
+            if isinstance(mati, pg.matrix.IdentityMatrix):
                 mati = np.eye(mati.size())
 
             gci.append(drawSparseMatrix(ax, mati,
