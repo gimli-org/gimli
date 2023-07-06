@@ -273,7 +273,7 @@ def prettyFloat(value, roundValue=None, mathtex=False):
 
     if isinstance(roundValue, int) and abs(round(value)-value) < 1e-4 and abs(value) < 1e3 and 0:
         string = str(int(round(value, roundValue)))
-    elif abs(value) < 1e-14:
+    elif abs(value) < 1e-16:
         string = "0"
     elif abs(value) > 1e4 or abs(value) <= 1e-3:
         string = str("%.1e" % value)
