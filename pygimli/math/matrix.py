@@ -17,6 +17,12 @@ SparseMatrix = pgcore.RSparseMatrix
 SparseMapMatrix = pgcore.RSparseMapMatrix
 BlockMatrix = pgcore.RBlockMatrix
 
+from pygimli.core import (convertCRSIndex2Map, sparseMatrix2Array,
+                     sparseMatrix2coo, sparseMatrix2csr, 
+                     sparseMatrix2Dense, sparseMatrix2csc, 
+                     toSparseMatrix, toSparseMapMatrix,
+                     toCSC, toCSR, toCOO,
+                     toDense, reduceEntries, removeEntries,)
 
 class TransposedMatrix(MatrixBase):
     """Wrapper for transposed matrix (of any kind)."""

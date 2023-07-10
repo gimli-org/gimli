@@ -703,6 +703,38 @@ def sparseMatrix2Dense(matrix):
 
 toDense = sparseMatrix2Dense
 
+def removeEntries(A, rows=None, cols=None):
+    """Remove rows and columns from a sparse matrix.
+    
+    Convert matrix into SCR
+
+    """
+    A = toCSR(A)
+    rMask = np.ones(A.shape[0], dtype=bool)
+    cMask = np.ones(A.shape[1], dtype=bool)
+
+    if rows is not None:
+        rows = list(rows)
+    else:
+        rows = []
+
+    if cols is not None:
+        cols = list(cols)
+    else:
+        cols = []
+
+    if len(rows) > 0 and len(cols) > 0:
+        rMask[rows] = False
+        cMask[cols] = False
+        return A[rMask][:,cMask]
+    elif len(rows) > 0:
+        rMask[rows] = False
+        return A[rMask]
+    elif len(cols) > 0:
+        cMask[cols] = False
+        return A[:,cMask]
+    
+    return A
 
 def reduceEntries(A, idx):
     """Remove all values of A in row[idx] and col[idx] and add 1 to diag """
