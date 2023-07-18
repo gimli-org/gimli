@@ -101,8 +101,7 @@ class TravelTimeManager(MeshMethodManager):
 
     def applyMesh(self, mesh, secNodes=None, ignoreRegionManager=False):
         """Apply mesh, i.e. set mesh in the forward operator class."""
-        if secNodes is None:
-            secNodes = self.secNodes
+        secNodes = secNodes or self.secNodes
 
         self.fop._refineSecNodes = secNodes
         if secNodes > 0:
