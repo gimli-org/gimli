@@ -32,14 +32,9 @@ class VESModelling(Block1DModelling):
 
     def __init__(self, ab2=None, mn2=None, **kwargs):
         """Initialize with distances."""
-        self.am = kwargs.pop("am", None)
-        self.bm = kwargs.pop("bm", None)
-        self.an = kwargs.pop("an", None)
-        self.bn = kwargs.pop("bn", None)
+        super().__init__()
         self.ab2 = ab2
         self.mn2 = mn2
-
-        super(VESModelling, self).__init__(**kwargs)
 
         if 'dataContainerERT' in kwargs:
             data = kwargs['dataContainerERT']
@@ -415,7 +410,7 @@ class VESRhoModelling(pg.frameworks.MeshModelling):
         """
         super().__init__(verbose=verbose)
         # better do the following in a function like setDataSpace/setModelSpace
-        self.bfop = VESModelling(**kwargs)  # just to sort out AM, AN etc.
+        self.bfop = VESModelling(**kwargs)
         self.thk = thk
         self.fwd = pg.core.DC1dRhoModelling(thk, self.bfop.am, self.bfop.bm,
                                             self.bfop.an, self.bfop.bn,
