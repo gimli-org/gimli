@@ -32,7 +32,11 @@ class VESModelling(Block1DModelling):
 
     def __init__(self, ab2=None, mn2=None, **kwargs):
         """Initialize with distances."""
-        super().__init__()
+        self.am = kwargs.pop("am", None)
+        self.bm = kwargs.pop("bm", None)
+        self.an = kwargs.pop("an", None)
+        self.bn = kwargs.pop("bn", None)
+        super().__init__(**kwargs)
         self.ab2 = ab2
         self.mn2 = mn2
 
@@ -48,7 +52,8 @@ class VESModelling(Block1DModelling):
                 kwargs['bn'] = [data.sensorPosition(data('b')[i]).distance(
                     data('n')[i]) for i in range(data.size())]
 
-        self.setDataSpace(ab2=ab2, mn2=mn2, **kwargs)
+        self.setDataSpace(ab2=ab2, mn2=mn2,
+                          am=self.am, an=self.an, bm=self.bm, bn=self.bn)
 
     def createStartModel(self, rhoa):
         """Create starting model."""
