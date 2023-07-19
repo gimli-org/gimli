@@ -34,7 +34,7 @@ Boundary * findBoundary_(const std::set < Boundary *> & common){
     } else {
         if (common.size() > 1){
             std::cerr << WHERE_AM_I << " pls. check, this should not happen. "
-                    " There is more then one boundary defined." <<
+                    " There is more than one boundary defined." <<
                     common.size() << std::endl;
             std::for_each(common.begin(), common.end(), cerrPtrObject());
         }
@@ -112,7 +112,7 @@ Cell * findCommonCell(const std::vector < Node * > & n, bool warn) {
             if (warn){
                 for (uint i = 0; i < n.size(); i ++) std::cout << n[i]->id()<< " " ;
                 std::cout <<std::endl;
-                std::cerr << WHERE_AM_I << " pls. check, this should not happen. there is more then one cell defined for the given nodes." <<
+                std::cerr << WHERE_AM_I << " pls. check, this should not happen. there is more than one cell defined for the given nodes." <<
                 common.size() << std::endl;
             }
             return *common.begin();
