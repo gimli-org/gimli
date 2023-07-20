@@ -1106,6 +1106,11 @@ ModellingBase = ModellingBaseMT__
 
 def __getCoords(coord, dim, ent):
     """Syntactic sugar to find all x-coordinates of a given entity."""
+    
+    if isScalar(ent):
+        return ent
+    if isPos(ent):
+        return ent[dim]
     if isinstance(ent, (pgcore.R3Vector, pgcore.stdVectorRVector3)):
         return getattr(pgcore, coord)(ent)
     if isinstance(ent, list) and isinstance(ent[0], pgcore.RVector3):
@@ -1120,8 +1125,6 @@ def __getCoords(coord, dim, ent):
         return np.array([n.pos()[dim] for n in ent])
     if isinstance(ent, pgcore.Node):
         return ent.pos()[dim]
-    if isPos(ent):
-        return ent[dim]
     if isinstance(ent, list) and isinstance(ent[0], pgcore.Node):
         return [n.pos()[dim] for n in ent]
 
@@ -1164,6 +1167,9 @@ def x(instance):
     >>> pg.x([[0, 0], [1, 0]])
     2 [0.0, 1.0]
     """
+    ## test atoms first (perfomance)
+    if isPos(instance):
+        return instance[0]
     if isArray(instance) and not isPos(instance):
         return instance
     return __getCoords('x', 0, instance)
@@ -1180,6 +1186,9 @@ def y(instance):
     instance : DataContainer, Mesh, R3Vector, np.array, list(RVector3)
         Return the associated coordinate positions for given class instance.
     """
+    ## test atoms first (perfomance)
+    if isPos(instance):
+        return instance[1]
     return __getCoords('y', 1, instance)
 
 
@@ -1194,6 +1203,9 @@ def z(instance):
     instance : DataContainer, Mesh, R3Vector, np.array, list(RVector3)
         Return the associated coordinate positions for given class instance.
     """
+    ## test atoms first (perfomance)
+    if isPos(instance):
+        return instance[2]
     return __getCoords('z', 2, instance)
 
 

@@ -40,7 +40,7 @@ def autolevel(z, nLevs, logScale=None, zMin=None, zMax=None):
     if zMin is None:
         zMin = min(z)
         if logScale is True and zMin < 3e-16:
-            zMin = pg.core.epsilon(abs(z))
+            zMin = np.min(abs(z)[np.nonzero(abs(z) > 1e-6)[0]])
 
     if zMax is None:
         zMax = max(z)

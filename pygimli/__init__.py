@@ -224,7 +224,22 @@ def isNotebook():
     return 'ipykernel_launcher.py' in sys.argv[0]
 
 
-__swatch__ = dict()
+@singleton
+class SWatches(object):
+    def __init__(self):
+        self._sw = dict()
+        
+    def __getitem__(self, id):
+        if not id in self._sw:
+            self._sw[id] = Stopwatch(start=True)    
+        
+        return self._sw[id]
+
+    def keys(self):
+        return list(self._sw.keys())
+
+    def items(self):
+        return self._sw.items()
 
 
 def tic(msg=None, key=0):
@@ -236,18 +251,16 @@ def tic(msg=None, key=0):
     ----------
     msg : string, optional
         Print message string just before starting the timer.
-    key: dict key
+    key: identifier
         Identifier for your Stopwatch.
     """
     if msg:
         print(msg)
-    try:
-        __swatch__[key].start()
-    except:
-        __swatch__[key] = Stopwatch(start=True)
+    
+    SWatches()[key].start()
 
 
-def toc(msg=None, box=False, reset=False, key=0):
+def toc(msg=None, box=False, stop=False, key=0):
     """Print elapsed time since global timer was started with `tic()`.
 
     Arguments
@@ -257,9 +270,9 @@ def toc(msg=None, box=False, reset=False, key=0):
         True, then embed msg into its own box
     box: bool [False]
         Embed the time in an ascii box
-    reset: bool [False]
-        Reset the stopwatch.
-    id: identifier
+    stop: bool [False]
+        Stops the stopwatch.
+    key: identifier
         Identifier for your Stopwatch.
     """
     if msg:
@@ -268,7 +281,9 @@ def toc(msg=None, box=False, reset=False, key=0):
         else:
             print(msg, end=' ')
 
-    seconds = dur(reset=reset, key=key)
+    seconds = dur(key=key, stop=stop)
+
+    ## refactor with prettyTime
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
     if h <= 0 and m <= 0:
@@ -284,21 +299,60 @@ def toc(msg=None, box=False, reset=False, key=0):
         time = "%d hours, %d minutes and %.2f" % (h, m, s)
     p = print if not box else boxprint
 
-    if len(__swatch__.keys()) > 1:
+    if len(SWatches().keys()):
         p("Elapsed time ({0}) is {1} seconds.".format(key, time))
     else:
         p("Elapsed time is {0} seconds.".format(time))
 
 
-def dur(reset=False, key=0):
-    """Return time in seconds since global timer was started with `tic()`."""
-    if key in __swatch__:
-        return __swatch__[key].duration(reset)
-    else:
-        warn("No stopwatch for id {0}".format(key))
-        return 0.0
+def dur(key=0, stop=False):
+    """Return time in seconds since global timer was started with `tic()`.
+    
+    Arguments
+    ---------
+    stop: bool [False]
+        Stops the stopwatch.
+    key: identifier
+        Identifier for your Stopwatch.
+    """
+    if isinstance(stop, str):
+        key = stop
 
+    if stop is True:
+        SWatches()[key].stop()
+    return SWatches()[key].duration(restart=False)
+    
 
+def store(key=0, stop=True):
+    """Store current time in seconds since global timer was started with `tic()`.
+    
+    Arguments
+    ---------
+    stop: bool [True]
+        Reset the stopwatch.
+    key: identifier
+        Identifier for your Stopwatch.
+    """
+    if stop is True:
+        SWatches()[key].stop()
+        
+    return SWatches()[key].store()
+    
+
+class tictoc(object):
+    """Timer class with persistant clock.
+    """
+    def __init__(self, key):
+        self._key = key
+        tic(key=self._key)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        store(key=self._key)
+
+    
 # special shortcut pg.plt with lazy evaluation
 @moduleProperty
 def _plt():

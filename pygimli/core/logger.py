@@ -297,6 +297,14 @@ def verbose(*args):   # isn't this a refinition of line 253?
 
 
 def critical(*args):
+    """ First or last argument can be an exception
+    """
+    if len(args) > 1 and isinstance(args[0], type(Exception)):
+        e = args[0](_msg(*args[1:]))
+        if len(args) > 1:
+            e.add_note(args[1])
+        raise e
+
     if len(args) > 0 and isinstance(args[-1], type(Exception)):
         e = args[-1](_msg(*args[:-1]))
         if len(args) > 2:

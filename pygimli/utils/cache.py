@@ -308,7 +308,8 @@ def cache(funct):
 
         nc = kwargs.pop('skipCache', False)
         
-        if any(('--noCache' in sys.argv,
+        if any(('--noCache' in sys.argv, '--skipCache' in sys.argv,
+                os.getenv('SKIP_CACHE'),
                 '-N' in sys.argv, nc is True, __NO_CACHE__)):
 
             return funct(*args, **kwargs)

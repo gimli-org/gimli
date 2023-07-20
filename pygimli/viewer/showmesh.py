@@ -80,7 +80,6 @@ def show(obj=None, data=None, **kwargs):
     # if obj is None and 'mesh' not in kwargs:
     if obj is None and 'mesh' not in kwargs.keys():
         ax = kwargs.pop('ax', None)
-
         if ax is None:
             ax = pg.plt.subplots(figsize=kwargs.pop('figsize', None))[1]
 
@@ -161,7 +160,10 @@ def show(obj=None, data=None, **kwargs):
                 pg.error(f"Could not retrieve data from key {data}")
                 return None, None
 
-        if mesh.dim() == 2:
+        if mesh.dim() == 1:
+            return show1D(mesh, data, **kwargs)
+
+        elif mesh.dim() == 2:
             if pg.zero(pg.y(mesh)):
                 pg.info("swap z<->y coordinates for visualization.")
                 meshSwap = pg.Mesh(mesh)
@@ -656,7 +658,10 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
 def show1D(mesh, obj, **kwargs):
     """Show simple plot for 1D modelling results
     """
-    ax = kwargs.pop('ax', pg.show()[0])
+    ax = kwargs.pop('ax', None)
+    
+    if ax is None:
+        ax = pg.show()[0]
 
     xLabel = kwargs.pop('xl', 'x in m')
     yLabel = kwargs.pop('yl', str(obj))

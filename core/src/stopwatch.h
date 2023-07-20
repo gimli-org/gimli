@@ -83,7 +83,8 @@ public:
 
     const CycleCounter & cycleCounter() const { return _cCounter; }
 
-    /*!Save current duration value into store. Reset current time if needed to store relative times.*/
+    /*!Save current duration value into store. 
+    Reset current time if needed to store relative times.*/
     void store(bool restart=false);
 
     /*!Get stored duration values.*/
