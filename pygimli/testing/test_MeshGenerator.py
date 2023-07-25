@@ -225,6 +225,14 @@ class TestMeshGenerator(unittest.TestCase):
         # print(mesh)
         # print(mesh["Marker"])
 
+    def test_VTK_ExportVTU(self):
+        """ Test to fix export bug
+        """
+        mesh = pg.createGrid(4,4,4)
+        mesh.exportBoundaryVTU("bounds.vtu")
+
+
+
     def test_SimpleMeshExport(self):
        
         mesh = pg.createGrid(3, 3)
