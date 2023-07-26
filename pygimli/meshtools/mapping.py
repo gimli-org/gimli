@@ -598,9 +598,14 @@ def interpolate(*args, **kwargs):
                                    fillValue=fallback,
                                    verbose=verbose)
 
-        return pg.core.interpolate(*args, **kwargs,
-                                   fillValue=fallback,
-                                   verbose=verbose)
+        try:
+            # check for Boost.Python.ArgumentError
+            return pg.core.interpolate(*args, **kwargs,
+                                    fillValue=fallback,
+                                    verbose=verbose)
+        except:
+            pass
+
     
     # end if pg.core:
 
