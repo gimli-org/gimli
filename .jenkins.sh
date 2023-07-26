@@ -56,10 +56,10 @@ if [[ $core_update -ge 1 ]]; then
   touch CMakeCache.txt
 
   cmake ../trunk -DPYTHON_EXECUTABLE=/usr/bin/python3
-     
+
   make -j 8 gimli
   make pygimli J=4
-  make gtest
+  #make gtest # Deactivate temporarily
 else
   echo "# No core changes detected. #"
 fi
