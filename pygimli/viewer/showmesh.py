@@ -435,6 +435,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             showBoundary = False
             # ax.plot(pg.x(mesh), pg.y(mesh), '.', color='black')
         else:
+            kwargs['orientation'] = cBarOrientation
             pg.viewer.mpl.drawPLC(ax, mesh, **kwargs)
 
     if showMesh:
@@ -478,6 +479,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
 
         subkwargs['cMap'] = cMap
 
+        pg._b(subkwargs)
         if isinstance(colorBar, bool):
 
             if colorBar is True:
