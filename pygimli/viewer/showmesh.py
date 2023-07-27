@@ -480,7 +480,6 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
 
         subkwargs['cMap'] = cMap
 
-        pg._b(subkwargs)
         if isinstance(colorBar, bool):
 
             if colorBar is True:
