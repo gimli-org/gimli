@@ -36,7 +36,7 @@ from pygimli.core import (convertCRSIndex2Map, sparseMatrix2Array,
 from .units import (unit, cmap)
 from .units import cmap as cMap # for compatibilty (will be removed)
 
-from .utils import (ProgressBar, boxprint, cumDist, cut, diff, dist,
+from .utils import (ProgressBar, boxprint, cumDist, cut, diff, dist, rate,
                     filterIndex, filterLinesByCommentStr, findNearest,
                     getIndex, grange, logDropTol, niceLogspace,
                     prettify, prettyFloat, prettyTime,

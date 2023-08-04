@@ -571,8 +571,20 @@ def diff(v):
         d = pg.Vector(len(v) - 1)
 
     for i, _ in enumerate(d):
-        d[i] = v[i + 1] - v[i]
+        d[i] = v[i+1] - v[i]
     return d
+
+
+def rate(v):
+    """Calculate reduction rate.
+
+    Calculate reduction rate of v as r[i+1] = v[i]/v[i+1] for i = 0 .. len(v)-1 
+    and r[0] = 0
+    """
+    v = np.atleast_1d(v)
+    r = np.zeros_like(v)
+    r[1:] = v[:-1]/v[1:]
+    return r
 
 
 def dist(p, c=None):

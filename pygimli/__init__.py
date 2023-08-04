@@ -260,7 +260,7 @@ def tic(msg=None, key=0):
     SWatches()[key].start()
 
 
-def toc(msg=None, box=False, stop=False, key=0):
+def toc(msg=None, box=False, stop=False, reset=False, key=0):
     """Print elapsed time since global timer was started with `tic()`.
 
     Arguments
@@ -272,6 +272,8 @@ def toc(msg=None, box=False, stop=False, key=0):
         Embed the time in an ascii box
     stop: bool [False]
         Stops the stopwatch.
+    reset: bool [False]
+        Reset timer to 0.0 but don't stop it. Empties stored values.
     key: identifier
         Identifier for your Stopwatch.
     """
@@ -281,7 +283,7 @@ def toc(msg=None, box=False, stop=False, key=0):
         else:
             print(msg, end=' ')
 
-    seconds = dur(key=key, stop=stop)
+    seconds = dur(key=key, stop=stop, reset=reset)
 
     ## refactor with prettyTime
     m, s = divmod(seconds, 60)
@@ -305,22 +307,24 @@ def toc(msg=None, box=False, stop=False, key=0):
         p("Elapsed time is {0} seconds.".format(time))
 
 
-def dur(key=0, stop=False):
+def dur(key=0, stop=False, reset=False):
     """Return time in seconds since global timer was started with `tic()`.
     
     Arguments
     ---------
-    stop: bool [False]
-        Stops the stopwatch.
     key: identifier
         Identifier for your Stopwatch.
+    stop: bool [False]
+        Stops the stopwatch.
+    reset: bool [False]
+        Reset timer to 0.0 but don't stop it. Empties stored values.
     """
     if isinstance(stop, str):
         key = stop
 
     if stop is True:
         SWatches()[key].stop()
-    return SWatches()[key].duration(restart=False)
+    return SWatches()[key].duration(restart=reset)
     
 
 def store(key=0, stop=True):

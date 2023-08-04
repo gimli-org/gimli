@@ -273,11 +273,17 @@ class CacheManager(object):
         codeHash = strHash(inspect.getsource(funct))
 
         argHash = 0
-        for a in args:
-            argHash = argHash ^ valHash(a)
+        for i, a in enumerate(args):
+            if pg.isScalar(a):
+                argHash = argHash ^ valHash(str(i) + str(a))
+            else:
+                argHash = argHash ^ (valHash(i) ^ valHash(a))
 
         for k, v in kwargs.items():
-            argHash = argHash ^ valHash(k) ^ valHash(v)
+            if pg.isScalar(v):
+                argHash = argHash ^ (valHash(k + str(v)))
+            else:
+                argHash = argHash ^ valHash(k) ^ valHash(v)
             
         #pg._g(funcHash, versionHash, codeHash, argHash)
         pg.debug("Hashing took:", pg.dur(), "s")

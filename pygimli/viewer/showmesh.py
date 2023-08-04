@@ -152,6 +152,9 @@ def show(obj=None, data=None, **kwargs):
         return ax, cBar
 
     if isinstance(mesh, pg.Mesh):
+        if mesh.dim() == 1:
+            return show1D(mesh, data, **kwargs)
+            
         if isinstance(data, str):
             if data in mesh.dataKeys():
                 data = mesh[data]
@@ -159,9 +162,9 @@ def show(obj=None, data=None, **kwargs):
             else:
                 pg.error(f"Could not retrieve data from key {data}")
                 return None, None
-
-        if mesh.dim() == 1:
-            return show1D(mesh, data, **kwargs)
+        elif callable(data):
+            data = data(mesh.positions())
+            
 
         elif mesh.dim() == 2:
             if pg.zero(pg.y(mesh)):
@@ -670,19 +673,22 @@ def show1D(mesh, obj, **kwargs):
 
     if hasattr(obj, 'eval'):
         x = pg.sort(pg.x(mesh))
-        ax.plot(x, obj(x), label=label, **kwargs)
-   
+        v = obj(x)
     elif hasattr(obj, 'values'):
         pg._r(kwargs)
         pg._r(mesh)
         pg._r(obj)
         pg.critical('implementme')
+    elif pg.isArray(obj, mesh.nodeCount()):
+        x = pg.x(mesh)
+        v = obj
     else:
         pg._r(kwargs)
         pg._r(mesh)
         pg._r(obj)
         pg.critical('implementme')
 
+    ax.plot(x, v, label=label, **kwargs)
     ax.set_xlabel(xLabel)
     ax.set_ylabel(yLabel)
 
