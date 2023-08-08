@@ -130,10 +130,9 @@ class TravelTimeManager(MeshMethodManager):
 
             * a single array of len mesh.cellCount()
             * a matrix of N slowness distributions of len mesh.cellCount()
-            * a res map as [[marker0, res0], [marker1, res1], ...]
+            * a slowness map [[marker0, slow0], [marker1, slow1], ...]
         vel : array(mesh.cellCount()) | array(N, mesh.cellCount())
-            Velocity distribution for the given mesh cells.
-            Will overwrite given slowness.
+            Velocity distribution for the mesh cells (overwrites slowness!).
         secNodes: int [2]
             Number of refinement nodes to increase accuracy of the forward
             calculation.
@@ -156,7 +155,8 @@ class TravelTimeManager(MeshMethodManager):
         Returns
         -------
         t : array(N, data.size()) | DataContainer
-            The resulting simulated travel time values.
+            The resulting simulated travel time values (returnArray=True)
+            or DataContainer containing them in t field (returnArray=False).
             Either one column array or matrix in case of slowness matrix.
         """
         verbose = kwargs.pop('verbose', self.verbose)
