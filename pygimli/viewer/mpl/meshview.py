@@ -722,8 +722,11 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True,
                             snap=True,
                             )
 
-            if regionMarker:
-                cbar = createColorBar(gci, label="Region markers")
+            if regionMarker is True:
+                orient = kwargs.pop('orientation', 'horizontal')
+                cbar = createColorBar(gci, orientation=orient,
+                                      label="Region markers")
+
                 updateColorBar(
                     cbar, cMap=pg.plt.cm.get_cmap("Set3", len(uniquemarkers)),
                     cMin=-0.5, cMax=len(uniquemarkers) - 0.5)

@@ -303,7 +303,8 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         if mesh.cellCount() > 0:
             uniquemarkers, uniqueidx = np.unique(
                 np.array(mesh.cellMarkers()), return_inverse=True)
-            label = "Cell markers"
+            
+            label = label or "Cell markers"
             cMap = pg.plt.cm.get_cmap("Set3", len(uniquemarkers))
             kwargs["logScale"] = False
             kwargs["cMin"] = -0.5
@@ -435,6 +436,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             showBoundary = False
             # ax.plot(pg.x(mesh), pg.y(mesh), '.', color='black')
         else:
+            kwargs['orientation'] = cBarOrientation
             pg.viewer.mpl.drawPLC(ax, mesh, **kwargs)
 
     if showMesh:
