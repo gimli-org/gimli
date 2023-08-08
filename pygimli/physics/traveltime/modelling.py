@@ -15,14 +15,15 @@ class TravelTimeDijkstraModelling(MeshModelling):
     """Forward modelling class for traveltime using Dijsktras method."""
 
     def __init__(self, **kwargs):
-
-        super(TravelTimeDijkstraModelling, self).__init__(**kwargs)
+        secNodes = kwargs.pop("secNodes", 3)
+        super().__init__(**kwargs)
         
         self._core = pg.core.TravelTimeDijkstraModelling()
         self._core.setRegionManager(self.regionManagerRef())
         
         self._useGradient = None  # assumed to be [vTop, vBot] if set
-        self._refineSecNodes = kwargs.pop("secNodes", 3)
+        self._refineSecNodes = secNodes  
+        # self._refineSecNodes = kwargs.pop("secNodes", 3)  # inactive!
         self.jacobian = self._core.jacobian
         self.setThreadCount = self._core.setThreadCount
         # self.createJacobian = self.dijkstra.createJacobian
