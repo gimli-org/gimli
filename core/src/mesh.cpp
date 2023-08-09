@@ -943,7 +943,6 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
             }
         }
 
-        exit(0);
         if (extensive || 0){
 //             __M
 //             std::cout << "More expensive test here" << std::endl;
