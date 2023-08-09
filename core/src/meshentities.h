@@ -227,6 +227,10 @@ protected:
     virtual void registerNodes_();
     virtual void deRegisterNodes_();
 
+    virtual void registerSecNode_(Node *n);
+    virtual void deRegisterSecNode_(Node *n);
+    
+
     Shape * shape_;
 
     std::vector < Node * > nodeVector_;
@@ -319,6 +323,9 @@ public:
 protected:
     virtual void registerNodes_();
     virtual void deRegisterNodes_();
+    virtual void registerSecNode_(Node *n);
+    virtual void deRegisterSecNode_(Node *n);
+    
     std::vector < Cell * > neighborCells_;
     double attribute_;
 
@@ -383,9 +390,11 @@ public:
 
 
 protected:
-    void registerNodes_();
-
-    void deRegisterNodes_();
+    virtual void registerNodes_();
+    virtual void deRegisterNodes_();
+    virtual void registerSecNode_(Node *n);
+    virtual void deRegisterSecNode_(Node *n);
+    
 
     Cell *leftCell_;
     Cell *rightCell_;
