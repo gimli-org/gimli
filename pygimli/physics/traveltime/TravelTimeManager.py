@@ -28,7 +28,8 @@ class TravelTimeManager(MeshMethodManager):
             You can initialize the Manager with data or give them a dataset
             when calling the inversion.
         """
-        self._useFMM = kwargs.pop("fatray", False)
+        self.useFatray = kwargs.pop("fatray", False)
+        self.frequency = kwargs.pop("frequency", 100.)
         self.secNodes = kwargs.pop("secNodes", 2)
 
         super().__init__(data=data, **kwargs)
@@ -47,8 +48,8 @@ class TravelTimeManager(MeshMethodManager):
         Your want your Manager use a special forward operator you can add them
         here on default Dijkstra is used.
         """
-        if self._useFMM:
-            fop = FatrayDijkstraModelling(**kwargs)
+        if self.useFatray:
+            fop = FatrayDijkstraModelling(frequency=self.frequency, **kwargs)
         else:
             fop = TravelTimeDijkstraModelling(**kwargs)
         return fop
