@@ -29,7 +29,7 @@ class TravelTimeManager(MeshMethodManager):
             when calling the inversion.
         """
         self._useFMM = kwargs.pop("fatray", False)
-        self.secNodes = 2  # default number of secondary nodes for inversion
+        self.secNodes = kwargs.pop("secNodes", 2)
 
         super().__init__(data=data, **kwargs)
 
@@ -203,7 +203,7 @@ class TravelTimeManager(MeshMethodManager):
         return ret
 
     def invert(self, data=None, useGradient=True, vTop=500, vBottom=5000,
-               secNodes=2, **kwargs):
+               secNodes=None, **kwargs):
         """Invert data.
 
         Parameters
@@ -234,8 +234,8 @@ class TravelTimeManager(MeshMethodManager):
             See :py:mod:`pygimli.frameworks.MeshMethodManager.invert`
         """
         mesh = kwargs.pop('mesh', None)
-
-        self.secNodes = secNodes
+        if secNodes is not None:
+            self.secNodes = secNodes
 
         if 'limits' in kwargs:
             if kwargs['limits'][0] > 1:
