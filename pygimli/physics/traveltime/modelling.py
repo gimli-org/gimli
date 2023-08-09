@@ -46,6 +46,7 @@ class TravelTimeDijkstraModelling(MeshModelling):
         """
         pg.info("Creating refined mesh (secnodes: {0}) to "
                 "solve forward task.".format(self._refineSecNodes))
+        self.meshNoSec = pg.Mesh(mesh)
         m = mesh.createMeshWithSecondaryNodes(self._refineSecNodes)
         pg.verbose(m)
         return m
@@ -146,7 +147,8 @@ class FatrayDijkstraModellingInterpolate(TravelTimeDijkstraModelling):
 
     def createJacobian(self, slowness):
         """Generate Jacobian matrix using fat-ray after Jordi et al. (2016)."""
-        mesh = self.mesh()
+        # mesh = self.mesh()
+        mesh = self.meshNoSec  # change back with pgcore=1.5
         self.J = pg.Matrix(self.data.size(), mesh.cellCount())
         self.sensorNodes = [mesh.findNearestNode(pos)
                             for pos in self.data.sensorPositions()]
@@ -164,7 +166,7 @@ class FatrayDijkstraModellingInterpolate(TravelTimeDijkstraModelling):
         Dmat = pg.Matrix(numS, numS)
         for i, node in enumerate(self.sensorNodes):
             Di.setStartNode(node)
-            Tmat[i] = Di.distances()  # (0, numN)
+            Tmat[i] = Di.distances()[:numN]  # change back with pgcore=1.5
             Dmat[i] = Tmat[i][self.sensorNodes]
 
         self.FresnelWeight = pg.Matrix(data.size(), len(slowness))
