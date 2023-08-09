@@ -137,8 +137,8 @@ class TravelTimeDijkstraModelling(MeshModelling):
 class FatrayDijkstraModellingInterpolate(TravelTimeDijkstraModelling):
     """Shortest-path (Dijkstra) based travel time with fat ray jacobian."""
 
-    def __init__(self, frequency=100., verbose=False):
-        super().__init__(verbose)
+    def __init__(self, frequency=100., **kwargs):
+        super().__init__(**kwargs)
         self.frequency = frequency
         self.iMat = pg.matrix.SparseMapMatrix()
         self.J = None
@@ -146,18 +146,18 @@ class FatrayDijkstraModellingInterpolate(TravelTimeDijkstraModelling):
 
     def createJacobian(self, slowness):
         """Generate Jacobian matrix using fat-ray after Jordi et al. (2016)."""
-        self.J = pg.Matrix(self.data.size(), self.mesh().cellCount())
-        self.sensorNodes = [self.mesh.findNearestNode(pos)
+        mesh = self.mesh()
+        self.J = pg.Matrix(self.data.size(), mesh.cellCount())
+        self.sensorNodes = [mesh.findNearestNode(pos)
                             for pos in self.data.sensorPositions()]
-        if (self.iMat.cols() != self.mesh().nodeCount() or
-                self.iMat.rows() != self.mesh().cellCount()):
-            self.iMat = self.mesh().interpolationMatrix(
-                    self.mesh().cellCenters())
+        if (self.iMat.cols() != mesh.nodeCount() or
+                self.iMat.rows() != mesh.cellCount()):
+            self.iMat = mesh.interpolationMatrix(mesh.cellCenters())
 
-        Di = self.dijkstra()
+        Di = self.dijkstra
         slowPerCell = self.createMappedModel(slowness, 1e16)
-        Di.setGraph(self.createGraph(slowPerCell))
-        numN = self.mesh.nodeCount()
+        Di.setGraph(self._core.createGraph(slowPerCell))
+        numN = mesh.nodeCount()
         data = self.data
         numS = data.sensorCount()
         Tmat = pg.Matrix(numS, numN)
@@ -167,6 +167,7 @@ class FatrayDijkstraModellingInterpolate(TravelTimeDijkstraModelling):
             Tmat[i] = Di.distances()  # (0, numN)
             Dmat[i] = Tmat[i][self.sensorNodes]
 
+        self.FresnelWeight = pg.Matrix(data.size(), len(slowness))
         for i in range(data.size()):
             iS = int(data("s")[i])
             iG = int(data("g")[i])
@@ -178,6 +179,7 @@ class FatrayDijkstraModellingInterpolate(TravelTimeDijkstraModelling):
                 wa /= np.sum(wa)
 
             self.J[i] = wa * tsr / slowness
+            self.FresnelWeight[i] = wa
 
         self.setJacobian(self.J)
 
