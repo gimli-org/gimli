@@ -513,8 +513,7 @@ RVector3 EdgeShape::rst(Index i) const{
 }
 
 bool EdgeShape::touch(const RVector3 & pos, double tol, bool verbose) const{
-    THROW_TO_IMPL
-    return false;
+    return Line(node(0).pos(), node(1).pos()).touch(pos, tol);
 }
 
 bool EdgeShape::intersectRay(const RVector3 & start, const RVector3 & dir,

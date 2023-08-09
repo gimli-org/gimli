@@ -205,6 +205,7 @@ MeshEntity::MeshEntity()
 }
 
 MeshEntity::~MeshEntity(){
+    for (auto *n: secondaryNodes_) this->deRegisterSecNode_(n);
 }
 
 RVector3 MeshEntity::center() const {
@@ -246,11 +247,19 @@ void MeshEntity::setNodes(const std::vector < Node * > & nodes){
     }
 }
 
+void MeshEntity::registerSecNode_(Node *n){
+}
+void MeshEntity::deRegisterSecNode_(Node *n){
+
+}
+
 void MeshEntity::addSecondaryNode(Node * n) {
     secondaryNodes_.push_back(n);
+    registerSecNode_(n);
 }
 
 void MeshEntity::delSecondaryNode(Node * n) {
+    deRegisterSecNode_(n);
     secondaryNodes_.erase(std::remove(secondaryNodes_.begin(),
                                       secondaryNodes_.end(), n),
                           secondaryNodes_.end());
@@ -391,8 +400,18 @@ Cell::Cell(const std::vector < Node * > & nodes)
 }
 
 Cell::~Cell(){
+    for (auto *n: secondaryNodes_) this->deRegisterSecNode_(n);
     deRegisterNodes_();
 }
+
+void Cell::registerSecNode_(Node *n){
+    n->insertCell(this);
+}
+
+void Cell::deRegisterSecNode_(Node *n){
+    n->eraseCell(this);
+}
+
 
 Node * Cell::oppositeTo(const Boundary & bound){
     THROW_TO_IMPL
@@ -578,10 +597,16 @@ Boundary::~Boundary(){
 void Boundary::registerNodes_(){
     for (auto n: nodeVector_) n->insertBoundary(this);
 }
-
 void Boundary::deRegisterNodes_(){
     for (auto n: nodeVector_) n->eraseBoundary(this);
 }
+void Boundary::registerSecNode_(Node *n){
+    n->insertBoundary(this);
+}
+void Boundary::deRegisterSecNode_(Node *n){
+    n->eraseBoundary(this);
+}
+
 
 RVector3 Boundary::rst(uint i) const {
     if (this->nodeCount() == shape_->nodeCount()) return shape_->rst(i);
