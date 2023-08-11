@@ -741,8 +741,11 @@ void Mesh::exportVTK(const std::string & fbody,
                 }
                 
             } else {
-                log(Warning, "data: ", nd.first, " not written to vtk. size: ", nd.second.size());
-            }
+                log(Warning, "data: ", nd.first, " not written to vtk. size: ", nd.second.size(), 
+                "(cellCount: ", this->cellCount(), 
+                  "nodeCount: ", this->nodeCount(), 
+                  "boundaryCount:", this->boundaryCount(), ")");
+            } 
         }
     }
 

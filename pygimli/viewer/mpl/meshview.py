@@ -1193,7 +1193,7 @@ def drawStreamLine(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
 
 
 def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
-                **kwargs):
+                fitView=True, **kwargs):
     """Draw streamlines based on an unstructured mesh.
 
     Every cell contains only one streamline and every new stream line

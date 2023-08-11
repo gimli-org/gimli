@@ -83,6 +83,7 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
         matplotlib Colormap
     """
     import matplotlib as mpl
+    import copy
     if not bad:
         bad = [1.0, 1.0, 1.0, 0.0]
 
@@ -99,10 +100,27 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
         cMap = "RdBu_r"
     else:
         try:
-            import copy
             cMap = copy.copy(mpl.cm.get_cmap(cMapName, ncols))
-        except BaseException as e:
-            pg.warn("Could not retrieve colormap ", cMapName, e)
+        except ValueError as e:
+            cMap = copy.copy(mpl.cm.get_cmap('viridis', ncols))
+            
+            ## colormap probably unknown we try if we find it on cmocean
+            try:
+                import cmocean
+                cMap = copy.copy(getattr(cmocean.cm, cMapName.lower()))
+            except ImportError as eo:
+                
+                pg.warn("Could not retrieve colormap ", cMapName, e)
+                pg.warn("Fallback to cmocean: ", cMapName, eo)
+
+            except AttributeError as eo:
+                pg.warn("Could not retrieve colormap ", cMapName, e)
+                pg.warn("Fallback to cmocean but does not know: ", cMapName, eo)
+                print('available:', cmocean.cm.cmapnames)
+
+
+            # import cmocean
+            # import matplotlib.pyplot as plt
 
     cMap.set_bad(bad)
     return cMap
