@@ -235,7 +235,9 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
 
         mappable.set_norm(norm)
 
-    if needLevelUpdate:
+
+    pg._g(needLevelUpdate)
+    if needLevelUpdate is True:
         if cbar is not None:
             setCbarLevels(cbar, cMin, cMax, nLevs, levels)
             if label is not None:
@@ -456,7 +458,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
 
     mappable.set_clim(vmin=cMin, vmax=cMax)
 
-
+    pg._y('Setticks')
     if hasattr(cbar, 'set_ticks'):
         # cbar is a ColorBar with ticks
         cbar.set_ticks(cbarLevels)
@@ -468,6 +470,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
 
         @ticker.FuncFormatter
         def pfMajorFormatter(x, pos):
+            pg._r(x, pos)
             return prettyFloat(x) % x
 
         try:  # mpl 3.5
