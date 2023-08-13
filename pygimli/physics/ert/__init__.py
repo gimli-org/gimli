@@ -9,6 +9,7 @@ import pygimli as pg
 from .ert import (simulate, estimateError,
                   createGeometricFactors, createInversionMesh)
 from .ertManager import ERTManager
+from .ertIPManager import ERTIPManager
 from .ertModelling import ERTModelling, ERTModellingReference
 from .ertScheme import createData
 from pygimli.physics.ves import VESManager  # backward compatibility

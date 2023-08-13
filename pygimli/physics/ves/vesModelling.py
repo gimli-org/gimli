@@ -36,10 +36,9 @@ class VESModelling(Block1DModelling):
         self.bm = kwargs.pop("bm", None)
         self.an = kwargs.pop("an", None)
         self.bn = kwargs.pop("bn", None)
+        super().__init__(**kwargs)
         self.ab2 = ab2
         self.mn2 = mn2
-
-        super(VESModelling, self).__init__(**kwargs)
 
         if 'dataContainerERT' in kwargs:
             data = kwargs['dataContainerERT']
@@ -53,7 +52,8 @@ class VESModelling(Block1DModelling):
                 kwargs['bn'] = [data.sensorPosition(data('b')[i]).distance(
                     data('n')[i]) for i in range(data.size())]
 
-        self.setDataSpace(ab2=ab2, mn2=mn2, **kwargs)
+        self.setDataSpace(ab2=ab2, mn2=mn2,
+                          am=self.am, an=self.an, bm=self.bm, bn=self.bn)
 
     def createStartModel(self, rhoa):
         """Create starting model."""
@@ -415,7 +415,7 @@ class VESRhoModelling(pg.frameworks.MeshModelling):
         """
         super().__init__(verbose=verbose)
         # better do the following in a function like setDataSpace/setModelSpace
-        self.bfop = VESModelling(**kwargs)  # just to sort out AM, AN etc.
+        self.bfop = VESModelling(**kwargs)
         self.thk = thk
         self.fwd = pg.core.DC1dRhoModelling(thk, self.bfop.am, self.bfop.bm,
                                             self.bfop.an, self.bfop.bn,

@@ -16,6 +16,8 @@ class MultiFrameModelling(MeshModelling):
         self.jac = pg.matrix.BlockMatrix()
         self.scalef = scalef
         self.fops = []
+        self.nf = 0
+        self.nm = 0
 
     def setData(self, data, modellingOperator=None, **ini):
         """Distribute the data containers amongst the fops."""
@@ -48,7 +50,7 @@ class MultiFrameModelling(MeshModelling):
     @property
     def parameterCount(self):
         """Return number of parameters."""
-        pc = self.regionManager().parameterCount() * 0
+        pc = self.regionManager().parameterCount()
         if pc == 0:
             pc = self.fops[0].parameterCount
 

@@ -264,7 +264,7 @@ class MultLeftRightMatrix(MultMatrix):
             left and right side vectors to weight individual rows & columns
         """
         if A.cols() != len(right):
-            raise Exception("Matrix columns do not fit right vector length!")
+                raise Exception("Matrix columns do not fit right vector length!")
         if A.rows() != len(left):
             raise Exception("Matrix rows do not fit left vector length!")
 
@@ -646,6 +646,56 @@ class NDMatrix(pgcore.BlockMatrix):
 
         self.recalcMatrixSize()
 
+
+class KroneckerMatrix(pg.core.MatrixBase):
+    """Memory-saving implementation of Kronecker matrix.
+    
+    The Kronecker matrix consists of repetitions of an inner
+    matrix I, multiplied with elements of an outer matrix O.
+        | O_11 I  O_12 I ... ]
+    A = | O_21 I  O_22 I
+        | ...
+    """
+
+    def __init__(self, outer, inner, verbose=False):
+        """Init"""
+        super().__init__(verbose)
+        self._I = inner
+        self._O = outer
+        self.ni = inner.rows()
+        self.no = outer.rows()
+        self.mi = inner.cols()
+        self.mo = outer.cols()
+
+    def rows(self):
+        """Return number of rows (rows(I)*rows(O))."""
+        return self._I.rows() * self._O.rows()
+
+    def cols(self):
+        """Return number of cols (cols(I)*cols(O))."""
+        return self._I.cols() * self._O.cols()
+
+    def mult(self, x):
+        """Multiplication from right-hand-side (A.T*x)."""
+        xx = np.reshape(x, [self.mo, self.mi])
+        yy = np.zeros([self.no, self.ni])
+        for i, xi in enumerate(xx):
+            Ixi = self._I.mult(xi)
+            for j in range(self.no):
+                yy[j] += Ixi * self._O[j, i]
+
+        return yy.ravel()
+
+    def transMult(self, x):
+        """Multiplication from right-hand-side (A*x)"""
+        xx = np.reshape(x, [self.no, self.ni])
+        yy = np.zeros([self.mo, self.mi])
+        for i, xi in enumerate(xx):
+            Ixi = self._I.transMult(xi)
+            for j in range(self.mo):
+                yy[j] += Ixi * self._O[i, j]
+
+        return yy.ravel()
 
 class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
     """Geostatistic constraints matrix

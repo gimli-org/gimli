@@ -1,14 +1,18 @@
 # Paper examples on start page. Images have to be in _static/usecases.
 # Order does not matter, will be shuffled on doc build.
 showcase = [
+    dict(img="nazari2023.png",
+         title="3D SAEM survey design",
+         subtitle="Nazari et al. (2023), Minerals",
+         link="https://doi.org/10.3390/min13060796"),
     dict(img="rochlitz2023.png",
          title="3D CSEM inversion",
          subtitle="Rochlitz et al. (2023), Geophysical Journal International",
-         link="http://dx.doi.org/10.1093/gji/ggad056"),
+         link="https://doi.org/10.1093/gji/ggad056"),
     dict(img="gruenenbaum2023.png",
          title="Direct-push-constrained ERT inversion",
          subtitle="Grünenbaum et al. (2023), Journal of Hydrology",
-         link="http://dx.doi.org/10.1093/gji/ggad056"),
+         link="https://doi.org/10.1093/gji/ggad056"),
     dict(img="arboleda-zapata2022.jpg",
          title="Inference analysis of model ensembles",
          subtitle="Arboleda-Zapata et al. (2022), Journal of Applied Geophysics",

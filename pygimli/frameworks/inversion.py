@@ -182,7 +182,9 @@ class Inversion(object):
 
         if self._startModel is None:
             sm = self.fop.createStartModel(self.dataVals)
-            pg.info("Created startmodel from forward operator:", sm)
+            # pg.info("Created startmodel from forward operator:", sm)
+            pg.info("Created startmodel from forward operator: {:d}, min/max={:f}/{:f}".format(
+                len(sm), min(sm), max(sm)))
             self._startModel = sm
         return self._startModel
 

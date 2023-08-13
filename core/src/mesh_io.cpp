@@ -1348,7 +1348,7 @@ void Mesh::exportBoundaryVTU(const std::string & fbody, bool binary) const {
 
     if (!boundData.count("_BoundaryMarker")) {
         boundData.insert(std::make_pair("_BoundaryMarker", 
-                         this->boundaryMarkers()));
+                         boundMesh.boundaryMarkers()));
     }
 
     //boundMesh.exportVTK(fbody, boundData);

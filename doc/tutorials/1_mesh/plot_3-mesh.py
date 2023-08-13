@@ -125,6 +125,7 @@ ax, cb = pg.show(mesh, "velocity")
 # 3D vtk files can be nicely visualized by a number of programs, e.g. Paraview.
 #
 
-mesh.exportVTK("mesh.vtk")
-with open("mesh.vtk") as f:
-    print(f.read())
+if False:
+    mesh.exportVTK("mesh.vtk")
+    with open("mesh.vtk") as f:
+        print(f.read())

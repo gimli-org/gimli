@@ -1,9 +1,9 @@
+"""Kernel computation for gravity and magnetics."""
 import numpy as np
-import pygimli as pg
 from pygimli.utils import ProgressBar
 
 
-def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
+def SolveGravMagHolstein(mesh, pnts, cmp, igrf=None, foot=np.inf):
     """Solve gravity and/or magnetics problem after Holstein (1997).
 
     Parameters
@@ -28,27 +28,27 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
     if pnts is None:
         pnts = [[0.0, 0.0]]
 
+    doG = np.any([c[0] == "g" for c in cmp])
     doB = np.any([c[0] == "B" and len(c) == 2 for c in cmp]) or "TFA" in cmp
     doBT = np.any([c[0] == "B" and len(c) == 3 for c in cmp])
     B_tens = None
 
     kernel = np.zeros((mesh.cellCount(), len(pnts), len(cmp)))
-    # org: this does not make sense as igrf is either 3 or 7 long
-    # B_dir = np.array(igrf / np.linalg.norm(igrf))
-    # fakt = igrf[6] / (4*np.pi)
-    # rather do like this:
-    if len(igrf) == 3:  # an X, Y, Z vector
-        F = np.linalg.norm(igrf)
-        fakt = F / (4*np.pi)
-        B_dir = np.array(igrf) / F
-    elif len(igrf) == 7:  # an IGRF vector (D, I, H, X, Y, Z, F)
-        fakt = igrf[6] / (4*np.pi)
-        myigrf = np.array(igrf[3:6])
-        B_dir = myigrf / np.linalg.norm(myigrf)
-    else:
-        raise Exception("Could not use IGRF vector. Len must be 3 or 7!")
+    if igrf:
+        if len(igrf) == 3:  # an X, Y, Z vector
+            F = np.linalg.norm(igrf)
+            fakt = F / (4*np.pi)
+            B_dir = np.array(igrf) / F
+        elif len(igrf) == 7:  # an IGRF vector (D, I, H, X, Y, Z, F)
+            fakt = igrf[6] / (4*np.pi)
+            myigrf = np.array(igrf[3:6])
+            B_dir = myigrf / np.linalg.norm(myigrf)
+        else:
+            raise Exception("Could not use IGRF vector. Len must be 3 or 7!")
+    elif doB or doB:
+        raise Exception("Specify IGRF!")
 
-    b_list, n_list, c_list = [], [], []
+    b_list, c_list = [], []
     for bd in mesh.boundaries():
         b_list.append([n.id() for n in bd.allNodes()])
         c_list.append([bd.leftCell(), bd.rightCell()])
@@ -56,10 +56,7 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
     b_list = np.array(b_list)
     lb = b_list.shape
 
-    for nd in mesh.nodes():
-        n_list.append(nd.pos())
-
-    n_list = np.array(n_list)
+    n_list = np.array([n.pos() for n in mesh.nodes()])
 
     cl, cr = [], []
     for i, c in enumerate(c_list):
@@ -74,15 +71,11 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
     rr = range(0, mesh.cellCount())
     rs = np.roll(range(0, lb[1]), -1)
 
-    itest = 0
     temp = np.zeros((len(pnts), lb[0], len(cmp)))
     pBar = ProgressBar(its=len(pnts), width=40, sign='+')
+    nb = n_list[b_list]
     for i, p in enumerate(pnts):
-        # if np.floor(100*i/len(pnts)) > itest:
-        #     itest = np.floor(100 * i / len(pnts))
-        #     print('.', end="")
-
-        r1 = n_list[b_list] - p
+        r1 = nb - p
         r2 = r1[:, rs, :]
         r0 = r2 - r1
         u = np.sum(np.cross(r1, r2), 1)
@@ -99,104 +92,109 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
         rm = (r1n+r2n)/2
         lumbda = ll/(2*rm)
 
-        # gravitational field
-        g = hn*np.arctanh(lumbda)-np.sign(v)*v*np.arctan2(
-            hn*lumbda, (rm*(1-lumbda**2)+abs(v)))
-        g_vec = 2 * u * np.expand_dims(np.sum(g, 1), axis=1)
-
-        # magnetic field vector and gravity gradient tensor
-        b = h*np.expand_dims(np.arctanh(lumbda), axis=2) - \
-            ut*np.expand_dims(np.sign(v)*np.arctan2(
-                hn*lumbda, (rm*(1-lumbda**2)+abs(v))), axis=2)
-
-        P = np.dot(u, B_dir)
-        B_vec = np.expand_dims(P, 1) * np.sum(b, 1)
-        B_vec = 2 * np.expand_dims(P, 1) * np.sum(b, 1)
-        pBar.update(i)
-        if doBT:  # magnetic gradient tensor
-            d = (-2*lumbda*hn) / (r1n*r2n*(1-lumbda**2))
-            e = (-2*lumbda*lm) / (r1n*r2n)
-            f = (-2*lumbda*v) / (r1n*r2n*(1-lumbda**2))
-
-            h1 = np.expand_dims(h, axis=3)
-            h2 = np.swapaxes(h1, 2, 3)
-            t1 = np.expand_dims(t, axis=3)
-            t2 = np.swapaxes(t1, 2, 3)
-            u1 = np.expand_dims(ut, axis=3)
-            u2 = np.swapaxes(u1, 2, 3)
-
-            B = (h1*h2-u1*u2)*np.expand_dims(d, (2, 3)) + \
-                (t1*h2+h1*t2)*np.expand_dims(e, (2, 3))/2 + \
-                (h1*u2+u1*h2)*np.expand_dims(f, (2, 3))
-
-            B_tens = np.expand_dims(P, (1, 2)) * np.sum(B, 1)
-
         jj = 0
-        if 'gx' in cmp:
-            temp[i, :, jj] = g_vec[:, 0]
-            jj += 1
+        if doG: # gravitational field
+            g = hn*np.arctanh(lumbda)-np.sign(v)*v*np.arctan2(
+                hn*lumbda, (rm*(1-lumbda**2)+abs(v)))
+            g_vec = 2 * u * np.expand_dims(np.sum(g, 1), axis=1)
 
-        if 'gy' in cmp:
-            temp[i, :, jj] = g_vec[:, 1]
-            jj += 1
+            if 'g' in cmp:
+                temp[i, :, jj] = g
+                jj += 0
 
-        if 'gz' in cmp:
-            temp[i, :, jj] = g_vec[:, 2]
-            jj += 1
+            if 'gx' in cmp:
+                temp[i, :, jj] = g_vec[:, 0]
+                jj += 1
 
-        # if 'gxx' in cmp:
-        #     temp[:, jj]=G_tens[:, 0, 0]
-        # if 'gxy' in cmp:
-        #     temp[:, jj]=G_tens[:, 0, 1]
-        # if 'gxz' in cmp:
-        #     temp[:, jj]=G_tens[:, 0, 2]
-        # if 'gyy' in cmp:
-        #     temp[:, jj]=G_tens[:, 1, 1]
-        # if 'gyz' in cmp:
-        #     temp[:, jj]=G_tens[:, 1, 2]
-        # if 'gzz' in cmp:
-        #     temp[:, jj]=G_tens[:, 2, 2]
+            if 'gy' in cmp:
+                temp[i, :, jj] = g_vec[:, 1]
+                jj += 1
 
-        if 'TFA' in cmp:
-            temp[i, :, jj] = fakt*B_vec.dot(B_dir)
-            jj += 1
+            if 'gz' in cmp:
+                temp[i, :, jj] = g_vec[:, 2]
+                jj += 1
 
-        if 'Bx' in cmp:
-            temp[i, :, jj] = fakt*B_vec[:, 0]
-            jj += 1
+            # if 'gxx' in cmp:
+            #     temp[:, jj]=G_tens[:, 0, 0]
+            # if 'gxy' in cmp:
+            #     temp[:, jj]=G_tens[:, 0, 1]
+            # if 'gxz' in cmp:
+            #     temp[:, jj]=G_tens[:, 0, 2]
+            # if 'gyy' in cmp:
+            #     temp[:, jj]=G_tens[:, 1, 1]
+            # if 'gyz' in cmp:
+            #     temp[:, jj]=G_tens[:, 1, 2]
+            # if 'gzz' in cmp:
+            #     temp[:, jj]=G_tens[:, 2, 2]
 
-        if 'By' in cmp:
-            temp[i, :, jj] = fakt*B_vec[:, 1]
-            jj += 1
+        if doB or doBT:
+            # magnetic field vector and gravity gradient tensor
+            b = h*np.expand_dims(np.arctanh(lumbda), axis=2) - \
+                ut*np.expand_dims(np.sign(v)*np.arctan2(
+                    hn*lumbda, (rm*(1-lumbda**2)+abs(v))), axis=2)
+            P = np.dot(u, B_dir)
+            B_vec = np.expand_dims(P, 1) * np.sum(b, 1)
+            B_vec = 2 * np.expand_dims(P, 1) * np.sum(b, 1)
 
-        if 'Bz' in cmp:
-            temp[i, :, jj] = fakt*B_vec[:, 2]
-            jj += 1
+            if 'TFA' in cmp:
+                temp[i, :, jj] = fakt*B_vec.dot(B_dir)
+                jj += 1
 
-        if 'Bxx' in cmp:
-            temp[i, :, jj] = fakt*B_tens[:, 0, 0]
-            jj += 1
+            if 'Bx' in cmp:
+                temp[i, :, jj] = fakt*B_vec[:, 0]
+                jj += 1
 
-        if 'Bxy' in cmp:
-            temp[i, :, jj] = fakt*B_tens[:, 0, 1]
-            jj += 1
+            if 'By' in cmp:
+                temp[i, :, jj] = fakt*B_vec[:, 1]
+                jj += 1
 
-        if 'Bxz' in cmp:
-            temp[i, :, jj] = fakt*B_tens[:, 0, 2]
-            jj += 1
+            if 'Bz' in cmp:
+                temp[i, :, jj] = fakt*B_vec[:, 2]
+                jj += 1
 
-        if 'Byy' in cmp:
-            temp[i, :, jj] = fakt*B_tens[:, 1, 1]
-            jj += 1
+            if doBT:  # magnetic gradient tensor
+                d = (-2*lumbda*hn) / (r1n*r2n*(1-lumbda**2))
+                e = (-2*lumbda*lm) / (r1n*r2n)
+                f = (-2*lumbda*v) / (r1n*r2n*(1-lumbda**2))
 
-        if 'Byz' in cmp:
-            temp[i, :, jj] = fakt*B_tens[:, 1, 2]
-            jj += 1
+                h1 = np.expand_dims(h, axis=3)
+                h2 = np.swapaxes(h1, 2, 3)
+                t1 = np.expand_dims(t, axis=3)
+                t2 = np.swapaxes(t1, 2, 3)
+                u1 = np.expand_dims(ut, axis=3)
+                u2 = np.swapaxes(u1, 2, 3)
 
-        if 'Bzz' in cmp:
-            temp[i, :, jj] = fakt * B_tens[:, 2, 2]
-            jj += 1
+                B = (h1*h2-u1*u2)*np.expand_dims(d, (2, 3)) + \
+                    (t1*h2+h1*t2)*np.expand_dims(e, (2, 3))/2 + \
+                    (h1*u2+u1*h2)*np.expand_dims(f, (2, 3))
 
+                B_tens = np.expand_dims(P, (1, 2)) * np.sum(B, 1)
+
+                if 'Bxx' in cmp:
+                    temp[i, :, jj] = fakt*B_tens[:, 0, 0]
+                    jj += 1
+
+                if 'Bxy' in cmp:
+                    temp[i, :, jj] = fakt*B_tens[:, 0, 1]
+                    jj += 1
+
+                if 'Bxz' in cmp:
+                    temp[i, :, jj] = fakt*B_tens[:, 0, 2]
+                    jj += 1
+
+                if 'Byy' in cmp:
+                    temp[i, :, jj] = fakt*B_tens[:, 1, 1]
+                    jj += 1
+
+                if 'Byz' in cmp:
+                    temp[i, :, jj] = fakt*B_tens[:, 1, 2]
+                    jj += 1
+
+                if 'Bzz' in cmp:
+                    temp[i, :, jj] = fakt * B_tens[:, 2, 2]
+                    jj += 1
+
+    pBar.update(i)
     kernel += np.array([np.sum(temp[:, cl[cl[:, 1] == j, 0]], 1) for j in rr])
     kernel -= np.array([np.sum(temp[:, cr[cr[:, 1] == j, 0]], 1) for j in rr])
 

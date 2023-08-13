@@ -450,7 +450,7 @@ class MethodManager(object):
         ax, cbar
         """
         if ax is None:
-            fig, ax = pg.plt.subplots()
+            _, ax = pg.plt.subplots()
 
         ax, cBar = self.fop.drawModel(ax, model, **kwargs)
         return ax, cBar
@@ -478,7 +478,7 @@ class MethodManager(object):
 
         """
         if ax is None:
-            fig, ax = pg.plt.subplots()
+            _, ax = pg.plt.subplots()
 
         if data is None:
             data = self.data
@@ -706,7 +706,7 @@ class MeshMethodManager(MethodManager):
             Copy of the main mesh to be distributed to inversion and the fop.
             You can overwrite it with invert(mesh=mesh).
         """
-        super(MeshMethodManager, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.mesh = None
 
     @property
@@ -848,7 +848,7 @@ class MeshMethodManager(MethodManager):
         """Show data and the inversion result model response."""
         orientation = 'vertical'
         if axs is None:
-            fig, axs = pg.plt.subplots(nrows=1, ncols=2)
+            _, axs = pg.plt.subplots(nrows=1, ncols=2)
             orientation = 'horizontal'
 
         self.showData(data=self.inv.dataVals,

@@ -63,7 +63,7 @@ tt.drawFirstPicks(ax, data, mgr.inv.response, marker=None)
 # Show resulting tomogram along with fit. You may want to save your results.
 
 mgr.showResultAndFit()
-mgr.saveResult()  # saves the results (mesh, velocity, vtk) in a folder
+# mgr.saveResult()  # saves the results (mesh, velocity, vtk) in a folder
 
 ###############################################################################
 # You can plot only the model and customize with a bunch of keywords

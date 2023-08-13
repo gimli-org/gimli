@@ -17,6 +17,12 @@ freqResolveHCP = np.array([387., 1820., 8330., 41500., 133400.])
 freqResolveVCX = 5410.
 freqResolveHCPOld = np.array([380., 1770., 8300., 41000., 129500.])
 
+fBKS36a = np.array([386, 1817, 8360, 41420, 133200, 5390])
+rBKS36a = np.array([7.938, 7.931, 7.925, 7.912, 7.918, 9.055])
+fBKS60 = np.array([380, 1773, 8300, 41000, 129500, 5410])
+rBKS60 = np.array([7.918, 7.918, 7.957, 8.033, 7.906, 9.042])
+
+
 def cmapDAERO():
     """Standardized colormap from A-AERO projects (purple=0.3 to red=500)."""
     CMY = np.array([
