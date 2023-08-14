@@ -110,8 +110,8 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
                 cMap = copy.copy(getattr(cmocean.cm, cMapName.lower()))
             except ImportError as eo:
                 
-                pg.warn("Could not retrieve colormap ", cMapName, e)
-                pg.warn("Fallback to cmocean: ", cMapName, eo)
+                pg.warn("Could not retrieve colormap:", cMapName, "Reason:", e)
+                pg.warn("Fallback to cmocean: ", cMapName, " but: ", eo)
 
             except AttributeError as eo:
                 pg.warn("Could not retrieve colormap ", cMapName, e)

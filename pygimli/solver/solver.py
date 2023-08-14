@@ -1256,7 +1256,7 @@ def linSolve(mat, b, solver=None, verbose=False, **kwargs):
         x = solver.solve(b)
 
         if verbose:
-            pg.info("Matrix solution:", swatch.duration())
+            pg.info("Matrix so  lution:", swatch.duration())
 
     elif solver.lower() == 'numpy':
         if verbose:

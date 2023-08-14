@@ -26,7 +26,7 @@ from .core.matrix import (BlockMatrix, Matrix, SparseMapMatrix, SparseMatrix)
 
 from .core.logger import (_, _d, _g, _r, _y, _b, critical, d, debug,
                           deprecated, renameKwarg, renameArg,
-                          error, info, setDebug, setLogLevel, setVerbose, v,
+                          error, info, debug, setDebug, setLogLevel, setVerbose, v,
                           verbose, warn)
 
 warning = warn  # convenience
@@ -357,34 +357,45 @@ class tictoc(object):
         store(key=self._key)
 
     
+__MPL_PLT__ = None
+
 # special shortcut pg.plt with lazy evaluation
 @moduleProperty
 def _plt():
     #import time
     #t0 = time.time()
-    try:
-        get_ipython().run_line_magic('matplotlib', 'ipympl')
-    except:
-        pass
+    
+    global __MPL_PLT__
 
-    import matplotlib.pyplot as plt
-    #print('############### importing plt took ', time.time() - t0)
+    if __MPL_PLT__ is None:
 
-    from .viewer.mpl import registerShowPendingFigsAtExit, hold
-    registerShowPendingFigsAtExit()
+        if rc['matplotlib'] is not None:
+            try:
+                get_ipython().run_line_magic('matplotlib', rc['matplotlib'])
+                debug('MPL notebook backend set to:', rc['matplotlib'])
+            except BaseException as e:
+                debug(f"MPL notebook backend {rc['matplotlib']} failed to be set: ", e)
+            
+        import matplotlib.pyplot as plt
+        #print('############### importing plt took ', time.time() - t0)
 
-    # plt.subplots() resets locale setting to system default .. this went
-    # horrible wrong for german 'decimal_point': ','
-    # https://github.com/matplotlib/matplotlib/issues/6706
-    # Qt5Agg resets it after importing figure;
-    # TkAgg resets it after importing pyplot.
-    # until its fixed we should maybe silently initialize the qt5agg backend &
-    # refix the locale afterwards. If someone have a plan to do.
+        from .viewer.mpl import registerShowPendingFigsAtExit, hold
+        registerShowPendingFigsAtExit()
 
-    checkAndFixLocaleDecimal_point(verbose=False)
+        # plt.subplots() resets locale setting to system default .. this went
+        # horrible wrong for german 'decimal_point': ','
+        # https://github.com/matplotlib/matplotlib/issues/6706
+        # Qt5Agg resets it after importing figure;
+        # TkAgg resets it after importing pyplot.
+        # until its fixed we should maybe silently initialize the qt5agg backend &
+        # refix the locale afterwards. If someone have a plan to do.
 
-    # Set global hold if mpl inline backend is used (as in Jupyter Notebooks)
-    if 'inline' in plt.get_backend():
-        hold(True)
+        checkAndFixLocaleDecimal_point(verbose=False)
 
-    return plt
+        # Set global hold if mpl inline backend is used (as in Jupyter Notebooks)
+        if 'inline' in plt.get_backend():
+            hold(True)
+
+        __MPL_PLT__ = plt
+
+    return __MPL_PLT__
