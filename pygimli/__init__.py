@@ -362,6 +362,11 @@ class tictoc(object):
 def _plt():
     #import time
     #t0 = time.time()
+    try:
+        get_ipython().run_line_magic('matplotlib', 'ipympl')
+    except:
+        pass
+
     import matplotlib.pyplot as plt
     #print('############### importing plt took ', time.time() - t0)
 

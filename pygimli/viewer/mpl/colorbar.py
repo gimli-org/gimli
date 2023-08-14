@@ -476,10 +476,10 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
     if hasattr(cbar, 'mappable'):
         cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
 
-
     if hasattr(cbar, 'set_ticks'):
         # cbar is a ColorBar with ticks
         cbar.set_ticks(cbarLevels)
+        #medLvl = np.median(cbarLevels)
         # cbar.set_ticklabels(cbarLevelsString)
         cbar.draw_all()
 
@@ -488,6 +488,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
 
         @ticker.FuncFormatter
         def pfMajorFormatter(x, pos):
+            #pg._g(x, prettyFloat(x), medLvl)
             return prettyFloat(x) % x
 
         try:  # mpl 3.5
