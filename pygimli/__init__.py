@@ -37,7 +37,7 @@ from .meshtools import createGrid, interpolate
 from .solver import solve
 from .utils import boxprint, cache, cut, unique, unit, cmap, randn
 from .utils import prettify as pf
-from .utils.utils import Report
+from .utils.utils import Report, Table
 def ppf(v): print(pf(v))
 
 from .viewer import show, wait, noShow, hold
@@ -241,6 +241,14 @@ class SWatches(object):
     def items(self):
         return self._sw.items()
 
+    def remove(self, key, isRoot=False):
+        if isRoot is False:
+            self._sw.pop(key, None)
+        else:
+            for k in list(self._sw.keys()):
+                if k.startswith(key):
+                    self._sw.pop(k, None)
+
 
 def tic(msg=None, key=0):
     """Start global timer. Print elapsed time with `toc()`.
@@ -346,8 +354,18 @@ def store(key=0, stop=True):
 class tictoc(object):
     """Timer class with persistant clock.
     """
-    def __init__(self, key):
-        self._key = key
+    def __init__(self, key, trace=None, reset=False):
+
+        if reset is True:
+            SWatches().remove(key, isRoot=True)
+
+        if trace is not None:
+            self._trace = trace
+        else:
+            self._trace = []
+        self._trace.append(key)
+        self._key = '/'.join(self._trace)
+        
         tic(key=self._key)
 
     def __enter__(self):
@@ -355,9 +373,92 @@ class tictoc(object):
 
     def __exit__(self, type, value, traceback):
         store(key=self._key)
-
+        self._trace.pop()
+        
     
 __MPL_PLT__ = None
+
+def timings(name):
+    """ Return table of timings for a given root swatch key name.
+    """
+    import numpy as np
+    class TTree(object):
+        def __init__(self, parent=None):
+            self.parent = parent
+            self.name = None
+            self.childs = {}
+            self.data = None
+        
+        def __getitem__(self, k):
+            names = k.split('/')
+
+            if self.name is None:
+                self.name = names[0]
+            else:
+                if names[0] != self.name:
+                    error(f'Wrong tree({self.name}) for {k}')
+            
+            if len(names) > 1:
+                if names[1] not in self.childs:
+                    self.childs[names[1]] = TTree(parent=self)
+                
+                return self.childs[names[1]]['/'.join(names[1:])]
+                        
+            return self
+
+        @property
+        def fullname(self):
+            ps = self.name
+            p = self.parent
+            while 1:
+                try:
+                    ps = p.name + "/"+ ps
+                    p = p.parent
+                except:
+                    break
+
+            return ps + ":" + str(self.data)
+
+        def __str__(self):
+            s = self.fullname + "\n"
+            for n, t in self.childs.items():
+                s += str(t)
+
+            return s
+
+    tree = TTree()
+    header = ['', 'single', 'count', 'sum', 'uncov.']
+    table = []
+    for k, s in SWatches().items():
+        if isinstance(k, str):
+            if k.startswith(name):
+
+                ts = s.stored()
+                # if len(ts) > 0:
+                #     sts = sum(ts)
+                table.append([k, np.mean(ts), len(ts), sum(ts), None])
+                
+                tree[k].data = sum(ts)
+                
+                # print(f'\t{k}: {pg.pf(sts)}s ({len(ts)} x {pg.pf(np.mean(ts)*1000)}ms)' )
+
+    #print(tree)
+
+    for t in table:
+        if len(list(tree[t[0]].childs.keys())) > 0:
+            
+            t[-1] = t[-2]
+            for n, tc in tree[t[0]].childs.items():
+                try:
+                    t[-1] -= tc.data 
+                except:
+                    pass
+
+    #print(table)
+
+    return Table(table, header)
+
+
 
 # special shortcut pg.plt with lazy evaluation
 @moduleProperty

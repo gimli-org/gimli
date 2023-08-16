@@ -634,16 +634,40 @@ const std::vector< ElementMatrix < double > > & ElementMatrixMap::mats() const{
 
 const std::vector < PosVector > & ElementMatrixMap::quadraturePoints() const {
 
-    if (this->quadrPnts_.size() != this->mats_.size()){
+// fallback #########################
+    if (disableCacheForDBG() || this->quadrPnts_.size() != this->mats_.size()){
         this->quadrPnts_.clear();
+        this->quadrPnts_.resize(this->mats_.size());
+        
+// #pragma omp parallel for schedule(dynamic, 5)
+//         for (auto &m: this->mats_){
+//             const PosVector &x(*m.x());
+//             Index cID = m.entity()->id();
+//             this->quadrPnts_[cID] = PosVector(x.size());
 
+//             for (Index i = 0; i < x.size(); i ++){
+//                 this->quadrPnts_[cID][i] = m.entity()->shape().xyz(x[i]);
+//             }
+//             cID ++;
+//         }
+
+#pragma omp parallel for schedule(dynamic, 5)
         for (auto &m: this->mats_){
-            const PosVector &x(*m.x());
-            this->quadrPnts_.push_back(PosVector(x.size()));
+            const auto &x = *m.x();
+            Index cId = m.entity()->id();
+            
+            this->quadrPnts_[cId] = PosVector(x.size());
+
+            const auto &s = m.entity()->shape();
+            const auto &N = ShapeFunctionCache::instance().shapeFunctions(s);
+
             for (Index i = 0; i < x.size(); i ++){
-                this->quadrPnts_.back()[i] = m.entity()->shape().xyz(x[i]);
+                for (Index j = 0; j < s.nodeCount(); j ++){
+                    this->quadrPnts_[cId][i] += s.node(j).pos() * N[j](x[i]);
+                }
             }
         }
+
     }
     return this->quadrPnts_;
 }

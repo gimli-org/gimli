@@ -2685,110 +2685,79 @@ def crankNicolson(times, S, I, f=None,
         raise BaseException("We need at least 2 times for "
                             "Crank-Nicolsen time discretization." + str(len(times)))
 
-    try: swatches('CN prep').start()
-    except: pass
-    
-    # print(swatches)
-    timeAssemble = []
-    timeSolve = []
-    timeMeasure = False
+    with swatches('prep'):
+        
+        if progress:
+            timeMeasure = True
 
-    if progress:
-        timeMeasure = True
+        dof = S.rows()
 
-    dof = S.rows()
+        rhs = np.zeros((len(times), dof))
+        if f is not None:
+            rhs[:] = f
 
-    rhs = np.zeros((len(times), dof))
-    if f is not None:
-        rhs[:] = f
+        u = np.zeros((len(times), dof))
 
-    u = np.zeros((len(times), dof))
+        if u0 is not None and not pg.isScalar(u0, 0):
+            u[0, :] = u0
 
-    if u0 is not None and not pg.isScalar(u0, 0):
-        u[0, :] = u0
+        if theta == 0:
+            A = I.copy()
 
-    if theta == 0:
-        A = I.copy()
+        if isinstance(solver, str):
+            solver = pg.solver.LinSolver(solver=solver)
+        if solver is None:
+            solver = pg.solver.LinSolver(solver='scipy')
 
-    if isinstance(solver, str):
-        solver = pg.solver.LinSolver(solver=solver)
-    if solver is None:
-        solver = pg.solver.LinSolver(solver='scipy')
-
-    try: swatches('CN prep').store()
-    except: pass
-    
+            
     dt = 0.0
     for n in range(1, len(times)):
         
         newDt = times[n] - times[n-1]
-        if timeMeasure:
-            pg.tic(key='CrankNicolsonLoop')
-
+        
         if newDt < 1e-8 :
             pg.critical('Cannot find delta t for times', times)
 
         if abs(newDt - dt) > 1e-8:
-            try: swatches('CN factorize').start()
-            except: pass
-            ## new dt, so we need to factorize the matrix again
-            dt = newDt
-            # pg.info('dt', dt)
-
-            A = I + S * (dt * theta)
-
-            if dirichlet is not None:
-                dirichlet.apply(A, time=times[n])
-
-            solver.factorize(A)
-
-            St = None
+            with swatches('factorize'):
             
-            try: swatches('CN factorize').store()
-            except: pass
+                ## new dt, so we need to factorize the matrix again
+                dt = newDt
+                # pg.info('dt', dt)
 
-        try: swatches('CN build').start()
-        except: pass
+                A = I + S * (dt * theta)
 
-        if theta == 0:
-            if St is None:
-                St = I - S * dt  # cache what's possible
-            b = St * u[n-1] + dt * rhs[n-1]
-        elif theta == 1:
-            b = I * u[n-1] + dt * rhs[n]
-        else:
-            if St is None:
-                St = I - S * (dt*(1.-theta))  # cache what's possible
-            b = St * u[n-1] + dt * ((1.0 - theta) * rhs[n-1] + theta * rhs[n])
+                if dirichlet is not None:
+                    dirichlet.apply(A, time=times[n])
 
-        try: swatches('CN build').store()
-        except: pass
+                solver.factorize(A)
 
-        try: swatches('CN dirichlet').start()
-        except: pass
-        if dirichlet is not None:
-            dirichlet.apply(b, time=times[n])
-        try: swatches('CN dirichlet').store()
-        except: pass
+                St = None
+                
+        with swatches('build'):
+        
+            if theta == 0:
+                if St is None:
+                    St = I - S * dt  # cache what's possible
+                b = St * u[n-1] + dt * rhs[n-1]
+            elif theta == 1:
+                b = I * u[n-1] + dt * rhs[n]
+            else:
+                if St is None:
+                    St = I - S * (dt*(1.-theta))  # cache what's possible
+                b = St * u[n-1] + dt * ((1.0 - theta) * rhs[n-1] + theta * rhs[n])
 
-        if timeMeasure:
-            timeAssemble.append(pg.dur(key='CrankNicolsonLoop', reset=True))
-
-        try: swatches('CN solve').start()
-        except: pass
-
-        u[n, :] = solver(b)
+        with swatches('dirichlet'):
+            if dirichlet is not None:
+                dirichlet.apply(b, time=times[n])
+        
+        with swatches('solve'):
+            u[n, :] = solver(b)
     
-        try: swatches('CN solve').store()
-        except: pass
-
-        if timeMeasure:
-            timeSolve.append(pg.dur(key='CrankNicolsonLoop'))
-
         if progress:
-            progress.update(
-                n, 't_prep: ' + pg.pf(timeAssemble[-1]*1000) + 'ms ' +
-                't_step: ' + pg.pf(timeSolve[-1]*1000) + 'ms')
+            progress.update(n)
+                # n, 't_prep: ' + pg.pf(timeAssemble[-1]*1000) + 'ms ' +
+                # 't_step: ' + pg.pf(timeSolve[-1]*1000) + 'ms')
 
         # if verbose and (n % verbose == 0):
         #     # print(min(u[n]), max(u[n]))

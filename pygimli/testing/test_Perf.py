@@ -4,6 +4,7 @@
 # write a correct test!
 import unittest
 import timeit
+import time
 
 import pygimli as pg
 import numpy as np
@@ -62,6 +63,37 @@ class TestPerf(unittest.TestCase):
         print((sum(pg1 * pg1)))
         print((sum(np1 * pg1)))
         print((sum(pg1 * np1)))
+
+
+    def test_tictoc(self):
+        
+        timing = []
+
+        def bar1():
+            with pg.tictoc('bar1', trace=timing):
+                time.sleep(0.1)
+
+        def bar2():
+            with pg.tictoc('bar2', trace=timing):
+                time.sleep(0.1)
+                bar1()
+                
+        def foo():
+            with pg.tictoc('foo', trace=timing):
+                for i in range(4):
+                    bar1()
+                bar2()
+
+        with pg.tictoc('foobar', trace=timing):
+            for i in range(2):
+                time.sleep(0.1) # uncovered
+                # with pg.tictoc('uncount', trace=timing):
+                #     time.sleep(0.1)
+                foo()    
+
+        print(pg.timings('foobar'))
+                    
+
             
 if __name__ == '__main__':
     

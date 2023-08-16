@@ -26,7 +26,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-//#include <omp.h> need -lgomp of -fopenmp
+#include <omp.h> //need -lgomp of -fopenmp
 
 #if OPENBLAS_CBLAS_FOUND
     #include <cblas.h>
@@ -86,7 +86,8 @@ bool noCBlas(){ return __GIMLI_NO_CBLAS__; }
 
 void setThreadCount(Index nThreads){
     log(Debug, "Set amount of threads to " + str(nThreads));
-    //log(Debug, "omp_get_max_threads: " + str(omp_get_max_threads()));
+    omp_set_num_threads(nThreads);     
+    //OMP_NUM_THREADS
     //omp_set_num_threads
 #if OPENBLAS_CBLAS_FOUND
     openblas_set_num_threads(nThreads);
@@ -100,6 +101,19 @@ void setThreadCount(Index nThreads){
 
 Index threadCount(){
     return __GIMLI_THREADCOUNT__;
+}
+void threadsInfo(){
+    log(Info, "omp_get_max_threads: " + str(omp_get_max_threads()));
+    log(Info, "omp_get_num_threads: " + str(omp_get_num_threads()));
+}
+
+static bool __DISABLE_CACHE_FOR_DBG__ = false;
+
+void setDisableCacheForDBG(bool c){
+    __DISABLE_CACHE_FOR_DBG__ = c;
+}
+bool disableCacheForDBG(){
+    return __DISABLE_CACHE_FOR_DBG__;
 }
 
 

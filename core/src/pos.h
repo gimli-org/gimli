@@ -49,6 +49,8 @@ DLLEXPORT R3Vector r3(const RVector & x, const RVector & y, const RVector & z);
     
 DLLEXPORT RVector absR3(const R3Vector & vPos);
 
+//DLLEXPORT std::Vector< RVector > fabs(const std::vector < R3Vector > & v);
+
 DLLEXPORT void swapXY(R3Vector & rv);
 DLLEXPORT void swapXZ(R3Vector & rv);
 DLLEXPORT void swapYZ(R3Vector & rv);

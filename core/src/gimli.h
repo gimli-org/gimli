@@ -389,6 +389,10 @@ DLLEXPORT int deepDebug();
 Default is number of CPU. */
 DLLEXPORT void setThreadCount(Index nThreads);
 DLLEXPORT Index threadCount();
+DLLEXPORT void threadsInfo();
+
+DLLEXPORT void setDisableCacheForDBG(bool c);
+DLLEXPORT bool disableCacheForDBG();
 
 /*! Decative use of cblas e.g., for matrix mult. Mainly for debug purposes. */
 DLLEXPORT void setNoCBlas(bool s);

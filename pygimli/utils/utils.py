@@ -997,7 +997,7 @@ class Report(ScoobyReport):
     """
 
     def __init__(self, additional=None, **kwargs):
-        """Initialize a scooby.Report instance."""
+        """Initialize a scooby. Report instance."""
         # Mandatory packages.
         core = ['pygimli', 'pgcore', 'numpy', 'matplotlib']
         # Optional packages.
@@ -1010,3 +1010,46 @@ class Report(ScoobyReport):
         }
 
         super().__init__(**inp)
+
+
+class Table(object):
+    """Simple table for nice formated output
+    """
+    def __init__(self, table, header):
+        """
+        """
+        self.table = table
+        self.header = header
+
+    def __str__(self):
+        if pg.isNotebook():
+            from IPython.display import display, Markdown, Latex
+            
+            from tabulate import tabulate
+            md = tabulate(self.table, headers=self.header, floatfmt=".5f", 
+                          tablefmt="pipe")
+
+            # md =  '| | | Value | Unit | Dim |\n'
+            # md += '| :- | :- | -: | :- | -:|\n'
+            # for key, v in super().items():
+            #     md += f"|{v['symbol']}|{v['descr']}"
+            #     if v['value'] > 1e5:
+            #         md += f"|{pg.pf(v['value'])}"
+            #     else:
+            #         md += f"|{v['value']}"
+            #     md += f"|{v['unit']}|{v['dim']}"
+            #     md += "\n"
+
+            display(Markdown(md))
+            return ''
+
+
+        try:
+            from tabulate import tabulate
+            return tabulate(self.table, headers=self.header, floatfmt=".5f")
+        except ImportError:
+            pass
+        except BaseException as e:
+            error(e)
+
+        return str(self.header) + '\t' + (self.table)
