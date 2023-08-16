@@ -632,6 +632,10 @@ const std::vector< ElementMatrix < double > > & ElementMatrixMap::mats() const{
     return mats_;
 }
 
+void ElementMatrixMap::quadraturePoints_DBG() const {
+    quadraturePoints();
+}
+
 const std::vector < PosVector > & ElementMatrixMap::quadraturePoints() const {
 
 // fallback #########################

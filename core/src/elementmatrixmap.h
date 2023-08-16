@@ -186,6 +186,9 @@ public:
     void setDof(Index a) { this->dofA_ = a; }
     void setDof(Index a, Index b) { this->dofA_ = a; this->dofB_ = b;}
 
+
+    void quadraturePoints_DBG() const;
+
 protected:
     std::vector< ElementMatrix < double > > mats_;
     mutable std::vector < PosVector > quadrPnts_; // cache Q for mats_
