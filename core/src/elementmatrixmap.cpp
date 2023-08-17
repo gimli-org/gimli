@@ -624,7 +624,9 @@ void ElementMatrixMap::collectQuadraturePoints() const {
     this->quadrPnts_.clear();
     this->quadrPnts_.resize(this->mats_.size());
 
-#pragma omp parallel for schedule(dynamic, 5)
+// run with setenv omp_schedule “dynamic,5”
+//#pragma omp parallel for schedule(dynamic, 5)
+#pragma omp parallel for schedule(runtime)
     for (auto &m: this->mats_){
         const auto &x = *m.x();
         Index cId = m.entity()->id();
