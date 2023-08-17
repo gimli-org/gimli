@@ -230,13 +230,25 @@ DEFINE_PY_VEC_UNARY_OPERATOR__(tanh,  TANH)
     inline RVector mag(const CVector & a){return abs(a);}
 
 
-    //** maybe better to move these instantiation into libgimli, but why should the lib have unused template symbols??
-    // explicit instantiaion leads to duplicate symbols for architecture arm64 
-    // if the symbols allready exists, extern to mark them
+//** maybe better to move these instantiation into libgimli, but why should the lib have unused template symbols??
+// explicit instantiaion leads to duplicate symbols for architecture arm64 
+// if the symbols allready exists, extern to mark them
+
+#define DEFINE_COMPARE_OPERATOR__(OP) \
+extern template BVector operator OP (const GIMLI::RVector & v1, const GIMLI::RVector & v2); \
+extern template BVector operator OP (const GIMLI::IVector & v1, const GIMLI::IVector & v2); \
+
+DEFINE_COMPARE_OPERATOR__(<)
+DEFINE_COMPARE_OPERATOR__(<=)
+DEFINE_COMPARE_OPERATOR__(>=)
+DEFINE_COMPARE_OPERATOR__(>)
+#undef DEFINE_COMPARE_OPERATOR__
 
 #define DEFINE_COMPARE_OPERATOR__(OP) \
 extern template BVector operator OP (const std::vector < GIMLI::SIndex > & vec, const GIMLI::SIndex & v); \
 extern template BVector operator OP (const std::vector < GIMLI::Index > & vec, const GIMLI::Index & v); \
+extern template BVector operator OP (const GIMLI::RVector & vec, const double & v); \
+extern template BVector operator OP (const GIMLI::RVector & vec, int v); \
 
 DEFINE_COMPARE_OPERATOR__(<)
 DEFINE_COMPARE_OPERATOR__(<=)
@@ -244,6 +256,9 @@ DEFINE_COMPARE_OPERATOR__(>=)
 DEFINE_COMPARE_OPERATOR__(==)
 DEFINE_COMPARE_OPERATOR__(!=)
 DEFINE_COMPARE_OPERATOR__(>)
+#undef DEFINE_COMPARE_OPERATOR__
+
+
 
     extern template class Vector< bool >;
     extern template class Vector< double >;

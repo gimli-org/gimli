@@ -116,8 +116,6 @@ pgcore.RVector.__round__ = np_round__
 
 def _invertBVector_(self):
     return pgcore.inv(self)
-
-
 pgcore.BVector.__invert__ = _invertBVector_
 pgcore.BVector.__inv__ = _invertBVector_
 
@@ -128,15 +126,27 @@ def _lowerThan_(self, v2):
     Overwrite bvector = v1 < v2 since there is a wrong operator due to the
     boost binding generation
     """
+    if isinstance(v2, int):
+        return self < float(v2) 
     return pgcore.inv(self >= v2)
-
-
 pgcore.RVector.__lt__ = _lowerThan_
 pgcore.R3Vector.__lt__ = _lowerThan_
 pgcore.BVector.__lt__ = _lowerThan_
 pgcore.CVector.__lt__ = _lowerThan_
 pgcore.IVector.__lt__ = _lowerThan_
 pgcore.IndexArray.__lt__ = _lowerThan_
+
+
+__pgcore_RVector___gt__ = pgcore.RVector.__gt__
+def _greaterThan_(self, v2):
+    """ Overwrite bvector = v1 > v2 since there is a wrong default conversion
+    from v2 of type int -> v2 (RVector(v2))
+    boost binding generation
+    """
+    if isinstance(v2, int):
+        return self > float(v2)
+    return __pgcore_RVector___gt__(self, v2)
+pgcore.RVector.__gt__ = _greaterThan_
 
 ######################
 # special constructors
@@ -518,7 +528,7 @@ def __getValMatrix(self, idx):
 
 pgcore.RMatrix.__setitem__ = __setVal
 pgcore.RDenseMatrix.__setitem__ = __setVal
-#pgcore.RMatrix.__getitem__ = __getVal  # inuse? very slow -- inline is better
+pgcore.RMatrix.__getitem__ = __getValMatrix  # inuse? very slow -- inline is better
 
 pgcore.RVector.__setitem__ = __setVal
 pgcore.RVector.__getitem__ = __getVal  # very slow -- inline is better

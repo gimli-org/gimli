@@ -155,46 +155,41 @@ public:
 
         CPPUNIT_ASSERT_THROW(v1.setVal(1, -1), std::out_of_range);
         CPPUNIT_ASSERT_THROW(v1.setVal(1, 11), std::out_of_range);
-
         //** setVal(const ValueType & val, const BVector & bv)
         CPPUNIT_ASSERT(sum(v2.setVal(2, BVector(v2.size(), true))) == 20);
         CPPUNIT_ASSERT(sum(v2.setVal(1, BVector(v2.size(), false))) == 20);
         CPPUNIT_ASSERT(sum(v2.setVal(1, BVector(v2.size(), true))) == 10);
         CPPUNIT_ASSERT_THROW(v1.setVal(1, BVector(5)), std::length_error);
-
         CPPUNIT_ASSERT(sum(v3.setVal(v1, 0, 10)) == 55);
+
         CPPUNIT_ASSERT(sum(v3.addVal(v2, 5, 10)) == 60);
         CPPUNIT_ASSERT(sum(v3.setVal(1.0)) == 10);
-
         CPPUNIT_ASSERT(sum(v3.setVal(2.0, find(v1 > 5))) == 15);
 
         RVector v4(5, 3.0);
         CPPUNIT_ASSERT(sum(v3.setVal(v4, 5, 10)) == 20);
         CPPUNIT_ASSERT(sum(v3.addVal(v4, 5, 10)) == 35);
-
         //** setVal(const ValueType & val, Index start, SIndex end)
-        // set from 0 to end == 1
-        CPPUNIT_ASSERT(sum(v1.setVal(1.0, 0, -1)) == 10);
+        // set from 0 to end == size-1
+        v1*=0; CPPUNIT_ASSERT(sum(v1.setVal(1.0, 0, -1)) == 9);
         // set from 5 to end == 0
-        CPPUNIT_ASSERT(sum(v1.setVal(0.0, 5, 100)) == 5);
+        v1*=0; CPPUNIT_ASSERT(sum(v1.setVal(1.0, 5, 100)) == 5);
         // set from 5 to 7 == 1
-        CPPUNIT_ASSERT(sum(v1.setVal(1.0, 5, 7)) == 7);
+        v1*=0; CPPUNIT_ASSERT(sum(v1.setVal(1.0, 5, 7)) == 2);
         // set from -1 to 7 -> from 7 to 7 == 1
-        CPPUNIT_ASSERT(sum(v1.setVal(1.0, -1, 7)) == 7);
+        v1*=0; CPPUNIT_ASSERT_THROW(v1.setVal(1.0, -1, 7), std::out_of_range);
         // set from 10 to 7 -> from 7 to 7 == 1
-        CPPUNIT_ASSERT(sum(v1.setVal(1.0, 10, 7)) == 7);
+        v1*=0; CPPUNIT_ASSERT_THROW(v1.setVal(1.0, 10, 7), std::out_of_range);
         // set from 0 to 17 -> from 0 to 10 == 1
-        CPPUNIT_ASSERT(sum(v1.setVal(1.0, 0, 17)) == 10);
-        // set from 0 to -2 -> from 0 to 10 == 1
-        CPPUNIT_ASSERT(sum(v1.setVal(1.0, 0, -2)) == 10);
-
+        v1*=0; CPPUNIT_ASSERT(sum(v1.setVal(1.0, 0, 17)) == 10);
+        // set from 0 to -2 -> from 0 to 10-2 == 1
+        v1*=0; CPPUNIT_ASSERT(sum(v1.setVal(1.0, 0, -2)) == 8);
         //**  setVal(const Vector < ValueType > & vals, const IndexArray & iArray)
 
-        CPPUNIT_ASSERT(sum(v1.setVal(v4(find(v4 > 0)), find(v4 > 0))) == 20);
+        v1*=0; CPPUNIT_ASSERT(sum(v1.setVal(v4(find(v4 > 0)), find(v4 > 0))) == sum(v4));
         // set v1[1]=2
         CPPUNIT_ASSERT(v1.setVal(RVector(1,2), IndexArray(1,1))[1] == 2);
-        CPPUNIT_ASSERT(sum(v1.setVal(RVector(1,2), IndexArray(1,1))) == 19);
-
+        v1*=0; CPPUNIT_ASSERT(sum(v1.setVal(RVector(1,2), IndexArray(1,1))) == 2);
         CPPUNIT_ASSERT_THROW(v1.setVal(RVector(1,1), IndexArray(1,10)),
                               std::out_of_range);
         CPPUNIT_ASSERT_THROW(v1.setVal(v4(find(v4 > 0)), find(v4 > 3)),
@@ -278,7 +273,7 @@ public:
                                                 (::floor(v1_->size() / 2.0) +
                                                     (v1_->size() / 2.0 - ::floor(v1_->size() / 2.0))));
         CPPUNIT_ASSERT(GIMLI::sum(v - v) == 0.0);
-        CPPUNIT_ASSERT(GIMLI::sum(v(0, -1) - v(0, v.size())) == 0.0);
+        CPPUNIT_ASSERT(GIMLI::sum(v(0, -1) - v(0, v.size()-1)) == 0.0);
         CPPUNIT_ASSERT(min(v) == 1.0);
         CPPUNIT_ASSERT(max(v) == v1_->size());
         RVector vs(10);

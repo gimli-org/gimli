@@ -39,7 +39,7 @@ inline void throwToImplement(const std::string & errString){
 
 inline void throwRangeError(const std::string & errString, int idx, int low, int high){
     std::stringstream str(errString);
-    str << " " << idx << " [" << low << ".." << high << ")" << std::endl;
+    str << " Range error: " << idx << " is outside [" << low << ".." << high << ")" << std::endl;
 #ifndef USE_EXIT_CODES
     throw std::out_of_range(str.str());
 #else

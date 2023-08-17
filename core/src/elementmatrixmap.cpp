@@ -357,19 +357,6 @@ DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_NODE_IMPL(std::vector< std::vector< RSmallMat
 #undef DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_NODE_IMPL
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 #define DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(A_TYPE) \
 void ElementMatrixMap::integrate(const ElementMatrixMap & B, const A_TYPE & f, \
                                  SparseMatrixBase & R, const double & scale) const {\
@@ -628,50 +615,36 @@ DEFINE_ASSEMBLER_B(std::vector< RSmallMatrix >)// const matrix for each cell
 DEFINE_ASSEMBLER_B(std::vector< RVector3 >)  // const Pos for each cell
 #undef DEFINE_ASSEMBLER_B
 
-const std::vector< ElementMatrix < double > > & ElementMatrixMap::mats() const{
+const std::vector< ElementMatrix < double > > & ElementMatrixMap::mats() const {
     return mats_;
 }
 
-void ElementMatrixMap::quadraturePoints_DBG() const {
-    quadraturePoints();
-}
-
-const std::vector < PosVector > & ElementMatrixMap::quadraturePoints() const {
-
-// fallback #########################
-    if (disableCacheForDBG() || this->quadrPnts_.size() != this->mats_.size()){
-        this->quadrPnts_.clear();
-        this->quadrPnts_.resize(this->mats_.size());
+void ElementMatrixMap::collectQuadraturePoints() const {
         
-// #pragma omp parallel for schedule(dynamic, 5)
-//         for (auto &m: this->mats_){
-//             const PosVector &x(*m.x());
-//             Index cID = m.entity()->id();
-//             this->quadrPnts_[cID] = PosVector(x.size());
-
-//             for (Index i = 0; i < x.size(); i ++){
-//                 this->quadrPnts_[cID][i] = m.entity()->shape().xyz(x[i]);
-//             }
-//             cID ++;
-//         }
+    this->quadrPnts_.clear();
+    this->quadrPnts_.resize(this->mats_.size());
 
 #pragma omp parallel for schedule(dynamic, 5)
-        for (auto &m: this->mats_){
-            const auto &x = *m.x();
-            Index cId = m.entity()->id();
-            
-            this->quadrPnts_[cId] = PosVector(x.size());
+    for (auto &m: this->mats_){
+        const auto &x = *m.x();
+        Index cId = m.entity()->id();
+        
+        this->quadrPnts_[cId] = PosVector(x.size());
 
-            const auto &s = m.entity()->shape();
-            const auto &N = ShapeFunctionCache::instance().shapeFunctions(s);
+        const auto &s = m.entity()->shape();
+        const auto &N = ShapeFunctionCache::instance().shapeFunctions(s);
 
-            for (Index i = 0; i < x.size(); i ++){
-                for (Index j = 0; j < s.nodeCount(); j ++){
-                    this->quadrPnts_[cId][i] += s.node(j).pos() * N[j](x[i]);
-                }
+        for (Index i = 0; i < x.size(); i ++){
+            for (Index j = 0; j < s.nodeCount(); j ++){
+                this->quadrPnts_[cId][i] += s.node(j).pos() * N[j](x[i]);
             }
         }
+    }
+}
 
+std::vector < PosVector > & ElementMatrixMap::quadraturePoints() const {
+    if (disableCacheForDBG() || this->quadrPnts_.size() != this->mats_.size()){
+        collectQuadraturePoints();
     }
     return this->quadrPnts_;
 }

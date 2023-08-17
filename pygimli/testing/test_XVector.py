@@ -180,6 +180,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(pg.math.pow(v, 2.0)), 20)
         self.assertEqual(sum(pg.math.pow(v, v)), 20)
 
+
     def test_R3VectorIndex(self):
         r3 = pg.core.R3Vector(10)
 
@@ -198,6 +199,7 @@ class TestRVectorMethods(unittest.TestCase):
         d = pg.utils.dist(r3)
         self.assertEqual(sum(d), 1+2+3)
 
+
     def test_Slices(self):
 
         a = pg.Vector(np.arange(10.))
@@ -208,6 +210,7 @@ class TestRVectorMethods(unittest.TestCase):
         np.testing.assert_array_equal(a[::], np.arange(10.)[::])
         np.testing.assert_array_equal(a[:-1], np.arange(10.)[:-1])
         np.testing.assert_array_equal(a[:-9], np.arange(10.)[:-9])      
+        
         np.testing.assert_array_equal(a[:-10], np.arange(10.)[:-10])      
 
         np.testing.assert_array_equal(a[::1], np.arange(10.)[::1])
@@ -221,6 +224,8 @@ class TestRVectorMethods(unittest.TestCase):
 
         np.testing.assert_array_equal(a[0:3:-1], np.arange(10.)[0:3:-1])
         np.testing.assert_array_equal(a[0:3:-2], np.arange(10.)[0:3:-2])
+
+        np.testing.assert_array_equal(sum(a[:-1]), sum(a[:len(a)-1]))
 
     def test_IndexAccess(self):
         # (double) array/vector
@@ -313,7 +318,7 @@ class TestRVectorMethods(unittest.TestCase):
         b = pg.Vector(10, 2)
 
         np.testing.assert_equal(len(a < 1), 10)
-        np.testing.assert_equal(len(a > 2), 10)
+        np.testing.assert_equal(len(b > 1), 10)
 
         np.testing.assert_equal(len(a < b), 10)
         np.testing.assert_equal(len(a > b), 10)
@@ -374,9 +379,9 @@ class TestMatrixMethods(unittest.TestCase):
 
         A = pg.core.RMatrix(2,2)
         A = pg.core.RDenseMatrix(2,2)
-        print(type(A[0] + 1.0))
-        print(A[0] + 1)
-        print(A[0] + 1)
+        # print(type(A[0] + 1.0))
+        # print(A[0] + 1)
+        # print(A[0] + 1)
         # for v in A[0] + 1:
         #     print(v)
         # for v in A[0] + 1:

@@ -486,20 +486,6 @@ public:
     }
 #endif
 
-//         template < class T > operator const Vector< T >(){
-//         //COUTMARKER
-//         Vector< T > f(this->size());
-//         for (Index i = 0; i < this->size(); i ++){ f[i] = T(data_[i]); }
-//         return f;
-//     }
-
-//     template < > operator Vector< double >(){
-//         COUTMARKER
-//         Vector< double > f(this->size());
-//         for (Index i = 0; i < this->size(); i ++){ f[i] = std::real(data_[i]); }
-//         return f;
-//     }
-
     /*! Set the value to the whole array. Same as fill(val) */
     inline Vector< ValueType > & setVal(const ValueType & val) {
         this->fill(val);
@@ -509,7 +495,8 @@ public:
     /*! Set the val where bv is true.
      * Throws out of length exception if sizes dismatch.
      * Same as setVal(val, find(bv)) but faster. */
-    inline Vector< ValueType > & setVal(const ValueType & val, const BVector & bv) {
+    inline Vector< ValueType > & setVal(const ValueType & val,
+                                        const BVector & bv) {
         ASSERT_EQUAL(this->size(), bv.size())
         for (Index i = 0; i < bv.size(); i ++ ) if (bv[i]) data_[i] = val;
         return *this;
@@ -517,23 +504,39 @@ public:
 
     /*! Set the value val at index i.
      * Throws out of range exception if index is not in [0, size). */
-    inline Vector< ValueType > & setVal(const ValueType & val, Index i) {
+    inline Vector< ValueType > & setVal(const ValueType & val,
+                                        Index i) {
         ASSERT_RANGE(i, 0, this->size())
         data_[i] = val;
         return *this;
     }
 
+    /*! Return valid slice pair [start, end) after size correction and range assertion. 
+    End will be set to max size for end > size or to size + end for end < 0.
+    Start larger end throws range exception. */
+    std::pair < Index, Index > slice(Index start, SIndex end) const {
+        Index e = (Index) end;
+        if (end < 0){
+            e = max(start, size_ + end);
+        }
+        return slice(start, e);
+    }
+    /*! Return valid slice pair [start, end) after size correction and range assertion. 
+    End will be set to max size for end > size.
+    Start larger end throws range exception. */
+    std::pair < Index, Index > slice(Index start, Index end) const {
+        Index e = min(end, size_);
+        if (start != e) {
+            ASSERT_RANGE(start, 0, e)
+        }
+        return std::pair < Index, Index >(start, e);
+    }
 
-    /*! Set a value at slice range from [start, end).
-     * end will set to this->size() for < 0 or greater size().
-     * start will set to end for < 0 or greater end */
+    /*! Set values at slice. See \ref slice. */
     inline Vector< ValueType > & setVal(const ValueType & val,
                                         Index start, SIndex end) {
-        Index e = (Index)end;
-        if (e > this->size()) e = this->size();
-        if (start > e) start = e;
-
-        std::fill(data_+ start, data_ + e, val);
+        std::pair < Index, Index > se(slice(start, end));
+        std::fill(data_ + se.first, data_ + se.second, val);
         return *this;
     }
 
@@ -574,29 +577,21 @@ public:
         return *this;
     }
 
-
-    /*! Set values from slice. If vals.size() == this.size() copy vals[start, end) -> this[start, end) else
-        assume vals is a slice itsself, so copy vals[0, end-start] -> this[start, end)
-         if end larger than this size() sets end = size. Throws exception on violating boundaries. */
+    /*! Set values at slice. See \ref slice. */
     inline Vector< ValueType > & setVal(const Vector < ValueType > & vals,
-                                        Index start, Index end) {
-        if (start > this->size()){
-            throwLengthError(WHERE_AM_I + " vals.size() < start " +
-                                str(vals.size()) + " " + str(start) + " " + str(end)) ;
-        }
+                                        Index start, SIndex end) {
+        
+        std::pair < Index, Index > se(slice(start, end));
 
-        if (end > this->size()) end = this->size();
-        if (start > end) start = end;
-
-        if (vals.size() < (end - start)){
+        if (vals.size() < (se.second - se.first)){
             throwLengthError( WHERE_AM_I + " vals.size() < (end-start) " +
-                                str(vals.size()) + " " + str(start) + " " + str(end)) ;
+                              str(vals.size()) + " " + str(se.first) + " " + str(se.second)) ;
         }
 
         if (this->size() == vals.size()){
-            std::copy(&vals[start], &vals[end], &data_[start]);
+            std::copy(&vals[se.first], &vals[se.second], &data_[se.first]);
         } else {
-            std::copy(&vals[0], &vals[end - start], &data_[start]);
+            std::copy(&vals[0], &vals[se.second - se.first], &data_[se.first]);
         }
         return *this;
     }
@@ -612,30 +607,28 @@ public:
         return setVal(v, size_ -1);
     }
 
-    /*! Like setVal(vals, start, end) instead copy use += */
+    /*! Add values at slice. See \ref slice. */
     inline Vector< ValueType > & addVal(const Vector < ValueType > & vals,
                                         Index start, Index end) {
-        if (end > this->size()) end = this->size();
-        if (start > end) start = end;
+        std::pair < Index, Index > se(slice(start, end));
 
-        if (vals.size() < end - start){
+        if (vals.size() < se.second - se.first){
             throwLengthError(WHERE_AM_I + " vals.size() < (end-start) " +
                                 str(vals.size()) + " " + str(start) + " " + str(end)) ;
         }
 
         if (this->size() == vals.size()){
-            for (Index i = start; i < end; i ++) data_[i] += vals[i];
+            for (Index i = se.first; i < se.second; i ++) data_[i] += vals[i];
         } else {
-            for (Index i = start; i < end; i ++) data_[i] += vals[i - start];
+            for (Index i = se.first; i < se.second; i ++) data_[i] += vals[i - se.first];
         }
 
         return *this;
     }
-    /*! Like setVal(vals, start, end) instead copy use -= */
+    /*! Subtract values at slice. See \ref slice. */
     inline Vector< ValueType > & subVal(const Vector < ValueType > & vals,
                                         Index start, Index end) {
-        if (end > this->size()) end = this->size();
-        if (start > end) start = end;
+        std::pair < Index, Index > se(slice(start, end));
 
         if (vals.size() < end - start){
             throwLengthError(WHERE_AM_I + " vals.size() < (end-start) " +
@@ -740,21 +733,13 @@ public:
     }
 
     Vector < ValueType > getVal(Index start, SIndex end) const {
-        Index e = (Index) end;
-        if (end < 0){
-            e = max(start, size_ + end);
-        }
-        
-        Vector < ValueType > v(e-start);
+        std::pair < Index, Index > se(slice(start, end));
 
-        if (start == e) return v;
+        Vector < ValueType > v(se.second - se.first);
 
-        if (start >= 0 && start < e){
-            std::copy(& data_[start], & data_[e], &v[0]);
-        } else {
-            throwLengthError(WHERE_AM_I + " bounds out of range " +
-                                str(start) + " " + str(end) + " " + str(size_));
-        }
+        if (se.first == se.second) return v;
+        std::copy(&data_[se.first], &data_[se.second], &v[0]);
+
         return v;
     }
 
@@ -790,9 +775,9 @@ public:
         return ret; \
     } \
 
-DEFINE_COMPARE_OPERATOR_VEC__(<=, std::less_equal)
-DEFINE_COMPARE_OPERATOR_VEC__(>=, std::greater_equal)
-DEFINE_COMPARE_OPERATOR_VEC__(>, std::greater)
+// DEFINE_COMPARE_OPERATOR_VEC__(<=, std::less_equal)
+// DEFINE_COMPARE_OPERATOR_VEC__(>=, std::greater_equal)
+// DEFINE_COMPARE_OPERATOR_VEC__(>, std::greater)
 
 #undef DEFINE_COMPARE_OPERATOR_VEC__
 
@@ -816,12 +801,12 @@ DEFINE_COMPARE_OPERATOR_VEC__(>, std::greater)
         return ret;\
     } \
 
-DEFINE_COMPARE_OPERATOR__(<, std::less)
-DEFINE_COMPARE_OPERATOR__(<=, std::less_equal)
-DEFINE_COMPARE_OPERATOR__(>=, std::greater_equal)
-DEFINE_COMPARE_OPERATOR__(==, std::equal_to)
-DEFINE_COMPARE_OPERATOR__(!=, std::not_equal_to)
-DEFINE_COMPARE_OPERATOR__(>, std::greater)
+// DEFINE_COMPARE_OPERATOR__(<, std::less)
+// DEFINE_COMPARE_OPERATOR__(<=, std::less_equal)
+// DEFINE_COMPARE_OPERATOR__(>=, std::greater_equal)
+// DEFINE_COMPARE_OPERATOR__(==, std::equal_to)
+// DEFINE_COMPARE_OPERATOR__(!=, std::not_equal_to)
+// DEFINE_COMPARE_OPERATOR__(>, std::greater)
 
 #undef DEFINE_COMPARE_OPERATOR__
 
@@ -1645,6 +1630,18 @@ operator OP (const std::vector < ValueType > & vec, const ValueType & v){ \
     for (Index i = 0; i < ret.size(); i ++) ret[i] = vec[i] OP v; \
     return ret;\
 } \
+template < class ValueType > BVector \
+operator OP (const Vector < ValueType > & vec, const ValueType & v){ \
+    BVector ret(vec.size(), false); \
+    for (Index i = 0; i < ret.size(); i ++) { ret[i] = vec[i] OP v; }\
+    return ret;\
+} \
+template < class ValueType > BVector \
+operator OP (const Vector < ValueType > & vec, int v){ \
+    BVector ret(vec.size(), false); \
+    for (Index i = 0; i < ret.size(); i ++) ret[i] = vec[i] OP v; \
+    return ret;\
+} \
 
 DEFINE_COMPARE_OPERATOR__(<)
 DEFINE_COMPARE_OPERATOR__(<=)
@@ -1654,6 +1651,26 @@ DEFINE_COMPARE_OPERATOR__(!=)
 DEFINE_COMPARE_OPERATOR__(>)
 
 #undef DEFINE_COMPARE_OPERATOR__
+
+
+#define DEFINE_COMPARE_OPERATOR__(OP) \
+template < class ValueType > BVector \
+operator OP (const Vector < ValueType > & a, const Vector < ValueType > & b){ \
+    BVector ret(a.size(), false); \
+    ASSERT_EQUAL_SIZE(a, b) \
+    for (Index i = 0; i < ret.size(); i ++) ret[i] = a[i] OP b[i]; \
+    return ret;\
+} \
+
+DEFINE_COMPARE_OPERATOR__(<)
+DEFINE_COMPARE_OPERATOR__(>)
+DEFINE_COMPARE_OPERATOR__(<=)
+DEFINE_COMPARE_OPERATOR__(>=)
+
+#undef DEFINE_COMPARE_OPERATOR__
+
+
+
 
 #define DEFINE_UNARY_COMPARE_OPERATOR__(OP, FUNCT) \
 template < class ValueType, class A > \
@@ -1674,6 +1691,8 @@ DEFINE_UNARY_COMPARE_OPERATOR__(isNaN, ISNAN)
 DEFINE_UNARY_COMPARE_OPERATOR__(isInfNaN, ISINFNAN)
 
 #undef DEFINE_UNARY_COMPARE_OPERATOR__
+
+
 
 template < class T > Vector < T > cat(const Vector< T > & a, const Vector< T > & b){
     Vector < T > c (a.size() + b.size());
@@ -1912,6 +1931,13 @@ template < class ValueType, class A >
 std::ostream & operator << (std::ostream & str, 
                             const __VectorExpr< ValueType, A > & vec){
     for (Index i = 0; i < vec.size(); i ++) str << vec[i] << " ";
+    return str;
+}
+
+template < class ValueType >
+std::istream & operator >> (std::istream & str, 
+                            Vector< ValueType > & vec){
+    THROW_TO_IMPL
     return str;
 }
 

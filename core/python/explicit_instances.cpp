@@ -53,8 +53,20 @@
 namespace GIMLI{
 
 #define DEFINE_COMPARE_OPERATOR__(OP) \
+template BVector operator OP (const GIMLI::RVector & v1, const GIMLI::RVector & v2); \
+template BVector operator OP (const GIMLI::IVector & v1, const GIMLI::IVector & v2); \
+
+DEFINE_COMPARE_OPERATOR__(<)
+DEFINE_COMPARE_OPERATOR__(<=)
+DEFINE_COMPARE_OPERATOR__(>=)
+DEFINE_COMPARE_OPERATOR__(>)
+#undef DEFINE_COMPARE_OPERATOR__
+
+#define DEFINE_COMPARE_OPERATOR__(OP) \
 template BVector operator OP (const std::vector < GIMLI::SIndex > & vec, const GIMLI::SIndex & v); \
 template BVector operator OP (const std::vector < GIMLI::Index > & vec, const GIMLI::Index & v); \
+template BVector operator OP (const GIMLI::RVector & vec, const double & v); \
+template BVector operator OP (const GIMLI::RVector & vec, int v); \
 
 DEFINE_COMPARE_OPERATOR__(<)
 DEFINE_COMPARE_OPERATOR__(<=)
@@ -62,6 +74,9 @@ DEFINE_COMPARE_OPERATOR__(>=)
 DEFINE_COMPARE_OPERATOR__(==)
 DEFINE_COMPARE_OPERATOR__(!=)
 DEFINE_COMPARE_OPERATOR__(>)
+#undef DEFINE_COMPARE_OPERATOR__
+
+
 
     template class Vector< bool >;
     template class Vector< double >;

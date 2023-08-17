@@ -151,11 +151,19 @@ public:
 
     #undef DEFINE_ASSEMBLER
 
+    /*!Performance issues here. Don't use in python until 
+    return_value_policy< bp::copy_const_reference > has been changed. */
     const std::vector< ElementMatrix < double > > & mats() const;
 
     ElementMatrix < double > * pMat(Index i){ return & mats_[i]; }
 
-    const std::vector < PosVector > & quadraturePoints() const;
+    void collectQuadraturePoints() const;
+
+    std::vector < PosVector > & quadraturePoints() const;
+    
+    std::vector < PosVector > * quadraturePointsRef(){
+        return &quadrPnts_;
+    }
     PosVector entityCenters() const;
 
     void fillSparsityPattern(RSparseMatrix & R) const ;
@@ -185,9 +193,6 @@ public:
     Index dofB() const { return this->dofB_; }
     void setDof(Index a) { this->dofA_ = a; }
     void setDof(Index a, Index b) { this->dofA_ = a; this->dofB_ = b;}
-
-
-    void quadraturePoints_DBG() const;
 
 protected:
     std::vector< ElementMatrix < double > > mats_;
