@@ -195,7 +195,7 @@ RVector Shape::N(const RVector3 & rst) const {
 }
 
 void Shape::N(const RVector3 & rst, RVector & n) const {
-    const std::vector< PolynomialFunction < double > > &N = ShapeFunctionCache::instance().shapeFunctions(*this);
+    const auto &N = ShapeFunctionCache::instance().shapeFunctions(*this);
 
     for (Index i = 0; i < N.size(); i ++) {
         n[i] = N[i](rst);

@@ -415,8 +415,10 @@ Boundary * Mesh::createPolygonFace(std::vector < Node * > & nodes, int marker, b
 }
 
 Cell * Mesh::createCell(int marker){
-    std::vector < Node * > nodes(0);
-    return createCell_< Cell >(nodes, marker, cellCount());
+    THROW_TO_IMPL
+    return 0;
+    // std::vector < Node * > nodes(0);
+    // return createCell_< Cell >(nodes, marker, cellCount());
 }
 
 Cell * Mesh::createCell(const IndexArray & idx, int marker){
@@ -427,7 +429,7 @@ Cell * Mesh::createCell(const IndexArray & idx, int marker){
 
 Cell * Mesh::createCell(std::vector < Node * > & nodes, int marker){
     switch (nodes.size()){
-        case 0: return createCell_< Cell >(nodes, marker, cellCount()); break;
+        // case 0: return createCell_< Cell >(nodes, marker, cellCount()); break;
         case 2: return createCell_< EdgeCell >(nodes, marker, cellCount()); break;
         case 3:
             switch (dimension_){
@@ -458,7 +460,10 @@ Cell * Mesh::createCell(std::vector < Node * > & nodes, int marker){
         case 13: return createCell_< Pyramid13 >(nodes, marker, cellCount()); break;
         case 15: return createCell_< TriPrism15 >(nodes, marker, cellCount()); break;
         case 20: return createCell_< Hexahedron20 >(nodes, marker, cellCount()); break;
-
+        default:{
+            print(nodes.size());
+            THROW_TO_IMPL
+        }
     }
     std::cout << WHERE_AM_I << "WHERE_AM_I << cannot determine cell for nodes: " << nodes.size() << " for dim: " << dimension_ << std::endl;
     return NULL;

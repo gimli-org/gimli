@@ -1417,7 +1417,6 @@ void ElementMatrix < double >::init(Index nCoeff, Index dofPerCoeff,
     _elastic = false;
 
     _valid = false;
-
 }
 
 template < > DLLEXPORT
@@ -1539,7 +1538,7 @@ ElementMatrix < double >::add(const ElementMatrix < double > & B,
 
 template < > DLLEXPORT
 void ElementMatrix < double >::integrate() const {
-    if (_newStyle && !this->_integrated){
+    if (_newStyle && !this->_integrated && this->_valid){
         // __M
         const RVector &w = *this->_w;
         Index nRules(w.size());
@@ -1565,19 +1564,17 @@ template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::pot(
                         const MeshEntity & ent, Index order, bool sum){
 
+    // threadsInfo();
     if (this->valid() && this->order() == order && this->_ent == &ent){
         return *this;
     }
     this->_order = order;
     this->_ent = &ent;
     this->_integrated = false;
-    //this->findWeightsAndPoints(ent, this->_w, this->_x, this->_order);
-
-    this->_w = &IntegrationRules::instance().weights(ent.shape(), this->_order);
+        
     this->_x = &IntegrationRules::instance().abscissa(ent.shape(), this->_order);
-
+    this->_w = &IntegrationRules::instance().weights(ent.shape(), this->_order);
     const PosVector &x = *this->_x;
-    // const RVector &w = *this->_w;
 
     Index nRules(_x->size());
     Index nVerts(_ent->nodeCount());
@@ -1588,14 +1585,6 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
         log(Critical, "ElementMatrix need to be initialized");
     }
     this->resize(nVerts*nCoeff, nCols);
-
-    // this->_idsR.resize(nVerts*nCoeff, 0);
-    // this->_idsC.resize(nCols, 0);
-
-    // for (Index i = 0; i < nCoeff; i++){
-    //     this->_idsR.setVal(ent.ids() + i*_dofPerCoeff + _dofOffset,
-    //                        i * nVerts, (i+1) * nVerts);
-    // }
 
     _matX.resize(nRules);
 
@@ -1612,17 +1601,17 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
     for (Index i = 0; i < nRules; i ++ ){
         for (Index n = 0; n < nCoeff; n ++ ){
             _matX[i][n].setVal(N[i], n*nVerts, (n+1)*nVerts);
-    // SET_MAT_ROW_SLICE(_matX[i], n, N[i], 1, n*nVerts, (n+1)*nVerts);
-            //_matX[i](n, seq(n*nVerts, (n+1)*nVerts)) = &N[i];
         }
     }
 
+    this->setValid(true);
     if (sum){
         this->integrate();
     }
-    // __MS(this->_ent)
-    // __MS(this->entity())
-    this->setValid(true);
+
+
+    // // __MS(this->_ent)
+    // // __MS(this->entity())
     return *this;
 }
 

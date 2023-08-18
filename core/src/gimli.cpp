@@ -103,8 +103,13 @@ Index threadCount(){
     return __GIMLI_THREADCOUNT__;
 }
 void threadsInfo(){
-    log(Info, "omp_get_max_threads: " + str(omp_get_max_threads()));
-    log(Info, "omp_get_num_threads: " + str(omp_get_num_threads()));
+    // log(Info, "omp_in_parallel: " + str(omp_in_parallel()));
+    // log(Info, "omp_get_num_procs: " + str(omp_get_num_procs()));
+    // log(Info, "omp_get_max_threads: " + str(omp_get_max_threads()));
+    // log(Info, "omp_get_num_threads: " + str(omp_get_num_threads()));
+    // log(Info, "omp_get_num_threads: " + str(omp_get_thread_num()));
+    log(Info, "omp " + str(omp_get_max_threads()) + "(" + str(omp_get_num_procs()) + "): par(" +
+        str(omp_in_parallel()) + ") " + str(omp_get_thread_num()), '/', str(omp_get_num_threads()));
 }
 
 static bool __DISABLE_CACHE_FOR_DBG__ = false;
@@ -115,7 +120,6 @@ void setDisableCacheForDBG(bool c){
 bool disableCacheForDBG(){
     return __DISABLE_CACHE_FOR_DBG__;
 }
-
 
 void PythonGILSave::save() {
     if (!saved_) {

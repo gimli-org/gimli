@@ -624,6 +624,10 @@ void ElementMatrixMap::collectQuadraturePoints() const {
     this->quadrPnts_.clear();
     this->quadrPnts_.resize(this->mats_.size());
 
+    if (!this->mats_[0].valid()){
+        log(Critical, "uninitialized element map matrix. ");
+        return;
+    }
 // run with setenv omp_schedule “dynamic,5”
 //#pragma omp parallel for schedule(dynamic, 5)
 #pragma omp parallel for schedule(runtime)
@@ -732,9 +736,19 @@ void createUMap(const Mesh & mesh, Index order, ElementMatrixMap & ret,
     ret.setDof(mesh.nodeCount()*nCoeff + dofOffset);
     ret.resize(mesh.cellCount());
 
-    for (auto &cell: mesh.cells()){
-        ret.pMat(cell->id())->pot(*cell, order, true,
-                                   nCoeff, mesh.nodeCount(), dofOffset);
+    Index nNodes = mesh.nodeCount();
+
+#pragma omp parallel for schedule(dynamic,5)
+// #pragma omp parallel for schedule(static,1)
+    // for (auto &cell: mesh.cells()){
+    //     ret.pMat(cell->id())->pot(*cell, order, true,
+    //                                nCoeff, nNodes, dofOffset);
+    // }
+        
+    for (Index i = 0; i < mesh.cellCount(); i ++ ){
+        const Cell &cell = mesh.cell(i);
+        ret.pMat(cell.id())->pot(cell, order, true,
+                                 nCoeff, nNodes, dofOffset);
     }
 }
 

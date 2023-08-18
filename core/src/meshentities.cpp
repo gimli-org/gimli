@@ -200,11 +200,12 @@ std::ostream & operator << (std::ostream & str, const TriPrism & t){
     return str;
 }
 
-MeshEntity::MeshEntity()
-    : BaseEntity(), shape_(0){
+MeshEntity::MeshEntity(Shape* shape)
+    : BaseEntity(), shape_(shape){
 }
 
 MeshEntity::~MeshEntity(){
+    delete shape_;
 }
 
 RVector3 MeshEntity::center() const {
@@ -241,6 +242,7 @@ void MeshEntity::setNodes(const std::vector < Node * > & nodes){
         std::copy(nodes.begin(), nodes.end(), &nodeVector_[0]);
         registerNodes_();
         fillShape_();
+
     } else {
         std::cerr << WHERE_AM_I << " not enough nodes to fill meshEntity " << std::endl;
     }
@@ -306,7 +308,7 @@ RVector MeshEntity::N(const RVector3 & rst) const {
 }
 
 void MeshEntity::N(const RVector3 & rst, RVector & n) const {
-    const std::vector< PolynomialFunction < double > > &N = ShapeFunctionCache::instance().shapeFunctions(*this);
+    const auto &N = ShapeFunctionCache::instance().shapeFunctions(*this);
 
     for (Index i = 0; i < N.size(); i ++) {
         n[i] = N[i](rst);
@@ -315,8 +317,7 @@ void MeshEntity::N(const RVector3 & rst, RVector & n) const {
 
 RVector MeshEntity::dNdL(const RVector3 & rst, uint i) const {
 
-    const std::vector< PolynomialFunction < double > > &dNL =
-        ShapeFunctionCache::instance().deriveShapeFunctions(*this, i);
+    const auto &dNL = ShapeFunctionCache::instance().deriveShapeFunctions(*this, i);
 
     RVector ret(dNL.size());
 
@@ -380,11 +381,11 @@ bool MeshEntity::enforcePositiveDirection(){
 
 //############### Cell ##################
 
-Cell::Cell() : MeshEntity(), attribute_(){
+Cell::Cell(Shape * shape) : MeshEntity(shape), attribute_(){
 }
 
-Cell::Cell(const std::vector < Node * > & nodes)
-    : MeshEntity(), attribute_(0.0){
+Cell::Cell(Shape * shape, const std::vector < Node * > & nodes)
+    : MeshEntity(shape), attribute_(0.0){
     this->setNodes(nodes);
 }
 
@@ -560,12 +561,12 @@ void Cell::deRegisterNodes_(){
     for (auto n: nodeVector_) n->eraseCell(this);
 }
 
-Boundary::Boundary()
-    : MeshEntity(), leftCell_(NULL), rightCell_(NULL) {
+Boundary::Boundary(Shape * shape)
+    : MeshEntity(shape), leftCell_(NULL), rightCell_(NULL) {
 }
 
-Boundary::Boundary(const std::vector < Node * > & nodes)
-    : MeshEntity(), leftCell_(NULL), rightCell_(NULL) {
+Boundary::Boundary(Shape * shape, const std::vector < Node * > & nodes)
+    : MeshEntity(shape), leftCell_(NULL), rightCell_(NULL) {
     this->setNodes(nodes);
 }
 
@@ -615,13 +616,11 @@ void Boundary::swapNorm(bool withNeighbours){
 }
 
 NodeBoundary::NodeBoundary(const std::vector < Node * > & nodes)
-    : Boundary(nodes){
-    shape_ = new NodeShape(this);
+    : Boundary(new NodeShape(this), nodes){
 }
 
 NodeBoundary::NodeBoundary(Node & n1)
-    : Boundary() {
-    shape_ = new NodeShape(this);
+    : Boundary(new NodeShape(this)) {
     setNodes(n1);
 }
 
@@ -655,17 +654,15 @@ RVector3 NodeBoundary::norm() const{
 }
 
 Edge::Edge(const std::vector < Node * > & nodes)
-    : Boundary(nodes){
-    shape_ = new EdgeShape(this);
+    : Boundary(new EdgeShape(this), nodes){
 }
 
-Edge::Edge(Node & n1, Node & n2){
-    shape_ = new EdgeShape(this);
+Edge::Edge(Node & n1, Node & n2)
+    : Boundary(new EdgeShape(this)){
     setNodes(n1, n2);
 }
 
 Edge::~Edge(){
-    delete shape_;
 }
 
 void Edge::setNodes(Node & n1, Node & n2){
@@ -737,7 +734,8 @@ int Edge::swap(){
 //     return shape_->N(L);
 // }
 
-Edge3::Edge3(const std::vector < Node * > & nodes) : Edge(nodes){
+Edge3::Edge3(const std::vector < Node * > & nodes)
+    : Edge(nodes){
 }
 
 Edge3::~Edge3(){
@@ -753,17 +751,15 @@ std::vector < PolynomialFunction < double > > Edge3::createShapeFunctions() cons
 }
 
 TriangleFace::TriangleFace(const std::vector < Node * > & nodes)
-    : Boundary(nodes){
-    shape_ = new TriangleShape(this);
+    : Boundary(new TriangleShape(this), nodes){
 }
 
-TriangleFace::TriangleFace(Node & n1, Node & n2, Node & n3){
-    shape_ = new TriangleShape(this);
+TriangleFace::TriangleFace(Node & n1, Node & n2, Node & n3)
+    : Boundary(new TriangleShape(this)){
     setNodes(n1, n2, n3);
 }
 
 TriangleFace::~TriangleFace(){
-    delete shape_;
 }
 
 std::vector < PolynomialFunction < double > > TriangleFace::createShapeFunctions() const {
@@ -779,7 +775,8 @@ void TriangleFace::setNodes(Node & n1, Node & n2, Node & n3){
     MeshEntity::setNodes(nodes);
 }
 
-Triangle6Face::Triangle6Face(const std::vector < Node * > & nodes) : TriangleFace(nodes){
+Triangle6Face::Triangle6Face(const std::vector < Node * > & nodes)
+    : TriangleFace(nodes){
 }
 
 Triangle6Face::~Triangle6Face(){
@@ -798,17 +795,15 @@ RVector3 Triangle6Face::rst(uint i) const {
 
 
 QuadrangleFace::QuadrangleFace(const std::vector < Node * > & nodes)
-    : Boundary(nodes){
-    shape_ = new QuadrangleShape(this);
+    : Boundary(new QuadrangleShape(this), nodes){
 }
 
-QuadrangleFace::QuadrangleFace(Node & n1, Node & n2, Node & n3, Node & n4){
-    shape_ = new QuadrangleShape(this);
+QuadrangleFace::QuadrangleFace(Node & n1, Node & n2, Node & n3, Node & n4)
+    : Boundary(new QuadrangleShape(this)){
     setNodes(n1, n2, n3, n4);
 }
 
 QuadrangleFace::~QuadrangleFace(){
-    delete shape_;
 }
 
 void QuadrangleFace::setNodes(Node & n1, Node & n2, Node & n3, Node & n4){
@@ -825,7 +820,8 @@ std::vector < PolynomialFunction < double > > QuadrangleFace::createShapeFunctio
     return createPolynomialShapeFunctions(*this, 2, true, true);
 }
 
-Quadrangle8Face::Quadrangle8Face(const std::vector < Node * > & nodes) : QuadrangleFace(nodes){
+Quadrangle8Face::Quadrangle8Face(const std::vector < Node * > & nodes)
+    : QuadrangleFace(nodes){
 }
 
 Quadrangle8Face::~Quadrangle8Face(){
@@ -844,8 +840,7 @@ std::vector < PolynomialFunction < double > > Quadrangle8Face::createShapeFuncti
 }
 
 PolygonFace::PolygonFace(const std::vector < Node * > & nodes)
-    : Boundary(nodes){
-    shape_ = new PolygonShape(this);
+    : Boundary(new PolygonShape(this), nodes){
 }
 
 PolygonFace::~PolygonFace(){
@@ -911,20 +906,17 @@ const PolygonFace::HoleMarkerList & PolygonFace::holeMarkers() const {
 }
 
 EdgeCell::EdgeCell(const std::vector < Node * > & nodes)
-    : Cell(nodes){
-    shape_ = new EdgeShape(this);
+    : Cell(new EdgeShape(this), nodes){
     neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 EdgeCell::EdgeCell(Node & n1, Node & n2)
-    : Cell() {
-    shape_ = new EdgeShape(this);
+    : Cell(new EdgeShape(this)) {
     setNodes(n1, n2);
     neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 EdgeCell::~EdgeCell(){
-    delete shape_;
 }
 
 void EdgeCell::setNodes(Node & n1, Node & n2){
@@ -963,7 +955,8 @@ std::vector < PolynomialFunction < double > > EdgeCell::createShapeFunctions() c
 //     return dN;
 // }
 
-Edge3Cell::Edge3Cell(const std::vector < Node * > & nodes) : EdgeCell(nodes){
+Edge3Cell::Edge3Cell(const std::vector < Node * > & nodes)
+    : EdgeCell(nodes){
 }
 
 Edge3Cell::~Edge3Cell(){
@@ -979,20 +972,17 @@ std::vector < PolynomialFunction < double > > Edge3Cell::createShapeFunctions() 
 }
 
 Triangle::Triangle(const std::vector < Node * > & nodes)
-    : Cell(nodes){
-    shape_ = new TriangleShape(this);
+    : Cell(new TriangleShape(this), nodes){
     neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 Triangle::Triangle(Node & n1, Node & n2, Node & n3)
-    : Cell(){
-    shape_ = new TriangleShape(this);
+    : Cell(new TriangleShape(this)){
     setNodes(n1, n2, n3);
     neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 Triangle::~Triangle(){
-    delete shape_;
 }
 
 void Triangle::setNodes(Node & n1, Node & n2, Node & n3){
@@ -1019,7 +1009,8 @@ std::vector < Node * > Triangle::boundaryNodes(Index i) const{
     return nodes;
 }
 
-Triangle6::Triangle6(const std::vector < Node * > & nodes) : Triangle(nodes){
+Triangle6::Triangle6(const std::vector < Node * > & nodes)
+    : Triangle(nodes){
 }
 
 Triangle6::~Triangle6(){
@@ -1029,19 +1020,17 @@ std::vector < PolynomialFunction < double > > Triangle6::createShapeFunctions() 
     return createPolynomialShapeFunctions(*this, 3, true, false);
 }
 
-Quadrangle::Quadrangle(const std::vector < Node * > & nodes) : Cell(nodes){
-    shape_ = new QuadrangleShape(this);
+Quadrangle::Quadrangle(const std::vector < Node * > & nodes)
+    : Cell(new QuadrangleShape(this), nodes){
     neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 Quadrangle::Quadrangle(Node & n1, Node & n2, Node & n3, Node & n4): Cell(){
-    shape_ = new QuadrangleShape(this);
     setNodes(n1, n2, n3, n4);
     neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 Quadrangle::~Quadrangle(){
-    delete shape_;
 }
 
 void Quadrangle::setNodes(Node & n1, Node & n2, Node & n3, Node & n4){
@@ -1093,7 +1082,8 @@ std::vector < Node * > Quadrangle::boundaryNodes(Index i) const {
     return nodes;
 }
 
-Quadrangle8::Quadrangle8(const std::vector < Node * > & nodes) : Quadrangle(nodes){
+Quadrangle8::Quadrangle8(const std::vector < Node * > & nodes)
+    : Quadrangle(nodes){
 }
 
 Quadrangle8::~Quadrangle8(){
@@ -1104,19 +1094,18 @@ std::vector < PolynomialFunction < double > > Quadrangle8::createShapeFunctions(
     return createPolynomialShapeFunctions(*this, 3, true, true);
 }
 
-Tetrahedron::Tetrahedron(const std::vector < Node * > & nodes) : Cell(nodes){
-    shape_ = new TetrahedronShape(this);
+Tetrahedron::Tetrahedron(const std::vector < Node * > & nodes)
+    : Cell(new TetrahedronShape(this), nodes){
     neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
-Tetrahedron::Tetrahedron(Node & n1, Node & n2, Node & n3, Node & n4) : Cell() {
-    shape_ = new TetrahedronShape(this);
+Tetrahedron::Tetrahedron(Node & n1, Node & n2, Node & n3, Node & n4)
+    : Cell(new TetrahedronShape(this)) {
     setNodes(n1, n2, n3, n4);
     neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 Tetrahedron::~Tetrahedron(){
-    delete shape_;
 }
 
 void Tetrahedron::setNodes(Node & n1, Node & n2, Node & n3, Node & n4){
@@ -1151,7 +1140,8 @@ std::vector < Node * > Tetrahedron::boundaryNodes(Index i) const {
     return nodes;
 }
 
-Tetrahedron10::Tetrahedron10(const std::vector < Node * > & nodes) : Tetrahedron(nodes){
+Tetrahedron10::Tetrahedron10(const std::vector < Node * > & nodes)
+    : Tetrahedron(nodes){
 }
 
 Tetrahedron10::~Tetrahedron10(){
@@ -1162,13 +1152,11 @@ std::vector < PolynomialFunction < double > > Tetrahedron10::createShapeFunction
 }
 
 Hexahedron::Hexahedron(const std::vector < Node * > & nodes)
-    : Cell(nodes) {
-    shape_ = new HexahedronShape(this);
+    : Cell(new HexahedronShape(this), nodes) {
     neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 Hexahedron::~Hexahedron(){
-    delete shape_;
 }
 
 std::vector < PolynomialFunction < double > > Hexahedron::createShapeFunctions() const{
@@ -1203,11 +1191,11 @@ std::vector < Node * > Hexahedron::boundaryNodes(Index i) const {
     return nodes;
 }
 
-Hexahedron20::Hexahedron20(const std::vector < Node * > & nodes) : Hexahedron(nodes) {
+Hexahedron20::Hexahedron20(const std::vector < Node * > & nodes)
+    : Hexahedron(nodes) {
 }
 
 Hexahedron20::~Hexahedron20(){
-
 }
 
 std::vector < PolynomialFunction < double > > Hexahedron20::createShapeFunctions() const{
@@ -1222,13 +1210,11 @@ std::vector < Node * > Hexahedron20::boundaryNodes(Index i) const {
 }
 
 TriPrism::TriPrism(const std::vector < Node * > & nodes)
-    : Cell(nodes){
-    shape_ = new TriPrismShape(this);
+    : Cell(new TriPrismShape(this), nodes){
     neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 TriPrism::~TriPrism(){
-    delete shape_;
 }
 
 std::vector < PolynomialFunction < double > > TriPrism::createShapeFunctions() const{
@@ -1263,7 +1249,8 @@ std::vector < Node * > TriPrism::boundaryNodes(Index i) const {
     return nodes;
 }
 
-TriPrism15::TriPrism15(const std::vector < Node * > & nodes) : TriPrism(nodes){
+TriPrism15::TriPrism15(const std::vector < Node * > & nodes)
+    : TriPrism(nodes){
 }
 
 TriPrism15::~TriPrism15(){
@@ -1298,8 +1285,7 @@ std::vector < PolynomialFunction < double > > TriPrism15::createShapeFunctions()
 }
 
 Pyramid::Pyramid(const std::vector < Node * > & nodes)
-    : Cell(nodes){
-    shape_ = new PyramidShape(this);
+    : Cell(new PyramidShape(this), nodes){
     neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
@@ -1316,7 +1302,8 @@ std::vector < Node * > Pyramid::boundaryNodes(Index i) const {
     return std::vector < Node * > ();
 }
 
-Pyramid13::Pyramid13(const std::vector < Node * > & nodes): Pyramid(nodes){
+Pyramid13::Pyramid13(const std::vector < Node * > & nodes)
+    : Pyramid(nodes){
 }
 
 Pyramid13::~Pyramid13(){

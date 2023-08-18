@@ -106,7 +106,7 @@ class DLLEXPORT MeshEntity : public BaseEntity {
 public:
 
     /*! Default constructor.*/
-    MeshEntity();
+    MeshEntity(Shape * shape);
 
     /*! Default destructor.*/
     virtual ~MeshEntity();
@@ -224,6 +224,9 @@ protected:
 
 protected:
     /*! do not copy a mesh entity at all */
+    MeshEntity(){
+        THROW_TO_IMPL
+    }
     MeshEntity(const MeshEntity & ent){
         THROW_TO_IMPL
     }
@@ -243,10 +246,10 @@ public:
     DLLEXPORT friend std::ostream & operator << (std::ostream & str, const Cell & c);
 
     /*! Default constructor. */
-    Cell();
+    Cell(Shape * shape);
 
     /*! Construct cell from vector of nodes. */
-    Cell(const std::vector < Node * > & nodes);
+    Cell(Shape * shape, const std::vector < Node * > & nodes);
 
     /*! Default destructor. */
     virtual ~Cell();
@@ -308,6 +311,9 @@ protected:
 
 protected:
     /*! Don't call this class directly */
+    Cell(){
+       THROW_TO_IMPL
+    }
     Cell(const Cell & cell){
         std::cerr << "cell(const cell & cell)" << std::endl;
         THROW_TO_IMPL
@@ -326,8 +332,8 @@ protected:
 
 class DLLEXPORT Boundary : public MeshEntity{
 public:
-    Boundary();
-    Boundary(const std::vector < Node * > & nodes);
+    Boundary(Shape * shape);
+    Boundary(Shape * shape, const std::vector < Node * > & nodes);
     virtual ~Boundary();
 
     virtual uint rtti() const { return MESH_BOUNDARY_RTTI; }
@@ -374,6 +380,9 @@ protected:
     Cell *rightCell_;
 
 protected:
+    Boundary(){
+       THROW_TO_IMPL
+    }
     /*! Don't call this class directly */
     Boundary(const Boundary & bound){
         std::cerr << "Boundary(const Boundary & bound)" << std::endl;
@@ -861,7 +870,9 @@ public:
 protected:
 
     /*! Don't call this class directly */
-    Tetrahedron(const Tetrahedron& cell){ std::cerr << "Tetrahedron cell(const cell & cell)" << std::endl; }
+    Tetrahedron(const Tetrahedron& cell){ 
+        std::cerr << "Tetrahedron cell(const cell & cell)" << std::endl; 
+    }
 
     /*! Don't call this class directly */
     Tetrahedron & operator = (const Tetrahedron & cell){

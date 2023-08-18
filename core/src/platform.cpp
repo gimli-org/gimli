@@ -27,10 +27,13 @@
 #include <iostream>
 #include <cerrno>
 #include <cstring>
+#include "omp.h"
 
 namespace GIMLI{
 
 long numberOfCPU(){
+    return omp_get_num_procs();
+
     long nprocs = -1;
     long nprocs_max = -1;
 #if defined(WINDOWS) || defined(_WIN32)

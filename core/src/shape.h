@@ -74,6 +74,7 @@ template < class Ent > std::vector < PolynomialFunction < double > >
     return createPolynomialShapeFunctions(ent, nCoeff, pascale, serendipity, start);
 }
 
+
 class DLLEXPORT ShapeFunctionCache : public Singleton< ShapeFunctionCache > {
 public:
     friend class Singleton< ShapeFunctionCache >;
@@ -81,9 +82,10 @@ public:
     template < class Ent > const std::vector < PolynomialFunction < double > > &
     shapeFunctions(const Ent & e) const {
 
-        std::map < uint8, std::vector < PolynomialFunction < double > > >::const_iterator it = shapeFunctions_.find(e.rtti());
+        auto it = shapeFunctions_.find(e.rtti());
 
         if (it == shapeFunctions_.end()){
+            __MS(e.rtti())
             this->createShapeFunctions_(e);
             it = shapeFunctions_.find(e.rtti());
         }
@@ -93,9 +95,11 @@ public:
 
     template < class Ent > const std::vector < PolynomialFunction < double > > &
     deriveShapeFunctions(const Ent & e , uint dim) const {
-        std::map < uint8, std::vector < std::vector < PolynomialFunction < double > > > >::const_iterator it = dShapeFunctions_.find(e.rtti());
+        
+        auto it = dShapeFunctions_.find(e.rtti());
 
         if (it == dShapeFunctions_.end()) {
+            __MS(e.rtti())
             this->createShapeFunctions_(e);
             it = dShapeFunctions_.find(e.rtti());
         }
@@ -119,6 +123,8 @@ private:
     template < class Ent > void createShapeFunctions_(const Ent & e) const {
         std::vector < PolynomialFunction < double > > N = e.createShapeFunctions();
 
+
+
         #if USE_BOOST_THREAD
         //#ifdef WIN32_LEAN_AND_MEAN
         //        __MS("pls check missing mutex")
@@ -130,11 +136,12 @@ private:
         //#endif
 
         #else
-        // __MS("lock deactiated " << ShapeFunctionWriteCacheMutex__)
+            // __MS("lock " << ShapeFunctionWriteCacheMutex__)
 
             std::unique_lock < std::mutex > lock(ShapeFunctionWriteCacheMutex__);
         #endif
-
+        __MS(e.rtti())
+        threadsInfo();
 
         shapeFunctions_[e.rtti()] = N;
         dShapeFunctions_[e.rtti()] = std::vector < std::vector < PolynomialFunction < double > > >();
