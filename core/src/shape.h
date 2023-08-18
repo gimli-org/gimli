@@ -140,8 +140,8 @@ private:
 
             std::unique_lock < std::mutex > lock(ShapeFunctionWriteCacheMutex__);
         #endif
-        __MS(e.rtti())
-        threadsInfo();
+        // __MS(e.rtti())
+        //threadsInfo();
 
         shapeFunctions_[e.rtti()] = N;
         dShapeFunctions_[e.rtti()] = std::vector < std::vector < PolynomialFunction < double > > >();
