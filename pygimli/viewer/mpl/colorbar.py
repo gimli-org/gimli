@@ -468,7 +468,6 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
 
         @ticker.FuncFormatter
         def pfMajorFormatter(x, pos):
-            pg._r(x, pos)
             return prettyFloat(x) % x
 
         try:  # mpl 3.5
