@@ -6,6 +6,8 @@ import sys
 
 from .logger import info
 
+from .core import pgcore
+
 # pyGIMLi default configuration
 rc = {
     'lang': 'eng', # 'eng', 'german', 'de', 'ger'
@@ -24,6 +26,7 @@ rc = {
 
 def getCPUCount():
     """Return number of processors on multiple platoforms."""
+    return pgcore.numberOfCPU()
     # Windows
     if os.name == 'nt':
         return int(os.getenv('NUMBER_OF_PROCESSORS'))

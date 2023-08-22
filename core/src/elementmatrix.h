@@ -390,7 +390,7 @@ public:
     RVector trace() const;
 
     /*! Return traces of matX */
-    RSmallMatrix  traceX() const;
+    RSmallMatrix traceX() const;
 
     /*! Return reference to all matrices per quadrature point.*/
     const std::vector < RSmallMatrix > & matX() const { return _matX; }
@@ -410,7 +410,7 @@ public:
     // /*! Return const reference to the last active entity.*/
     // MeshEntity & rEntity() const { return (*const_cast< MeshEntity *>(_ent)); }
 
-    /*! Return const reference to quadrature points.*/
+    /*! Set quadrature points.*/
     void setX(const PosVector & p);
 
     /*! Return const reference to quadrature points.*/

@@ -736,8 +736,27 @@ void createUMap(const Mesh & mesh, Index order, ElementMatrixMap & ret,
     ret.setDof(mesh.nodeCount()*nCoeff + dofOffset);
     ret.resize(mesh.cellCount());
 
-    Index nNodes = mesh.nodeCount();
 
+    Stopwatch sw(true);
+#pragma omp parallel for schedule(dynamic,5)
+    for (auto &cell: mesh.cells()){
+        ElementMatrix <double> *e = ret.pMat(cell->id());
+        Index nVerts = cell->nodeCount();
+        e->resize(nVerts*nCoeff, nCoeff);
+        
+        Index nRules = IntegrationRules::instance().abscissa(cell->shape(), order).size();
+        
+        //Index nRules = 64;
+        e->pMatX()->resize(nRules);
+
+        for (Index i = 0; i < nRules; i ++ ){
+            (*e->pMatX())[i].resize(nCoeff, nVerts*nCoeff);
+            (*e->pMatX())[i].setZero();
+        }
+    }
+__MS("resize", sw.duration(true));
+
+    Index nNodes = mesh.nodeCount();
 #pragma omp parallel for schedule(dynamic,5)
 // #pragma omp parallel for schedule(static,1)
     // for (auto &cell: mesh.cells()){
@@ -750,6 +769,8 @@ void createUMap(const Mesh & mesh, Index order, ElementMatrixMap & ret,
         ret.pMat(cell.id())->pot(cell, order, true,
                                  nCoeff, nNodes, dofOffset);
     }
+__MS("fill", sw.duration(true));
+
 }
 
 ElementMatrixMap createUMap(const Mesh & mesh, Index order,

@@ -1456,15 +1456,12 @@ void ElementMatrix < double >::resize(Index rows, Index cols, bool setIds) {
     _ids.resize(rows);
     mat_.resize(rows, cols);
 
-    if (this->_ent && setIds){
-        Index nVerts = this->_ent->nodeCount();
-        for (Index i = 0; i < this->_nCoeff; i++){
-            this->_idsR.setVal(this->_ent->ids() + i * this->_dofPerCoeff + this->_dofOffset,
-                            i * nVerts, (i+1) * nVerts);
-        }
-    }
-    // } else {
-    //     log(Error, "Resize elementmatrix without entity.");
+    // if (this->_ent && setIds){
+    //     Index nVerts = this->_ent->nodeCount();
+    //     for (Index i = 0; i < this->_nCoeff; i++){
+    //         this->_idsR.setVal(this->_ent->ids() + i * this->_dofPerCoeff + this->_dofOffset,
+    //                         i * nVerts, (i+1) * nVerts);
+    //     }
     // }
 }
 
@@ -1565,9 +1562,9 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
                         const MeshEntity & ent, Index order, bool sum){
 
     // threadsInfo();
-    if (this->valid() && this->order() == order && this->_ent == &ent){
-        return *this;
-    }
+    // if (this->valid() && this->order() == order && this->_ent == &ent){
+    //     return *this;
+    // }
     this->_order = order;
     this->_ent = &ent;
     this->_integrated = false;
@@ -1588,7 +1585,7 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
 
     _matX.resize(nRules);
 
-    RSmallMatrix  N(nRules, nVerts);
+    RSmallMatrix N(nRules, nVerts);
 
     for (Index i = 0; i < nRules; i ++ ){
         // transpose might be better?? check
@@ -1605,9 +1602,9 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
     }
 
     this->setValid(true);
-    if (sum){
-        this->integrate();
-    }
+    // if (sum){
+    //     this->integrate();
+    // }
 
 
     // // __MS(this->_ent)
@@ -1620,7 +1617,7 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
                         const MeshEntity & ent, Index order, bool sum,
                         Index nCoeff, Index dofPerCoeff, Index dofOffset){
 
-    if (!this->valid() ||
+    if (disableCacheForDBG() || !this->valid() ||
         this->order() != order ||
         this->_ent != &ent ||
         this->_nCoeff != nCoeff){
