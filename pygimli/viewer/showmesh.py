@@ -653,7 +653,7 @@ def showAnimation(mesh, data, ax=None, **kwargs):
 
     try:
         times = mesh['times']
-    except Exception:
+    except Exception as e:
         times = None
 
     p = pg.utils.ProgressBar(len(data))
