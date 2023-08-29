@@ -37,7 +37,7 @@ namespace GIMLI{
 template < > DLLEXPORT ShapeFunctionCache * Singleton < ShapeFunctionCache >::pInstance_ = NULL;
 
 std::vector < PolynomialFunction < double > >
-createPolynomialShapeFunctions(const std::vector < RVector3 > & pnts,
+createPolynomialShapeFunctions(const std::vector < Pos > & pnts,
                                uint dim, uint nCoeff, bool pascale,
                                bool serendipity, const RVector & startVector){
     bool verbose = false;
@@ -138,8 +138,8 @@ Node & Shape::node(Index i) const {
     return *((*nodeVector_)[i]);
 }
 
-RVector3 Shape::center() const {
-    RVector3 center(0.0, 0.0, 0.0);
+Pos Shape::center() const {
+    Pos center(0.0, 0.0, 0.0);
     //** count only until node count .. shape shares nodeVector but only use the
     // outer p1 nodes
     for (uint i = 0; i < this->nodeCount(); i ++) {
@@ -160,9 +160,9 @@ double Shape::h() const {
     return _h;
 }
 
-RVector3 Shape::norm() const {
+Pos Shape::norm() const {
     THROW_TO_IMPL
-    return RVector3();
+    return Pos();
 }
 
 std::vector < PolynomialFunction < double > > Shape::createShapeFunctions() const {
@@ -188,13 +188,15 @@ std::vector < PolynomialFunction < double > > Shape::createShapeFunctions() cons
     return createPolynomialShapeFunctions(*this, nCoeff, pascale, serendipity);
 }
 
-RVector Shape::N(const RVector3 & rst) const {
+RVector Shape::N(const Pos & rst) const {
+    //# difference to Meshentity N???
+    // __M
     RVector n(nodeCount(), 0.0);
     N(rst, n);
     return n;
 }
 
-void Shape::N(const RVector3 & rst, RVector & n) const {
+void Shape::N(const Pos & rst, RVector & n) const {
     const auto &N = ShapeFunctionCache::instance().shapeFunctions(*this);
 
     for (Index i = 0; i < N.size(); i ++) {
@@ -202,13 +204,13 @@ void Shape::N(const RVector3 & rst, RVector & n) const {
     }
 }
 
-RMatrix Shape::dNdrst(const RVector3 & rst) const {
+RMatrix Shape::dNdrst(const Pos & rst) const {
     RMatrix MdNdrst(3, nodeCount());
     dNdrst(rst, MdNdrst);
     return MdNdrst;
 }
 
-void Shape::dNdrst(const RVector3 & rst, RMatrix & MdNdrst) const {
+void Shape::dNdrst(const Pos & rst, RMatrix & MdNdrst) const {
     MdNdrst *= 0.0;
 
     const std::vector< PolynomialFunction < double > > &dNx =
@@ -255,8 +257,8 @@ void Shape::createJacobian(RMatrix3 & J) const {
     }
 
     RMatrix & MdNdrst = ShapeFunctionCache::instance().cachedRMatrix(rtti(), 0);
-    this->dNdrst(RVector3(0.0, 0.0, 0.0), MdNdrst);
-//     RMatrix MdNdrst(this->dNdrst(RVector3(0.0, 0.0, 0.0)));
+    this->dNdrst(Pos(0.0, 0.0, 0.0), MdNdrst);
+//     RMatrix MdNdrst(this->dNdrst(Pos(0.0, 0.0, 0.0)));
 
     switch (this->dim()){
         case 1:{
@@ -294,13 +296,13 @@ void Shape::createJacobian(RMatrix3 & J) const {
     }
 }
 
-RVector3 Shape::xyz(const RVector3 & rst) const{
-    RVector3 xyz(0.0, 0.0, 0.0);
+Pos Shape::xyz(const Pos & rst) const{
+    Pos xyz(0.0, 0.0, 0.0);
     rst2xyz(rst, xyz);
     return xyz;
 }
 
-void Shape::rst2xyz(const RVector3 & rst, RVector3 & xyz) const{
+void Shape::rst2xyz(const Pos & rst, Pos & xyz) const{
     RVector sf(this->N(rst));
 
     for (Index i = 0; i < nodeCount(); i ++){
@@ -324,13 +326,13 @@ const RMatrix3 & Shape::invJacobian() const {
     return invJacobian_;
 }
 
-void Shape::xyz2rst(const RVector3 & xyz, RVector3 & rst) const{
+void Shape::xyz2rst(const Pos & xyz, Pos & rst) const{
 
     double err = 1., tol = 1e-10;
     uint maxiter = 200;
     uint iter = 0;
-    RVector3 dxyz(0.0, 0.0, 0.0);
-    RVector3 drst(0.0, 0.0, 0.0);
+    Pos dxyz(0.0, 0.0, 0.0);
+    Pos drst(0.0, 0.0, 0.0);
 
     double dErr = 10.0;
 //     double lastdErr = 0.0;
@@ -339,7 +341,7 @@ void Shape::xyz2rst(const RVector3 & xyz, RVector3 & rst) const{
     while (abs(dErr) > tol && iter < maxiter){
         if (err > 1000 && iter > 1){
             damping *= 0.9;
-            rst = RVector3(0.0, 0.0, 0.0);
+            rst = Pos(0.0, 0.0, 0.0);
             err = 1;
             iter = 0;
         }
@@ -367,24 +369,24 @@ void Shape::xyz2rst(const RVector3 & xyz, RVector3 & rst) const{
 //     }
 }
 
-RVector3 Shape::rst(const RVector3 & xyz) const{
-    RVector3 rst(0.0, 0.0, 0.0);
+Pos Shape::rst(const Pos & xyz) const{
+    Pos rst(0.0, 0.0, 0.0);
     xyz2rst(xyz, rst);
     return rst;
 }
 
-RVector3 Shape::rst(Index i) const {
+Pos Shape::rst(Index i) const {
     std::cout << "shape: " << rtti() << std::endl;
     THROW_TO_IMPL
 
-    return RVector3(0.0, 0.0, 0.0);
+    return Pos(0.0, 0.0, 0.0);
 }
 
-bool Shape::isInside(const RVector3 & xyz, bool verbose) const {
+bool Shape::isInside(const Pos & xyz, bool verbose) const {
      RVector sf; return isInside(xyz, sf, verbose);
 }
 
-bool Shape::isInside(const RVector3 & xyz, RVector & sf, bool verbose) const {
+bool Shape::isInside(const Pos & xyz, RVector & sf, bool verbose) const {
     //** works only for dimensional aligned shapes, i.e, Edge 1D (x), Triangle 2D (x,y) etc.
     sf = N(rst(xyz));
     double minsf = min(sf);
@@ -405,7 +407,7 @@ Plane Shape::plane() const{
 
     while (lastID < this->nodeCount()){
         // search for a valid plane for this shape
-        RVector3 n(node(0).pos().norm(node(1).pos(), node(lastID).pos()));
+        Pos n(node(0).pos().norm(node(1).pos(), node(lastID).pos()));
         if (std::fabs(n.abs() - 1.0) < TOLERANCE){
             Plane plane(node(0).pos(), node(1).pos(), node(lastID).pos());
             return plane;
@@ -415,7 +417,7 @@ Plane Shape::plane() const{
     return Plane();
 }
 
-bool Shape::touch(const RVector3 & pos, double tol, bool verbose) const {
+bool Shape::touch(const Pos & pos, double tol, bool verbose) const {
     if (this->nodeCount() < 3) {
         log(Critical, "Shape need at least 3 nodes and should be a 3D boundary face.");
     }
@@ -435,12 +437,12 @@ bool Shape::touch(const RVector3 & pos, double tol, bool verbose) const {
 
     // __MS("'###############################'" << pos)
     while (allChecked == false){
-        RVector3 rayDir(node(rayStart).pos() -
+        Pos rayDir(node(rayStart).pos() -
                         node((rayStart+1)%nodeCount()).pos());
         needNewRay = false;
         // __MS("ray:" << rayStart << " " << rayDir)
 
-        RVector3 iP;
+        Pos iP;
 
         for (Index i = 0; i < nodeCount(); i ++){
             Line segment(node(i).pos(), node((i+1)%nodeCount()).pos());
@@ -494,14 +496,14 @@ double Shape::domainSize() const {
 
 //** Start Node specific implementation
 
-RVector3 NodeShape::norm() const {
-    return RVector3(1.0, 0.0, 0.0);
+Pos NodeShape::norm() const {
+    return Pos(1.0, 0.0, 0.0);
 }
 
-RVector3 NodeShape::rst(Index i) const {
-    return RVector3(0.0, 0.0, 0.0);
+Pos NodeShape::rst(Index i) const {
+    return Pos(0.0, 0.0, 0.0);
     log(Error, "no rst coordinate for Node shape");
-    return RVector3(0.0, 0.0, 0.0);
+    return Pos(0.0, 0.0, 0.0);
 }
 
 
@@ -510,32 +512,32 @@ double EdgeShape::length() const {
     return this->node(0).pos().dist(this->node(1).pos());
 }
 
-RVector3 EdgeShape::norm() const {
+Pos EdgeShape::norm() const {
     return this->node(0).pos().normXY(this->node(1).pos());
 }
 
-RVector3 EdgeShape::rst(Index i) const{
+Pos EdgeShape::rst(Index i) const{
     if (i < nodeCount())
-        return RVector3(EdgeCoordinates[i][0],
+        return Pos(EdgeCoordinates[i][0],
                         EdgeCoordinates[i][1],
                         EdgeCoordinates[i][2]);
     log(Error, "rst coordinate out of bounds", i);
-    return RVector3(0.0, 0.0, 0.0);
+    return Pos(0.0, 0.0, 0.0);
 }
 
-bool EdgeShape::touch(const RVector3 & pos, double tol, bool verbose) const{
+bool EdgeShape::touch(const Pos & pos, double tol, bool verbose) const{
     THROW_TO_IMPL
     return false;
 }
 
-bool EdgeShape::intersectRay(const RVector3 & start, const RVector3 & dir,
-                             RVector3 & pos){
+bool EdgeShape::intersectRay(const Pos & start, const Pos & dir,
+                             Pos & pos){
     return Line(node(0).pos(), node(1).pos()).intersectRay(start, dir, pos);
 }
 
 //** Start TRIANGLE specific implementation
-double triSize(const RVector3 & p0, const RVector3 & p1,
-               const RVector3 & p2){
+double triSize(const Pos & p0, const Pos & p1,
+               const Pos & p2){
     return ((p1 - p0).cross(p2 - p0)).abs() * 0.5;
 }
 double TriangleShape::area() const {
@@ -544,22 +546,22 @@ double TriangleShape::area() const {
                    this->node(2).pos());
 }
 
-RVector3 TriangleShape::norm() const{
-    RVector3 a(this->node(1).pos() - this->node(0).pos());
-    RVector3 b(this->node(2).pos() - this->node(0).pos());
-    RVector3 n((a).cross(b));
+Pos TriangleShape::norm() const{
+    Pos a(this->node(1).pos() - this->node(0).pos());
+    Pos b(this->node(2).pos() - this->node(0).pos());
+    Pos n((a).cross(b));
     return n.norm();
 }
 
-RVector3 TriangleShape::rst(Index i) const{
-    if (i < nodeCount()) return RVector3(TriCoordinates[i][0],
+Pos TriangleShape::rst(Index i) const{
+    if (i < nodeCount()) return Pos(TriCoordinates[i][0],
                                          TriCoordinates[i][1],
                                          TriCoordinates[i][2]);
     log(Error, "rst coordinate out of bounds", i);
-    return RVector3(0.0, 0.0, 0.0);
+    return Pos(0.0, 0.0, 0.0);
 }
 
-void TriangleShape::xyz2rst(const RVector3 & pos, RVector3 & rst ) const {
+void TriangleShape::xyz2rst(const Pos & pos, Pos & rst ) const {
     //return Shape::xyz2rst(pos, rst);
 
  //** Coordinate transformation
@@ -586,8 +588,8 @@ void TriangleShape::xyz2rst(const RVector3 & pos, RVector3 & rst ) const {
     rst[1] = (x21 * yp1 - y21 * xp1) / J; // s
 }
 
-bool TriangleShape::intersectRay(const RVector3 & start, const RVector3 & dir,
-                                 RVector3 & pos){
+bool TriangleShape::intersectRay(const Pos & start, const Pos & dir,
+                                 Pos & pos){
 
     Plane plane(node(0).pos(), node(1).pos(), node(2).pos());
     pos = plane.intersect(Line(start, start + dir*1e6));
@@ -596,20 +598,20 @@ bool TriangleShape::intersectRay(const RVector3 & start, const RVector3 & dir,
 }
 
 
-RVector3 QuadrangleShape::rst(Index i) const{
-    if (i < nodeCount()) return RVector3(QuadCoordinates[i][0],
+Pos QuadrangleShape::rst(Index i) const{
+    if (i < nodeCount()) return Pos(QuadCoordinates[i][0],
                                          QuadCoordinates[i][1],
                                          QuadCoordinates[i][2]);
     log(Error, "rst coordinate out of bounds", i);
-    return RVector3(0.0, 0.0, 0.0);
+    return Pos(0.0, 0.0, 0.0);
 }
 
 double QuadrangleShape::area() const {
-    RVector3 a(this->node(1).pos() - this->node(0).pos());
-    RVector3 b(this->node(2).pos() - this->node(0).pos());
+    Pos a(this->node(1).pos() - this->node(0).pos());
+    Pos b(this->node(2).pos() - this->node(0).pos());
     double sum = ((a).cross(b)).abs() * 0.5;
 
-    RVector3 c(this->node(3).pos() - this->node(0).pos());
+    Pos c(this->node(3).pos() - this->node(0).pos());
     sum += ((b).cross(c)).abs() * 0.5;
 
     // tri.setNodes(nodeVector_[0], nodeVector_[1], nodeVector_[2]);
@@ -630,15 +632,15 @@ double QuadrangleShape::area() const {
     //return std::fabs(this->jacobianDeterminant());
 }
 
-RVector3 QuadrangleShape::norm() const {
-    RVector3 a(this->node(1).pos() - this->node(0).pos());
-    RVector3 b(this->node(2).pos() - this->node(0).pos());
-    RVector3 n((a).cross(b));
+Pos QuadrangleShape::norm() const {
+    Pos a(this->node(1).pos() - this->node(0).pos());
+    Pos b(this->node(2).pos() - this->node(0).pos());
+    Pos n((a).cross(b));
     return n.norm();
 }
 
-bool QuadrangleShape::intersectRay(const RVector3 & start, const RVector3 & dir,
-                                    RVector3 & pos){
+bool QuadrangleShape::intersectRay(const Pos & start, const Pos & dir,
+                                    Pos & pos){
     Plane plane(node(0).pos(), node(1).pos(), node(2).pos());
     pos = plane.intersect(Line(start, start + dir*1e6));
     if (this->isInside(pos)) return true;
@@ -653,29 +655,29 @@ PolygonShape::PolygonShape(MeshEntity * ent)
 PolygonShape::~PolygonShape(){
 }
 
-RVector3 PolygonShape::norm() const{
+Pos PolygonShape::norm() const{
     return this->plane().norm();
 }
 
-RVector3 PolygonShape::rst(Index i) const {
+Pos PolygonShape::rst(Index i) const {
     log(Error, "no rst coordinate for polygon shape", i);
-    return RVector3(0.0, 0.0, 0.0);
+    return Pos(0.0, 0.0, 0.0);
 }
 
-bool PolygonShape::isInside(const RVector3 & xyz, bool verbose) const {
+bool PolygonShape::isInside(const Pos & xyz, bool verbose) const {
      THROW_TO_IMPL
      return false;
 }
 
-RVector3 TetrahedronShape::rst(Index i) const{
-    if (i < nodeCount()) return RVector3(TetCoordinates[i][0],
+Pos TetrahedronShape::rst(Index i) const{
+    if (i < nodeCount()) return Pos(TetCoordinates[i][0],
                                          TetCoordinates[i][1],
                                          TetCoordinates[i][2]);
     log(Error, "rst coordinate out of bounds", i);
-    return RVector3(0.0, 0.0, 0.0);
+    return Pos(0.0, 0.0, 0.0);
 }
 
-void TetrahedronShape::xyz2rst(const RVector3 & pos, RVector3 & rst ) const {
+void TetrahedronShape::xyz2rst(const Pos & pos, Pos & rst ) const {
     //return Shape::xyz2rst(pos, rst);
 
 //**     xp = x1 + (x2 - x1) * r + (x3 - x1) * s + (x4 - x1) * t
@@ -723,20 +725,20 @@ void TetrahedronShape::xyz2rst(const RVector3 & pos, RVector3 & rst ) const {
                     xp1 * (y21 * z31 - y31 * z21)) / J;
 }
 
-double tetVolume(const RVector3 & p0, const RVector3 & p1,
-                 const RVector3 & p2, const RVector3 & p3){
+double tetVolume(const Pos & p0, const Pos & p1,
+                 const Pos & p2, const Pos & p3){
     return 1.0 / 6.0 * std::fabs((p1 - p0).cross(p2 - p0).dot(p3 - p0));
 }
 double TetrahedronShape::volume() const {
     return tetVolume(this->node(0).pos(), this->node(1).pos(),
                      this->node(2).pos(), this->node(3).pos());
 }
-RVector3 HexahedronShape::rst(Index i) const{
-    if (i < nodeCount()) return RVector3(HexCoordinates[i][0],
+Pos HexahedronShape::rst(Index i) const{
+    if (i < nodeCount()) return Pos(HexCoordinates[i][0],
                                          HexCoordinates[i][1],
                                          HexCoordinates[i][2]);
     log(Error, "rst coordinate out of bounds", i);
-    return RVector3(0.0, 0.0, 0.0);
+    return Pos(0.0, 0.0, 0.0);
 }
 double HexahedronShape::volume() const {
     double sum = 0.0;
@@ -766,12 +768,12 @@ bool HexahedronShape::enforcePositiveDirection(){
     return false;
 }
 
-RVector3 TriPrismShape::rst(Index i) const{
-    if (i < nodeCount()) return RVector3(PrismCoordinates[i][0],
+Pos TriPrismShape::rst(Index i) const{
+    if (i < nodeCount()) return Pos(PrismCoordinates[i][0],
                                          PrismCoordinates[i][1],
                                          PrismCoordinates[i][2]);
     log(Error, "rst coordinate out of bounds", i);
-    return RVector3(0.0, 0.0, 0.0);
+    return Pos(0.0, 0.0, 0.0);
 }
 
 double TriPrismShape::volume() const{
@@ -786,8 +788,8 @@ double TriPrismShape::volume() const{
 
     return sum;
     /*
-    RVector3 a(this->node(1).pos() - this->node(0).pos());
-    RVector3 b(this->node(2).pos() - this->node(0).pos());
+    Pos a(this->node(1).pos() - this->node(0).pos());
+    Pos b(this->node(2).pos() - this->node(0).pos());
     double z41 = this->node(3).pos()[2] - this->node(0).pos()[2];
 
     return ((a).cross(b)).abs()  z41;*/
@@ -813,11 +815,11 @@ std::vector < PolynomialFunction < double > > TriPrismShape::createShapeFunction
     return ret;
 }
 
-RVector3 PyramidShape::rst(Index i) const{
-    if (i < nodeCount()) return RVector3(PyramidCoordinates[i][0],
+Pos PyramidShape::rst(Index i) const{
+    if (i < nodeCount()) return Pos(PyramidCoordinates[i][0],
                                                       PyramidCoordinates[i][1],
                                                       PyramidCoordinates[i][2]);
-    THROW_TO_IMPL; return RVector3(0.0, 0.0, 0.0);
+    THROW_TO_IMPL; return Pos(0.0, 0.0, 0.0);
 }
 
 } // namespace GIMLI

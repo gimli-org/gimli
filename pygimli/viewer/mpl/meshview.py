@@ -1333,7 +1333,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
     ----------
     ax : mpl axe instance
 
-    sensors : vector or list of RVector3
+    sensors : vector or list of Pos
         List of positions to plot.
     diam : float [None]
         Diameter (absolute in m) of circles (None leads to point distance by 4).
@@ -1416,7 +1416,7 @@ def _createParameterContraintsLines(mesh, cMat, cWeights=None):
 
     paraCenter = dict()
     for pID, vals in list(cellList.items()):
-        p = pg.RVector3(0.0, 0.0, 0.0)
+        p = pg.Pos(0.0, 0.0, 0.0)
         for c in vals:
             p += c.center()
         p /= float(len(vals))
@@ -1447,8 +1447,8 @@ def _createParameterContraintsLines(mesh, cMat, cWeights=None):
                 p2 = paraCenter[b]
 
                 if cWeights is not None:
-                    pa = pg.RVector3(p1 + (p2 - p1)/2. * (1. - cWeights[cID]))
-                    pb = pg.RVector3(p2 + (p1 - p2)/2. * (1. - cWeights[cID]))
+                    pa = pg.Pos(p1 + (p2 - p1)/2. * (1. - cWeights[cID]))
+                    pb = pg.Pos(p2 + (p1 - p2)/2. * (1. - cWeights[cID]))
                 else:
                     pa = p1
                     pb = p2

@@ -198,6 +198,59 @@ namespace GIMLI{
         RDenseMatrix ret(b.rows()); for (Index i = 0; i < b.rows(); i ++) ret[i] = a OP b[i]; return ret; } \
     inline RDenseMatrix operator OP (const RDenseMatrix & a, const RDenseMatrix & b){ \
          RDenseMatrix ret(a);   ret OP##=b; return ret; } \
+        /*!*/ \
+    inline R3Vector operator OP (const R3Vector & a, const RVector & b){ \
+        ASSERT_EQUAL_SIZE(a, b) \
+        R3Vector ret(a); for (Index i = 0; i < a.size(); i ++) ret[i] = a[i] OP b[i]; return ret; } \
+    inline R3Vector operator OP (const R3Vector & a, double b){ \
+        R3Vector ret(a); for (Index i = 0; i < a.size(); i ++) ret[i] = a[i] OP b; return ret; } \
+    inline R3Vector operator OP (double a, const R3Vector & b){ \
+        R3Vector ret(b); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
+    inline R3Vector operator OP (const R3Vector & a, int b){ \
+        R3Vector ret(a); for (Index i = 0; i < a.size(); i ++) ret[i] = a[i] OP b; return ret; } \
+    inline R3Vector operator OP (int a, const R3Vector & b){ \
+        R3Vector ret(b); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
+    inline R3Vector operator OP (const RVector & a, const R3Vector & b){ \
+        ASSERT_EQUAL_SIZE(a, b) \
+        R3Vector ret(b); for (Index i = 0; i < b.size(); i ++) ret[i] = a[i] OP b[i]; return ret; } \
+    inline stdVectorRVector operator OP (const stdVectorRVector & a, const stdVectorRVector & b){ \
+        ASSERT_EQUAL_SIZE(a, b) \
+        stdVectorRVector ret(b); for (Index i = 0; i < a.size(); i ++) ret[i] = a[i] OP b[i]; return ret; } \
+    inline stdVectorRVector operator OP (const stdVectorRVector & a, const RVector & b){ \
+        ASSERT_EQUAL_SIZE(a, b) \
+        stdVectorRVector ret(a); for (Index i = 0; i < a.size(); i ++) ret[i] = a[i] OP b[i]; return ret; } \
+    inline stdVectorRVector operator OP (const RVector & a, const stdVectorRVector & b){ \
+        ASSERT_EQUAL_SIZE(a, b) \
+        stdVectorRVector ret(b); for (Index i = 0; i < a.size(); i ++) ret[i] = a[i] OP b[i]; return ret; } \
+    inline stdVectorR3Vector operator OP (const stdVectorR3Vector & a, const stdVectorR3Vector & b){ \
+        ASSERT_EQUAL_SIZE(a, b) \
+        stdVectorR3Vector ret(a); for (Index i = 0; i < a.size(); i ++) ret[i] = a[i] OP b[i]; return ret; } \
+    inline stdVectorR3Vector operator OP (const stdVectorR3Vector & a, const R3Vector & b){ \
+        ASSERT_EQUAL_SIZE(a, b) \
+        stdVectorR3Vector ret(a); for (Index i = 0; i < a.size(); i ++) ret[i] = a[i] OP b[i]; return ret; } \
+    inline stdVectorR3Vector operator OP (const R3Vector & a, const stdVectorR3Vector & b){ \
+        ASSERT_EQUAL_SIZE(a, b) \
+        stdVectorR3Vector ret(b); for (Index i = 0; i < a.size(); i ++) ret[i] = a[i] OP b[i]; return ret; } \
+    inline stdVectorR3Vector operator OP (const stdVectorR3Vector & a, const RVector & b){ \
+        ASSERT_EQUAL_SIZE(a, b) \
+        stdVectorR3Vector ret(a); for (Index i = 0; i < a.size(); i ++) ret[i] = a[i] OP b[i]; return ret; } \
+    inline stdVectorR3Vector operator OP (const RVector & a, const stdVectorR3Vector & b){ \
+        ASSERT_EQUAL_SIZE(a, b) \
+        stdVectorR3Vector ret(b); for (Index i = 0; i < a.size(); i ++) ret[i] = a[i] OP b[i]; return ret; } \
+    inline stdVectorR3Vector operator OP (const stdVectorR3Vector & a, const stdVectorRVector & b){ \
+        ASSERT_EQUAL_SIZE(a, b) \
+        stdVectorR3Vector ret(a); for (Index i = 0; i < a.size(); i ++) ret[i] = a[i] OP b[i]; return ret; } \
+    inline stdVectorR3Vector operator OP (const stdVectorRVector & a, const stdVectorR3Vector & b){ \
+        ASSERT_EQUAL_SIZE(a, b) \
+        stdVectorR3Vector ret(b); for (Index i = 0; i < a.size(); i ++) ret[i] = a[i] OP b[i]; return ret; } \
+    inline stdVectorR3Vector operator OP (const stdVectorR3Vector & a, int b){ \
+        stdVectorR3Vector ret(a); for (Index i = 0; i < a.size(); i ++) ret[i] = a[i] OP b; return ret; } \
+    inline stdVectorR3Vector operator OP (const stdVectorR3Vector & a, double b){ \
+        stdVectorR3Vector ret(a); for (Index i = 0; i < a.size(); i ++) ret[i] = a[i] OP b; return ret; } \
+    inline stdVectorR3Vector operator OP (int a, const stdVectorR3Vector & b){ \
+        stdVectorR3Vector ret(b); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
+    inline stdVectorR3Vector operator OP (double a, const stdVectorR3Vector & b){ \
+        stdVectorR3Vector ret(b); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
 
 DEFINE_PY_VEC_OPERATOR__(+)
 DEFINE_PY_VEC_OPERATOR__(-)
@@ -249,6 +302,7 @@ extern template BVector operator OP (const std::vector < GIMLI::SIndex > & vec, 
 extern template BVector operator OP (const std::vector < GIMLI::Index > & vec, const GIMLI::Index & v); \
 extern template BVector operator OP (const GIMLI::RVector & vec, const double & v); \
 extern template BVector operator OP (const GIMLI::RVector & vec, int v); \
+extern template BVector operator OP (const GIMLI::IVector & vec, int v); \
 
 DEFINE_COMPARE_OPERATOR__(<)
 DEFINE_COMPARE_OPERATOR__(<=)
@@ -262,13 +316,13 @@ DEFINE_COMPARE_OPERATOR__(>)
 
     extern template class Vector< bool >;
     extern template class Vector< double >;
-    extern template class Vector< GIMLI::RVector3 >;
+    extern template class Vector< GIMLI::Pos >;
     extern template class Vector< GIMLI::SIndex >;
     extern template class Vector< GIMLI::Complex >;
 
     extern template class VectorIterator< bool >;
     extern template class VectorIterator< double >;
-    extern template class VectorIterator< GIMLI::RVector3 >;
+    extern template class VectorIterator< GIMLI::Pos >;
     extern template class VectorIterator< GIMLI::SIndex >;
     extern template class VectorIterator< GIMLI::Index >;
     extern template class VectorIterator< GIMLI::Complex >;
@@ -422,8 +476,8 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     extern template double degToRad(const double & deg);
     extern template double radToDeg(const double & rad);
 
-    extern template RVector3 degToRad(const RVector3 & deg);
-    extern template RVector3 radToDeg(const RVector3 & rad);
+    extern template Pos degToRad(const Pos & deg);
+    extern template Pos radToDeg(const Pos & rad);
 
     extern template void sort(const RVector & a, RVector & b, IndexArray & idx);
     extern template IndexArray sortIdx(const RVector & a);
@@ -508,28 +562,6 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
         q.rotMatrix(mat);
     }
 
-// DEPRECATED
-//     inline void interpolate_GILsave__(const Mesh & mesh, const RMatrix & data,
-//                                       const R3Vector & pos, RMatrix & iData,
-//                                       bool verbose=false){
-//         __MS("interpolate_GILsave__ 1")
-//         ALLOW_PYTHON_THREADS
-//         return interpolate(mesh, data, pos, iData, verbose);
-//     }
-//     inline RVector interpolate_GILsave__(const Mesh & mesh, const RVector & data,
-//                                           const RVector & x, const RVector & y, bool verbose = false){
-//         ALLOW_PYTHON_THREADS
-//         std::cout << "interpolate_GILsave__ 2" << std::endl;
-//         return interpolate(mesh, data, x, y, verbose);
-//     }
-//
-//     inline void interpolate_GILsave__(const Mesh & mesh, const RVector & data,
-//                                        const Mesh & pos, RVector & iData, bool verbose = false){
-//         ALLOW_PYTHON_THREADS
-//         std::cout << "interpolate_GILsave__ 3" << std::endl;
-//         return interpolate(mesh, data, pos, iData, verbose);
-//     }
-
 } // namespace GIMLI
 
 // needed for castxml caster .. need to check .. the name Complex seems not enrolled in CMatrix generate code
@@ -538,18 +570,18 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
 //** define some aliases to avoid insane method names
 namespace pyplusplus{ namespace aliases{
     typedef std::complex< double >                       Complex;
-    typedef GIMLI::Pos                                   RVector3;
+    typedef GIMLI::Pos                                   Pos;
 
     typedef GIMLI::Vector< bool >                        BVector;
     typedef GIMLI::Vector< double >                      RVector;
-    typedef GIMLI::Vector< RVector3 >                    R3Vector;
+    typedef GIMLI::Vector< Pos >                         R3Vector;
     typedef GIMLI::Vector< GIMLI::SIndex >               IVector;
     typedef GIMLI::Vector< GIMLI::Index >                IndexArray;
     typedef GIMLI::Vector< Complex >                     CVector;
 
     typedef GIMLI::VectorIterator< bool >                BVectorIter;
     typedef GIMLI::VectorIterator< double >              RVectorIter;
-    typedef GIMLI::VectorIterator< RVector3 >            R3VectorIter;
+    typedef GIMLI::VectorIterator< Pos >                 R3VectorIter;
     typedef GIMLI::VectorIterator< GIMLI::SIndex >       SIVectorIter;
     typedef GIMLI::VectorIterator< GIMLI::Index >        IVectorIter;
     typedef GIMLI::VectorIterator< Complex >             CVectorIter;
@@ -617,7 +649,6 @@ namespace pyplusplus{ namespace aliases{
     typedef std::vector< GIMLI::Vector< GIMLI::SIndex > >      stdVectorSIndexVector;
     typedef std::vector< GIMLI::Matrix< double > >      stdVectorRMatrix;
     typedef std::vector< GIMLI::MatrixBase * >          stdpMatrixBase;
-    typedef std::vector< GIMLI::RVector3 >              stdVectorRVector3;
     typedef std::vector< GIMLI::R3Vector >              stdVectorR3Vector;
     typedef std::vector< GIMLI::RMatrix3 >              stdVectorMatrix3;
     typedef std::vector< RBlockMatrixEntry >         stdVectorRBlockMatrixEntry;

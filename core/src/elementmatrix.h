@@ -397,6 +397,15 @@ public:
 
     std::vector < RSmallMatrix > * pMatX() { return &_matX; }
 
+    /*! Fill only for matX u. Do not use directly without resize and care! */
+    void fillEntityAndOrder_(const MeshEntity & ent, Index order);
+
+    /*! Do not use directly. */
+    void resizeMatX_U_();
+
+    /*! Do not use directly without resize and care! */
+    void fillMatX_U_(bool sum=false);
+    
     /*! Set const reference to the current entity.*/
     void setEntity(const MeshEntity & ent) { _ent = &ent; }
 

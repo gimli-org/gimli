@@ -536,11 +536,11 @@ def diff(v):
     >>> p[0] = [0.0, 0.0]
     >>> p[1] = [0.0, 1.0]
     >>> print(diff(p)[0])
-    RVector3: (0.0, 1.0, 0.0)
+    Pos: (0.0, 1.0, 0.0)
     >>> print(diff(p)[1])
-    RVector3: (0.0, -1.0, 0.0)
+    Pos: (0.0, -1.0, 0.0)
     >>> print(diff(p)[2])
-    RVector3: (0.0, 0.0, 0.0)
+    Pos: (0.0, 0.0, 0.0)
     >>> p = pg.Vector(3)
     >>> p[0] = 0.0
     >>> p[1] = 1.0
@@ -557,7 +557,7 @@ def diff(v):
                 vt = v.copy()
                 v = pg.PosVector(len(vt))
                 for i, vi in enumerate(vt):
-                    v.setVal(pg.RVector3(vi), i)
+                    v.setVal(pg.Pos(vi), i)
             else:
                 v = pg.PosVector(v)
         else:
@@ -565,7 +565,7 @@ def diff(v):
     elif isinstance(v, list):
         v = pg.PosVector(v)
 
-    if isinstance(v, pg.PosVector) or isinstance(v, pg.core.stdVectorRVector3):
+    if isinstance(v, pg.PosVector):
         d = pg.PosVector(len(v) - 1)
     else:
         d = pg.Vector(len(v) - 1)
@@ -619,7 +619,7 @@ def dist(p, c=None):
     [1. 1. 1. 1.]
     """
     if c is None:
-        c = pg.RVector3(0.0, 0.0, 0.0)
+        c = pg.Pos(0.0, 0.0, 0.0)
 
     d = np.zeros(len(p))
     pI = None
@@ -1046,7 +1046,7 @@ class Table(object):
 
         try:
             from tabulate import tabulate
-            return tabulate(self.table, headers=self.header, floatfmt=".5f")
+            return '\n' + tabulate(self.table, headers=self.header, floatfmt=".5f") + '\n'
         except ImportError:
             pass
         except BaseException as e:

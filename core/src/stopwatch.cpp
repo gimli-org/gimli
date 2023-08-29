@@ -19,6 +19,9 @@
 #include "stopwatch.h"
 #include "vector.h"
 
+#include <chrono>
+#include <thread>
+
 #include <iostream>
 
 namespace GIMLI{
@@ -92,6 +95,38 @@ size_t Stopwatch::cycles(bool res){
     if (_state == running) t = _cCounter.toc();
     if (res) restart();
     return t;
+}
+
+void waitms(Index ms, Index count){
+    for (Index i = 0; i < count; i ++ ){
+        std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+    }
+    return;
+}
+void waitmsOMP(Index ms, Index count){
+
+    #pragma omp parallel for
+    for (Index i = 0; i < count; i ++ ){
+        std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+    }
+    return;
+}
+
+#include <unistd.h>
+void waitus(Index ms, Index count){
+    for (Index i = 0; i < count; i ++ ){
+        usleep(ms);
+        // std::this_thread::sleep_for(std::chrono::microseconds(ms));
+    }
+    return;
+}
+void waitusOMP(Index ms, Index count){
+
+    #pragma omp parallel for
+    for (Index i = 0; i < count; i ++ ){
+        std::this_thread::sleep_for(std::chrono::microseconds(ms));
+    }
+    return;
 }
 
 } // namespace GIMLI

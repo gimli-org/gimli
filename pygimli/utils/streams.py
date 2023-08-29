@@ -79,7 +79,7 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
         direction = -1
 
     # search downward
-    pos = pg.RVector3(startCoord)
+    pos = pg.Pos(startCoord)
     c = mesh.findCell(startCoord)
     dLength = c.center().dist(c.node(0).pos()) / dLengthSteps
 
@@ -102,18 +102,18 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
         if isVectorData:
             u = 0.
             if len(vx) == mesh.cellCount():
-                d = pg.RVector3(vx[c.id()], vy[c.id()])
+                d = pg.Pos(vx[c.id()], vy[c.id()])
             elif len(vx) == mesh.nodeCount():
-                d = pg.RVector3(c.pot(pos, vx), c.pot(pos, vy))
+                d = pg.Pos(c.pot(pos, vx), c.pot(pos, vy))
             elif dataMesh:
                 cd = dataMesh.findCell(pos)
                 if cd is None:
                     raise Exception("Cannot find " + str(pos) + " dataMesh")
                 if len(vx) == dataMesh.cellCount():
-                    d = pg.RVector3(vx[cd.id()], vy[cd.id()])
+                    d = pg.Pos(vx[cd.id()], vy[cd.id()])
                 elif len(vx) == dataMesh.nodeCount() and \
                         len(vy) == dataMesh.nodeCount():
-                    d = pg.RVector3(cd.pot(pos, vx), cd.pot(pos, vy))
+                    d = pg.Pos(cd.pot(pos, vx), cd.pot(pos, vy))
                 else:
                     print(dataMesh, len(vx), len(vy))
                     raise Exception("data size wrong")

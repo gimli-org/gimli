@@ -173,12 +173,109 @@ class TestRVectorMethods(unittest.TestCase):
         v.setVal(1.0, 1)
         np.testing.assert_array_equal(v, [5, 1, 1, 3, 5])
 
-
     def test_RVectorFuncts(self):
         v = pg.Vector(5, 2.0)
         self.assertEqual(sum(pg.math.pow(v, 2)), 20)
         self.assertEqual(sum(pg.math.pow(v, 2.0)), 20)
         self.assertEqual(sum(pg.math.pow(v, v)), 20)
+
+    def test_Pos(self):
+        """ Pos
+        """
+        p = pg.Pos(1.0, 0.0)
+        np.testing.assert_array_equal(p, [1.0, 0.0, 0.0])
+        np.testing.assert_array_equal(p + p, [2.0, 0.0, 0.0])
+
+        pg.core.setDeepDebug(-1)
+        np.testing.assert_array_equal(p + [0., 1, .0], [1.0, 1.0, 0.0])
+        #p = pg.Pos(1.0, 0.0)
+
+        exit()
+        
+
+
+    def test_R3VectorOP(self):
+        """ [Pos, ...]
+        """
+        r3 = pg.core.R3Vector(10) + 2.0
+
+        np.testing.assert_array_equal(r3, [pg.RVector3(2, 2, 2)]*10)
+        np.testing.assert_array_equal(r3 * 2.0, [pg.RVector3(4, 4, 4)]*10)
+        np.testing.assert_array_equal(r3 * 2, [pg.RVector3(4, 4, 4)]*10)
+        np.testing.assert_array_equal(r3 / 2.0, [pg.RVector3(1.0, 1.0, 1.0)]*10)
+        np.testing.assert_array_equal(1 / r3, [pg.RVector3(0.5, 0.5, 0.5)]*10)
+        np.testing.assert_array_equal(-1 - r3, [pg.RVector3(-3.0, -3.0, -3.0)]*10)
+        np.testing.assert_array_equal(abs(r3 / abs(r3)), [1.0]*10)
+
+    def test_stdVectorRVectorOP(self):
+        """ operators for [RVector, ...]
+        """
+        sr = pg.core.stdVectorRVector()
+        sr.append(pg.core.RVector(5))
+        sr.append(pg.core.RVector(10))
+        
+        for i in range(len(sr)):
+            np.testing.assert_array_equal(sr[i], [0]*len(sr[i]))
+        
+        sr += 1.0
+        for i in range(len(sr)):
+            np.testing.assert_array_equal(sr[i], [1]*len(sr[i]))
+
+        sr -= 2
+        for i in range(len(sr)):
+            np.testing.assert_array_equal(sr[i], [-1]*len(sr[i]))
+
+        sr *= -2
+        for i in range(len(sr)):
+            np.testing.assert_array_equal(sr[i], [2]*len(sr[i]))
+
+        sr /= 4.0
+        for i in range(len(sr)):
+            np.testing.assert_array_equal(sr[i], [0.5]*len(sr[i]))
+
+        t = sr*3
+        for i in range(len(t)):
+            np.testing.assert_array_equal(t[i], sr[i]*3)
+
+        t = 1/sr
+        for i in range(len(t)):
+            np.testing.assert_array_equal(t[i], 1/sr[i])
+
+        t = sr*abs((-1*sr))
+        np.testing.assert_equal(len(t), len(sr))
+
+        for i in range(len(t)):
+            np.testing.assert_array_equal(t[i], sr[i]**2)
+
+        t = sr + 1.0
+        for i in range(len(t)):
+            np.testing.assert_array_equal(t[i], sr[i]+1)
+
+
+    def test_stdVectorR3VectorOP(self):
+        """ operators for [R3Vector, ...]
+        """
+        r3 = pg.core.stdVectorR3Vector()
+        r3.append(pg.core.R3Vector(7) + 2.0)
+        r3.append(2 + pg.core.R3Vector(4))
+        r3.append(3.15 + pg.core.R3Vector(10))
+        r3.append(pg.core.R3Vector(9) + 4)
+
+        t = abs(r3) ## perfcheck candidate
+        np.testing.assert_equal(len(t), len(r3))
+        
+        for i in range(len(t)):
+            np.testing.assert_array_equal(t[i], abs(r3[i]))
+
+        t = r3/abs(r3)  ## perfcheck candidate
+        np.testing.assert_equal(len(t), len(r3))
+
+        for i in range(len(t)):
+            np.testing.assert_array_equal(abs(t[i]), abs(r3[i]/abs(r3[i])))
+
+        t = t * 2.0
+        for i in range(len(t)):
+            np.testing.assert_array_equal(abs(t[i]), [2]*len(r3[i]))
 
 
     def test_R3VectorIndex(self):
@@ -198,7 +295,6 @@ class TestRVectorMethods(unittest.TestCase):
 
         d = pg.utils.dist(r3)
         self.assertEqual(sum(d), 1+2+3)
-
 
     def test_Slices(self):
 
@@ -317,11 +413,22 @@ class TestRVectorMethods(unittest.TestCase):
         a = pg.Vector(10, 1)
         b = pg.Vector(10, 2)
 
-        np.testing.assert_equal(len(a < 1), 10)
-        np.testing.assert_equal(len(b > 1), 10)
-
-        np.testing.assert_equal(len(a < b), 10)
+        np.testing.assert_array_equal(a < 1, [False]*10)
+        np.testing.assert_array_equal(a == 1, [True]*10)
+        np.testing.assert_array_equal(b > 1, [True]*10)
+        np.testing.assert_array_equal(a < b, [True]*10)
+        np.testing.assert_array_equal(a > b, [False]*10)
         np.testing.assert_equal(len(a > b), 10)
+
+        a = pg.IVector(10, 1)
+        np.testing.assert_array_equal(a == 1, [True]*10)
+        np.testing.assert_array_equal(a != 1, [False]*10)
+        np.testing.assert_array_equal(a < 1, [False]*10)
+        
+        print(a < 1, np.array([False]*10))
+        np.testing.assert_equal(len(a < 1), 10)
+
+
 
     def testUFunc(self):
         t = pg.Vector(5, 1)

@@ -341,6 +341,9 @@ typedef Vector < SIndex > IVector;
 typedef Vector < Index > IndexArray;
 
 typedef std::vector < SIndex > SIndexArray;
+typedef std::vector< GIMLI::Vector< double > >      stdVectorRVector;
+typedef std::vector< GIMLI::R3Vector >              stdVectorR3Vector;
+typedef std::vector< GIMLI::Matrix< double > >      stdVectorRMatrix;
 
 typedef Matrix < double > RMatrix;
 typedef Matrix < Complex > CMatrix;
@@ -494,7 +497,7 @@ inline std::string type(const std::string   & var) { return "string"; }
 inline std::string type(const std::vector < std::string >  & var) { return "string"; }
 
 inline std::string type(const RVector  & var) { return "RVector"; }
-inline std::string type(const RVector3 & var) { return "RVector3"; }
+inline std::string type(const Pos & var) { return "Pos"; }
 inline std::string type(const R3Vector & var) { return "R3Vector"; }
 inline std::string type(const CVector  & var) { return "CVector"; }
 inline std::string type(const RMatrix  & var) { return "RMatrix"; }

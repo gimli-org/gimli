@@ -93,8 +93,33 @@ class TestPerf(unittest.TestCase):
 
         print(pg.timings('foobar'))
                     
+    def test_tictoc_2(self):
+        tictoc = pg.tictoc('')
 
-            
+        def bar1():
+            with tictoc('bar1'):
+                time.sleep(0.1)
+
+        def bar2():
+            with tictoc('bar2'):
+                time.sleep(0.1)
+                bar1()
+                
+        def foo():
+            with tictoc('foo'):
+                for i in range(4):
+                    bar1()
+                bar2()
+
+        with tictoc('foobar'):
+            for i in range(2):
+                time.sleep(0.1) # uncovered
+                # with pg.tictoc('uncount', trace=timing):
+                #     time.sleep(0.1)
+                foo()    
+
+        print(pg.timings('foobar'))
+
 if __name__ == '__main__':
     
     unittest.main()

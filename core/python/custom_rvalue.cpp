@@ -251,7 +251,7 @@ template < class ValueType > void * checkConvertibleNumpyScalar(PyObject * obj){
 }
 
 
-struct PyTuple2RVector3{
+struct PyTuple2Pos{
 
     typedef boost::tuples::tuple< double > x_type;
     typedef boost::tuples::tuple< double, double > xy_type;
@@ -260,10 +260,10 @@ struct PyTuple2RVector3{
     typedef bp::from_py_sequence< xy_type > xy_converter_type;
     typedef bp::from_py_sequence< xyz_type > xyz_converter_type;
 
-    typedef GIMLI::RVector3 xyz_t;
+    typedef GIMLI::Pos xyz_t;
 
     static void * convertible(PyObject * obj){
-        __DC(obj, "(", obj->ob_type->tp_name, ") -> RVector3")
+        __DC(obj, "(", obj->ob_type->tp_name, ") -> Pos")
         if (x_converter_type::convertible(obj) ||
              xy_converter_type::convertible(obj) ||
               xyz_converter_type::convertible(obj)
@@ -552,12 +552,12 @@ struct PySequence2StdVectorRVector3{
     /*! Check if the object is convertible */
     static void * convertible(PyObject * obj){
          __DC(obj, "check convertible (", obj->ob_type->tp_name, ") -> StdVectorRVector3")
-        return checkConvertibleSequenz< GIMLI::Pos, std::vector< GIMLI::RVector3 > >(obj);
+        return checkConvertibleSequenz< GIMLI::Pos, std::vector< GIMLI::Pos > >(obj);
     }
 
     /*! Convert obj into RVector */
     static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
-        __DC(obj, "\t constructing RVector3")
+        __DC(obj, "\t constructing stdVectorRVector3")
         bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
 
         typedef bp::converter::rvalue_from_python_storage< std::vector < GIMLI::Pos > > storage_t;
@@ -933,9 +933,9 @@ void register_pysequence_to_r3vector_conversion(){
                                         & r_values_impl::PySequence2R3Vector::construct,
                                         bp::type_id< GIMLI::R3Vector >());
 }
-void register_pytuple_to_rvector3_conversion(){
-    bp::converter::registry::push_back(& r_values_impl::PyTuple2RVector3::convertible,
-                                        & r_values_impl::PyTuple2RVector3::construct,
+void register_pytuple_to_pos_conversion(){
+    bp::converter::registry::push_back(& r_values_impl::PyTuple2Pos::convertible,
+                                        & r_values_impl::PyTuple2Pos::construct,
                                         bp::type_id< GIMLI::Pos >());
 }
 void register_numpy_to_rmatrix_conversion(){

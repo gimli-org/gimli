@@ -230,6 +230,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             forward to :py:mod:`pygimli.viewer.mpl.drawStreams`
 
         . pg.core.stdVectorRVector3 -- sensor positions
+            DEPRECATED from remove of pg.core.stdVectorRVector3
             forward to :py:mod:`pygimli.viewer.mpl.drawSensors`
     block: bool [False]
         Force to open the Figure of your content and blocks the script until
@@ -366,8 +367,8 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         if showBoundary is None:
             showBoundary = True
 
-    elif isinstance(data, pg.core.stdVectorRVector3):
-        drawSensors(ax, data, **kwargs)
+    # elif isinstance(data, pg.core.stdVectorRVector3):
+    #     drawSensors(ax, data, **kwargs)
     elif isinstance(data, pg.PosVector):
         drawStreams(ax, mesh, data, **kwargs)
     else:

@@ -156,6 +156,8 @@ public:
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
+    void registerShapeFunctions();
+
     /*! Return a \ref RVector(n) for
      *\f$ N(L) = {N_i} i = [0, \mathrm{nodeCount()}] \f$ shape functions
      *\f$ N_n(L_1,L_2,L_3)\f$ in local coordinates \f$ L(L1, L2, L3) = L(r, s, t)\f$ */
@@ -242,14 +244,16 @@ protected:
 //! A abstract cell
 /*! Interface class for all cells. */
 class DLLEXPORT Cell : public MeshEntity {
+
 public:
     DLLEXPORT friend std::ostream & operator << (std::ostream & str, const Cell & c);
 
     /*! Default constructor. */
     Cell(Shape * shape);
 
-    /*! Construct cell from vector of nodes. */
-    Cell(Shape * shape, const std::vector < Node * > & nodes);
+    // /*! Construct cell from vector of nodes. */
+    // Dangerous .. leads to undefined behave
+    // Cell(Shape * shape, const std::vector < Node * > & nodes);
 
     /*! Default destructor. */
     virtual ~Cell();
@@ -258,7 +262,6 @@ public:
     bool operator==(const Cell & cell){
         return &cell == this;
     }
-
     virtual uint rtti() const { return MESH_CELL_RTTI; }
     virtual uint parentType() const { return MESH_CELL_RTTI; }
     virtual uint neighborCellCount() const { return 0; }
@@ -333,7 +336,6 @@ protected:
 class DLLEXPORT Boundary : public MeshEntity{
 public:
     Boundary(Shape * shape);
-    Boundary(Shape * shape, const std::vector < Node * > & nodes);
     virtual ~Boundary();
 
     virtual uint rtti() const { return MESH_BOUNDARY_RTTI; }
@@ -429,6 +431,8 @@ protected:
 
 class DLLEXPORT Edge : public Boundary{
 public:
+    Edge();
+
     Edge(Node & n1, Node & n2);
 
     Edge(const std::vector < Node * > & nodes);
@@ -483,6 +487,8 @@ protected:
 
 class DLLEXPORT TriangleFace : public Boundary{
 public:
+    TriangleFace();
+
     TriangleFace(Node & n1, Node & n2, Node & n3);
 
     TriangleFace(const std::vector < Node * > & nodes);
@@ -535,6 +541,8 @@ protected:
 
 class DLLEXPORT QuadrangleFace : public Boundary{
 public:
+    QuadrangleFace();
+
     QuadrangleFace(Node & n1, Node & n2, Node & n3, Node & n4);
 
     QuadrangleFace(const std::vector < Node * > & nodes);
@@ -619,7 +627,10 @@ public:
 
     /*!Return reference to all defined hole markers. */
     HoleMarkerList & holeMarkers(){ return holeMarker_;}
-
+    
+    /*! Placeholder. Create empty shape functions. */
+    std::vector < PolynomialFunction < double > > createShapeFunctions() const;
+    
 protected:
     std::vector < std::vector < Node * > > subfaces_;
     HoleMarkerList holeMarker_;
@@ -629,6 +640,8 @@ private:
 
 class DLLEXPORT EdgeCell : public Cell {
 public:
+    EdgeCell();
+    
     EdgeCell(Node & n1, Node & n2);
 
     EdgeCell(const std::vector < Node * > & nodes);
@@ -686,6 +699,7 @@ Node direction:
 */
 class DLLEXPORT Triangle : public Cell {
 public:
+    Triangle();
     Triangle(Node & n1, Node & n2, Node & n3);
 
     Triangle(const std::vector < Node * > & nodes);
@@ -758,6 +772,7 @@ Neighbor Nr, on Boundary a->b
 */
 class DLLEXPORT Quadrangle : public Cell {
 public:
+    Quadrangle();
     Quadrangle(Node & n1, Node & n2, Node & n3, Node & n4);
 
     Quadrangle(const std::vector < Node * > & nodes);
@@ -840,6 +855,7 @@ static const uint8 TetrahedronFacesID[4][3] = {
 */
 class DLLEXPORT Tetrahedron : public Cell {
 public:
+    Tetrahedron();
     Tetrahedron(Node & n1, Node & n2, Node & n3, Node & n4);
 
     Tetrahedron(const std::vector < Node * > & nodes);
@@ -952,6 +968,8 @@ static const uint8 HexahedronFacesID[6][4] = {
 
 class DLLEXPORT Hexahedron: public Cell {
 public:
+    Hexahedron();
+
     Hexahedron(const std::vector < Node * > & nodes);
 
     virtual ~Hexahedron();
@@ -1050,6 +1068,8 @@ static const uint8 TriPrismFacesID[5][4] = {
 
 class DLLEXPORT TriPrism : public Cell {
 public:
+    TriPrism();
+    
     TriPrism(const std::vector < Node * > & nodes);
 
     virtual ~TriPrism();
@@ -1134,6 +1154,8 @@ static const uint8 PyramidFacesID[5][4] = {
 
 class DLLEXPORT Pyramid : public Cell {
 public:
+    Pyramid();
+    
     Pyramid(const std::vector < Node * > & nodes);
 
     virtual ~Pyramid();

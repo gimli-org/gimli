@@ -317,7 +317,7 @@ def generate(defined_symbols, extraIncludes):
     logger.info("Apply custom rvalues.")
     # START manual r-value converters
     rvalue_converters = [
-        'register_pytuple_to_rvector3_conversion',
+        'register_pytuple_to_pos_conversion',
         'register_pysequence_to_rvector_conversion',
         #'register_pysequence_to_cvector_conversion', .. will not work
         'register_pysequence_to_ivector_conversion',
@@ -1062,7 +1062,7 @@ if __name__ == '__main__':
 #     logger.info("Apply custom rvalues.")
 #     # START manual r-value converters
 #     rvalue_converters = [
-#         'register_pytuple_to_rvector3_conversion',
+#         'register_pytuple_to_pos_conversion',
 #         'register_pysequence_to_rvector_conversion',
 #         #'register_pysequence_to_cvector_conversion', .. will not work
 #         'register_pysequence_to_ivector_conversion',

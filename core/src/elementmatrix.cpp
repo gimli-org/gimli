@@ -1398,6 +1398,7 @@ ElementMatrix < double >::ElementMatrix(const ElementMatrix < double > & E,
 template < > DLLEXPORT
 void ElementMatrix < double >::init(Index nCoeff, Index dofPerCoeff,
                                     Index dofOffset){
+    // __MS(this, nCoeff, dofPerCoeff, dofOffset)
     if (nCoeff > 1 && dofPerCoeff == 0){
         __MS(nCoeff, dofPerCoeff, dofOffset)
         log(Error, "Number of coefficents > 1 but no dofPerCoefficent given");
@@ -1417,52 +1418,6 @@ void ElementMatrix < double >::init(Index nCoeff, Index dofPerCoeff,
     _elastic = false;
 
     _valid = false;
-}
-
-template < > DLLEXPORT
-void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
-                                        bool withMat){
-
-    this->_newStyle = true;
-    this->_order = E.order(); //quadrature order
-    this->_nCoeff = E.nCoeff(); //number of cofficients e.g, dim
-    this->_dofPerCoeff = E.dofPerCoeff();
-    this->_dofOffset = E.dofOffset();
-
-    this->_ent = E.entity();
-    this->_w = E.w();
-    this->_x = E.x();
-    this->_matX = E.matX();
-
-    this->_idsC = E.colIDs();
-    this->_idsR = E.rowIDs();
-    this->_div = E.isDiv();
-    this->_elastic = E.elastic();
-
-    if (withMat == true) {
-        this->_integrated = E.isIntegrated();
-        this->mat_ = E.mat();
-    } else {
-        this->_integrated = false;
-        this->mat_.resize(E.mat().rows(), E.mat().cols());
-    }
-}
-template < >
-void ElementMatrix < double >::resize(Index rows, Index cols, bool setIds) {
-    if (cols == 0) cols = rows;
-
-    _idsR.resize(rows, 0);
-    _idsC.resize(cols, 0);
-    _ids.resize(rows);
-    mat_.resize(rows, cols);
-
-    // if (this->_ent && setIds){
-    //     Index nVerts = this->_ent->nodeCount();
-    //     for (Index i = 0; i < this->_nCoeff; i++){
-    //         this->_idsR.setVal(this->_ent->ids() + i * this->_dofPerCoeff + this->_dofOffset,
-    //                         i * nVerts, (i+1) * nVerts);
-    //     }
-    // }
 }
 
 template < > DLLEXPORT ElementMatrix < double > &
@@ -1534,7 +1489,60 @@ ElementMatrix < double >::add(const ElementMatrix < double > & B,
 
 
 template < > DLLEXPORT
+void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
+                                        bool withMat){
+// __M                                            
+    this->_newStyle = true;
+    this->_order = E.order(); //quadrature order
+    this->_nCoeff = E.nCoeff(); //number of cofficients e.g, dim
+    this->_dofPerCoeff = E.dofPerCoeff();
+    this->_dofOffset = E.dofOffset();
+
+    this->_ent = E.entity();
+    this->_w = E.w();
+    this->_x = E.x();
+    this->_matX = E.matX();
+
+    this->_idsC = E.colIDs();
+    this->_idsR = E.rowIDs();
+    this->_div = E.isDiv();
+    this->_elastic = E.elastic();
+
+    if (withMat == true) {
+        this->_integrated = E.isIntegrated();
+        this->mat_ = E.mat();
+    } else {
+        this->_integrated = false;
+        this->mat_.resize(E.mat().rows(), E.mat().cols());
+    }
+    this->_valid = E.valid();
+}
+
+
+template < >
+void ElementMatrix < double >::resize(Index rows, Index cols, bool setIds) {
+    if (cols == 0) cols = rows;
+
+    _idsR.resize(rows, 0);
+    _idsC.resize(cols, 0);
+    _ids.resize(rows);
+    mat_.resize(rows, cols);
+
+    if (this->_ent && setIds){
+        Index nVerts = this->_ent->nodeCount();
+
+        for (Index i = 0; i < this->_nCoeff; i++){
+            this->_idsR.setVal(this->_ent->ids() + i * this->_dofPerCoeff + this->_dofOffset,
+                            i * nVerts, (i+1) * nVerts);
+        }
+    }
+}
+
+
+template < > DLLEXPORT
 void ElementMatrix < double >::integrate() const {
+    // __MS(_newStyle, this->_integrated, this->_valid, this)
+
     if (_newStyle && !this->_integrated && this->_valid){
         // __M
         const RVector &w = *this->_w;
@@ -1557,25 +1565,23 @@ void ElementMatrix < double >::integrate() const {
     }
 }
 
-template < > DLLEXPORT
-ElementMatrix < double > & ElementMatrix < double >::pot(
-                        const MeshEntity & ent, Index order, bool sum){
 
-    // threadsInfo();
-    // if (this->valid() && this->order() == order && this->_ent == &ent){
-    //     return *this;
-    // }
+template < > void ElementMatrix < double >::
+fillEntityAndOrder_(const MeshEntity & ent, Index order){
     this->_order = order;
     this->_ent = &ent;
     this->_integrated = false;
         
     this->_x = &IntegrationRules::instance().abscissa(ent.shape(), this->_order);
     this->_w = &IntegrationRules::instance().weights(ent.shape(), this->_order);
-    const PosVector &x = *this->_x;
+}
 
+
+template < > void ElementMatrix < double >::
+resizeMatX_U_(){
     Index nRules(_x->size());
     Index nVerts(_ent->nodeCount());
-    Index nCoeff(this->_nCoeff); //components
+    Index nCoeff(_nCoeff); //components
     Index nCols(nCoeff);
 
     if (nCols == 0){
@@ -1585,30 +1591,56 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
 
     _matX.resize(nRules);
 
-    RSmallMatrix N(nRules, nVerts);
-
     for (Index i = 0; i < nRules; i ++ ){
         // transpose might be better?? check
         // fill per row is cheaper
         _matX[i].resize(nCoeff, nVerts*nCoeff);
         _matX[i].setZero();
-        N[i] = ent.N(x[i]);
     }
+}
 
-    for (Index i = 0; i < nRules; i ++ ){
-        for (Index n = 0; n < nCoeff; n ++ ){
-            _matX[i][n].setVal(N[i], n*nVerts, (n+1)*nVerts);
+
+template < > void ElementMatrix < double >::
+fillMatX_U_(bool sum){
+    Index nRules(_x->size());
+    Index nVerts(_ent->nodeCount());
+    Index nCoeff(this->_nCoeff);
+
+    const PosVector &x = *this->_x;
+    
+    if (0 && nCoeff == 1){
+        for (Index i = 0; i < nRules; i ++ ){
+            _matX[i][0].setVal(_ent->N(x[i]), 0, nVerts);    
+        }
+    } else {
+
+        RSmallMatrix N(nRules, nVerts);
+    
+        for (Index i = 0; i < nRules; i ++ ){
+            N[i] = _ent->N(x[i]);
+            for (Index n = 0; n < nCoeff; n ++ ){
+                _matX[i][n].setVal(N[i], n*nVerts, (n+1)*nVerts);
+            }
         }
     }
 
     this->setValid(true);
-    // if (sum){
-    //     this->integrate();
-    // }
+    if (sum) this->integrate();
+}
 
 
-    // // __MS(this->_ent)
-    // // __MS(this->entity())
+template < > DLLEXPORT
+ElementMatrix < double > & ElementMatrix < double >::pot(
+                        const MeshEntity & ent, Index order, bool sum){
+
+    if (this->_valid && this->order() == order && this->_ent == &ent){
+        return *this;
+    }
+    
+    this->fillEntityAndOrder_(ent, order);
+    this->resizeMatX_U_();
+    this->fillMatX_U_(sum);
+
     return *this;
 }
 
@@ -1617,6 +1649,7 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
                         const MeshEntity & ent, Index order, bool sum,
                         Index nCoeff, Index dofPerCoeff, Index dofOffset){
 
+    // __M
     if (disableCacheForDBG() || !this->valid() ||
         this->order() != order ||
         this->_ent != &ent ||
@@ -1626,6 +1659,8 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
         this->pot(ent, order, sum);
     }
     if (sum == true) this->integrate();
+
+    // __MS(this->mat_)
     return *this;
 }
 
@@ -1633,6 +1668,7 @@ template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::grad(
                         const MeshEntity & ent, Index order,
                         bool elastic, bool sum, bool div, bool kelvin){
+
     if (this->valid() && \
         this->order() == order && \
         this->_ent == & ent && \
@@ -1832,6 +1868,7 @@ _matX[i][5].setVal(dNdx_[i] * a, 2 * nVerts, 3 * nVerts);//dNx/dz
             }
         }
     }
+    this->setValid(true);
 
     if (sum){
         this->integrate();
@@ -1899,6 +1936,7 @@ ElementMatrix < double >::identity(const MeshEntity & ent, Index order,
             THROW_TO_IMPL
         }
     }
+    this->setValid(true);
     // test if integration is needed for all cases
     // bool sum = true;
     // if (sum == true) this->integrate();
@@ -2111,6 +2149,7 @@ void dot(const ElementMatrix < double > & A,
 
 
     //# do we need submatrices after dot? yes e.g. for: (u*v+u*v)*u
+    C.setValid(true);
     C.integrated(true);
 
     // __MS(C);
@@ -2179,6 +2218,7 @@ void dot(const ElementMatrix < double > & A,
 
         *C.pMat() += Ci * wS;
     }
+    C.setValid(true);
     C.integrated(true);
 }
 
@@ -2267,6 +2307,7 @@ void mult(const ElementMatrix < double > & A,
         }
         // __MS("r", r, rt)
     }
+    C.setValid(true);
     C.integrate();
 }
 // this *= constant Pos
@@ -2289,6 +2330,7 @@ void mult(const ElementMatrix < double > & A,
             iC.row(k) *= f[k];
         }
     }
+    C.setValid(true);
     C.integrate();
 }
 // this *= scalar per quadrature
@@ -2333,6 +2375,8 @@ void mult(const ElementMatrix < double > & A,
             mr[k] *= b[r];
         }
     }
+
+    C.setValid(true);
     C.integrate();
 }
 // vector per quadrature
@@ -2358,6 +2402,8 @@ void mult(const ElementMatrix < double > & A,
         }
         // __MS(iC)
     }
+
+    C.setValid(true);
     C.integrate();
 }
 // constant Matrix
@@ -2427,6 +2473,8 @@ void mult(const ElementMatrix < double > & A,
             b.mult(Ai, Ci, 1.0, beta);
 // #endif
         }
+        
+        C.setValid(true);
         C.integrate(); // check if necessary
     }
 }
@@ -2458,6 +2506,8 @@ void mult(const ElementMatrix < double > & A,
         Ai.transMult(b[i], Ci, 1.0, beta);
 // #endif
     }
+    
+    C.setValid(true);
     C.integrate();
 }
 
@@ -2870,6 +2920,7 @@ void sym(const ElementMatrix < double > & A, ElementMatrix < double > & B){
         }
 
     }
+    B.setValid(true);
     B.integrated(false);
 }
 ElementMatrix < double > sym(const ElementMatrix < double > & A){

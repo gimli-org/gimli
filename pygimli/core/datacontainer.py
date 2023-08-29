@@ -2,7 +2,7 @@
 """Extensions to the core DataContainer class[es]."""
 import numpy as np
 from . logger import critical, verbose
-from .core import (RVector, RVector3, DataContainer, DataContainerERT)
+from .core import (RVector, Pos, DataContainer, DataContainerERT)
 from .core import (yVari, zVari, swapYZ, y, z)
 
 
@@ -38,7 +38,7 @@ def __DataContainer_setSensors(self, sensors):
     for i, s in enumerate(sensors):
         nS = s
         if isinstance(s, float) or isinstance(s, int):
-            nS = RVector3(s, 0.0)
+            nS = Pos(s, 0.0)
 
         if i > self.sensorCount():
             self.createSensor(nS)

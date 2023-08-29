@@ -104,6 +104,16 @@ protected:
 #define TOC__ std::cout << __swatch__.duration(true) << std::endl;
 #define toc__ __swatch__.duration()
 
+
+// little debugging and testing fun
+void waitms(Index us, Index count=1);
+void waitmsOMP(Index us, Index count=1);
+
+/*! Microseconds are rounded somewhat to system clock of 1000Hz. 
+Also there seems to be an offset of 0.05 ms. */
+void waitus(Index us, Index count=1);
+void waitusOMP(Index us, Index count=1);
+
 } // namespace GIMLI
 
 #endif // _GIMLI_STOPWATCH__H

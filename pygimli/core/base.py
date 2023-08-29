@@ -4,7 +4,7 @@ Misc stuff also needed for core imports and monkey patching
 """
 import numpy as np
 
-from .core import (RVector3, R3Vector, RMatrix)
+from .core import (Pos, R3Vector, RMatrix)
 
 
 def isInt(v, val=None):
@@ -142,7 +142,7 @@ def isPos(v):
     >>> print(pg.isPos(np.ones(4)))
     False
     """
-    return isinstance(v, RVector3) or \
+    return isinstance(v, Pos) or \
         isArray(v, 1) or isArray(v, 2) or isArray(v, 3)
 
 def isR3Array(v, N=None):

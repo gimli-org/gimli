@@ -12,7 +12,7 @@ from .core.decorators import (renamed, singleton, moduleProperty,
 # Import everything that should be accessible through main namespace.
 from .core import (BVector, CVector, DataContainer, DataContainerERT,
                    IVector, Line, Mesh, Plane, Pos, PosVector,
-                   RVector3, Vector, PosList, abs, cat, center, exp, find,
+                   Vector, PosList, abs, cat, center, exp, find,
                    interpolate, log, log10, logDropTol, max,
                    mean, median, min, search, setThreadCount, sort,
                    Stopwatch, sum, trans, unique, versionStr, x, y, z, zero)
@@ -354,7 +354,7 @@ def store(key=0, stop=True):
 class tictoc(object):
     """Timer class with persistant clock.
     """
-    def __init__(self, key, trace=None, reset=False):
+    def __init__(self, key='', trace=None, reset=False):
 
         if reset is True:
             SWatches().remove(key, isRoot=True)
@@ -363,10 +363,15 @@ class tictoc(object):
             self._trace = trace
         else:
             self._trace = []
-        self._trace.append(key)
+
+        if len(key) > 0:
+            self._trace.append(key)
         self._key = '/'.join(self._trace)
         
         tic(key=self._key)
+
+    def __call__(self, key):
+        return tictoc(key, trace=self._trace)
 
     def __enter__(self):
         return self
@@ -374,8 +379,19 @@ class tictoc(object):
     def __exit__(self, type, value, traceback):
         store(key=self._key)
         self._trace.pop()
-        
+                
     
+class WithSkip(object):
+    """ FallBack if you need empty with clause.
+    """
+    def __init__(self, *args, **kwargs):
+        pass
+    def __enter__(self):
+        return self
+    def __exit__(self, type, value, traceback):
+        pass
+
+
 __MPL_PLT__ = None
 
 def timings(name):

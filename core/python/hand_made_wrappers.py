@@ -27,14 +27,11 @@ except:
     pg = pygimli
 
 
-
-
-
-WRAPPER_DEFINITION_RVector3 =\
+WRAPPER_DEFINITION_Pos =\
     """
 #include <numpy/arrayobject.h>
 
-PyObject * RVector3_getArray(GIMLI::RVector3 & vec){
+PyObject * Pos_getArray(GIMLI::Pos & vec){
     import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
     npy_intp length = 3;
     PyObject * ret = PyArray_SimpleNewFromData(1, &length,
@@ -53,10 +50,10 @@ PyObject * RVector3_getArray(GIMLI::RVector3 & vec){
 }
 
 """
-WRAPPER_REGISTRATION_RVector3 = [
+WRAPPER_REGISTRATION_Pos = [
     """def("array",
-       &RVector3_getArray,
-       "PyGIMLI Helper Function: extract a numpy array object from a RVector3 ");""",
+       &Pos_getArray,
+       "PyGIMLI Helper Function: extract a numpy array object from a pg.core.Pos");""",
 ]
 
 WRAPPER_DEFINITION_RVector =\

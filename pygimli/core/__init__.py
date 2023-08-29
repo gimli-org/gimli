@@ -46,8 +46,8 @@ def __RVector_str(self, valsOnly=False):
         self[self.size() - 1]) + "]")
 
 
-def __RVector3_str(self):
-    return ("RVector3: (" + str(self.x()) + ", " + str(self.y()) + ", " + str(
+def __Pos_str(self):
+    return ("Pos: (" + str(self.x()) + ", " + str(self.y()) + ", " + str(
         self.z()) + ")")
 
 
@@ -73,7 +73,7 @@ pgcore.CVector.__repr__ = __RVector_str
 pgcore.BVector.__repr__ = __RVector_str
 pgcore.IVector.__repr__ = __RVector_str
 pgcore.IndexArray.__repr__ = __RVector_str
-pgcore.RVector3.__repr__ = __RVector3_str
+pgcore.Pos.__repr__ = __Pos_str
 pgcore.R3Vector.__repr__ = __R3Vector_str
 
 pgcore.Line.__repr__ = __Line_str
@@ -133,8 +133,8 @@ pgcore.RVector.__lt__ = _lowerThan_
 pgcore.R3Vector.__lt__ = _lowerThan_
 pgcore.BVector.__lt__ = _lowerThan_
 pgcore.CVector.__lt__ = _lowerThan_
-pgcore.IVector.__lt__ = _lowerThan_
-pgcore.IndexArray.__lt__ = _lowerThan_
+# pgcore.IVector.__lt__ = _lowerThan_
+# pgcore.IndexArray.__lt__ = _lowerThan_
 
 
 __pgcore_RVector___gt__ = pgcore.RVector.__gt__
@@ -380,7 +380,7 @@ pgcore.IndexArray.setVal = __newIndexArraySetVal__
 
 ############################
 # Indexing [] operator for RVector, CVector, IndexArray,
-#                          RVector3, R3Vector, RMatrix, CMatrix
+#                          Pos, R3Vector, RMatrix, CMatrix
 ############################
 def __getVal(self, idx):
     """Get vector value at index. Hell slow."""
@@ -548,8 +548,8 @@ pgcore.R3Vector.__getitem__ = __getVal  # very slow -- inline is better
 pgcore.IndexArray.__setitem__ = __setVal
 pgcore.IndexArray.__getitem__ = __getVal  # very slow -- inline is better
 
-pgcore.RVector3.__setitem__ = __setVal
-pgcore.RVector3.__getitem__ = __getValR3 # support slice
+pgcore.Pos.__setitem__ = __setVal
+pgcore.Pos.__getitem__ = __getValR3 # support slice
 
 # len(RVector), RMatrix
 _vecs = [pgcore.RVector,
@@ -574,18 +574,18 @@ pgcore.CVector.dtype = complex
 pgcore.IVector.dtype = int
 pgcore.IndexArray.dtype = np.uint
 
-pgcore.RVector3.dtype = float
-pgcore.RVector3.__len__ = lambda self: 3
-pgcore.RVector3.ndim = 1
-pgcore.RVector3.shape = (3,)
+pgcore.Pos.dtype = float
+pgcore.Pos.__len__ = lambda self: 3
+pgcore.Pos.ndim = 1
+pgcore.Pos.shape = (3,)
 
 pgcore.R3Vector.dtype = float
 pgcore.R3Vector.__len__ = lambda self: self.size()
 pgcore.R3Vector.ndim = 2
 pgcore.R3Vector.shape = property(lambda self: (self.size(), 3))
 
-# remove me
-pgcore.stdVectorRVector3.ndim = 2
+# remove me 23_08_28
+# pgcore.stdVectorPos.ndim = 2
 
 ############################
 # abs(RVector), RMatrix
@@ -602,7 +602,7 @@ pgcore.CVector.__hash__ = pgcore.CVector.hash
 pgcore.IVector.__hash__ = pgcore.IVector.hash
 pgcore.IndexArray.__hash__ = pgcore.IndexArray.hash
 pgcore.R3Vector.__hash__ = pgcore.R3Vector.hash
-pgcore.RVector3.__hash__ = pgcore.RVector3.hash
+pgcore.Pos.__hash__ = pgcore.Pos.hash
 pgcore.DataContainer.__hash__ = pgcore.DataContainer.hash
 pgcore.DataContainerERT.__hash__ = pgcore.DataContainerERT.hash
 pgcore.Mesh.__hash__ = pgcore.Mesh.hash
@@ -677,8 +677,8 @@ pgcore.RDenseMatrix.__iter__ = __MatIterCall__
 pgcore.CMatrix.__iter__ = __MatIterCall__
 
 
-class Vector3Iter():
-    """Simple iterator for RVector3/PosVector.
+class PosIter():
+    """Simple iterator for Pos/PosVector.
 
     Because it lacks the core function .beginPyIter()
     """
@@ -701,17 +701,15 @@ class Vector3Iter():
         else:
             return self.vec[self.pos]
 
+def __PosIterCall__(self):
+    return PosIter(self)
 
-def __Vector3IterCall__(self):
-    return Vector3Iter(self)
-
-
-pgcore.RVector3.__iter__ = __Vector3IterCall__
+pgcore.Pos.__iter__ = __PosIterCall__
 
 
 # ######### c to python converter ######
-# default converter from RVector3 to numpy array
-def __RVector3ArrayCall__(self, dtype=None):
+# default converter from Pos to numpy array
+def __PosArrayCall__(self, dtype=None):
     # if idx:
     # print(self)
     # print(idx)
@@ -762,23 +760,167 @@ pgcore.IndexArray.__array__ = __RVectorArrayCall__
 pgcore.stdVectorI.__array__ = __RVectorArrayCall__
 pgcore.R3Vector.__array__ = __RVectorArrayCall__
 
-pgcore.RVector3.__array__ = __RVector3ArrayCall__
+# should work with handmade wrapper -- test me!
+pgcore.Pos.__array__ = __PosArrayCall__
 
 # see bug description
 pgcore.CVector.__array__ = __CVectorArrayCall__
 
-# hackish until stdVectorRVector3 will be removed
-def __stdVectorRVector3ArrayCall(self, dtype=None):
-    # if idx is not None:
-    # print(self)
-    # print(idx)
-    return pgcore.stdVectorRVector3ToR3Vector(self).array()
+
+# # hackish until stdVectorRVector3 will be removed 23_08_28
+# def __stdVectorRVector3ArrayCall(self, dtype=None):
+#     # if idx is not None:
+#     # print(self)
+#     # print(idx)
+#     return pgcore.stdVectorRVector3ToR3Vector(self).array()
+# pgcore.stdVectorRVector3.__array__ = __stdVectorRVector3ArrayCall
+
+##################################
+# stdVectorRVector operators
+# Check why they are not exposed by generator!!
+##################################
+
+__IOP__ = ['__iadd__', 
+           '__isub__',
+           '__imul__',
+           #'__itruediv__',
+           ]
+
+__BINOP__ = ['__add__', 
+             '__sub__',
+             '__mul__',
+             '__truediv__',
+             '__radd__', 
+             '__rsub__',
+             '__rmul__',
+             '__rtruediv__',
+             ]
+
+def __stdVectorRVector_NEG__(self):
+    ret = pgcore.stdVectorRVector()
+    for i, ai in enumerate(self):
+        ret.append(-ai)
+    return ret
+
+def __stdVectorRVector_POW__(self, exp):
+    ret = pgcore.stdVectorRVector()
+    for i, ai in enumerate(self):
+        ret.append(ai**exp)
+    return ret
+
+pgcore.stdVectorRVector.__neg__ = __stdVectorRVector_NEG__
+pgcore.stdVectorRVector.__pow__ = __stdVectorRVector_POW__
+
+def __stdVectorRVector_IOP__(self, a, OP):
+    if isScalar(a):
+        for i in range(len(self)):
+            self[i] = getattr(self[i], OP)(a)
+    elif len(self) == len(a):
+        for i in range(len(self)):
+            getattr(self[i], OP)(a)
+    else:
+        critical(f'Cannot {OP} stdVectorRVector with different lengths. {len(self)} != {len(a)}')
+
+    return self
+
+def __stdVectorRVector_BIOP__(self, b, OP):
+    ret = pgcore.stdVectorRVector()
+    if isScalar(b):
+        for i, ai in enumerate(self):
+            ret.append(getattr(ai, OP)(b))
+    elif len(self) == len(b):
+        for i, ai in enumerate(self):
+            ret.append(getattr(ai, OP)(b[i]))
+    else:
+        critical(f'Cannot {OP} stdVectorRVector with different lengths. {len(self)} != {len(b)}')
+    
+    return ret
+
+# for _OP in __IOP__:
+#     def _closure(OP):
+#         return lambda a, b: __stdVectorRVector_IOP__(a, b, OP)
+#     setattr(pgcore.stdVectorRVector, _OP, _closure(_OP))
+
+for _OP in __BINOP__:
+    def _closure(OP):
+        return lambda a, b: __stdVectorRVector_BIOP__(a, b, OP)
+    setattr(pgcore.stdVectorRVector, _OP, _closure(_OP))
 
 
-pgcore.stdVectorRVector3.__array__ = __stdVectorRVector3ArrayCall
+def __stdVectorRVector__array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+    """
+    For numpy operators
+    """
+    ###  more advanced behaviour possible ... instead of __array_ufunc__ = None
+    ### https://docs.scipy.org/doc/numpy-1.13.0/neps/ufunc-overrides.html
+    if ufunc == np.power:
+        vRv = inputs[0]
+        exp = inputs[1]
+        return vRv ** exp
 
-# pgcore.RVector3.__array__ = pgcore.RVector3.array
-# del pgcore.RVector.__array__
+    ### rmul
+    if ufunc == np.multiply:
+        if isinstance(inputs[0], pgcore.stdVectorRVector):
+            return inputs[0] * inputs[1]
+        else:
+            return inputs[1] * inputs[0]
+        
+    pg._r(self)
+    pg._y(f'ufunc: {ufunc}')
+    pg._y(f'method: {method}')
+    pg._y(f'inputs: {inputs}')
+    pg._y(f'kwargs: {kwargs}')
+    pg.critical('implementme')
+
+pgcore.stdVectorRVector.__array_ufunc__ = __stdVectorRVector__array_ufunc__
+#pgcore.stdVectorRVector.__array_ufunc__ = None
+
+def __stdVectorRVector_ABS__(self):
+    ret = pgcore.stdVectorRVector()
+    for i, ai in enumerate(self):
+        ret.append(abs(ai))
+    return ret
+
+pgcore.stdVectorRVector.__abs__ = __stdVectorRVector_ABS__
+
+##################################
+# stdVectorR3Vector operators
+##################################
+
+def __stdVectorR3Vector_BIOP__(self, b, OP):
+    ret = pgcore.stdVectorR3Vector()
+    
+    if isScalar(b):
+        for i, ai in enumerate(self):
+            ret.append(getattr(ai, OP)(b))
+        return ret
+    
+    elif len(self) == len(b):
+        for i, ai in enumerate(self):
+            ret.append(getattr(ai, OP)(b[i]))
+    else:
+        pg.critical(f'Cannot {OP} stdVectorR3Vector with different lengths: {len(self)}{len(b)}')
+    
+    return ret
+
+def __stdVectorR3Vector_ABS__(self):
+    ret = pgcore.stdVectorRVector()
+    for i, ai in enumerate(self):
+        ret.append(abs(ai))
+    return ret
+
+pgcore.stdVectorR3Vector.__abs__ = __stdVectorR3Vector_ABS__
+
+# for _OP in __IOP__:
+#     def _closure(OP):
+#         return lambda a, b: __stdVector3RVector_IOP__(a, b, OP)
+#     setattr(pgcore.stdVector3RVector, _OP, _closure(_OP))
+
+for _OP in __BINOP__:
+    def _closure(OP):
+        return lambda a, b: __stdVectorR3Vector_BIOP__(a, b, OP)
+    setattr(pgcore.stdVectorR3Vector, _OP, _closure(_OP))
+
 
 ##################################
 # custom rvalues for special cases
@@ -816,10 +958,10 @@ pgcore.RVector.__pow__ = __RVectorPower
 ##################################
 
 Vector = pgcore.RVector
-Inversion = pgcore.RInversion
-Pos = pgcore.RVector3
+Pos = pgcore.Pos
 PosVector = pgcore.R3Vector
 PosList = PosVector
+Inversion = pgcore.RInversion
 
 
 ############################
@@ -866,13 +1008,13 @@ def abs(v):
     if isinstance(v, pgcore.CVector):
         return pgcore.mag(v)
     elif isPos(v):
-        return pgcore.RVector3(v).abs()
+        return pgcore.Pos(v).abs()
     elif isPosList(v):
         return pgcore.absR3(v)
     elif isinstance(v, list):
         # possible [x,y,[z]] or [pos, ...]
         try:
-            return pgcore.RVector3(v).abs()
+            return pgcore.Pos(v).abs()
         except:
             return pgcore.absR3(np.array(v).T)
     elif isinstance(v, pgcore.R3Vector):
@@ -1121,9 +1263,9 @@ def __getCoords(coord, dim, ent):
         return ent
     if isPos(ent):
         return ent[dim]
-    if isinstance(ent, (pgcore.R3Vector, pgcore.stdVectorRVector3)):
+    if isinstance(ent, (pgcore.R3Vector)):
         return getattr(pgcore, coord)(ent)
-    if isinstance(ent, list) and isinstance(ent[0], pgcore.RVector3):
+    if isinstance(ent, list) and isinstance(ent[0], pgcore.Pos):
         return getattr(pgcore, coord)(ent)
     if isinstance(ent, list) and isPos(ent[0]):
         return getattr(pgcore, coord)(ent)
@@ -1165,7 +1307,7 @@ def x(instance):
 
     Parameters
     ----------
-    instance : DataContainer, Mesh, R3Vector, np.array, list(RVector3)
+    instance : DataContainer, Mesh, R3Vector, np.array, list(Pos)
         Return the associated coordinate positions for given class instance.
 
     Examples
@@ -1193,7 +1335,7 @@ def y(instance):
 
     Parameters
     ----------
-    instance : DataContainer, Mesh, R3Vector, np.array, list(RVector3)
+    instance : DataContainer, Mesh, R3Vector, np.array, list(Pos)
         Return the associated coordinate positions for given class instance.
     """
     ## test atoms first (perfomance)
@@ -1210,7 +1352,7 @@ def z(instance):
 
     Parameters
     ----------
-    instance : DataContainer, Mesh, R3Vector, np.array, list(RVector3)
+    instance : DataContainer, Mesh, R3Vector, np.array, list(Pos)
         Return the associated coordinate positions for given class instance.
     """
     ## test atoms first (perfomance)

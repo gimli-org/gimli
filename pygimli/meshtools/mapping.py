@@ -321,7 +321,7 @@ def interpolateAlongCurve(curve, t, **kwargs):
 
     # extrapolate starting overlaps
     if min(t) < min(tCurve):
-        d = pg.RVector3(curve[1]) - pg.RVector3(curve[0])
+        d = pg.Pos(curve[1]) - pg.Pos(curve[0])
         # d[2] = 0.0
         d.normalise()
         curve = np.insert(curve, [0], [
@@ -331,7 +331,7 @@ def interpolateAlongCurve(curve, t, **kwargs):
 
     # extrapolate ending overlaps
     if max(t) > max(tCurve):
-        d = pg.RVector3(curve[-2]) - pg.RVector3(curve[-1])
+        d = pg.Pos(curve[-2]) - pg.Pos(curve[-1])
         # d[2] = 0.0
         d.normalise()
         curve = np.append(curve, [
@@ -339,8 +339,7 @@ def interpolateAlongCurve(curve, t, **kwargs):
         ], axis=0)
         tCurve = np.append(tCurve, max(t))
 
-    if isinstance(curve, pg.PosVector) or isinstance(
-            curve, pg.core.stdVectorRVector3):
+    if isinstance(curve, pg.PosVector):
         xC = pg.x(curve)
         yC = pg.y(curve)
         zC = pg.z(curve)
@@ -396,7 +395,7 @@ def tapeMeasureToCoordinates(tape, pos):
 
     Parameters
     ----------
-    tape : [[x,z]] | [RVector3] | R3Vector
+    tape : [[x,z]] | [Pos] | R3Vector
         List of tape measured topography points with measured distance (x)
         from origin and height (z)
 
@@ -616,8 +615,7 @@ def interpolate(*args, **kwargs):
             inMesh = args[1]
             data = args[2]
 
-            if isinstance(data, pg.PosVector) or isinstance(
-                    data, pg.core.stdVectorRVector3):
+            if isinstance(data, pg.PosVector):
                 x = pg.interpolate(outMesh, inMesh, pg.x(data))
                 y = pg.interpolate(outMesh, inMesh, pg.y(data))
                 z = pg.interpolate(outMesh, inMesh, pg.z(data))

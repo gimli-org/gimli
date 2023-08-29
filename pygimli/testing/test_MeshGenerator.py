@@ -46,7 +46,6 @@ class TestMeshGenerator(unittest.TestCase):
             # On Linux Mesh: Nodes: 43 Cells: 60 Boundaries: 102 (same as for quality=30)
             self.assertEqual(mesh.nodeCount(), 43)
         
-
     def test_createGrid(self):
         mesh = pg.createGrid(3)
         self.assertEqual(mesh.xmax(), 2.0)

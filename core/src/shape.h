@@ -36,17 +36,17 @@
 
 namespace GIMLI{
 
-/*! Return Volume of the Tetrahedron given by 4 RVector3 */
-DLLEXPORT double tetVolume(const RVector3 & p0, const RVector3 & p1,
-                           const RVector3 & p2, const RVector3 & p3);
+/*! Return Volume of the Tetrahedron given by 4 Pos */
+DLLEXPORT double tetVolume(const Pos & p0, const Pos & p1,
+                           const Pos & p2, const Pos & p3);
 
-/*! Return Size of the Triangle given by 3 RVector3 */
-DLLEXPORT double triSize(const RVector3 & p0, const RVector3 & p1,
-                         const RVector3 & p2);
+/*! Return Size of the Triangle given by 3 Pos */
+DLLEXPORT double triSize(const Pos & p0, const Pos & p1,
+                         const Pos & p2);
 
 
 DLLEXPORT std::vector < PolynomialFunction < double > >
-createPolynomialShapeFunctions(const std::vector < RVector3 > & pnts,
+createPolynomialShapeFunctions(const std::vector < Pos > & pnts,
                                uint dim, uint nCoeff,
                                bool pascale, bool serendipity,
                                const RVector & startVector);
@@ -57,7 +57,7 @@ template < class Ent > std::vector < PolynomialFunction < double > >
                                    bool pascale, bool serendipity,
                                    const RVector & startVector){
 // __MS(ent)
-    std::vector < RVector3 > pnts;
+    std::vector < Pos > pnts;
     for (Index i = 0; i < ent.nodeCount(); i ++){
         pnts.push_back(ent.rst(i));
     }
@@ -85,7 +85,7 @@ public:
         auto it = shapeFunctions_.find(e.rtti());
 
         if (it == shapeFunctions_.end()){
-            __MS(e.rtti())
+            // __MS(e.rtti())
             this->createShapeFunctions_(e);
             it = shapeFunctions_.find(e.rtti());
         }
@@ -99,7 +99,7 @@ public:
         auto it = dShapeFunctions_.find(e.rtti());
 
         if (it == dShapeFunctions_.end()) {
-            __MS(e.rtti())
+            // __MS(e.rtti())
             this->createShapeFunctions_(e);
             it = dShapeFunctions_.find(e.rtti());
         }
@@ -254,19 +254,19 @@ public:
 
     /*! Return a \ref RVector for the \f$ n=[0,\mathrm{nodeCount()}] \f$ shape functions
      *\f$ N_n(r,s,t)\f$ at the local coordinate \f$ L(r,s,t)\f$. */
-    virtual RVector N(const RVector3 & L) const;
+    virtual RVector N(const Pos & L) const;
 
     /*! TODO replace this with expressions. \n
      * Fill the allocated \ref RVector n of size \f$ \mathcal{N} \f$ for the \f$ n=[0,\f$ \mathcal{N} \f$) \f$ shape functions \f$ N_n(r,s,t)\f$ for the local coordinate \f$ L(r,s,t)\f$. For performance reasons the size of L will not be checked.
      This method needs to be specialized in the corresponding child classes. */
-    virtual void N(const RVector3 & L, RVector & ret) const;
+    virtual void N(const Pos & L, RVector & ret) const;
 
     /*! Return the derivative matrix of size (\f$ 3\times\mathcal{N} \f$) for the shape functions at the local coordinate.
      * \f$ L(r,s,t) \f$. Result is independent of L for linear shape function (TODO Remove on cleanup)
      * \f$ [[\frac{dN_i(r,s,t)}{\partial r}],[\frac{dN_i(r,s,t)}{\partial s}],[\frac{dN_i(r,s,t)}{\partial t}]^{\mathrm{T}}] \f$ for \f$ i = [0,\mathcal{N}\f$ */
-    virtual void dNdrst(const RVector3 & rst, RMatrix & MdNdrst) const;
+    virtual void dNdrst(const Pos & rst, RMatrix & MdNdrst) const;
 
-    virtual RMatrix dNdrst(const RVector3 & L) const;
+    virtual RMatrix dNdrst(const Pos & L) const;
 
     /*! Perform coordinate transformation from the locale coordinates \f$ (r,s,t)=(r,s,t)=([0..1,0..1,0..1]) \f$ of this shape to Cartesian coordinates \f$ (x,y,z) \f$ regarding to the \f$ \mathcal{N} \f$ shape functions \ref N
      * \f$ N_i \f$ with \f$ i=[0,\mathcal{N})\f$ \n
@@ -278,23 +278,23 @@ public:
         \f}
      * This is a generic function and may be overwritten by faster methods for shape simplexes.
      */
-    virtual void rst2xyz(const RVector3 & rst, RVector3 & xyz) const;
+    virtual void rst2xyz(const Pos & rst, Pos & xyz) const;
 
     /*! Return the Cartesian coordinates for the locale coordinates rst. See \ref rst2xyz. */
-    virtual RVector3 xyz(const RVector3 & rst) const;
+    virtual Pos xyz(const Pos & rst) const;
 
     /*! Convert Cartesian coordinates into locale coordinates regarding the shape functions.
      * This is the opposite to \ref xyz2rst.
      * This is a generic function and may be overwritten by faster methods for shape simplexes.
      * Solve the nonlinear system of equations by newton method \f$ \mathrm{d}(x,y,z)= J*\mathrm{d}(r,s,t) \f$
      */
-    virtual void xyz2rst(const RVector3 & xyz, RVector3 & rst) const;
+    virtual void xyz2rst(const Pos & xyz, Pos & rst) const;
 
     /*! Return local coordinates for Cartesian coordinates regarding the shape function. */
-    virtual RVector3 rst(const RVector3 & xyz) const;
+    virtual Pos rst(const Pos & xyz) const;
 
     /*! Return local coordinates for node i. */
-    virtual RVector3 rst(Index i) const;
+    virtual Pos rst(Index i) const;
 
     /*! Return derivative from local coordinates to Cartesian coordinates.
      * These are the elements of the inverse Jacobian matrix.
@@ -307,26 +307,26 @@ public:
      * On boundary means inside too.
      Works only for shapes dedicated as cells because they need to
      be aligned to the dimension. See also \ref touch. */
-    virtual bool isInside(const RVector3 & xyz, bool verbose=false) const;
+    virtual bool isInside(const Pos & xyz, bool verbose=false) const;
 
     /*! Return true if the Cartesian coordinates xyz are inside the shape.
      * On boundary means inside too.
      * sf contains the complete shape function to identify next neighbor.
      Works only for shapes dedicated as cells because they need to
      be aligned to the dimension. See also \ref touch.*/
-    virtual bool isInside(const RVector3 & xyz, RVector & sf,
+    virtual bool isInside(const Pos & xyz, RVector & sf,
                           bool verbose=false) const;
 
     /*! Check if the position touches the entity.
     Works only for shapes dedicated as boundaries.
     On edge of the boundary means inside too. See also \ref isInside.*/
-    virtual bool touch(const RVector3 & pos, double tol=1e-6, bool verbose=false) const;
+    virtual bool touch(const Pos & pos, double tol=1e-6, bool verbose=false) const;
 
     /*!* Return true if the ray intersects the shape.
      * On boundary means inside too. The intersection position is stored in pos.
      * */
-    virtual bool intersectRay(const RVector3 & start, const RVector3 & dir,
-                              RVector3 & pos){
+    virtual bool intersectRay(const Pos & start, const Pos & dir,
+                              Pos & pos){
         __MS(rtti(), name())
         THROW_TO_IMPL
         return false;
@@ -336,10 +336,10 @@ public:
     double domainSize() const;
 
     /*! Returns the middle position of this shape */
-    RVector3 center() const;
+    Pos center() const;
 
     /*! Returns the norm vector if possible otherwise returns non valid Vector3 */
-    virtual RVector3 norm() const;
+    virtual Pos norm() const;
 
     /*! Returns maximum distance between 2 nodes.*/
     double h() const;
@@ -386,11 +386,11 @@ public:
 
     virtual std::string name() const { return "NodeShape"; }
 
-    virtual RVector3 rst(Index i) const;
+    virtual Pos rst(Index i) const;
 
     virtual double domainSize_() const { return 1.0; }
 
-    virtual RVector3 norm() const;
+    virtual Pos norm() const;
 
 protected:
     //virtual double jacobianDeterminant_() const { return 0.0; }
@@ -414,22 +414,22 @@ public:
     virtual std::string name() const { return "EdgeShape"; }
 
     /*! See Shape::rst */
-    virtual RVector3 rst(Index i) const;
+    virtual Pos rst(Index i) const;
 
     /*!* Return true if the ray intersects the shape.
      * On boundary means inside too. The intersection position is stored in pos.
      * */
-    virtual bool intersectRay(const RVector3 & start, const RVector3 & dir,
-                              RVector3 & pos);
+    virtual bool intersectRay(const Pos & start, const Pos & dir,
+                              Pos & pos);
 
     /*! Check if the position touches the entity.
     Works only for shapes dedicated as boundaries.
     On edge of the boundary means inside too. See also \ref isInside.*/
-    virtual bool touch(const RVector3 & pos, double tol=1e-6, bool verbose=false) const;
+    virtual bool touch(const Pos & pos, double tol=1e-6, bool verbose=false) const;
 
     double length() const;
 
-    virtual RVector3 norm() const;
+    virtual Pos norm() const;
 
 protected:
 
@@ -466,20 +466,20 @@ public:
     virtual std::string name() const { return "TriangleShape"; }
 
     /*! See Shape::rst */
-    virtual RVector3 rst(Index i) const;
+    virtual Pos rst(Index i) const;
 
     /*! See Shape::xyz2rst. this is a specialized override for speedup. */
-    virtual void xyz2rst(const RVector3 & pos, RVector3 & rst) const;
+    virtual void xyz2rst(const Pos & pos, Pos & rst) const;
 
     double area() const;
 
-    virtual RVector3 norm() const;
+    virtual Pos norm() const;
 
     /*!* Return true if the ray intersects the shape.
      * On boundary means inside too. The intersection position is stored in pos.
      * */
-    virtual bool intersectRay(const RVector3 & start, const RVector3 & dir,
-                              RVector3 & pos);
+    virtual bool intersectRay(const Pos & start, const Pos & dir,
+                              Pos & pos);
 
 protected:
 
@@ -521,22 +521,22 @@ public:
     virtual std::string name() const { return "QuadrangleShape"; }
 
     /*! See Shape::rst */
-    virtual RVector3 rst(Index i) const;
+    virtual Pos rst(Index i) const;
 
     double area() const;
 
 //     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
 //     /*! See Shape::N. */
-//     virtual void N(const RVector3 & L, RVector & n) const;
+//     virtual void N(const Pos & L, RVector & n) const;
 
 //     /*! See Shape::dNdrst. */
-//     virtual RMatrix dNdrst(const RVector3 & rst) const;
+//     virtual RMatrix dNdrst(const Pos & rst) const;
 //
-    virtual RVector3 norm() const;
+    virtual Pos norm() const;
 
-    virtual bool intersectRay(const RVector3 & start, const RVector3 & dir,
-                              RVector3 & pos);
+    virtual bool intersectRay(const Pos & start, const Pos & dir,
+                              Pos & pos);
 
 protected:
     virtual double domainSize_() const { return area(); }
@@ -555,11 +555,11 @@ public:
 
     virtual std::string name() const { return "PolygonFaceShape"; }
 
-    virtual RVector3 norm() const;
+    virtual Pos norm() const;
 
-    virtual RVector3 rst(Index i) const;
+    virtual Pos rst(Index i) const;
 
-    virtual bool isInside(const RVector3 & xyz, bool verbose) const;
+    virtual bool isInside(const Pos & xyz, bool verbose) const;
 
 protected:
 };
@@ -589,16 +589,16 @@ public:
     virtual std::string name() const { return "TetrahedronShape"; }
 
     /*! See Shape::rst */
-    virtual RVector3 rst(Index i) const;
+    virtual Pos rst(Index i) const;
 
     /*! See Shape::xyz2rst. Specialization for speedup */
-    void xyz2rst(const RVector3 & pos, RVector3 & rst) const;
+    void xyz2rst(const Pos & pos, Pos & rst) const;
 
 //     /*! See Shape::N. */
-//     virtual void N(const RVector3 & L, RVector & n) const;
+//     virtual void N(const Pos & L, RVector & n) const;
 //
 //     /*! See Shape::dNdrst. */
-//     virtual RMatrix dNdrst(const RVector3 & rst) const;
+//     virtual RMatrix dNdrst(const Pos & rst) const;
 
     double volume() const;
 
@@ -660,7 +660,7 @@ public:
     virtual int dim() const { return 3; }
 
     /*! See Shape::rst */
-    virtual RVector3 rst(Index i) const;
+    virtual Pos rst(Index i) const;
 
     virtual std::string name() const { return "HexahedronShape"; }
 
@@ -671,10 +671,10 @@ public:
     virtual bool enforcePositiveDirection();
 
 //     /*! See Shape::N. */
-//     virtual void N(const RVector3 & L, RVector & n) const;
+//     virtual void N(const Pos & L, RVector & n) const;
 //
 //     /*! See Shape::dNdrst. */
-//     virtual RMatrix dNdrst(const RVector3 & rst) const;
+//     virtual RMatrix dNdrst(const Pos & rst) const;
 
 protected:
 
@@ -721,7 +721,7 @@ public:
     virtual std::string name() const { return "TriagonalPrismShape"; }
 
     /*! See Shape::rst */
-    virtual RVector3 rst(Index i) const;
+    virtual Pos rst(Index i) const;
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
@@ -759,13 +759,13 @@ public:
     virtual int dim() const { return 3; }
 
     /*! See Shape::rst */
-    virtual RVector3 rst(Index i) const;
+    virtual Pos rst(Index i) const;
 
 //     /*! See Shape::N. */
-//     virtual void N(const RVector3 & L, RVector & n) const;
+//     virtual void N(const Pos & L, RVector & n) const;
 //
 //     /*! See Shape::dNdrst. */
-//     virtual RMatrix dNdrst(const RVector3 & rst) const;
+//     virtual RMatrix dNdrst(const Pos & rst) const;
 
 };
 

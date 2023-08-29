@@ -584,8 +584,8 @@ def createLine(start, end, nSegments=1, **kwargs):
 
     # TODO refactor with polyCreatePolygon
     poly = pg.Mesh(dim=2, isGeometry=True)
-    startPos = pg.RVector3(start)
-    endPos = pg.RVector3(end)
+    startPos = pg.Pos(start)
+    endPos = pg.Pos(end)
     a = endPos - startPos
 
     dt = 1. / nSegments
@@ -901,7 +901,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
 
     Parameters
     ----------
-    sensors : [RVector3] | DataContainer with sensorPositions() | [xMin, xMax]
+    sensors : [Pos] | DataContainer with sensorPositions() | [xMin, xMax]
         Sensor positions. Must be sorted and unique in positive x direction.
         Depth need to be y-coordinate.
 
@@ -967,14 +967,14 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
         sensors = sensors.sensorPositions()
     elif isinstance(sensors, np.ndarray):
         if sensors.ndim == 1:
-            sensors = [pg.RVector3(s, 0) for s in sensors]
+            sensors = [pg.Pos(s, 0) for s in sensors]
         else:  # assume 2d array with 2 or 3 values per item
-            sensors = [pg.RVector3(s) for s in sensors]
+            sensors = [pg.Pos(s) for s in sensors]
     elif isinstance(sensors, list):
         if len(sensors) == 2:
             # guess we have just a desired Pbox with
-            sensors = [pg.RVector3(sensors[0], 0.0),
-                       pg.RVector3(sensors[1], 0.0)]
+            sensors = [pg.Pos(sensors[0], 0.0),
+                       pg.Pos(sensors[1], 0.0)]
             noSensors = True
             paraBoundary = 0
 
@@ -2074,10 +2074,10 @@ def createCube(size=[1.0, 1.0, 1.0], pos=None,
     Mesh: Nodes: 8 Cells: 0 Boundaries: 6
     >>> cube = mt.createCube([10, 10, 1])
     >>> print(cube.bb())
-    [RVector3: (-5.0, -5.0, -0.5), RVector3: (5.0, 5.0, 0.5)]
+    [Pos: (-5.0, -5.0, -0.5), Pos: (5.0, 5.0, 0.5)]
     >>> cube = mt.createCube([10, 10, 1], pos=[-4.0, 0.0, 0.0])
     >>> print(pg.center(cube.positions()))
-    RVector3: (-4.0, 0.0, 0.0)
+    Pos: (-4.0, 0.0, 0.0)
 
     Returns
     -------

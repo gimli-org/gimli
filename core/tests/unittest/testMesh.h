@@ -10,6 +10,7 @@ using namespace GIMLI;
 
 class MeshTest : public CppUnit::TestFixture{
     CPPUNIT_TEST_SUITE(MeshTest);
+    CPPUNIT_TEST(testGrid);
     CPPUNIT_TEST(testSimple);
     CPPUNIT_TEST(testRefine2d);
     CPPUNIT_TEST(testRefine3d);
@@ -20,6 +21,11 @@ class MeshTest : public CppUnit::TestFixture{
     CPPUNIT_TEST_SUITE_END();
 
 public:
+
+    void testGrid(){
+        RVector x({0, 0.5, 1});
+        Mesh m(createGrid(x));
+    }
 
     void testSimple(){
 

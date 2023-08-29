@@ -402,10 +402,10 @@ public:
         GIMLI::ElementMatrix < double > S;
         S.ux2uy2uz2(ent);
         for (size_t i = 0; i < S.size(); i ++){
-            double s = sum(S.row(i));
+            double s = sum(S.row_RM(i));
             if (::fabs(s) > TOLERANCE) {
                 std::cout << ent.rtti() << " " << ent.shape().name() << std::endl;
-                std::cout << S.row(i) << std::endl;
+                std::cout << S.row_RM(i) << std::endl;
                 std::cout << s << std::endl;
             }
             CPPUNIT_ASSERT(::fabs(s) < TOLERANCE);
@@ -420,7 +420,7 @@ public:
         S.u2(ent);
         double s = 0.0;
         for (size_t i = 0; i < S.size(); i ++){
-            s += sum(S.row(i));
+            s += sum(S.row_RM(i));
         }
         CPPUNIT_ASSERT(::fabs(s - ent.shape().domainSize()) < TOLERANCE);
     }
@@ -428,7 +428,7 @@ public:
     void testLoadElement(const GIMLI::Cell & ent){
         GIMLI::ElementMatrix < double > S;
         S.u(ent);
-        double s = sum(S.row(0));
+        double s = sum(S.row_RM(0));
         //std::cout << s << " " << ent.shape().domainSize() << std::endl;
         CPPUNIT_ASSERT(::fabs(s - ent.shape().domainSize()) < TOLERANCE);
 

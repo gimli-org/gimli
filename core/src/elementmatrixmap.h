@@ -32,12 +32,16 @@ public:
         cols_ = 0; // think to remove
         dofA_ = 0;
         dofB_ = 0;
+        nCoeff_ = 0;
+        dofPerCoeff_ = 0;
+        dofOffset_ = 0;
     }
-
 
     void push_back(const ElementMatrix < double > & Ai);
 
     void resize(Index size);
+
+    void clear();
 
     #define DEFINE_INTEGRATOR_LF(A_TYPE, varname) \
         /*! R = \int_mesh this * f \d d mesh and R = RVector(dof) and \
@@ -193,9 +197,23 @@ public:
     Index dofB() const { return this->dofB_; }
     void setDof(Index a) { this->dofA_ = a; }
     void setDof(Index a, Index b) { this->dofA_ = a; this->dofB_ = b;}
+    inline void setDofs(Index nCoeff, Index dofPerCoeff, Index dofOffset){
+        nCoeff_ = nCoeff;
+        dofPerCoeff_ = dofPerCoeff;
+        dofOffset_ = dofOffset;
+        this->setDof(dofPerCoeff_ * nCoeff_ + dofOffset_);
+    }
+
+    inline Index nCoeff() const { return nCoeff_;}
+    inline Index dofPerCoeff() const { return dofPerCoeff_;}
+    inline Index dofOffset() const { return dofOffset_;}
 
 protected:
     std::vector< ElementMatrix < double > > mats_;
+    Index nCoeff_;
+    Index dofPerCoeff_;
+    Index dofOffset_;
+
     mutable std::vector < PosVector > quadrPnts_; // cache Q for mats_
 
     std::vector< RSmallMatrix > mat_;
@@ -246,5 +264,14 @@ DLLEXPORT void sym(const ElementMatrixMap & A, ElementMatrixMap & ret);
 DLLEXPORT RVector tr(const ElementMatrixMap & A);
 DLLEXPORT void tr(const ElementMatrixMap & A, RVector & ret);
 
+void createUMap_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
+                Index nCoeff, Index dofOffset);
+
+void createUMap0_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
+                Index nCoeff, Index dofOffset);
+void createUMap1_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
+                Index nCoeff, Index dofOffset);
+void createUMap2_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
+                Index nCoeff, Index dofOffset);
 
 } // namespace GIMLI{

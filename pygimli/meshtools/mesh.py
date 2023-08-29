@@ -80,7 +80,6 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
     # poly == [pos, pos, ]
     if isinstance(poly, list) or \
         isinstance(poly, type(zip)) or \
-        isinstance(poly, pg.core.stdVectorRVector3) or \
         isinstance(poly, pg.PosVector) or \
             (isinstance(poly, np.ndarray) and poly.ndim == 2):
         delPLC = pg.Mesh(2)
@@ -1098,7 +1097,7 @@ def readHydrus2dMesh(fileName='MESHTRIA.TXT'):
     for _ in range(nNodes):
         line = fid.readline().split()
         mesh.createNode(
-            pg.RVector3(float(line[1]) / 100., float(line[2]) / 100., 0.))
+            pg.Pos(float(line[1]) / 100., float(line[2]) / 100., 0.))
 
     for _ in range(3):
         line = fid.readline()
@@ -1153,7 +1152,7 @@ def readHydrus3dMesh(fileName='MESHTRIA.TXT'):
     mesh = pg.Mesh()
     for _ in range(nNodes):
         pos = f.readline().split()
-        p = pg.RVector3(
+        p = pg.Pos(
             float(pos[1]) * dx, float(pos[2]) * dx, float(pos[3]) * dx * (-1.))
         n = mesh.createNode(p)
         nodes.append(n)
@@ -1656,7 +1655,7 @@ def readEIDORSMesh(fileName, matlabVarname, verbose=False):
         if verbose:
             print('converting to %d-D pygimli mesh... ' % dim_nodes)
         for i in range(len(nodes)):
-            mesh.createNode(pg.RVector3(nodes[i, 0], nodes[i, 1], 0.))
+            mesh.createNode(pg.Pos(nodes[i, 0], nodes[i, 1], 0.))
         for i in range(len(elems)):
             mesh.createTriangle(
                 mesh.node(int(elems[i, 0]) - 1),
@@ -1669,7 +1668,7 @@ def readEIDORSMesh(fileName, matlabVarname, verbose=False):
             print('converting to pygimli mesh...')
             print('found 3d nodes with 2d elements')
         for i in range(len(nodes)):
-            mesh.createNode(pg.RVector3(nodes[i, 0], nodes[i, 1], nodes[i, 2]))
+            mesh.createNode(pg.Pos(nodes[i, 0], nodes[i, 1], nodes[i, 2]))
         for i in range(len(elems)):
             mesh.createTriangle(
                 mesh.node(int(elems[i, 0]) - 1),
@@ -1681,7 +1680,7 @@ def readEIDORSMesh(fileName, matlabVarname, verbose=False):
         if verbose:
             print('converting to %d-D pygimli mesh... ' % dim_nodes)
         for i in range(len(nodes)):
-            mesh.createNode(pg.RVector3(nodes[i, 0], nodes[i, 1], nodes[i, 2]))
+            mesh.createNode(pg.Pos(nodes[i, 0], nodes[i, 1], nodes[i, 2]))
         for i in range(len(elems)):
             mesh.createTetrahedron(
                 mesh.node(int(elems[i, 0]) - 1),
@@ -1810,7 +1809,7 @@ def transform2DMeshTo3D(mesh, x, y, z=None):
 
     # set the positions in the mesh
     for i, node in enumerate(mesh.nodes()):
-        node.setPos(pg.RVector3(mx[i], my[i], mz[i] + oz[i]))
+        node.setPos(pg.Pos(mx[i], my[i], mz[i] + oz[i]))
 
 
 def rot2DGridToWorld(mesh, start, end):
@@ -1818,11 +1817,11 @@ def rot2DGridToWorld(mesh, start, end):
 
     todo:: Complete Documentation. ...rotate a given 2D grid in...
     """
-    mesh.rotate(pg.degToRad(pg.RVector3(-90.0, 0.0, 0.0)))
+    mesh.rotate(pg.degToRad(pg.Pos(-90.0, 0.0, 0.0)))
 
-    src = pg.RVector3(0.0, 0.0, 0.0).norm(pg.RVector3(0.0, 0.0, -10.0),
-                                          pg.RVector3(10.0, 0.0, -10.0))
-    dest = start.norm(start - pg.RVector3(0.0, 0.0, 10.0), end)
+    src = pg.Pos(0.0, 0.0, 0.0).norm((0.0, 0.0, -10.0),
+                                     (10.0, 0.0, -10.0))
+    dest = start.norm(start - pg.Pos(0.0, 0.0, 10.0), end)
 
     rot = pg.getRotation(src, dest)
     mesh.transform(rot)
@@ -1977,7 +1976,7 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
 
     Parameters
     ----------
-    sensors : list of RVector3 objects or data container with sensorPositions
+    sensors : list of Pos objects or data container with sensorPositions
         Sensor positions. Must be sorted in positive x direction
     paraDX : float, optional
         Horizontal distance between sensors, relative regarding sensor
@@ -2016,7 +2015,7 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
 
     # maybe separate x y z and sort
     if isinstance(sensors, np.ndarray) or isinstance(sensors, pg.Vector):
-        sensors = [pg.RVector3(s, 0) for s in sensors]
+        sensors = [pg.Pos(s, 0) for s in sensors]
 
     if isinstance(sensors, pg.DataContainer):
         sensors = sensors.sensorPositions()

@@ -33,6 +33,10 @@ void ElementMatrixMap::resize(Index size){
     rows_ = this->mats_.size();
 }
 
+void ElementMatrixMap::clear(){
+    mats_.clear();
+}
+
 void ElementMatrixMap::push_back(const ElementMatrix < double > & Ai){
     mats_.push_back(Ai);
     rows_ = this->mats_.size();
@@ -329,6 +333,7 @@ void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const { \
             i++; \
         } \
     } else { \
+        __MS(this->size(), f.size()) \
         THROW_TO_IMPL \
     } \
 } 
@@ -621,28 +626,35 @@ const std::vector< ElementMatrix < double > > & ElementMatrixMap::mats() const {
 
 void ElementMatrixMap::collectQuadraturePoints() const {
         
-    this->quadrPnts_.clear();
-    this->quadrPnts_.resize(this->mats_.size());
-
     if (!this->mats_[0].valid()){
         log(Critical, "uninitialized element map matrix. ");
         return;
     }
-// run with setenv omp_schedule “dynamic,5”
-//#pragma omp parallel for schedule(dynamic, 5)
-#pragma omp parallel for schedule(runtime)
-    for (auto &m: this->mats_){
-        const auto &x = *m.x();
-        Index cId = m.entity()->id();
-        
-        this->quadrPnts_[cId] = PosVector(x.size());
+    this->quadrPnts_.clear();
+    this->quadrPnts_.resize(this->mats_.size());
 
-        const auto &s = m.entity()->shape();
-        const auto &N = ShapeFunctionCache::instance().shapeFunctions(s);
+    #pragma omp parallel 
+    {
 
-        for (Index i = 0; i < x.size(); i ++){
-            for (Index j = 0; j < s.nodeCount(); j ++){
-                this->quadrPnts_[cId][i] += s.node(j).pos() * N[j](x[i]);
+        #pragma omp for schedule(runtime)
+        for (auto &m: this->mats_){
+            this->quadrPnts_[m.entity()->id()] = PosVector(m.x()->size());
+        }
+
+        // run with setenv omp_schedule “dynamic,5”
+        //#pragma omp parallel for schedule(dynamic, 5)
+        #pragma omp for schedule(runtime)
+        for (auto &m: this->mats_){
+            const auto &x = *m.x();
+            Index cId = m.entity()->id();
+
+            const auto &s = m.entity()->shape();
+            const auto &N = ShapeFunctionCache::instance().shapeFunctions(s);
+
+            for (Index i = 0; i < x.size(); i ++){
+                for (Index j = 0; j < s.nodeCount(); j ++){
+                    this->quadrPnts_[cId][i] += s.node(j).pos() * N[j](x[i]);
+                }
             }
         }
     }
@@ -717,9 +729,9 @@ RVector ElementMatrixMap::mult(const RVector & a, const RVector & b) const{
     return ret;
 }
 
+#include <unistd.h>
 void createUMap(const Mesh & mesh, Index order, ElementMatrixMap & ret,
                 Index nCoeff, Index dofOffset){
-
 
     // don't use cache here // check!
     if (mesh.nodeCount() == 0){
@@ -733,45 +745,95 @@ void createUMap(const Mesh & mesh, Index order, ElementMatrixMap & ret,
         return;
     }
 
-    ret.setDof(mesh.nodeCount()*nCoeff + dofOffset);
+    if (disableCacheForDBG()) ret.clear();
+
+    Index dofPerCoeff(mesh.nodeCount());
+    ret.setDofs(nCoeff, dofPerCoeff, dofOffset);
     ret.resize(mesh.cellCount());
 
+    #pragma omp parallel
+    { // omp paralell
 
-    Stopwatch sw(true);
-#pragma omp parallel for schedule(dynamic,5)
-    for (auto &cell: mesh.cells()){
-        ElementMatrix <double> *e = ret.pMat(cell->id());
-        Index nVerts = cell->nodeCount();
-        e->resize(nVerts*nCoeff, nCoeff);
-        
-        Index nRules = IntegrationRules::instance().abscissa(cell->shape(), order).size();
-        
-        //Index nRules = 64;
-        e->pMatX()->resize(nRules);
-
-        for (Index i = 0; i < nRules; i ++ ){
-            (*e->pMatX())[i].resize(nCoeff, nVerts*nCoeff);
-            (*e->pMatX())[i].setZero();
+        #pragma omp for schedule(runtime)
+        for (auto c: mesh.cells()){
+            ElementMatrix <double> *e = ret.pMat(c->id());
+            e->init(nCoeff, dofPerCoeff, dofOffset);
+            e->fillEntityAndOrder_(*c, order);
+            e->resizeMatX_U_();
         }
-    }
-__MS("resize", sw.duration(true));
 
-    Index nNodes = mesh.nodeCount();
-#pragma omp parallel for schedule(dynamic,5)
-// #pragma omp parallel for schedule(static,1)
-    // for (auto &cell: mesh.cells()){
-    //     ret.pMat(cell->id())->pot(*cell, order, true,
-    //                                nCoeff, nNodes, dofOffset);
-    // }
-        
-    for (Index i = 0; i < mesh.cellCount(); i ++ ){
-        const Cell &cell = mesh.cell(i);
-        ret.pMat(cell.id())->pot(cell, order, true,
-                                 nCoeff, nNodes, dofOffset);
-    }
-__MS("fill", sw.duration(true));
+        #pragma omp for schedule(runtime)
+        for (auto c: mesh.cells()){
+            ret.pMat(c->id())->fillMatX_U_(true);
+        }
 
+    }  // omp paralell
 }
+
+// only for testing to split parts to find OMP sinks
+void createUMap_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
+                Index nCoeff, Index dofOffset){
+    createUMap0_(mesh, order, ret, nCoeff, dofOffset);
+    createUMap1_(mesh, order, ret, nCoeff, dofOffset);
+    createUMap2_(mesh, order, ret, nCoeff, dofOffset);
+}
+
+
+void createUMap0_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
+                Index nCoeff, Index dofOffset){
+    // don't use cache here // check!
+    if (mesh.nodeCount() == 0){
+        // empty mesh. this map is for constant space and only contain 1 entry
+        ret.resize(1);
+        ret.pMat(0)->init(nCoeff, 1, dofOffset);
+        ret.pMat(0)->resize(1, 1, false);
+        ret.pMat(0)->pMat()->setVal(0, 0, 1.);
+        ret.pMat(0)->setIds(range(dofOffset, dofOffset+nCoeff), {0});
+        ret.setDof(dofOffset+nCoeff);
+        return;
+    }
+
+    Index dofPerCoeff(mesh.nodeCount());
+    
+    ret.setDofs(nCoeff, dofPerCoeff, dofOffset);
+    
+    if (disableCacheForDBG()) ret.clear();
+    ret.resize(mesh.cellCount());
+}
+
+
+void createUMap1_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
+                Index nCoeff, Index dofOffset){
+
+    Index dofPerCoeff(mesh.nodeCount());
+
+    #pragma omp parallel
+    { // omp paralell
+
+        #pragma omp for schedule(runtime)
+        for (auto c: mesh.cells()){
+            ElementMatrix <double> *e = ret.pMat(c->id());
+            e->init(nCoeff, dofPerCoeff, dofOffset);
+            e->fillEntityAndOrder_(*c, order);
+            e->resizeMatX_U_();
+        }
+    }  // omp paralell
+}
+
+void createUMap2_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
+                Index nCoeff, Index dofOffset){
+    #pragma omp parallel
+    { // omp paralell
+
+        #pragma omp for schedule(runtime)
+        for (auto c: mesh.cells()){
+            ret.pMat(c->id())->fillMatX_U_(true);
+        }
+
+    }  // omp paralell
+            
+}
+
 
 ElementMatrixMap createUMap(const Mesh & mesh, Index order,
                             Index nCoeff, Index dofOffset){

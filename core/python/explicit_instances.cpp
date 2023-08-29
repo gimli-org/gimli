@@ -67,6 +67,7 @@ template BVector operator OP (const std::vector < GIMLI::SIndex > & vec, const G
 template BVector operator OP (const std::vector < GIMLI::Index > & vec, const GIMLI::Index & v); \
 template BVector operator OP (const GIMLI::RVector & vec, const double & v); \
 template BVector operator OP (const GIMLI::RVector & vec, int v); \
+template BVector operator OP (const GIMLI::IVector & vec, int v); \
 
 DEFINE_COMPARE_OPERATOR__(<)
 DEFINE_COMPARE_OPERATOR__(<=)
