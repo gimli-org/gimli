@@ -420,6 +420,12 @@ class ERTManager(MeshMethodManager):
         m['Resistivity (log10)'] = np.log10(m['Resistivity'])
         m['Coverage'] = self.coverage()
         m['S_Coverage'] = self.standardizedCoverage()
+        nM = m.cellCount()
+        for k, v in kwargs.items():
+            if hasattr(v, "__iter__") and len(v) == nM:
+                m[k] = v
+                kwargs.pop(k)
+
         m.exportVTK(os.path.join(path, 'resistivity'))
         m.saveBinaryV2(os.path.join(path, 'resistivity-pd'))
         self.fop.mesh().save(os.path.join(path, 'resistivity-mesh'))
