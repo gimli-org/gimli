@@ -20,8 +20,7 @@ rc = {
     # call pg.wait() before the terminal script ends if there are pending 
     # mpl widgets and your backend this supports
     'waitOnExit': True,
-    # default MPL backend for notebooks
-    'matplotlib': None,
+    'matplotlib': 'ipympl',
 }
 
 def getCPUCount():

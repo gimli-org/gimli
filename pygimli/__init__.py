@@ -477,22 +477,22 @@ def timings(name):
 
 
 # special shortcut pg.plt with lazy evaluation
+__MPL_PLT__ = None
+
 @moduleProperty
 def _plt():
     #import time
     #t0 = time.time()
-    
+
     global __MPL_PLT__
-
     if __MPL_PLT__ is None:
-
         if rc['matplotlib'] is not None:
             try:
                 get_ipython().run_line_magic('matplotlib', rc['matplotlib'])
-                debug('MPL notebook backend set to:', rc['matplotlib'])
+                debug('matplotlib notebook backend set to: ', rc['matplotlib'])
             except BaseException as e:
-                debug(f"MPL notebook backend {rc['matplotlib']} failed to be set: ", e)
-            
+                debug(f"matplotlib notebook backend set to {rc['matplotlib']} failed: ", e)
+                
         import matplotlib.pyplot as plt
         #print('############### importing plt took ', time.time() - t0)
 
@@ -512,7 +512,6 @@ def _plt():
         # Set global hold if mpl inline backend is used (as in Jupyter Notebooks)
         if 'inline' in plt.get_backend():
             hold(True)
-
         __MPL_PLT__ = plt
 
     return __MPL_PLT__
