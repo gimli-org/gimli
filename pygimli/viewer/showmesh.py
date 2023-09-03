@@ -85,6 +85,7 @@ def show(obj=None, data=None, **kwargs):
 
         return ax, None
 
+    # create table of axes aka mpl.subplots
     if isinstance(obj, int):
         nrows = obj
         ncols = 1
@@ -96,32 +97,33 @@ def show(obj=None, data=None, **kwargs):
 
         return ax, None
 
-    ### obj containes a mesh and data has values
-    if hasattr(obj, 'mesh') and hasattr(obj, 'values'):
-        if obj.mesh.dim() > 1:
-            return pg.show(obj.mesh, obj.values,
-                       label=kwargs.pop('label', obj.name),
-                        **kwargs)
-        else:
-            return show1D(obj.mesh, obj, **kwargs)                    
-    ### obj containes a mesh and data need to be evaluated 
-    if hasattr(obj, 'mesh') and hasattr(obj, 'eval'):
-        if obj.mesh.dim() > 1:
-            return pg.show(obj.mesh, obj.eval(),
-                           **kwargs)
-        else:
-            return show1D(obj.mesh, obj, **kwargs)
-
-    # try to check if obj containes a mesh
+    ### obj containes a mesh 
     if hasattr(obj, 'mesh'):
+        ### data has values
+        if hasattr(obj, 'values'):
+            if obj.mesh.dim() > 1:
+                return pg.show(obj.mesh, obj.values,
+                           label=kwargs.pop('label', obj.name),
+                            **kwargs)
+            else:
+                return show1D(obj.mesh, obj, **kwargs)                    
+        ### data need to be evaluated 
+        if hasattr(obj, 'eval'):
+            if obj.mesh.dim() > 1:
+                return pg.show(obj.mesh, obj.eval(),
+                               **kwargs)
+            else:
+                return show1D(obj.mesh, obj, **kwargs)
+
+        ### try to evaluate obj later
         return pg.show(obj.mesh, obj, **kwargs)
 
-    # try to interpret obj as ERT Data
+    ### try to interpret obj as ERT Data
     if isinstance(obj, pg.DataContainerERT):
         from pygimli.physics.ert import showERTData
         return showERTData(obj, vals=kwargs.pop('vals', data), **kwargs)
 
-    # try to interpret obj as matrices
+    ### try to interpret obj as matrices
     if isinstance(obj, pg.core.MatrixBase) or (isinstance(obj, np.ndarray) and
                                                obj.ndim == 2):
         return showMatrix(obj, **kwargs)
@@ -155,17 +157,6 @@ def show(obj=None, data=None, **kwargs):
         if mesh.dim() == 1:
             return show1D(mesh, data, **kwargs)
             
-        if isinstance(data, str):
-            if data in mesh.dataKeys():
-                data = mesh[data]
-            # elif 0:  # maybe check x, y, z, cellMarker etc.
-            else:
-                pg.error(f"Could not retrieve data from key {data}")
-                return None, None
-        elif callable(data):
-            data = data(mesh.positions())
-            
-
         elif mesh.dim() == 2:
             if pg.zero(pg.y(mesh)):
                 pg.info("swap z<->y coordinates for visualization.")
@@ -175,6 +166,7 @@ def show(obj=None, data=None, **kwargs):
                 return showMesh(meshSwap, data, **kwargs)
 
             return showMesh(mesh, data, **kwargs)
+
         elif mesh.dim() == 3:
 
             from .pv import showMesh3D
@@ -361,6 +353,17 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             
             data = np.arange(len(uniquemarkers))[uniqueidx] 
             
+    if isinstance(data, str):
+        if data in mesh.dataKeys():
+            data = mesh[data]
+            # elif 0:  # maybe check x, y, z, cellMarker etc.
+        else:
+            pg.error(f"Could not retrieve data from key {data}")
+            return None, None
+    elif callable(data):
+        data = data(mesh.positions())
+
+
     if data is None:
         showMesh = True
         mesh.createNeighborInfos()

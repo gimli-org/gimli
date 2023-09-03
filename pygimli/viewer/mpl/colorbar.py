@@ -482,7 +482,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
         #medLvl = np.median(cbarLevels)
         # cbar.set_ticklabels(cbarLevelsString)
         cbar.draw_all()
-
+        #cbar.draw_without_rendering()
         # necessary since mpl 3.0
         cbar.ax.minorticks_off()
 

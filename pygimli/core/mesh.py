@@ -446,6 +446,18 @@ def __Boundary_outside__(self):
 
 Boundary.outside = __Boundary_outside__
 
+def __Node_on_boundary(self, outside=True):
+    """Is the node is on an boundary (i.e. marker != 0). 
+    Or is on and outside boundary-"""
+    for b in self.boundSet():
+        if outside is True and b.outside():
+            return True
+        if b.marker() != 0:
+            return True
+    return False
+
+Node.onBoundary = __Node_on_boundary
+
 def __Mesh_h__(self):
     """ Returns the maximal node distance for each cell.
 

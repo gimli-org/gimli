@@ -1015,7 +1015,7 @@ class Report(ScoobyReport):
 class Table(object):
     """Simple table for nice formated output
     """
-    def __init__(self, table, header):
+    def __init__(self, table, header=None):
         """
         """
         self.table = table
@@ -1046,10 +1046,15 @@ class Table(object):
 
         try:
             from tabulate import tabulate
+            if self.header is None:
+                return '\n' + tabulate(self.table, floatfmt=".5f") + '\n'
             return '\n' + tabulate(self.table, headers=self.header, floatfmt=".5f") + '\n'
         except ImportError:
             pass
         except BaseException as e:
-            error(e)
+            pg.error(e)
 
-        return str(self.header) + '\t' + (self.table)
+        if self.header is None:
+            return '\n' + str(self.header) + '\n' + (self.table)
+        else:
+            return '\n' + (self.table)

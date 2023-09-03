@@ -166,7 +166,28 @@ class TestMeshGenerator(unittest.TestCase):
 
         #mesh['c'] = pg.PosList(10, [1.0, 0., 0.0])
 
+    def test_findCell(self):
+        """Fix for fail """
+        np.random.seed(1337)
+        x = np.linspace(-2, 2, 5)
+        m1 = pg.createGrid(x, x)
         
+        m2 = pg.Mesh(m1)
+        dx = m2.h()[0]
+        for n in m2.nodes():
+            if not n.onBoundary():
+                n.setPos(n.pos() + [np.random.randn()*dx/8, np.random.randn()*dx/8, .0])
+
+        ax =  pg.show(m2)[0]
+        ax.plot(2.0, -1.875, 'o')
+        
+        pos = [2.0, -1.875]
+        for c in m2.cells():
+            print(c.shape().touch(pos), c.shape().isInside(pos))
+
+        pg._y(m2.findCell(pos, extensive=True))
+
+
     def test_meshBMS(self):
         # text bms version v3 which stores geometry flag
         mesh = pg.Mesh(2, isGeometry=True)
