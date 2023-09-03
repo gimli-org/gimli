@@ -394,10 +394,10 @@ bool Shape::isInside(const Pos & xyz, RVector & sf, bool verbose) const {
     if (verbose){
         std::cout << "rst: " << rst(xyz)<< std::endl;
         std::cout << "sf: " << sf << std::endl;
-        std::cout << std::fabs(minsf) << " " << max(TOUCH_TOLERANCE, TOUCH_TOLERANCE * xyz.abs()) << std::endl;
+        std::cout << std::fabs(minsf) << " tol: " << TOUCH_TOLERANCE <<"  " << max(TOUCH_TOLERANCE*10, TOUCH_TOLERANCE*10 * xyz.abs()) << std::endl;
     }
 
-    if (std::fabs(minsf) < max(TOUCH_TOLERANCE, TOUCH_TOLERANCE * xyz.abs())) return true; //** on boundary
+    if (std::fabs(minsf) < max(TOUCH_TOLERANCE*10, TOUCH_TOLERANCE*10 * xyz.abs())) return true; //** on boundary
     if (minsf > 0.0) return true; //** inside
     return false;
 }
@@ -525,9 +525,8 @@ Pos EdgeShape::rst(Index i) const{
     return Pos(0.0, 0.0, 0.0);
 }
 
-bool EdgeShape::touch(const Pos & pos, double tol, bool verbose) const{
-    THROW_TO_IMPL
-    return false;
+bool EdgeShape::touch(const RVector3 & pos, double tol, bool verbose) const{
+    return Line(node(0).pos(), node(1).pos()).touch(pos, tol);
 }
 
 bool EdgeShape::intersectRay(const Pos & start, const Pos & dir,

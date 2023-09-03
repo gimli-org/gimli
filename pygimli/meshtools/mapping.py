@@ -674,7 +674,7 @@ def interpolate(*args, **kwargs):
         return interpolateAlongCurve(curve, t, **kwargs)
 
 
-def extract2dSlice(mesh, origin=None, normal=[0, 1, 0], angle=None, dip=None):
+def extract2dSlice(mesh, origin=None, normal=[0, 1, 0], angle=0, dip=0):
     """Extract slice from 3D mesh as triangle mesh.
 
     Parameters

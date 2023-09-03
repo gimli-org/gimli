@@ -253,7 +253,8 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
 
         mappable.set_norm(norm)
 
-    if needLevelUpdate:
+
+    if needLevelUpdate is True:
         if cbar is not None:
             setCbarLevels(cbar, cMin, cMax, nLevs, levels)
             if label is not None:
@@ -473,8 +474,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
     # for i in cbarLevels:
     #     cbarLevelsString.append(prettyFloat(i, roundValue))
 
-    if hasattr(cbar, 'mappable'):
-        cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
+    mappable.set_clim(vmin=cMin, vmax=cMax)
 
     if hasattr(cbar, 'set_ticks'):
         # cbar is a ColorBar with ticks

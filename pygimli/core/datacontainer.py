@@ -3,7 +3,7 @@
 import numpy as np
 from . logger import critical, verbose
 from .core import (RVector, Pos, DataContainer, DataContainerERT)
-from .core import (yVari, zVari, swapYZ, y, z)
+from .core import (yVari, zVari, swapXY, swapYZ, y, z)
 
 
 def __DataContainer_str(self):
@@ -86,6 +86,15 @@ def __DataContainer_ensure2D(self):
         self.setSensorPositions(sen)
 
 DataContainer.ensure2D = __DataContainer_ensure2D
+
+
+def __DataContainer_swapXY(self):
+    sen = self.sensors()
+    swapYZ(sen)
+    self.setSensorPositions(sen)
+
+
+DataContainer.swapXY = __DataContainer_swapXY
 
 
 def __DataContainerERT_addFourPointData(self, *args,

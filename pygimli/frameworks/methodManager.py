@@ -710,7 +710,7 @@ class MeshMethodManager(MethodManager):
             Copy of the main mesh to be distributed to inversion and the fop.
             You can overwrite it with invert(mesh=mesh).
         """
-        super(MeshMethodManager, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.mesh = None
 
     @property

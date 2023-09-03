@@ -182,7 +182,9 @@ class Inversion(object):
 
         if self._startModel is None:
             sm = self.fop.createStartModel(self.dataVals)
-            pg.info("Created startmodel from forward operator:", sm)
+            # pg.info("Created startmodel from forward operator:", sm)
+            pg.info("Created startmodel from forward operator: {:d}, min/max={:f}/{:f}".format(
+                len(sm), min(sm), max(sm)))
             self._startModel = sm
         return self._startModel
 
@@ -524,25 +526,25 @@ class Inversion(object):
             Overwrite class settings for delta data phi aborting criteria.
             Default is 1%
         cType: int [1]
-            Temporary global contraint type for all regions.
+            Temporary global constraint type for all regions.
         startModel: array
             Temporary starting model for the current inversion run.
         lam: float
             Temporary regularization parameter lambda.
         lambdaFactor : float [1]
-            factor to change lam with every iteration
+            Factor to change lam with every iteration
         robustData : bool
-            robust (L1 norm mimicking) data reweighting
+            Robust (L1 norm mimicking) data reweighting
         blockyModel : bool
-            robust (L1 norm mimicking) model roughness reweighting
+            Robust (L1 norm mimicking) model roughness reweighting
         isReference : bool [False]
-            starting model is also a reference to constrain against
+            Starting model is also a reference to constrain against
         showProgress : bool
-            show progress in form of updating models
+            Show progress in form of updating models
         verbose : bool
-            verbose output on the console
+            Verbose output on the console
         debug : bool
-            even verboser console and file output
+            Even more verbose console and file output
         """
         self.reset()
         if errorVals is None:  # use absoluteError and/or relativeError instead
@@ -716,7 +718,7 @@ class Inversion(object):
             if (dPhi > (1.0 - minDPhi / 100.0)) and i > 2:  # should be minIter
                 if self.verbose:
                     pg.boxprint(
-                        "Abort criteria reached: dPhi = {0} (< {1}%)".format(
+                        "Abort criterion reached: dPhi = {0} (< {1}%)".format(
                             round((1 - dPhi) * 100, 2), minDPhi))
                 break
 
@@ -752,7 +754,7 @@ class Inversion(object):
             self.axs = axs
         ax = self.axs
 
-        if style == 'Model':
+        if style == 'model':
             for other_ax in ax.figure.axes:
                 # pg._y(type(other_ax).mro())
                 if type(other_ax).mro()[0] == type(ax):

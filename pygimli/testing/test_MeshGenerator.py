@@ -33,12 +33,12 @@ class TestMeshGenerator(unittest.TestCase):
         plc = mt.createCircle(nSegments=24)
         l = mt.createLine(start=[0, -1], end=[0, -0.1], boundaryMarker=2)
         mesh = mt.createMesh([plc, l], area=0.1, quality=30)
-        print(mesh)
+        #print(mesh)
         # On Linux and Mac: Mesh: Nodes: 43 Cells: 60 Boundaries: 102
         self.assertEqual(mesh.nodeCount(), 43)
 
         mesh = mt.createMesh([plc, l], area=0.1, quality=32)
-        print(mesh)
+        #print(mesh)
         if sys.platform == "darwin":
             # On Mac: Mesh: Nodes: 46 Cells: 66 Boundaries: 111
             self.assertEqual(mesh.nodeCount(), 46)
@@ -143,7 +143,7 @@ class TestMeshGenerator(unittest.TestCase):
 
     def test_MeshStr(self):
         mesh= pg.createGrid(2,2,2)
-        print(mesh.node(0))
+        #print(mesh.node(0))
 
     def test_MeshDataAccess(self):
         mesh = pg.Mesh()
@@ -178,14 +178,18 @@ class TestMeshGenerator(unittest.TestCase):
             if not n.onBoundary():
                 n.setPos(n.pos() + [np.random.randn()*dx/8, np.random.randn()*dx/8, .0])
 
-        ax =  pg.show(m2)[0]
-        ax.plot(2.0, -1.875, 'o')
-        
         pos = [2.0, -1.875]
-        for c in m2.cells():
-            print(c.shape().touch(pos), c.shape().isInside(pos))
+        np.testing.assert_equal(m2.findCell(pos) != None, True)
+        #pg._g(m2.findCell(pos) != None)
+        
+        # ax =  pg.show(m2)[0]
+        # ax.plot(2.0, -1.875, 'o')
+        
+        # for c in m2.cells():
+        #     if c.shape().touch(pos):
+        #         print(c.shape().isInside(pos))
+        #         print(c.shape().isInside(pos, True))
 
-        pg._y(m2.findCell(pos, extensive=True))
 
 
     def test_meshBMS(self):
@@ -216,20 +220,11 @@ class TestMeshGenerator(unittest.TestCase):
         grid.exportVTK(fn)
         mesh = pg.load(fn)
 
-
-
-
-
-
-
         np.testing.assert_array_equal(mesh.cellMarkers(), cM)
         np.testing.assert_array_equal(mesh['Marker'], cM)
 
         mesh = pg.meshtools.readMeshIO(fn)
         np.testing.assert_array_equal(mesh['Marker'], cM)
-
-
-
 
         fn = pg.getExampleFile('meshes/test_tetgen_dataCol.vtk')
         mesh = pg.load(fn)
@@ -259,6 +254,14 @@ class TestMeshGenerator(unittest.TestCase):
         # mesh = pg.meshtools.readMeshIO("grid1.vtk")
         # print(mesh)
         # print(mesh["Marker"])
+
+    def test_VTK_ExportVTU(self):
+        """ Test to fix export bug
+        """
+        mesh = pg.createGrid(4,4,4)
+        mesh.exportBoundaryVTU("bounds.vtu")
+
+
 
     def test_SimpleMeshExport(self):
        

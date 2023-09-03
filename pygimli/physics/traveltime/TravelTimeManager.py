@@ -28,8 +28,9 @@ class TravelTimeManager(MeshMethodManager):
             You can initialize the Manager with data or give them a dataset
             when calling the inversion.
         """
-        self._useFMM = kwargs.pop("fatray", False)
-        self.secNodes = 2  # default number of secondary nodes for inversion
+        self.useFatray = kwargs.pop("fatray", False)
+        self.frequency = kwargs.pop("frequency", 100.)
+        self.secNodes = kwargs.pop("secNodes", 2)
 
         super().__init__(data=data, **kwargs)
 
@@ -47,8 +48,8 @@ class TravelTimeManager(MeshMethodManager):
         Your want your Manager use a special forward operator you can add them
         here on default Dijkstra is used.
         """
-        if self._useFMM:
-            fop = FatrayDijkstraModelling(**kwargs)
+        if self.useFatray:
+            fop = FatrayDijkstraModelling(frequency=self.frequency, **kwargs)
         else:
             fop = TravelTimeDijkstraModelling(**kwargs)
         return fop
@@ -130,10 +131,9 @@ class TravelTimeManager(MeshMethodManager):
 
             * a single array of len mesh.cellCount()
             * a matrix of N slowness distributions of len mesh.cellCount()
-            * a res map as [[marker0, res0], [marker1, res1], ...]
+            * a slowness map [[marker0, slow0], [marker1, slow1], ...]
         vel : array(mesh.cellCount()) | array(N, mesh.cellCount())
-            Velocity distribution for the given mesh cells.
-            Will overwrite given slowness.
+            Velocity distribution for the mesh cells (overwrites slowness!).
         secNodes: int [2]
             Number of refinement nodes to increase accuracy of the forward
             calculation.
@@ -156,7 +156,8 @@ class TravelTimeManager(MeshMethodManager):
         Returns
         -------
         t : array(N, data.size()) | DataContainer
-            The resulting simulated travel time values.
+            The resulting simulated travel time values (returnArray=True)
+            or DataContainer containing them in t field (returnArray=False).
             Either one column array or matrix in case of slowness matrix.
         """
         verbose = kwargs.pop('verbose', self.verbose)
@@ -203,7 +204,7 @@ class TravelTimeManager(MeshMethodManager):
         return ret
 
     def invert(self, data=None, useGradient=True, vTop=500, vBottom=5000,
-               secNodes=2, **kwargs):
+               secNodes=None, **kwargs):
         """Invert data.
 
         Parameters
@@ -234,8 +235,8 @@ class TravelTimeManager(MeshMethodManager):
             See :py:mod:`pygimli.frameworks.MeshMethodManager.invert`
         """
         mesh = kwargs.pop('mesh', None)
-
-        self.secNodes = secNodes
+        if secNodes is not None:
+            self.secNodes = secNodes
 
         if 'limits' in kwargs:
             if kwargs['limits'][0] > 1:

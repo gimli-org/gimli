@@ -928,28 +928,37 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
             throwError(WHERE_AM_I +
                        " no nearest node to pos. This is a empty mesh");
         }
-        if (refNode->cellSet().empty()){
+        if (refNode->cellSet().empty() && refNode->boundSet().empty()){
             std::cout << "Node: " << *refNode << std::endl;
+            
             throwError(WHERE_AM_I +
-                       " no cells for this node. This is a corrupt mesh");
+                       " no cells or boundaries for this node. This may be a corrupt mesh");
         }
 //         std::cout << "Node: " << *refNode << std::endl;
 
         // small fast precheck to avoid strange behaviour for symmetric SF.
-        for (std::set< Cell * >::iterator it = refNode->cellSet().begin();
-             it != refNode->cellSet().end(); it ++){
-//             std::cout << (*it)->id() << std::endl;
+        // __MS(pos << " " << refNode->pos())
 
-           if ((*it)->shape().isInside(pos, false)) return *it;
-
+        if (!refNode->cellSet().empty()){
+                
+            for (auto *c: refNode->cellSet()){
+                // std::cout << (*it)->id() << std::endl;
+                //** isInside useing shapefunctions only work for aligned dimensions
+                if (c->shape().isInside(pos, false)) return c;
+            }
+        
+            //         exportVTK("slopesearch");
+            //         exit(0);
+            cell = findCellBySlopeSearch_(pos, *refNode->cellSet().begin(),
+                                          count, false);
+            if (cell) return cell;
+        } else {
+            for (auto *b: refNode->boundSet()){
+                if (b->leftCell()) return b->leftCell();
+                if (b->rightCell()) return b->rightCell();
+            }
         }
 
-        cell = findCellBySlopeSearch_(pos, *refNode->cellSet().begin(),
-                                      count, false);
-        if (cell) return cell;
-
-//         exportVTK("slopesearch");
-//         exit(0);
         if (extensive || 0){
 //             __M
 //             std::cout << "More expensive test here" << std::endl;

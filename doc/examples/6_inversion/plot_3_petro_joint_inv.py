@@ -6,9 +6,10 @@ Petrophysical joint inversion
 
 Joint inversion of different geophysical techniques helps to improve both
 resolution and interpretability of the resulting images. Different data sets
-can be directly coupled, if there is a link to an underlying target parameter.
-In this example, ERT and traveltime data are inverted for water saturation. For
-details see section 3.3 of the pyGIMLi paper (https://cg17.pygimli.org).
+can be directly coupled, if there is a link between the target parameters.
+In this example, ERT and traveltime data are inverted for water saturation
+using petrophysical relations to resistivity and velocity. For details see 
+section 3.3 of the pyGIMLi paper (https://cg17.pygimli.org).
 """
 # sphinx_gallery_thumbnail_number = 5
 
@@ -98,10 +99,10 @@ ax, _ = pg.show(mMesh, vel, showMesh=True, **velKW)
 sensors = mMesh.positions()[mMesh.findNodesIdxByMarker(-99)]
 
 pg.info("Simulate ERT")
-ertScheme = ert.createERTData(sensors, schemeName='dd', closed=1)
+ertScheme = ert.createData(sensors, schemeName='dd', closed=1)
 ertData = ert.simulate(mMesh, scheme=ertScheme, res=res, noiseLevel=0.01)
 
-ax, _ = ert.showData(ertData, **resKW)
+ax, _ = ert.showData(ertData, circular=True, **resKW)
 
 pg.info("Simulate Traveltime")
 ttScheme = tt.createRAData(sensors)

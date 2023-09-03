@@ -124,3 +124,6 @@ class ERTIPManager(ERTManager):
         data["ma"] = fopIP.response(mVec)  # SI
         data["ip"] = data["ma"] * 1000  # mV/V
         return data
+
+    def saveResult(self, **kwargs):
+        super().saveResult(self, **kwargs, ip=self.modelIP*1000)

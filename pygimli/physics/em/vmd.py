@@ -165,7 +165,7 @@ class VMDModelling(Block1DModelling):
 
             if nr > 1:
                 aux3[n] = aux3[n] / rr[n]
-                raise Exception("more then one r .. check code here")
+                raise Exception("more than one r .. check code here")
             else:
                 aux3[n] = aux3[n] / rr
 
@@ -173,7 +173,7 @@ class VMDModelling(Block1DModelling):
             # Air
             ePhi = ePhi - aux3
         else:
-            raise Exception("more then one r .. check code here")
+            raise Exception("more than one r .. check code here")
             # Halfspace
             ePhi = aux3
 

@@ -490,6 +490,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             showBoundary = False
             # ax.plot(pg.x(mesh), pg.y(mesh), '.', color='black')
         else:
+            kwargs['orientation'] = cBarOrientation
             pg.viewer.mpl.drawPLC(ax, mesh, **kwargs)
 
     if showMesh:
@@ -750,7 +751,7 @@ def showAnimation(mesh, data, ax=None, **kwargs):
 
     try:
         times = mesh['times']
-    except Exception:
+    except Exception as e:
         times = None
 
     p = pg.utils.ProgressBar(len(data))

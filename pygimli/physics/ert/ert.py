@@ -350,13 +350,15 @@ def createGeometricFactors(scheme, numerical=None, mesh=None, dim=3,
 
     if mesh is None:
         pg.info('Create default mesh for geometric factor calculation.')
-        mesh = createInversionMesh(scheme)
+        m = createInversionMesh(scheme)
+    else:
+        m = mesh
 
     if verbose:
-        pg.info('mesh', mesh)
+        pg.info('mesh', m)
 
     if h2 is True:
-        m = mesh.createH2()
+        m = m.createH2()
         if verbose:
             pg.info('h2 refine', m)
 

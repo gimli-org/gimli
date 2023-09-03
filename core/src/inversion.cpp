@@ -74,7 +74,7 @@ void RInversion::checkJacobian(bool force) {
     }
 
     Stopwatch swatch(true);
-    if (verbose_) std::cout << "calculating jacobian matrix (forced=" << force << ")...";
+    if (verbose_) std::cout << "Calculating Jacobian matrix (forced=" << force << ")...";
     forward_->createJacobian(model_);
     jacobiNeedRecalc_ = false;
     if (verbose_) std::cout << "... " << swatch.duration(true) << " s" << std::endl;
@@ -224,12 +224,12 @@ const RVector & RInversion::run(){ ALLOW_PYTHON_THREADS
         double phiD = getPhiD();
 
         if (stopAtChi1_ && (phiD < data_.size())) {
-            if (verbose_) std::cout << "Reached data fit criteria (chi^2 <= 1). Stop." << std::endl;
+            if (verbose_) std::cout << "Reached data fit criterion (chi^2 <= 1). Stop." << std::endl;
             break;
         }
         double phi = getPhi();
         if (phi / oldphi > (1.0 - dPhiAbortPercent_ / 100.0) && iter_ > 2) {
-            if (verbose_) std::cout << "Reached data fit criteria (delta phi < "
+            if (verbose_) std::cout << "Reached data fit criterion (delta phi < "
                                     << dPhiAbortPercent_ << "%). Stop." << std::endl;
             break;
         }
@@ -265,7 +265,7 @@ bool RInversion::oneStep() {
 
     // if ((recalcJacobian_ && iter_ > 1) || jacobiNeedRecalc_ ) {
     //     Stopwatch swatch(true);
-    //     if (verbose_) std::cout << "recalculating jacobian matrix ...";
+    //     if (verbose_) std::cout << "Recalculating Jacobian matrix ...";
     //     forward_->createJacobian(model_);
     //     if (verbose_) std::cout << swatch.duration(true) << " s" << std::endl;
     // }

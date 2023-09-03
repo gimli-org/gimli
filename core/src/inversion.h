@@ -669,7 +669,7 @@ public:
             if (verbose_) echoStatus(responseNew, modelNew, "LS new");
         }
 
-        if (verbose_) std::cout << "Linesearch tau = " << tau << std::endl;
+        if (verbose_) std::cout << "Performing line search with tau = " << tau << std::endl;
 
         return tau;
     }

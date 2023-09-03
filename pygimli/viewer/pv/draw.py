@@ -45,6 +45,10 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     bc = kwargs.pop('bc', '#EEEEEE')  # background color
     lw = kwargs.pop('line_width', 0.1)
     filt = kwargs.pop('filter', {})
+    log_scale = kwargs.pop("logScale", False)
+    clim = None
+    if "cMin" in kwargs and "cMax" in kwargs:
+        clim = [kwargs.pop("cMin"), kwargs.pop("cMax")]
 
     # show_edges = kwargs.pop('show_edges', True)  # not used
     # name = kwargs.pop('name', 'Mesh')  # not used
@@ -93,6 +97,8 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
                          # edge_color='white',
                          show_scalar_bar=colorBar,
                          opacity=opacity,
+                         clim=clim,
+                         log_scale=log_scale
                          )
 
     if returnActor:

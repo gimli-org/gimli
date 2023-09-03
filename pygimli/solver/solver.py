@@ -2495,7 +2495,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         return u
 
     else:  # times given
-        pg.solver.checkCFL(times, mesh, max(a))
+        pg.solver.checkCFL(times, mesh, max(np.array(a).flatten()))
 
         if debug:
             print("start TL", swatch.duration())

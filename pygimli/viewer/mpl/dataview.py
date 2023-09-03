@@ -545,8 +545,8 @@ def showDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
     plus = kwargs.pop('plus', 1)  # add 1 to count
     verbose = kwargs.pop('verbose', False)
     if isinstance(x, str):
-        x = data(x)
         xToken = x
+        x = data(x)
     elif hasattr(x, '__iter__') and isinstance(x[0], str):
         num = np.zeros(data.size())
         for token in x:
@@ -559,8 +559,8 @@ def showDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
         pg.info("found " + str(len(np.unique(x))) + " x values")
 
     if isinstance(y, str):
-        y = data(y)
         yToken = y
+        y = data(y)
     elif hasattr(y, '__iter__') and isinstance(y[0], str):
         num = np.zeros(data.size())
         for token in y:
