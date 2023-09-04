@@ -275,6 +275,7 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
         Forwarded to updateColorBar
 
     """
+    #pg._y('createColorBar', kwargs)
     from mpl_toolkits.axes_grid1 import make_axes_locatable
     cbarTarget = pg.plt
     cax = None
@@ -305,7 +306,7 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
 
     if hasattr(ax, '__cBar__'):
         cbar = ax.__cBar__
-        # pg._y('update', kwargs)
+        #pg._y('update', kwargs)
         updateColorBar(cbar, gci, **kwargs)
     else:
 
@@ -331,6 +332,7 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
             ax.__cBar__ = cbar
             updateColorBar(cbar, **kwargs)
         else:
+            #pg._y('update', kwargs)
             updateColorBar(None, gci=gci, **kwargs)
             
 
