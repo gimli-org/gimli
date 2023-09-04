@@ -363,7 +363,6 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     elif callable(data):
         data = data(mesh.positions())
 
-
     if data is None:
         showMesh = True
         mesh.createNeighborInfos()
@@ -671,11 +670,6 @@ def show1D(mesh, obj, **kwargs):
     if ax is None:
         ax = pg.show()[0]
 
-    xLabel = kwargs.pop('xl', 'x in m')
-    yLabel = kwargs.pop('yl', str(obj))
-    label = kwargs.pop('label', None)
-    grid = kwargs.pop('grid', True)
-
     if hasattr(obj, 'eval'):
         x = pg.sort(pg.x(mesh))
         v = obj(x)
@@ -685,22 +679,34 @@ def show1D(mesh, obj, **kwargs):
         pg._r(obj)
         pg.critical('implementme')
     elif pg.isArray(obj, mesh.nodeCount()):
-        x = pg.x(mesh)
+        x = pg.sort(pg.x(mesh))
         v = obj
+    elif hasattr(obj, 'ndim') and obj.ndim == 2 and pg.isArray(obj[0], mesh.nodeCount()):
+        return showAnimation(mesh, obj, **kwargs)
+        
     else:
         pg._r(kwargs)
         pg._r(mesh)
         pg._r(obj)
         pg.critical('implementme')
 
-    ax.plot(x, v, label=label, **kwargs)
+    xLabel = kwargs.pop('xl', 'x in m')
+    if not isinstance(obj, (list, np.ndarray)):
+        yLabel = kwargs.pop('yl', str(obj))
+    else:
+        yLabel = ''
+
+    label = kwargs.pop('label', None)
+    grid = kwargs.pop('grid', True)
+    
+    curve = ax.plot(x, v, label=label, **kwargs)
     ax.set_xlabel(xLabel)
     ax.set_ylabel(yLabel)
 
     ax.legend()
     ax.grid(grid)
 
-    return ax
+    return ax, curve
 
 
 __Animation_Keeper__ = None
@@ -745,9 +751,15 @@ def showAnimation(mesh, data, ax=None, **kwargs):
 
     plt.ioff()
 
-    pg.show(mesh, data[0], ax=ax, **kwargs)
-    if flux is not None:
-        pg.show(mesh, flux[0], ax=ax)
+    interval = kwargs.pop('interval', 0)
+
+    if mesh.dim() == 1:
+        ax, curve = pg.show(mesh, data[0], ax=ax, **kwargs)
+        ax.set_ylim(min(data.flatten()), max(data.flatten()))
+    else:
+        ax = pg.show(mesh, data[0], ax=ax, **kwargs)[0]
+        if flux is not None:
+            pg.show(mesh, flux[0], ax=ax)
 
     try:
         times = mesh['times']
@@ -756,16 +768,20 @@ def showAnimation(mesh, data, ax=None, **kwargs):
 
     p = pg.utils.ProgressBar(len(data))
     
+
     def animate(t):
         p.update(t)
-        ax.clear()
-        pg.show(mesh, data[t], ax=ax, **kwargs)
+        if mesh.dim() == 1:
+            curve[0].set_data(curve[0].get_data()[0], data[t])
+        else:
+            ax.clear()
+            pg.show(mesh, data[t], ax=ax, **kwargs)
 
-        if flux is not None:
-            try:
-                pg.show(mesh, flux[t], ax=ax)
-            except:
-                pass
+            if flux is not None:
+                try:
+                    pg.show(mesh, flux[t], ax=ax)
+                except:
+                    pass
 
         if times is not None and len(times) > t:
             # ax.text(0.02, 0.02, f't={pg.pf(times[t])}',
@@ -779,5 +795,6 @@ def showAnimation(mesh, data, ax=None, **kwargs):
 
     __Animation_Keeper__ = matplotlib.animation.FuncAnimation(ax.figure,
                                                               animate,
+                                                              interval=interval,
                                                               frames=len(data))
     return __Animation_Keeper__
