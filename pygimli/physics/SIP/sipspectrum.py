@@ -250,7 +250,7 @@ class SIPSpectrum(object):
 
     def __init__(self, filename=None, unify=False, onlydown=True,
                  f=None, amp=None, phi=None, k=1, sort=True,
-                 basename='new'):
+                 basename='new', **kwargs):
         """Init SIP class with either filename to read or data vectors.
 
         Examples
@@ -269,7 +269,7 @@ class SIPSpectrum(object):
         self.epsilon0 = 8.854e-12
 
         if filename is not None:
-            self.loadData(filename)
+            self.loadData(filename, **kwargs)
         else:
             if f is not None:
                 self.f = np.asarray(f)
@@ -325,7 +325,8 @@ class SIPSpectrum(object):
             if verbose:
                 pg.info("Reading SIP Quad file")
             self.f, self.amp, self.phi, self.header = readFuchs3File(
-                filename, verbose=verbose, **kwargs)
+                filename, nfr=9, namp=10, nphi=11, nk=7,
+                verbose=verbose, **kwargs)
             self.phi *= -np.pi/180.
         elif 'SIP-Fuchs' in firstLine:
             if verbose:
@@ -335,7 +336,7 @@ class SIPSpectrum(object):
                 **kwargs)
             self.phi *= -np.pi/180.
         elif fnLow.endswith('.txt') or fnLow.endswith('.csv'):
-            self.f, self.amp, self.phi = readTXTSpectrum(filename)
+            self.f, self.amp, self.phi = readTXTSpectrum(filename, **kwargs)
         else:
             try:
                 out = np.genfromtxt(filename, names=True)

@@ -44,8 +44,8 @@ def load(fileName, verbose=False, **kwargs):
     elif 'SIP-Quad' in firstLine:
         if verbose:
             pg.info("Reading SIP Quad file")
-        f, amp, phi, header = readFuchs3File(fileName,
-                                             verbose=verbose, **kwargs)
+        f, amp, phi, header = readFuchs3File(fileName, nfr=9, namp=10, nphi=11, 
+                                             nk=7, verbose=verbose, **kwargs)
         phi *= -np.pi/180.
     elif 'SIP-Fuchs' in firstLine:
         if verbose:
@@ -77,25 +77,24 @@ def fstring(fri):
     return fstr
 
 
-def readTXTSpectrum(filename):
+def readTXTSpectrum(filename, nfr=0, namp=1, nphi=3, sphi=-1):
     """Read spectrum from ZEL device output (txt) data file."""
-    fid = open(filename)
-    lines = fid.readlines()
-    fid.close()
     f, amp, phi = [], [], []
-    for line in lines[1:]:
-        snums = line.replace(';', ' ').split()
-        if len(snums) > 3:
-            f.append(float(snums[0]))
-            amp.append(float(snums[1]))
-            phi.append(-float(snums[3]))
-        else:
-            break
+    with open(filename) as fid:
+        lines = fid.readlines()
+        for line in lines[1:]:
+            snums = line.replace(';', ' ').split()
+            if len(snums) > 3:
+                f.append(float(snums[nfr]))
+                amp.append(float(snums[namp]))
+                phi.append(sphi*float(snums[nphi]))
+            else:
+                break
 
-    return np.asarray(f), np.asarray(amp), np.asarray(phi)
+        return np.asarray(f), np.asarray(amp), np.asarray(phi)
 
 
-def readFuchs3File(resfile, k=1.0, verbose=False):
+def readFuchs3File(resfile, k=1.0, verbose=False, nfr=11, namp=12, nphi=13, nk=9):
     """Read Fuchs III (SIP spectrum) data file.
 
     Parameters
@@ -108,8 +107,8 @@ def readFuchs3File(resfile, k=1.0, verbose=False):
     header = {}
     LINE = []
     dataAct = False
-    with codecs.open(resfile, 'r', encoding='iso-8859-15', errors='replace') as f:
-        for line in f:
+    with codecs.open(resfile, 'r', encoding='iso-8859-15', errors='replace') as fid:
+        for line in fid:
             line = line.replace('\r\n', '\n') # correct for carriage return
             if dataAct:
                 LINE.append(line)
@@ -118,12 +117,12 @@ def readFuchs3File(resfile, k=1.0, verbose=False):
                     for li in LINE:
                         sline = li.split()
                         if len(sline) > 12:
-                            fi = float(sline[11])
+                            fi = float(sline[nfr])
                             if np.isfinite(fi):
                                 f.append(fi)
-                                amp.append(float(sline[12]))
-                                phi.append(float(sline[13]))
-                                kIn.append(float(sline[9]))
+                                amp.append(float(sline[namp]))
+                                phi.append(float(sline[nphi]))
+                                kIn.append(float(sline[nk]))
 
                     if k != 1.0 and verbose is True:
                         pg.info("Geometric value changed to:", k)
@@ -380,8 +379,9 @@ def readSIP256file(resfile, verbose=False):
                             bpos = fd.start() + 4
 
                         # print(ss[:bpos], ss[bpos:])
-                        sline.insert(i, ss[:bpos])
-                        sline[i+1] = ss[bpos:]
+                        if ss[5:8] != ".20":
+                            sline.insert(i, ss[:bpos])
+                            sline[i+1] = ss[bpos:]
                         # print(sline)
                     fd = re.search('NaN[0-9-]*\.', ss)
                     if fd:
