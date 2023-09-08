@@ -52,6 +52,7 @@ from .core.load import (load, optImport, getCachePath,
                         getExampleFile, getExampleData)
 
 
+
 def checkAndFixLocaleDecimal_point(verbose=False):  # verbose overwritten
     """
     """
@@ -475,7 +476,6 @@ def timings(name):
     return Table(table, header)
 
 
-
 # special shortcut pg.plt with lazy evaluation
 __MPL_PLT__ = None
 
@@ -483,18 +483,18 @@ __MPL_PLT__ = None
 def _plt():
     #import time
     #t0 = time.time()
+    global __MPL_PLT__, rc
 
-    global __MPL_PLT__
     if __MPL_PLT__ is None:
         if rc['matplotlib'] is not None:
             try:
                 get_ipython().run_line_magic('matplotlib', rc['matplotlib'])
                 debug('matplotlib notebook backend set to: ', rc['matplotlib'])
             except BaseException as e:
-                debug(f"matplotlib notebook backend set to {rc['matplotlib']} failed: ", e)
-                
+                info(f"matplotlib notebook backend set to {rc['matplotlib']} failed: ", e)
+        # tic()        
         import matplotlib.pyplot as plt
-        #print('############### importing plt took ', time.time() - t0)
+        # print('############### importing plt took ', dur())
 
         from .viewer.mpl import registerShowPendingFigsAtExit, hold
         registerShowPendingFigsAtExit()

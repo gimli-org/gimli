@@ -4,7 +4,7 @@ import json
 import os
 import sys
 
-from .logger import info
+from .logger import info, debug
 
 from .core import pgcore
 
@@ -22,6 +22,7 @@ rc = {
     'waitOnExit': True,
     'matplotlib': 'ipympl',
 }
+
 
 def getCPUCount():
     """Return number of processors on multiple platoforms."""
@@ -71,16 +72,17 @@ def getConfigPath():
 __configpath = getConfigPath()
 __configfile = os.path.join(__configpath, "config.json")
 
+
 if os.path.isfile(__configfile):
-    # info("Loading user configuration file at " + __configfile)
     with open(__configfile) as cfg:
+        debug("Loading user configuration file at " + __configfile)
         userrc = json.load(cfg)
 
     # Check if user config holds all keys and update if necessary
     if len(userrc.keys()) != len(rc.keys()):
         for key in rc:
             if key not in userrc:
-                info("Updating user configuration with", key, "=", rc[key])
+                debug("Updating user configuration with", key, "=", rc[key])
                 userrc[key] = rc[key]
         with open(__configfile, "w") as cfg:
             json.dump(userrc, cfg, indent=4, sort_keys=True)
@@ -90,3 +92,4 @@ else:
     os.makedirs(os.path.join(__configpath, "pygimli"), exist_ok=True)
     with open(__configfile, "w") as cfg:
         json.dump(rc, cfg, indent=4, sort_keys=True)
+

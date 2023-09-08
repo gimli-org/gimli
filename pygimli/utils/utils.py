@@ -82,13 +82,14 @@ class ProgressBar(object):
         if pg.isNotebook():
             tqdm = pg.optImport(
                 'tqdm', requiredFor="use nice progressbar in jupyter notebook")
+
             if tqdm is not None:
                 from tqdm.notebook import tqdm
                 fmt = kwargs.pop(
                     'bar_format',
                     '{desc} {percentage:3.0f}%|{bar}|{n_fmt}/{total_fmt}' +
                     ' [{elapsed} < {remaining}]')
-                self.nbProgress = tqdm(total=its, bar_format=fmt, **kwargs)
+                self._nbProgress = tqdm(total=its, bar_format=fmt, **kwargs)
 
     def __call__(self, it, msg=""):
         """Update progress."""

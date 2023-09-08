@@ -666,8 +666,9 @@ def show1D(mesh, obj, **kwargs):
     """Show simple plot for 1D modelling results
     """
     ax = kwargs.pop('ax', None)
-    
+    newAxe = False
     if ax is None:
+        newAxe = True
         ax = pg.show()[0]
 
     if hasattr(obj, 'eval'):
@@ -681,8 +682,10 @@ def show1D(mesh, obj, **kwargs):
     elif pg.isArray(obj, mesh.nodeCount()):
         x = pg.sort(pg.x(mesh))
         v = obj
+    elif isinstance(obj, list):
+        return show1D(mesh, np.array(obj),  ax=ax, **kwargs)
     elif hasattr(obj, 'ndim') and obj.ndim == 2 and pg.isArray(obj[0], mesh.nodeCount()):
-        return showAnimation(mesh, obj, **kwargs)
+        return showAnimation(mesh, obj, ax=ax, **kwargs)
         
     else:
         pg._r(kwargs)
@@ -690,18 +693,35 @@ def show1D(mesh, obj, **kwargs):
         pg._r(obj)
         pg.critical('implementme')
 
-    xLabel = kwargs.pop('xl', 'x in m')
-    if not isinstance(obj, (list, np.ndarray)):
-        yLabel = kwargs.pop('yl', str(obj))
-    else:
-        yLabel = ''
 
+    swapAxes = kwargs.pop('swapAxes', False)
     label = kwargs.pop('label', None)
     grid = kwargs.pop('grid', True)
+        
     
-    curve = ax.plot(x, v, label=label, **kwargs)
-    ax.set_xlabel(xLabel)
-    ax.set_ylabel(yLabel)
+    xLabel = kwargs.pop('xl', 'Depth in m')
+    if swapAxes is True:
+        ax.set_ylabel(xLabel)
+        pg.viewer.mpl.renameDepthTicks(ax)
+    else:
+        ax.set_xlabel(xLabel)
+    
+
+    if 'yl' in kwargs:
+        if not isinstance(obj, (list, np.ndarray)):
+            yLabel = kwargs.pop('yl', str(obj))
+        else:
+            yLabel = ''
+
+        if swapAxes is True:
+            ax.set_xlabel(yLabel)
+        else:
+            ax.set_ylabel(yLabel)
+
+    if swapAxes is True:
+        curve = ax.plot(v, x, label=label, **kwargs)
+    else:
+        curve = ax.plot(x, v, label=label, **kwargs)
 
     ax.legend()
     ax.grid(grid)
@@ -752,14 +772,20 @@ def showAnimation(mesh, data, ax=None, **kwargs):
     plt.ioff()
 
     interval = kwargs.pop('interval', 0)
+    swapAxes = kwargs.get('swapAxes', False)
 
     if mesh.dim() == 1:
         ax, curve = pg.show(mesh, data[0], ax=ax, **kwargs)
-        ax.set_ylim(min(data.flatten()), max(data.flatten()))
+        
+        if swapAxes is True:
+            ax.set_xlim(min(data.flatten()), max(data.flatten()))
+        else:
+            ax.set_ylim(min(data.flatten()), max(data.flatten()))
     else:
         ax = pg.show(mesh, data[0], ax=ax, **kwargs)[0]
         if flux is not None:
             pg.show(mesh, flux[0], ax=ax)
+
 
     try:
         times = mesh['times']
@@ -772,7 +798,10 @@ def showAnimation(mesh, data, ax=None, **kwargs):
     def animate(t):
         p.update(t)
         if mesh.dim() == 1:
-            curve[0].set_data(curve[0].get_data()[0], data[t])
+            if swapAxes is True:
+                curve[0].set_xdata(data[t])
+            else:
+                curve[0].set_ydata(data[t])
         else:
             ax.clear()
             pg.show(mesh, data[t], ax=ax, **kwargs)

@@ -808,8 +808,15 @@ def __stdVectorRVector_POW__(self, exp):
         ret.append(ai**exp)
     return ret
 
+def __stdVectorRVector_ABS__(self):
+    ret = pgcore.stdVectorRVector()
+    for i, ai in enumerate(self):
+        ret.append(pgcore.fabs(ai))
+    return ret
+
 pgcore.stdVectorRVector.__neg__ = __stdVectorRVector_NEG__
 pgcore.stdVectorRVector.__pow__ = __stdVectorRVector_POW__
+pgcore.stdVectorRVector.__abs__ = __stdVectorRVector_ABS__
 
 def __stdVectorRVector_IOP__(self, a, OP):
     if isScalar(a):
@@ -874,14 +881,6 @@ def __stdVectorRVector__array_ufunc__(self, ufunc, method, *inputs, **kwargs):
 
 pgcore.stdVectorRVector.__array_ufunc__ = __stdVectorRVector__array_ufunc__
 #pgcore.stdVectorRVector.__array_ufunc__ = None
-
-def __stdVectorRVector_ABS__(self):
-    ret = pgcore.stdVectorRVector()
-    for i, ai in enumerate(self):
-        ret.append(abs(ai))
-    return ret
-
-pgcore.stdVectorRVector.__abs__ = __stdVectorRVector_ABS__
 
 ##################################
 # stdVectorR3Vector operators
