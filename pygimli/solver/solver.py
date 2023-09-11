@@ -2501,7 +2501,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             swatch.reset()
             # (A + a*B)u is fastest,
             # followed by A*u + (B*u)*a and finally A*u + a*B*u and
-            br = (M + (dt * (theta - 1.)) * S) * U[n - 1] + \
+            br = (M + S*(dt * (theta - 1.))) * U[n - 1] + \
                 dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
 
             # print ('a',swatch.duration(True))
