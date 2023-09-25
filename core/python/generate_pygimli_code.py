@@ -61,7 +61,6 @@ import hashlib
 
 MAIN_NAMESPACE = 'GIMLI'
 
-
 def samefile(sourcefile, destfile):
     """
     """
@@ -209,10 +208,8 @@ def generate(defined_symbols, extraIncludes):
     import platform
 
     defines = ['PYGIMLI_CAST', 'HAVE_BOOST_THREAD_HPP']
-    caster = 'gccxml'
+    caster = 'castxml'
     compiler_path = options.clang
-
-    cflags = '-std=c++11'
 
     if platform.system() == 'Windows':
         if platform.architecture()[0] == '64bit':
@@ -243,16 +240,13 @@ def generate(defined_symbols, extraIncludes):
             casterpath = settings.caster_path.replace('\\', '\\\\')
             casterpath = settings.caster_path.replace('/', '\\')
 
-            if 'gccxml' not in casterpath:
-                caster = 'castxml'
-
             if '.exe' not in casterpath:
                 casterpath += '\\' + caster + '.exe'
 
+            cflags = ''
         else:
             casterpath = settings.caster_path
-            if 'gccxml' not in casterpath:
-                caster = 'castxml'
+            cflags = '-std=c++11'
 
     except Exception as e:
         logger.info("caster_path=%s" % casterpath)
@@ -278,12 +272,11 @@ def generate(defined_symbols, extraIncludes):
                                         cflags=cflags,
                                         compiler_path=compiler_path)
 
-    mb = module_builder.module_builder_t(
-                                [xml_cached_fc],
-                                indexing_suite_version=2,
-                                xml_generator_config=xml_generator_config
-                                )
-
+    mb = module_builder.module_builder_t([xml_cached_fc],
+                                         indexing_suite_version=2,
+                                         xml_generator_config=xml_generator_config
+                                        )
+    
     logger.info("Reading of c++ sources done.")
 
     mb.classes().always_expose_using_scope = True

@@ -59,7 +59,7 @@
 
 #ifdef USE_BOOST_BIND
     // deprecated
-    //#include <boost/bind.hpp>
+    #include <boost/bind.hpp>
 #else
     #include <functional>
 #endif

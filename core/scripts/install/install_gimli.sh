@@ -162,9 +162,12 @@ fi
 
 export UPDATE_ONLY=$UPDATE_ONLY
 export RUN_TESTS=$RUN_TESTS
+PYTHON_MAJOR=`python -c 'import sys; print(sys.version_info.major)'`
+PYTHON_MINOR=`python -c 'import sys; print(sys.version_info.minor)'`
+PYVERSION=$PYTHON_MAJOR'.'$PYTHON_MINOR
 
 echo "Installing at: "$GIMLI_ROOT
-echo "Build for Python="$PYTHON_MAJOR
+echo "Build for Python="$PYVERSION
 echo "Parallelize with j="$PARALLEL_BUILD
 echo "Update only: " $UPDATE_ONLY
 echo "Run tests: " $RUN_TESTS
@@ -211,8 +214,8 @@ buildGIMLI(){
         mkdir -p $GIMLI_BUILD_DIR
 
         pushd $GIMLI_BUILD_DIR
-
-            cmake -G "$CMAKE_GENERATOR" $GIMLI_SOURCE_DIR -DPYVERSION=$PYTHON_MAJOR
+            echo "Installing for python=$PYVERSION"
+            cmake -G "$CMAKE_GENERATOR" $GIMLI_SOURCE_DIR -DPYVERSION=$PYVERSION          
 
             make -j$PARALLEL_BUILD && make pygimli J=$PARALLEL_BUILD
         popd

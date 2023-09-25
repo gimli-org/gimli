@@ -182,13 +182,14 @@ def __ElementMatrix_mat_GC__(self):
     return R
 pgcore.ElementMatrix.mat = __ElementMatrix_mat_GC__
 
+
 # temporary object for debugging 
-__TElementMatrix_mat = pgcore.TestEM.mat
-def __TElementMatrix_mat_GC__(self):
-    R = __TElementMatrix_mat(self)
-    R.owner = self
-    return R
-pgcore.TestEM.mat = __TElementMatrix_mat_GC__
+# __TElementMatrix_mat = pgcore.TestEM.mat
+# def __TElementMatrix_mat_GC__(self):
+#     R = __TElementMatrix_mat(self)
+#     R.owner = self
+#     return R
+# pgcore.TestEM.mat = __TElementMatrix_mat_GC__
 
 
 __DenseMatrix_row = pgcore.RDenseMatrix.row

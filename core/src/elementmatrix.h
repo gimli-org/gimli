@@ -28,29 +28,6 @@ class FEAFunction;
 class ElementMatrixMap;
 
 
-//# temporary object for debugging 
-class TestEM {
-public:
-    TestEM(){
-        __MS("EM()", this)
-    }
-    ~TestEM(){
-        __MS("~EM()", this)
-    }
-
-    inline void setMat(const RSmallMatrix & m) { mat_ = m; }
-    /*! Return data matrix. */
-    inline RSmallMatrix * pMat() { return & mat_; }
-    /*! Return data for row i. */
-    inline const RSmallMatrix & mat() const { return mat_; }
-    /*! Return data for row i. */
-
-    RSmallMatrix mat_;
-};
-
-
-
-
 template < class ValueType > class DLLEXPORT ElementMatrix {
 public:
     /*! If dof != 0 then scalar field approximation is to be supposed.
@@ -501,6 +478,7 @@ public:
     #undef DEFINE_INTEGRATOR_BF
 
 protected:
+
     mutable RSmallMatrix mat_;
     IndexArray _ids;
     IndexArray _idsC;
@@ -582,10 +560,8 @@ DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(*)
 
 #undef DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__
 
-
 template < > DLLEXPORT ElementMatrix < double > &
 ElementMatrix < double >::operator += (const ElementMatrix < double > & E);
-
 
 template < > DLLEXPORT ElementMatrix < double > &
 ElementMatrix < double >::add(const ElementMatrix < double > & B,
