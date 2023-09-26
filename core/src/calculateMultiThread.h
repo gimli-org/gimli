@@ -58,8 +58,8 @@ protected:
 };
 template < class T > void distributeCalc(T calc, uint nCalcs, uint nThreads, bool verbose=false){
     log(Debug, "Create distributed calculation of " + str(nCalcs) + " jobs on " 
-        + str(nThreads) + " threads for "  
-        + str(std::thread::hardware_concurrency()) + " CPU");
+        + str(nThreads) + " threads for " + str(numberOfCPU()) + " CPU");
+
     if (nThreads == 1){
         calc.setRange(0, nCalcs);
         Stopwatch swatch(true);
