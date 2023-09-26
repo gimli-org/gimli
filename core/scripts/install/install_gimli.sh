@@ -215,7 +215,7 @@ buildGIMLI(){
 
         pushd $GIMLI_BUILD_DIR
             echo "Installing for python=$PYVERSION"
-                 cmake -G "$CMAKE_GENERATOR" $GIMLI_SOURCE_DIR -DPYVERSION=$PYVERSION          
+            cmake -G "$CMAKE_GENERATOR" $GIMLI_SOURCE_DIR -DPYVERSION=$PYVERSION          
 
             make -j$PARALLEL_BUILD && make pygimli J=$PARALLEL_BUILD
         popd
