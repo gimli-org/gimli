@@ -1016,19 +1016,35 @@ class Report(ScoobyReport):
 class Table(object):
     """Simple table for nice formated output
     """
-    def __init__(self, table, header=None):
+    def __init__(self, table, header=None, align=None):
         """
         """
         self.table = table
         self.header = header
+        self.align = align
 
     def __str__(self):
+
+        fmt = dict(floatfmt=".1f", stralign="left", )
+        
+        ca = []
+        if self.align is not None:
+            for a in self.align:
+                if a == 'l':
+                    ca.append('left')
+                elif a == 'c':
+                    ca.append('center')
+                elif a == 'r':
+                    ca.append('right')
+    
+            fmt['colalign'] = ca
+
+
         if pg.isNotebook():
             from IPython.display import display, Markdown, Latex
             
             from tabulate import tabulate
-            md = tabulate(self.table, headers=self.header, floatfmt=".5f", 
-                          tablefmt="pipe")
+            md = tabulate(self.table, headers=self.header, tablefmt="pipe", **fmt)
 
             # md =  '| | | Value | Unit | Dim |\n'
             # md += '| :- | :- | -: | :- | -:|\n'
@@ -1044,12 +1060,11 @@ class Table(object):
             display(Markdown(md))
             return ''
 
-
         try:
             from tabulate import tabulate
             if self.header is None:
-                return '\n' + tabulate(self.table, floatfmt=".5f") + '\n'
-            return '\n' + tabulate(self.table, headers=self.header, floatfmt=".5f") + '\n'
+                return '\n' + tabulate(self.table) + '\n'
+            return '\n' + tabulate(self.table, headers=self.header, **fmt) + '\n'
         except ImportError:
             pass
         except BaseException as e:
