@@ -90,7 +90,6 @@ public:
     /*!Get stored duration values.*/
     const RVector & stored() const { return *this->_store;}
 
-
 protected:
     enum watchstate {undefined,halted,running} _state;
 
@@ -104,15 +103,14 @@ protected:
 #define TOC__ std::cout << __swatch__.duration(true) << std::endl;
 #define toc__ __swatch__.duration()
 
-
 // little debugging and testing fun
-void waitms(Index us, Index count=1);
-void waitmsOMP(Index us, Index count=1);
+DLLEXPORT void waitms(Index us, Index count=1);
+DLLEXPORT void waitmsOMP(Index us, Index count=1);
 
 /*! Microseconds are rounded somewhat to system clock of 1000Hz. 
 Also there seems to be an offset of 0.05 ms. */
-void waitus(Index us, Index count=1);
-void waitusOMP(Index us, Index count=1);
+DLLEXPORT void waitus(Index us, Index count=1);
+DLLEXPORT void waitusOMP(Index us, Index count=1);
 
 } // namespace GIMLI
 

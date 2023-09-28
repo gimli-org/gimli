@@ -264,14 +264,14 @@ DLLEXPORT void sym(const ElementMatrixMap & A, ElementMatrixMap & ret);
 DLLEXPORT RVector tr(const ElementMatrixMap & A);
 DLLEXPORT void tr(const ElementMatrixMap & A, RVector & ret);
 
-void createUMap_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
+DLLEXPORT void createUMap_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
                 Index nCoeff, Index dofOffset);
 
-void createUMap0_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
+DLLEXPORT void createUMap0_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
                 Index nCoeff, Index dofOffset);
-void createUMap1_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
+DLLEXPORT void createUMap1_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
                 Index nCoeff, Index dofOffset);
-void createUMap2_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
+DLLEXPORT void createUMap2_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
                 Index nCoeff, Index dofOffset);
 
 } // namespace GIMLI{

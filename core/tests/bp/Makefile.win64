@@ -1,0 +1,43 @@
+TARGET := _bpt_.pyd
+
+ENV := /c/Users/carsten/anaconda311/envs/pg.py311
+PYINC := -I $(ENV)/include
+PYLIB := $(ENV)/libs/python311.lib
+#PYLIB := /c/Users/carsten/anaconda311/envs/pg.py311/libs/python311.lib
+#BPINC := -I $(ENV)/Library/include
+#BPLIB := $(ENV)/Library/lib/libboost_python311.lib
+
+BOOSTROOT := ../../../../thirdParty/dist-gcc-13.2.0-64/boost_1_83_0-gcc-13.2.0-64-py311/
+BPINC := -I $(BOOSTROOT)/include/
+BPLIB := $(BOOSTROOT)/lib/libboost_python311-mt-x64.dll
+
+INCS := $(PYINC) $(BPINC) 
+LIBS := $(PYLIB) $(BPLIB) 
+
+## compiles and runs
+#CXX=clang++  
+#AR=clang++ 
+
+## compiles and runs
+CXX=g++ 
+AR=g++ 
+
+CFLAGS := -fPIC -Wno-deprecated-declarations -Wno-attributes -std=c++11
+#CFLAGS := $(CFLAGS)  -Wl,--subsystem,windows -municode
+
+LFLAGS := -shared
+
+default: $(TARGET)
+
+
+%.o: %.cpp
+	$(CXX) $(CFLAGS) -c $< -o $@ $(INCS)
+
+$(TARGET): bpt.o
+	$(AR) -o $(TARGET) $< $(LFLAGS) $(LIBS)
+
+test:
+	python bpt.py
+
+clean:
+	rm -f *.o *.so *~ $(TARGET) $(OBJ)

@@ -1566,8 +1566,8 @@ void ElementMatrix < double >::integrate() const {
 }
 
 
-template < > void ElementMatrix < double >::
-fillEntityAndOrder_(const MeshEntity & ent, Index order){
+template < > DLLEXPORT
+void ElementMatrix < double >::fillEntityAndOrder_(const MeshEntity & ent, Index order){
     this->_order = order;
     this->_ent = &ent;
     this->_integrated = false;
@@ -1577,8 +1577,8 @@ fillEntityAndOrder_(const MeshEntity & ent, Index order){
 }
 
 
-template < > void ElementMatrix < double >::
-resizeMatX_U_(){
+template < > DLLEXPORT 
+void ElementMatrix < double >::resizeMatX_U_(){
     Index nRules(_x->size());
     Index nVerts(_ent->nodeCount());
     Index nCoeff(_nCoeff); //components
@@ -1600,8 +1600,8 @@ resizeMatX_U_(){
 }
 
 
-template < > void ElementMatrix < double >::
-fillMatX_U_(bool sum){
+template < > DLLEXPORT 
+void ElementMatrix < double >::fillMatX_U_(bool sum){
     Index nRules(_x->size());
     Index nVerts(_ent->nodeCount());
     Index nCoeff(this->_nCoeff);

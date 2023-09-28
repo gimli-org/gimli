@@ -17,8 +17,13 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Sets the configuration to build (Release, Debug, etc...)")
 endif()
 
-project(libgimli)
 
+#if (WIN32)
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -target x86_64-w64-windows-gnu")
+#    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -target x86_64-w64-windows-gnu")
+#endif()
+
+project(libgimli)
 include(CheckIncludeFileCXX)
 
 message(STATUS "System: ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM} ${CMAKE_SYSTEM_VERSION}")
@@ -32,6 +37,8 @@ message(STATUS "MINGW:  " ${MINGW} " using the MinGW compiler in Windows")
 message(STATUS "MSYS:   " ${MSYS} "  using the MSYS developer environment in Windows")
 message(STATUS "CYGWIN: " ${CYGWIN} " using the CygWin version of cmake")
 message(STATUS "MSVC:   " ${MSVC} " ")
+
+
 
 if (POLICY CMP0025) # recognize appleclang
     cmake_policy(SET CMP0025 NEW)
@@ -83,16 +90,14 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -p -g -ansi -pedantic -fno-common -fno-omit-frame-pointer -Wall")
     
     if (WIN32 OR CONDA_BUILD)
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-parentheses") # from boost since gcc.8 maybe need to be checked
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-attributes") # from gcc-8.2 + boost
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-parentheses") # from boost since gcc.8 maybe need to be checked
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-attributes") # from gcc-8.2 + boost
     endif()
     
     # special section for clang compiler
     if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    set(CMAKE_CXX_FLAGS_RELEASE
-    "${CMAKE_CXX_FLAGS_RELEASE} -Wno-overloaded-virtual")
-    set(CMAKE_CXX_FLAGS_RELEASE
-    "${CMAKE_CXX_FLAGS_RELEASE} -Qunused-arguments")
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-overloaded-virtual")
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Qunused-arguments")
     
         if (APPLE)
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-warning-option") # on apple clang 
@@ -224,6 +229,11 @@ endif()
 ################################################################################
 message(STATUS "********** BOOST ***********")
 
+if (BUILD_BOOST)
+    message(STATUS "Forced boost build.")
+    build_package(Boost boost)
+endif()
+
 function(find_boost_from_distname_file)
     set (BOOST_DIST_NAME_FILE "${EXTERNAL_DIR}/.boost-py${Python_VERSION_MAJOR}.dist")
     message(STATUS "locking for ${BOOST_DIST_NAME_FILE}")
@@ -304,7 +314,7 @@ endif()
 message(STATUS "********** BOOST_PYTHON ***********")
 function(find_boost_python_manual bp_version)
     message(STATUS "----------- searching for libboost_python${bp_version}")
-    find_package(Boost 1.65 COMPONENTS "python${bp_version}")
+    find_package(Boost COMPONENTS "python${bp_version}")
 
     if (${Boost_PYTHON${bp_version}_FOUND})
         set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND} PARENT_SCOPE)
@@ -319,24 +329,24 @@ function(find_boost_python_manual bp_version)
 endfunction()
 
 if (NOT Boost_PYTHON_LIBRARY)
-    message(STATUS "boost-python not found by cmake ... trying to determine boost-python now manually ...")
+    message(STATUS "boost-python not found by cmake ... trying to determine boost-python manually ...")
 
     if (WIN32)
-        set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}-mt")
+        #set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}") # conda-forge 
+        set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}-mt-x64") # win64, boost-1.83
+        #set(bp_version "python") # win64, boost-1.83
         string(TOUPPER ${bp_version} BP_VERSION)
 
         message(STATUS "... (win32) looking for ${bp_version} in BOOST_ROOT=${BOOST_ROOT}")
-        find_package(Boost 1.65 COMPONENTS "${bp_version}")
+        find_package(Boost COMPONENTS "${bp_version}")
 
         ## local var evaluated before cache, and cache setting does not overwrite local.
         ## so we need to set booth here for repeated cmake calls
-        set(Boost_PYTHON_FOUND ${Boost_${bp_version}_FOUND} CACHE BOOL "boost python found")
-        set(Boost_PYTHON_FOUND TRUE)
-        set(Boost_PYTHON_LIBRARY ${Boost_${BP_VERSION}_LIBRARY} CACHE FILEPATH "boost python lib")
-        set(Boost_PYTHON_LIBRARY ${Boost_${BP_VERSION}_LIBRARY})
-
-        if (NOT Boost_PYTHON_FOUND)
-            set(Boost_PYTHON_LIBRARY ${BOOST_ROOT}/lib/libboost_${bp_version}.dll)
+        if (Boost_PYTHON_FOUND)
+            set(Boost_PYTHON_FOUND ${Boost_${bp_version}_FOUND} CACHE BOOL "boost python found")
+            set(Boost_PYTHON_LIBRARY ${Boost_${BP_VERSION}_LIBRARY} CACHE FILEPATH "boost python lib")
+        else()
+            set(Boost_PYTHON_LIBRARY ${BOOST_ROOT}/lib/libboost_${bp_version}.dll.a)
             message(STATUS "... (win32) looking for ${Boost_PYTHON_LIBRARY}")
 
             if (EXISTS ${Boost_PYTHON_LIBRARY})
