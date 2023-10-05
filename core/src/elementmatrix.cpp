@@ -781,7 +781,7 @@ ElementMatrix < double > & ElementMatrix < double >::gradU2(const MeshEntity & e
                                                             const RVector & w,
                                                             const PosVector & x,
                                                             bool voigtNotation){
-                                                            __MS("inuse?")
+    // __MS("inuse?") // somewhere in pgtest
     this->fillIds(ent, C.size()); // also cleans
     this->fillGradientBase(ent, w, x,
                            max(C.size(), ent.dim()),
@@ -824,7 +824,7 @@ template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::gradU2(const Cell & cell,
                                                     const Matrix< double > & C,
                                                     bool voigtNotation){
-__MS("inuse?")
+    // __MS("inuse?") // somewhere in pgtest
 
     const RVector * w = 0;
     const PosVector * x = 0;

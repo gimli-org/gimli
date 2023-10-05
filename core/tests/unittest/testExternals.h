@@ -45,11 +45,11 @@ public:
         solver.solve(b, x);
         solver.solve(b, x);
         
-//         std::cout << "b: " << b << std::endl;
-//         std::cout << "x: " << x << std::endl;
-//         std::cout << "S*x: " << GIMLI::Vector < ValueType >(S * x)<< std::endl;
-//         std::cout << GIMLI::Vector < ValueType >(b - S * x)<< std::endl;
-//         std::cout << GIMLI::norm(b - S * x)<< std::endl;
+        // std::cout << "b: " << b << std::endl;
+        // std::cout << "x: " << x << std::endl;
+        // std::cout << "S*x: " << GIMLI::Vector < ValueType >(S * x)<< std::endl;
+        // std::cout << GIMLI::Vector < ValueType >(b - S * x)<< std::endl;
+        // std::cout << GIMLI::norm(b - S * x)<< std::endl;
         
         CPPUNIT_ASSERT(GIMLI::norm(b - S * x) < TOLERANCE);
         CPPUNIT_ASSERT(GIMLI::norm(b - Sm * x) < TOLERANCE);
