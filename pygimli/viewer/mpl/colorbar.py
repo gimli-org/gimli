@@ -481,8 +481,12 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
         cbar.set_ticks(cbarLevels)
         #medLvl = np.median(cbarLevels)
         # cbar.set_ticklabels(cbarLevelsString)
-        cbar.draw_all()
-        #cbar.draw_without_rendering()
+        try:
+            cbar.ax.figure.draw_without_rendering()
+            #cbar._draw_all() # work but dunno how long this will exists
+        except: 
+            cbar.draw_all() # removed by mpl-3.8
+
         # necessary since mpl 3.0
         cbar.ax.minorticks_off()
 
