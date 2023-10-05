@@ -499,11 +499,11 @@ public:
         
         GIMLI::RSparseMatrix AS(A_);
 
-        // CPPUNIT_ASSERT(AS.row(0) == AS.transMult(GIMLI::RVector({1, 0})));
-        // CPPUNIT_ASSERT(AS.row(1) == AS.transMult(GIMLI::RVector({0, 1})));
-        // CPPUNIT_ASSERT(AS.col(0) == AS.mult(GIMLI::RVector({1, 0, 0})));
-        // CPPUNIT_ASSERT(AS.col(1) == AS.mult(GIMLI::RVector({0, 1, 0})));
-        // CPPUNIT_ASSERT(AS.col(2) == AS.mult(GIMLI::RVector({0, 0, 1})));
+        CPPUNIT_ASSERT(AS.row(0) == AS.transMult(GIMLI::RVector({1, 0})));
+        CPPUNIT_ASSERT(AS.row(1) == AS.transMult(GIMLI::RVector({0, 1})));
+        CPPUNIT_ASSERT(AS.col(0) == AS.mult(GIMLI::RVector({1, 0, 0})));
+        CPPUNIT_ASSERT(AS.col(1) == AS.mult(GIMLI::RVector({0, 1, 0})));
+        CPPUNIT_ASSERT(AS.col(2) == AS.mult(GIMLI::RVector({0, 0, 1})));
 
         GIMLI::RSparseMapMatrix AM(A_);
 
