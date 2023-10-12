@@ -59,7 +59,12 @@ if (OpenBLAS_INCLUDE_DIR)
     endif()
 endif()
 
+
 if (USE_BOOST_THREAD)
+    target_link_libraries(${libgimli_TARGET_NAME} ${Boost_THREAD_LIBRARIES})
+    target_link_libraries(${libgimli_TARGET_NAME} ${Boost_SYSTEM_LIBRARIES})
+    message(STATUS "+++++++++++++++++++++++++++++++++ ${Boost_THREAD_LIBRARIES}")
+
     if (Boost_THREAD_FOUND)
         target_link_libraries(${libgimli_TARGET_NAME} ${Boost_THREAD_LIBRARIES})
     endif (Boost_THREAD_FOUND)
@@ -69,19 +74,21 @@ if (USE_BOOST_THREAD)
     endif (Boost_SYSTEM_FOUND)
 endif(USE_BOOST_THREAD)
 
+
 if (APPLE)
     target_link_libraries(${libgimli_TARGET_NAME} "-undefined dynamic_lookup")
 endif()
+
 
 if (WIN32)
     target_link_libraries(${libgimli_TARGET_NAME} psapi)
 
     #if (USE_BOOST_THREAD)
-        file(COPY ${Boost_THREAD_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
-        file(COPY ${Boost_SYSTEM_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+        #file(COPY ${Boost_THREAD_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+        #file(COPY ${Boost_SYSTEM_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
 
-        install(PROGRAMS ${Boost_THREAD_LIBRARIES} DESTINATION bin)
-        install(PROGRAMS ${Boost_SYSTEM_LIBRARIES} DESTINATION bin)
+        #install(PROGRAMS ${Boost_THREAD_LIBRARIES} DESTINATION bin)
+        #install(PROGRAMS ${Boost_SYSTEM_LIBRARIES} DESTINATION bin)
     #endif(USE_BOOST_THREAD)
 
 	if(${BLAS_LIBRARIES})
