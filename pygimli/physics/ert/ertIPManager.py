@@ -92,7 +92,7 @@ class ERTIPManager(ERTManager):
         else:
             self.invertTDIP()
 
-    def simulate(self, mesh, res, m, scheme, **kwargs):
+    def simulate(self, mesh, res, m, scheme=None, **kwargs):
         """."""
         from pygimli.physics.ert import ERTModelling
         data = scheme or pg.DataContainerERT(self.data)
