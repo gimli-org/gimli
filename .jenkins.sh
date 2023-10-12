@@ -83,8 +83,8 @@ export DISPLAY=:99.0
 export PYVISTA_OFF_SCREEN=True
 # ------------------------------------------------
 
-#make clean-gallery
-#make doc # = doxygen, sphinxapi, sphinxpdf, sphinxhtml
+make clean-gallery
+make doc # = doxygen, sphinxapi, sphinxpdf, sphinxhtml
 end=$(date +"%s")
 echo "Ending automatic build #$BUILD_NUMBER".
 diff=$(($end-$start))
