@@ -56,14 +56,14 @@ showDataContainerAsMatrix(data, m, data["a"], "rhoa", cMap="Spectral_r")
 
 ex = np.unique(pg.x(data))
 ez = np.unique(pg.z(data))
-dx = 0.05
-nb = 6
+dx = 0.1
+nb = 4
 xmin, xmax = min(ex) - nb*dx, max(ex) + nb*dx
 zmin, zmax = min(ez) - nb*dx, 0
 x = np.arange(xmin, xmax+.001, dx)
 z = np.arange(zmin, zmax+.001, dx)
 grid = mt.createGrid(x, z, marker=2)
-ax, cb = pg.show(grid, markers=True)
+ax, cb = pg.show(grid, showMesh=True, markers=True)
 ax.plot(pg.x(data), pg.z(data), "mx")
 print(grid)
 
@@ -78,7 +78,7 @@ print(grid)
 
 mesh = mt.appendTriangleBoundary(grid, marker=1, boundary=4, worldMarkers=True)
 for b in mesh.boundaries():
-    if np.isclose(b.center().y(), -1.65):
+    if np.isclose(b.center().y(), -1.7):
         b.setMarker(1)
 
 # pg.show(mesh, markers=True)
