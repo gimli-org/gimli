@@ -59,9 +59,14 @@ ax, cb = ert.show(data)
 #
 
 data["k"] = ert.geometricFactors(data)
-data["err"] = ert.estimateError(data, relativeError=0.02, absoluteUError=50e-6)
+data["err"] = ert.estimateError(data, relativeError=0.025, absoluteUError=100e-6)
+
+# %%%
+# We create an ERT manager and invert the data, already using a rather low value for
+# the vertical smoothness to account for the layered model.
+#
 mgr = ert.ERTManager(data, verbose=True)
-mgr.invert(paraDepth=80, quality=34.6, paraMaxCellSize=100)
+mgr.invert(paraDepth=70, quality=34.2, paraMaxCellSize=1000, zWeight=0.15, lam=30)
 
 # %%%
 # For reasons of comparability, we define a unique colormap and store all
@@ -74,9 +79,12 @@ kw = dict(cMin=20, cMax=500, logScale=True, cMap="Spectral_r",
           xlabel="x (m)", ylabel="y (m)")
 ax, cb = mgr.showResult(**kw)
 zz = np.abs(z)
-iz = np.argsort(zz)
-thk = np.hstack([0, np.diff(zz[iz])])
-draw1DColumn(ax, x=x[0], val=r[iz], thk=thk, width=4, **kw)
+iz = np.argsort(z)
+dz = np.diff(zz[iz])
+thk = np.hstack([dz, dz[-1]])
+ztop = -zz[iz[0]]-dz[0]/2
+colkw = dict(x=x[0], val=r[iz], thk=thk, width=4, ztopo=ztop)
+draw1DColumn(ax, **colkw, **kw)
 ax.grid(True)
 
 # %%%
@@ -99,41 +107,24 @@ fopDP = PriorModelling(para, posVec)
 
 fig, ax = plt.subplots()
 ax.semilogx(r, z, label="borehole")
-res1 = fopDP(mgr.model)
-ax.semilogx(res1, z, label="ERT")
+resSmooth = fopDP(mgr.model)
+ax.semilogx(resSmooth, z, label="ERT")
 ax.set_xlabel(r"$\rho$ ($\Omega$m)")
 ax.set_ylabel("depth (m)")
 ax.grid(True)
 ax.legend()
 
 # %%%
-# Even though the tomogram looks interesting, the resistivity seems to
-# follow a simple gradient. This is apparently a lack of resolution. Our
-# assumption of an overall smooth image is wrong. Therefore we use an
-# anisotropic smoothness using the vertical weighting factor ``zWeight``.
+# As alternative to smoothness, we can use a geostatistic model. The vertical 
+# range can be well estimated from the DP data using a variogram analysis, we 
+# guess 8m. For the horizontal one, we can only guess a ten times higher value.
 #
 
-mgr.inv.setRegularization(zWeight=0.2)
+mgr.inv.setRegularization(2, correlationLengths=[40, 4])
 mgr.invert()
 ax, cb = mgr.showResult(**kw)
-draw1DColumn(ax, x=x[0], val=r[iz], thk=thk, width=4, **kw)
-res2 = fopDP(mgr.model)
-
-# %%%
-# We observe a much more structured result with stronger vertical
-# gradients that are, however, not continuous. In the middle of the
-# profile we can see a short layer of increased resistivity.
-#
-# As alternative, we can use a geostatistic model. The vertical range can
-# be well estimated from the DP data using a variogram analysis, we guess
-# 5m. For the horizontal one, we can only guess a 10m higher value.
-#
-
-mgr.inv.setRegularization(2, correlationLengths=[50, 5])
-mgr.invert()
-ax, cb = mgr.showResult(**kw)
-draw1DColumn(ax, x=x[0], val=r[iz], thk=thk, width=4, **kw)
-res3 = fopDP(mgr.model)
+draw1DColumn(ax, **colkw, **kw)
+resGeo = fopDP(mgr.model)
 
 # %%%
 # Let's compare the three resistivity soundings with the ground truth.
@@ -141,9 +132,9 @@ res3 = fopDP(mgr.model)
 
 fig, ax = plt.subplots()
 ax.semilogx(r, z, label="borehole")
-ax.semilogx(res1, z, label="ERT smooth")
-ax.semilogx(res2, z, label="ERT aniso")
-ax.semilogx(res3, z, label="ERT geostat")
+ax.semilogx(resSmooth, z, label="ERT smooth")
+# ax.semilogx(res2, z, label="ERT aniso")
+ax.semilogx(resGeo, z, label="ERT geostat")
 ax.set_xlabel(r"$\rho$ ($\Omega$m)")
 ax.set_ylabel("depth (m)")
 ax.grid()
@@ -170,13 +161,10 @@ inv.mesh = para
 tLog = pg.trans.TransLog()
 inv.modelTrans = tLog
 inv.dataTrans = tLog
-# inv.setRegularization(zWeight=0.2)
-inv.setRegularization(correlationLengths=[50, 5])
-rError = np.ones_like(r)*0.1
-model = inv.run(r, rError)
+inv.setRegularization(correlationLengths=[40, 4])
+model = inv.run(r, relativeError=0.2)
 ax, cb = pg.show(para, model, **kw)
-draw1DColumn(ax, x=x[0], val=r[iz], thk=thk, width=4, **kw)
-
+draw1DColumn(ax, **colkw, **kw)
 
 # %%%
 # Apparently, the geostatistical operator can be used to extrapolate
@@ -211,17 +199,14 @@ response = fopJoint(model)
 respERT = response[:data.size()]
 respDP = response[data.size():]
 print(respDP)
-# ax, cb = ert.show(data, respERT)
 
 # %%%
-# The jacobian can be looked up
+# The jacobian can be created and looked up by
 #
 
-# test Jacobian
 fopJoint.createJacobian(model)  # works
 J = fopJoint.jacobian()
 print(type(J))  # wrong type
-
 ax, cb = pg.show(J)
 print(J.mat(0))
 ax, cb = pg.show(J.mat(1), markersize=4)
@@ -232,15 +217,14 @@ ax, cb = pg.show(J.mat(1), markersize=4)
 #
 
 dataVec = np.concatenate((data["rhoa"], r))
-errorVec = np.concatenate((data["err"], rError))
+errorVec = np.concatenate((data["err"], np.ones_like(r)*0.2))
 inv = pg.Inversion(fop=fopJoint, verbose=True)
 transLog = pg.trans.TransLog()
 inv.modelTrans = transLog
 inv.dataTrans = transLog
 inv.run(dataVec, errorVec, startModel=model)
 ax, cb = pg.show(para, inv.model, **kw)
-draw1DColumn(ax, x=x[0], val=r[iz], thk=thk, width=4, **kw)
-
+draw1DColumn(ax, **colkw, **kw)
 
 # %%%
 # We have a local improvement of the model in the neighborhood of the
@@ -248,10 +232,10 @@ draw1DColumn(ax, x=x[0], val=r[iz], thk=thk, width=4, **kw)
 # model.
 #
 
-inv.setRegularization(2, correlationLengths=[50, 5])
+inv.setRegularization(2, correlationLengths=[40, 4])
 model = inv.run(dataVec, errorVec, startModel=model)
 ax, cb = pg.show(para, model, **kw)
-draw1DColumn(ax, x=x[0], val=r[iz], thk=thk, width=4, **kw)
+draw1DColumn(ax, **colkw, **kw)
 
 
 # %%%
@@ -281,19 +265,16 @@ ax.legend()
 
 # %%%
 # The model response can much better resemble the given data compared to
-# pure interpolation.
+# pure interpolation. However, at shallow depth there is some inconsistency between
+# the ERT data and the borehole data.
 #
 
 # %%%
 # .. note:: Take-away messages
 #
-#    -  (ERT) data inversion is highly ambiguous, particularly for hidden
-#       layers
+#    -  (ERT) data inversion is highly ambiguous, particularly for hidden layers
 #    -  prior data can help to improve regularization
-#    -  structural data can be of great help, but only if extended
-#    -  point data improve images, but only locally with smoothness
-#       constraints
+#    -  point data improve images, but only locally with smoothness constraints
 #    -  geostatistical regularization can extrapolate point data
 #    -  incorporation of prior data with geostatistic regularization is best
-#       and simple
 #
