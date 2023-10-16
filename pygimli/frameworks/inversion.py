@@ -649,6 +649,8 @@ class Inversion(object):
         self.inv.setMaxIter(0)
         self.inv.start()
         self.maxIter = maxIterTmp
+        if self.verbose:
+            print("chi² = {0}".format(round(self.chi2(), 2)))
 
         if self._postStep and callable(self._postStep):
             self._postStep(0, self)
