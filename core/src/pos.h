@@ -120,8 +120,10 @@ public:
     inline const double & operator [] (Index i) const { return mat_[i]; }
 
     #define DEFINE_UNARY_MOD_OPERATOR__(OP) \
-    inline Pos & operator OP##= (const double & b){ mat_[0] OP##= b; mat_[1] OP##= b; mat_[2] OP##= b; return *this; }\
-    inline Pos & operator OP##= (const Pos & b){ mat_[0] OP##= b[0]; mat_[1] OP##= b[1]; mat_[2] OP##= b[2]; return *this; }\
+    inline Pos & operator OP##= (const double & b){ \
+        mat_[0] OP##= b; mat_[1] OP##= b; mat_[2] OP##= b; return *this; }\
+    inline Pos & operator OP##= (const Pos & b){ \
+        mat_[0] OP##= b[0]; mat_[1] OP##= b[1]; mat_[2] OP##= b[2]; return *this; }\
 
     DEFINE_UNARY_MOD_OPERATOR__(+)
     DEFINE_UNARY_MOD_OPERATOR__(-)
@@ -352,7 +354,6 @@ inline Pos operator OP (const Pos & a, const double & b){ \
     Pos tmp(a); return tmp OP##= b; } \
 inline Pos operator OP (const double & a, const Pos & b){ \
     Pos tmp(a, a, a); return tmp OP##= b; } \
-\
 
 DEFINE_POS_BIN_OPERATOR__(+)
 DEFINE_POS_BIN_OPERATOR__(*)

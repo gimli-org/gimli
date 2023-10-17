@@ -22,6 +22,7 @@
 namespace GIMLI{
 
 void RInversion::checkConstraints() {
+    
     if (forward_->constraints()->cols() == 0 ||
         forward_->constraints()->rows() == 0){
         if (verbose_) std::cout << "Building constraints matrix" << std::endl;

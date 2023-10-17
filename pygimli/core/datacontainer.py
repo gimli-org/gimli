@@ -4,6 +4,7 @@ import numpy as np
 from . logger import critical, verbose
 from .core import (RVector, Pos, DataContainer, DataContainerERT)
 from .core import (yVari, zVari, swapXY, swapYZ, y, z)
+from .decorators import deprecated
 
 
 def __DataContainer_str(self):
@@ -11,10 +12,14 @@ def __DataContainer_str(self):
         str(self.size()) + ", nonzero entries: " + \
         str([d for d in self.dataMap().keys() if self.isSensorIndex(d) or
              self.haveData(d)])
-
-
 DataContainer.__repr__ = __DataContainer_str
 DataContainer.__str__ = __DataContainer_str
+
+
+@deprecated('index access', 2.0)
+def __DataContainer_call(self, v):
+    return self[v]
+DataContainer.__call__ = __DataContainer_call
 
 
 def __DataContainer_setSensors(self, sensors):
@@ -44,14 +49,11 @@ def __DataContainer_setSensors(self, sensors):
             self.createSensor(nS)
         else:
             self.setSensorPosition(i, nS)
-
-
 DataContainer.setSensors = __DataContainer_setSensors
 
 
 def __DataContainer_copy(self):
     return type(self)(self)
-
 DataContainer.copy = __DataContainer_copy
 
 
@@ -65,16 +67,14 @@ def __DC_setVal(self, key, val):
         self.resize(len(val))
 
     self.set(key, val)
-
 DataContainer.__setitem__ = __DC_setVal
 
 
 def __DC_getVal(self, key):
     if self.isSensorIndex(key):
-        return np.array(self(key), dtype=int)
+        return np.array(self.get(key), dtype=int)
     # return self(key).array() // d['a'][2] = 0.0, would be impossible
-    return self(key)
-
+    return self.ref(key)
 DataContainer.__getitem__ = __DC_getVal
 
 
@@ -129,7 +129,7 @@ def __DataContainerERT_addFourPointData(self, *args,
     1
     >>> print(d)
     Data: Sensors: 4 data: 2, nonzero entries: ['a', 'b', 'm', 'n', 'rhoa', 'valid']
-    >>> print(d('rhoa'))
+    >>> print(d['rhoa'])
     2 [0.0, 1.0]
     """
     try:

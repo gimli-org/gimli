@@ -613,10 +613,13 @@ class MeshModelling(Modelling):
                 self._C = pg.matrix.GeostatisticConstraintsMatrix(
                     mesh=self.paraDomain, I=cL, dip=dip, strike=strike,
                 )
-
                 foundGeoStat = True
-                self.setConstraints(self._C)
 
+                pg._r(self._C, self._C.rows(), self._C.cols())
+                # X = pg.core.RMatrix(100, 100)
+                # self.setConstraints(X)
+
+                self.setConstraints(self._C)
         if foundGeoStat is False:
             super().createConstraints()
 
@@ -655,7 +658,6 @@ class MeshModelling(Modelling):
         This is called automatic when accessing self.mesh() so it ensures any
         effect of changing region properties (background, single).
         """
-        pg._r(self._refineH2, self._refineP2)
         m = pg.Mesh(mesh)
         if self._refineH2:
             pg.info("Creating refined mesh (H2) to solve forward task.")

@@ -706,6 +706,58 @@ def __PosIterCall__(self):
 
 pgcore.Pos.__iter__ = __PosIterCall__
 
+## there are weird exposed value expressions for POS OP with int argument 
+## so we need to overwrite them here until its known how to avoid the exposure
+## 231006
+
+__POS_orig__add__ = getattr(pgcore.Pos, '__add__')
+def __POS_new__add__(self, b):
+    if isinstance(b, int):
+        return __POS_orig__add__(self, float(b))
+    return __POS_orig__add__(self, b)
+setattr(pgcore.Pos, '__add__', __POS_new__add__)
+
+__POS_orig__radd__ = getattr(pgcore.Pos, '__radd__')
+def __POS_new__radd__(self, b):
+    if isinstance(b, int):
+        return __POS_orig__radd__(self, float(b))
+    elif isinstance(b, list):
+        return pgcore.Pos(b) + self
+    else:
+        return __POS_orig__radd__(self, b)
+setattr(pgcore.Pos, '__radd__', __POS_new__radd__)
+
+__POS_orig__sub__ = getattr(pgcore.Pos, '__sub__')
+def __POS_new__sub__(self, b):
+    if isinstance(b, int):
+        return __POS_orig__sub__(self, float(b))
+    return __POS_orig__sub__(self, b)
+setattr(pgcore.Pos, '__sub__', __POS_new__sub__)
+
+__POS_orig__rsub__ = getattr(pgcore.Pos, '__rsub__')
+def __POS_new__rsub__(self, b):
+    if isinstance(b, int):
+        return __POS_orig__rsub__(self, float(b))
+    elif isinstance(b, list):
+        return pgcore.Pos(b) - self
+    else:
+        return __POS_orig__rsub__(self, b)
+setattr(pgcore.Pos, '__rsub__', __POS_new__rsub__)
+
+__POS_orig__mul__ = getattr(pgcore.Pos, '__mul__')
+def __POS_new__mul__(self, b):
+    if isinstance(b, int):
+        return __POS_orig__mul__(self, float(b))
+    return __POS_orig__mul__(self, b)
+setattr(pgcore.Pos, '__mul__', __POS_new__mul__)
+
+__POS_orig__truediv__ = getattr(pgcore.Pos, '__truediv__')
+def __POS_new__truediv__(self, b):
+    if isinstance(b, int):
+        return __POS_orig__truediv__(self, float(b))
+    return __POS_orig__truediv__(self, b)
+setattr(pgcore.Pos, '__truediv__', __POS_new__truediv__)
+
 
 # ######### c to python converter ######
 # default converter from Pos to numpy array
@@ -1279,16 +1331,21 @@ def __getCoords(coord, dim, ent):
     if isinstance(ent, list) and isinstance(ent[0], pgcore.Node):
         return [n.pos()[dim] for n in ent]
 
-        # (n.x)
-
     if hasattr(ent, 'ndim') and ent.ndim == 2:
+        if ent.shape[0] > 3 and ent.shape[1] > dim:
+            ## for sure (N x [x, y, z])
+            return ent[:, dim]
+        if ent.shape[1] > 3 and ent.shape[0] > dim:
+            ## for sure ([x, y, z] x N)
+            return ent[dim]
+
         if hasattr(ent, 'flags') and ent.flags['F_CONTIGUOUS'] == True or \
             (ent.shape[0] >= dim and ent.shape[0] <= 3) or \
             ent.shape[1] > dim:
             ## (N x [x, y, z]).T || ([x, y, z] x N)
             return ent[dim]
 
-        elif ent.shape[0] > dim or \
+        if ent.shape[0] > dim or \
             (ent.shape[1] >= dim and ent.shape[1] <= 3):
             ## assuming (Nx[x, y, z])
             return ent[:, dim]

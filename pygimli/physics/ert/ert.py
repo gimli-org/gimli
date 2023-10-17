@@ -208,11 +208,11 @@ def simulate(mesh, scheme, res, **kwargs):
         ret['rhoa'] = rhoa
 
         if phia is not None:
-            ret.set('phia', phia)
+            ret['phia'] = phia
     else:
-        ret.set('rhoa', rhoa[0])
+        ret['rhoa'] = rhoa[0]
         if phia is not None:
-            ret.set('phia', phia[0])
+            ret['phia'] = phia[0]
 
     if returnFields:
         return pg.Matrix(fop.solution())
@@ -220,20 +220,21 @@ def simulate(mesh, scheme, res, **kwargs):
     if noiseLevel > 0:  # if errors in data noiseLevel=1 just triggers
         if not ret.allNonZero('err'):
             # 1A  and #100µV
-            ret.set('err', estimateError(ret,
+            ret['err'] = estimateError(ret,
                                          relativeError=noiseLevel,
                                          absoluteUError=noiseAbs,
-                                         absoluteCurrent=1))
-            print("Data error estimate (min:max) ",
-                  min(ret('err')), ":", max(ret('err')))
+                                         absoluteCurrent=1)
 
-        rhoa *= 1. + pg.randn(ret.size(), seed=seed) * ret('err')
-        ret.set('rhoa', rhoa)
+            print("Data error estimate (min:max) ",
+                  min(ret['err']), ":", max(ret['err']))
+
+        rhoa *= 1. + pg.randn(ret.size(), seed=seed) * ret['err']
+        ret['rhoa'] = rhoa
 
         ipError = None
         if phia is not None:
             if scheme.allNonZero('iperr'):
-                ipError = scheme('iperr')
+                ipError = scheme['iperr']
             else:
                 # np.abs(self.data("phia") +TOLERANCE) * 1e-4absoluteError
                 if noiseLevel > 0.5:

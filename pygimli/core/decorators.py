@@ -28,6 +28,30 @@ class renamed:
         return wrapper
 
 
+class deprecated:
+    """Decorator to mark a function deprecated
+    ```
+    @pg.deprecated(newname, 1.5)
+    def test(args, kwargs):
+        pass
+    ```
+    """
+    def __init__(self, newFunc, removedIn=''):
+        self.newFunc = newFunc
+        self.removed = str(removedIn)
+
+    def __call__(self, func):
+
+        def wrapper(*args, **kwargs):
+            import pygimli as pg
+            pg.warning(func.__name__, args[1:], kwargs,
+                       ' had been marked as deprecated' + \
+                       ' and will be removed in: ' + self.removed + \
+                       ' Use: ', self.newFunc)
+            return func(*args, **kwargs)
+        return wrapper
+
+
 def skipOnDefaultTest(func):
     """Decorator to mark a test to be skipped with default testing
     ```

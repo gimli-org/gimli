@@ -137,6 +137,7 @@ template <> void
 SparseMatrix< Complex >::add(const ElementMatrix < double > & A, 
                              const Complex & f, const double & scale){
     if (!valid_) SPARSE_NOT_VALID;
+    A.integrate();
 
     for (Index i = 0, imax = A.size(); i < imax; i++){
         for (Index j = 0, jmax = A.size(); j < jmax; j++){
@@ -261,16 +262,13 @@ template <> void SparseMatrix< Complex >
     _T_fillStiffnessMatrix(this, mesh, a, rebuildPattern);
 }
 
-template <> void SparseMatrix< Complex >
-::buildSparsityPattern(const Mesh & mesh){
-    THROW_TO_IMPL
-}
 
-template <> void SparseMatrix< double >
-::buildSparsityPattern(const Mesh & mesh){
+template <class ValueType > void
+_T_buildSparsityPattern_(SparseMatrix< ValueType > * self,
+                        const Mesh & mesh){
     Stopwatch sw(true);
 
-    colPtr_.resize(mesh.nodeCount() + 1);
+    // self->colPtr_.resize(mesh.nodeCount() + 1);
 
         //*** much to slow
         //RSparseMapMatrix S(mesh.nodeCount(), mesh.nodeCount());
@@ -304,47 +302,27 @@ template <> void SparseMatrix< double >
             }
         }
 
-        _rows = mesh.nodeCount();
-        _cols = mesh.nodeCount();
+        self->resize(mesh.nodeCount(), mesh.nodeCount());
 
         // __MS("collect pattern:", sw.duration(true))
-        this->buildSparsityPattern(idxMap);
+        self->buildSparsityPattern(idxMap);
         // __MS("build pattern:", sw.duration())
         // __MS(vals_.size())
         return ;
-
-//         int nVals = 0;
-//         for (std::vector < std::set< Index > >::iterator mIt = idxMap.begin();
-//              mIt != idxMap.end(); mIt++){
-//             //std::sort((*mIt).begin(), (*mIt).end());
-//             nVals += (*mIt).size();
-//         }
-
-// //         std::cout << "timwe: " << swatch.duration( true) << std::endl;
-// //         exit(0);
-
-//         rowIdx_.reserve(nVals);
-//         rowIdx_.resize(nVals);
-//         vals_.resize(nVals);
-
-//         colPtr_[0] = 0;
-//         Index k = 0;
-//         row = 0;
-//         for (std::vector < std::set< Index > >::iterator mIt = idxMap.begin(); mIt != idxMap.end(); mIt++){
-//             for (std::set< Index >::iterator sIt = (*mIt).begin(); sIt != (*mIt).end(); sIt++){
-//                 rowIdx_[k] = (*sIt);
-//                 vals_[k] = 0.0;
-//                 k++;
-//             }
-//             row++;
-//             colPtr_[row] = k;
-//         }
-//         valid_ = true;
-
-//         _rows = colPtr_.size() - 1;
-//         _cols = max(rowIdx_) + 1;
-//         //** freeing idxMap is expensive
 }
+
+
+template <> void SparseMatrix< Complex >
+::buildSparsityPattern(const Mesh & mesh){
+    _T_buildSparsityPattern_(this, mesh);
+}
+
+
+template <> void SparseMatrix< double >
+::buildSparsityPattern(const Mesh & mesh){
+    _T_buildSparsityPattern_(this, mesh);
+}
+
 
 template <class ValueType > void
 _T_buildSparsityPattern_(SparseMatrix< ValueType > * self,
@@ -411,6 +389,7 @@ template <> void SparseMatrix< Complex >
 ::buildSparsityPattern(const std::vector < std::set< Index > > & idxMap){
     _T_buildSparsityPattern_(this, idxMap);
 }
+
 
 template <class ValueType > void
 _T_addSparsityPattern_(SparseMatrix< ValueType > * self,

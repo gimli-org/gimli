@@ -19,10 +19,11 @@ class TestManagers(unittest.TestCase):
     def test_ERT(self, showProgress=False):
         dat = pg.getExampleFile('ert/gallery.dat', load=True, verbose=True)
         dat['k'] = ert.createGeometricFactors(dat)
+
         mesh = pg.meshtools.createParaMesh(
             dat.sensors(), quality=30.0,
             paraDX=0.3, paraMaxCellSize=0.5, paraDepth=8)
-        print(mesh)
+
         # with SR
         mgr = ert.ERTManager(sr=True, useBert=True, verbose=False, debug=False)
         mod = mgr.invert(dat, mesh=mesh, maxIter=20, lam=10)
@@ -142,8 +143,8 @@ class TestManagers(unittest.TestCase):
         import pygimli.meshtools as mt
         from pygimli.physics import ert
 
-        world = mt.createWorld(
-            start=[-50, 0], end=[50, -50], layers=[-1, -5], worldMarker=True)
+        world = mt.createWorld(start=[-50, 0], end=[50, -50],
+                               layers=[-1, -5], worldMarkers=True)
 
         scheme = pg.DataContainerERT()
         elec_positions = [[-2, 0, 0],
@@ -170,13 +171,13 @@ class TestManagers(unittest.TestCase):
         mesh = mt.createMesh(world, quality=34)
 
         rhomap = [[1, 99.595 + 8.987j],
-                [2, 99.595 + 8.987j],
-                [3, 59.595 + 8.987j]]
+                  [2, 99.595 + 8.987j],
+                  [3, 59.595 + 8.987j]]
 
-        # mgr = pg.physics.ERTManager()  # not necessary anymore
+        #pg.show(mesh, markers=True, showMesh=True)
         data = ert.simulate(mesh, res=rhomap, scheme=scheme, verbose=True)
-        rhoa = data.get('rhoa').array()
-        phia = data.get('phia').array()
+        rhoa = data['rhoa']
+        phia = data['phia']
 
         # make sure all computed responses are equal, especially the first two, which
         # only differ in the sign of their geometrical factor
@@ -188,8 +189,6 @@ class TestManagers(unittest.TestCase):
 
         # make sure rhoa is also positive
         assert np.all(rhoa > 0)
-
-
 
 
 if __name__ == '__main__':

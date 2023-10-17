@@ -28,16 +28,16 @@ class TransposedMatrix(MatrixBase):
     """Wrapper for transposed matrix (of any kind)."""
 
     def __init__(self, A, verbose=False):
-        super().__init__(verbose)
         self._A = A
+        super().__init__(self._A.cols(), self._A.rows(), verbose)
+        
+    # def rows(self):
+    #     """Return number of rows (cols of underlying matrix)."""
+    #     return self._A.cols()
 
-    def rows(self):
-        """Return number of rows (cols of underlying matrix)."""
-        return self._A.cols()
-
-    def cols(self):
-        """Return number of cols (rows of underlying matrix)."""
-        return self._A.rows()
+    # def cols(self):
+    #     """Return number of cols (rows of underlying matrix)."""
+    #     return self._A.rows()
 
     def mult(self, x):
         """Multiplication from right-hand-side (A.T*x)."""
@@ -52,16 +52,16 @@ class SquaredMatrix(MatrixBase):
     """Wrapper for squared (least-squares) matrix A^T*A (of any kind)."""
 
     def __init__(self, A, verbose=False):
-        super().__init__(verbose)
         self._A = A
+        super().__init__(self._A.cols(), self._A.cols(), verbose)
+        
+    # def rows(self):
+    #     """Return number of rows (cols of underlying matrix)."""
+    #     return self._A.cols()
 
-    def rows(self):
-        """Return number of rows (cols of underlying matrix)."""
-        return self._A.cols()
-
-    def cols(self):
-        """Return number of cols (cols of underlying matrix)."""
-        return self._A.cols()
+    # def cols(self):
+    #     """Return number of cols (cols of underlying matrix)."""
+    #     return self._A.cols()
 
     def mult(self, x):
         """Multiplication from right-hand-side (A.T*A*x)."""
@@ -76,16 +76,16 @@ class SquaredTransposeMatrix(MatrixBase):
     """Wrapper for squared (least-squares) matrix A*A^T (of any kind)."""
 
     def __init__(self, A, verbose=False):
-        super().__init__(verbose)
         self._A = A
+        super().__init__(self._A.rows(), self._A.rows(), verbose)
 
-    def rows(self):
-        """Return number of rows (rows of underlying matrix)."""
-        return self._A.rows()
+    # def rows(self):
+    #     """Return number of rows (rows of underlying matrix)."""
+    #     return self._A.rows()
 
-    def cols(self):
-        """Return number of cols (rows of underlying matrix)."""
-        return self._A.rows()
+    # def cols(self):
+    #     """Return number of cols (rows of underlying matrix)."""
+    #     return self._A.rows()
 
     def mult(self, x):
         """Multiplication from right-hand-side (A.T*A*x)."""
@@ -104,7 +104,6 @@ class RealNumpyMatrix(MatrixBase):
     """
 
     def __init__(self, mat, copy=False):
-        super().__init__()
 
         self.ndim = 2
 
@@ -116,15 +115,17 @@ class RealNumpyMatrix(MatrixBase):
                 self.M = np.copy(mat)
             else:
                 self.M = mat
+        
+        super().__init__(np.shape(self.M)[0], np.shape(self.M)[1], verbose=False)
 
     def __repr__(self):
         return self.M.__repr__()
 
-    def rows(self):
-        return np.shape(self.M)[0]
+    # def rows(self):
+    #     return np.shape(self.M)[0]
 
-    def cols(self):
-        return np.shape(self.M)[1]
+    # def cols(self):
+    #     return np.shape(self.M)[1]
 
     def save(self, name):
         np.save(name, self.M)
@@ -161,7 +162,7 @@ class MultMatrix(MatrixBase):
     def __init__(self, A, verbose=False):
         self._A = A
         self.ndim = self._A.ndim
-        super(MultMatrix, self).__init__(verbose)
+        super().__init__(self.A.rows(), self.A.cols(), verbose)
 
     @property
     def A(self):
@@ -171,13 +172,13 @@ class MultMatrix(MatrixBase):
     def A(self, A):
         self._A = A
 
-    def rows(self):
-        """Return number of rows (using underlying matrix)."""
-        return self.A.rows()  # this should be _A
+    # def rows(self):
+    #     """Return number of rows (using underlying matrix)."""
+    #     return self.A.rows()  # this should be _A
 
-    def cols(self):
-        """Return number of columns (using underlying matrix)."""
-        return self.A.cols()  # this should be _A
+    # def cols(self):
+    #     """Return number of columns (using underlying matrix)."""
+    #     return self.A.cols()  # this should be _A
 
     def save(self, filename):
         """So it can be used in inversion with dosave flag"""
@@ -324,11 +325,13 @@ class Add2Matrix(MatrixBase):
         A, B : any Matrix derived from pg.core.MatrixBase
             submatrices to be multiplied (A/B.cols() and rows() need to match)
         """
-        super().__init__()
         self.A = A
         self.B = B
         assert A.rows() == B.rows()
         assert A.cols() == B.cols()
+
+        super().__init__(self.A.rows(), self.A.cols(), verbose=False)
+
 
     def mult(self, x):
         """Return M*x = A*(r*x)"""
@@ -338,13 +341,14 @@ class Add2Matrix(MatrixBase):
         """Return M.T*x=(A.T*x)*r"""
         return self.A.transMult(x) + self.B.transMult(x)
 
-    def cols(self):
-        """Number of columns."""
-        return self.A.cols()
+    # def rows(self):
+    #     """Number of rows."""
+    #     return self.A.rows()
+    
+    # def cols(self):
+    #     """Number of columns."""
+    #     return self.A.cols()
 
-    def rows(self):
-        """Number of rows."""
-        return self.A.rows()
 
 
 class Mult2Matrix(MatrixBase):
@@ -365,10 +369,11 @@ class Mult2Matrix(MatrixBase):
         A, B : any Matrix derived from pg.core.MatrixBase
             submatrices to be multiplied (A.cols() must equal B.rows())
         """
-        super().__init__()
         self.A = A
         self.B = B
         assert A.cols() == B.rows()
+      
+        super().__init__(self.A.rows(), self.B.cols(), verbose=True)
 
     def mult(self, x):
         """Return M*x = A*(B*x)"""
@@ -378,13 +383,12 @@ class Mult2Matrix(MatrixBase):
         """Return M.T*x=(A.T*x)*B"""
         return self.B.transMult(self.A.transMult(x))
 
-    def cols(self):
-        """Number of columns."""
-        return self.B.cols()
-
-    def rows(self):
-        """Number of rows."""
-        return self.A.rows()
+    # def rows(self):
+    #     """Number of rows."""
+    #     return self.A.rows()
+    # def cols(self):
+    #     """Number of columns."""
+    #     return self.B.cols()
 
 
 class DiagonalMatrix(MatrixBase):
@@ -398,8 +402,8 @@ class DiagonalMatrix(MatrixBase):
         d : Vector
             vector holding diagonal elements
         """
-        super().__init__()
         self.d = d
+        super().__init__(len(self.d), len(self.d), verbose=False)
 
     def mult(self, x):
         """Return M*x = d*x (element-wise)"""
@@ -409,13 +413,13 @@ class DiagonalMatrix(MatrixBase):
         """Return M.T*x = M*x"""
         return x * self.d
 
-    def cols(self):
-        """Number of columns (length of diagonal)."""
-        return len(self.d)
+    # def rows(self):
+    #     """Number of rows (length of diagonal)."""
+    #     return len(self.d)
 
-    def rows(self):
-        """Number of rows (length of diagonal)."""
-        return len(self.d)
+    # def cols(self):
+    #     """Number of columns (length of diagonal)."""
+    #     return len(self.d)
 
 
 @pg.cache
@@ -672,14 +676,8 @@ class KroneckerMatrix(pg.core.MatrixBase):
         self.no = outer.rows()
         self.mi = inner.cols()
         self.mo = outer.cols()
-
-    def rows(self):
-        """Return number of rows (rows(I)*rows(O))."""
-        return self._I.rows() * self._O.rows()
-
-    def cols(self):
-        """Return number of cols (cols(I)*cols(O))."""
-        return self._I.cols() * self._O.cols()
+        self.resize(self._I.rows() * self._O.rows(), 
+                    self._I.cols() * self._O.cols())
 
     def mult(self, x):
         """Multiplication from right-hand-side (A.T*x)."""
@@ -737,7 +735,7 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
         super().__init__(kwargs.pop('verbose', False))
         self.withRef = kwargs.pop('withRef', False)
         self._spur = None
-        self.Cm05 = None
+        self._Cm05 = None
 
         if isinstance(CM, str):
             self.load(CM)
@@ -753,6 +751,15 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
                 pg.critical('Give either CM or mesh')
 
             self.Cm05 = createCm05(CM)
+
+    @property
+    def Cm05(self):
+        return self._Cm05
+
+    @Cm05.setter
+    def Cm05(self, c):
+        self._Cm05 = c
+        self.resize(self.nModel, self.nModel)
 
     @property
     def spur(self):
@@ -794,14 +801,19 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
     def transMult(self, x):
         return self.Cm05.transMult(x) - self.spur * x
 
-    def cols(self):
-        return self.nModel
-
-    def rows(self):
-        return self.nModel
+    # 231017 not longer virtual cols and rows .. use self.resize() for this 
+    # comment will be removed in 2.0 
+    #
+    # def cols(self):
+    #     return self.nModel
+    # 231017 not longer virtual cols and rows .. use self.resize() for this 
+    # comment will be removed in 2.0 
+    #
+    # def rows(self):
+    #     return self.nModel
 
     def clear(self):
-        self.Cm05 = None
+        self._Cm05 = None
         self._spur = None
 
 
@@ -826,7 +838,7 @@ def hstack(mats):
     >>> H = pg.matrix.hstack([A, B])
     >>> ax, _ = pg.show(H)
     >>> print(H)
-    pg.matrix.BlockMatrix of size 4 x 5 consisting of 2 submatrices.
+    BlockMatrix of size 4 x 5 consisting of 2 submatrices.
     """
     assert not np.any(np.diff([m.rows() for m in mats])), \
         "Matrix row numbers do not match!"
@@ -861,7 +873,7 @@ def vstack(mats):
     >>> V = pg.matrix.vstack([A, B])
     >>> ax, _ = pg.show(V)
     >>> print(V)
-    pg.matrix.BlockMatrix of size 5 x 4 consisting of 2 submatrices.
+    BlockMatrix of size 5 x 4 consisting of 2 submatrices.
     """
     assert not np.any(np.diff([m.cols() for m in mats])), \
         "Matrix column numbers do not match!"
@@ -896,7 +908,7 @@ def dstack(mats):
     >>> D = pg.matrix.dstack([A, B])
     >>> ax, _ = pg.show(D)
     >>> print(D)
-    pg.matrix.BlockMatrix of size 6 x 8 consisting of 2 submatrices.
+    BlockMatrix of size 6 x 8 consisting of 2 submatrices.
     """
     A = pgcore.BlockMatrix()
     irow = 0

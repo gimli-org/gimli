@@ -232,8 +232,13 @@ class DLLEXPORT MatrixBase{
 public:
 
     /*! Default constructor. */
-    MatrixBase(bool verbose=false) : verbose_(verbose), _rows(0), _cols(0) {}
+    MatrixBase(bool verbose=false) 
+        : verbose_(verbose), _rows(0), _cols(0) {}
 
+    /*! Default constructor. */
+    MatrixBase(Index rows, Index cols, bool verbose=false) 
+        : verbose_(verbose), _rows(rows), _cols(cols) {}
+ 
     /*! Default destructor. */
     virtual ~MatrixBase(){}
 
@@ -259,7 +264,8 @@ public:
 
     /*! Resize this matrix to rows, cols */
     virtual void resize(Index rows, Index cols){
-       log(Warning, "no resize(Index rows, Index cols) implemented for: ", typeid(*this).name());
+       this->_rows = rows;
+       this->_cols = cols;
     }
 
     /*! Fill Vector with 0.0. Don't change size.*/
@@ -460,11 +466,11 @@ public:
         this->resize(0, 0);
     }
     /*!Create Densematrix with specified dimensions.*/
-    DenseMatrix(Index rows)
-        : MatrixBase(), _rowView(0){
-        this->resize(rows, 0);
-        log(Error, "Densematrix need rows and cols in constructor.");
-    }
+    // DenseMatrix(Index rows)
+    //     : MatrixBase(), _rowView(0){
+    //     this->resize(rows, 0);
+    //     log(Error, "Densematrix need rows and cols in constructor.");
+    // }
 
     /*!Create Densematrix with specified dimensions.*/
     DenseMatrix(Index rows, Index cols)
@@ -936,10 +942,10 @@ public:
         : MatrixBase() {
         resize(0, 0);
     }
-    Matrix(Index rows)
-        : MatrixBase() {
-        resize(rows, 0);
-    }
+    // Matrix(Index rows)
+    //     : MatrixBase() {
+    //     resize(rows, 0);
+    // }
     // no default arg here .. pygimli@win64 linker bug
     Matrix(Index rows, Index cols)
         : MatrixBase() {
@@ -1431,14 +1437,14 @@ Mat < ValueType > fliplr(const Mat< ValueType > & m){
 
 template < class ValueType >
 Matrix < ValueType > real(const Matrix < std::complex< ValueType > > & cv){
-    Matrix < ValueType > v(cv.rows());
+    Matrix < ValueType > v(cv.rows(), cv.cols());
     for (Index i = 0; i < cv.rows(); i ++) v[i] = real(cv[i]);
     return v;
 }
 
 template < class ValueType >
 Matrix < ValueType > imag(const Matrix < std::complex< ValueType > > & cv){
-    Matrix < ValueType > v(cv.rows());
+    Matrix < ValueType > v(cv.rows(), cv.cols());
     for (Index i = 0; i < cv.rows(); i ++) v[i] = imag(cv[i]);
     return v;
 }

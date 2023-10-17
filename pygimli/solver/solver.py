@@ -1677,12 +1677,12 @@ def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
 
         if a is not None and a != 0.0:
             S_Dir.u2(boundary)
-            mat.add(S_Dir, scale=a)
+            mat.add(S_Dir, f=a)
             # Sp *= p
             # S += Sp
         if u0 is not None and u0 != 0.0:
             S_Neu.u(boundary)
-            rhs.add(S_Neu, a * u0)
+            rhs.add(S_Neu, f=a * u0)
 
 
 def assembleBC(bc, mesh, mat, rhs, time=None, userData={}, dofOffset=0,
@@ -1980,10 +1980,14 @@ def createStiffnessMatrix(mesh, a=None, isVector=False):
         print(mesh)
         raise Exception("Mesh invalid")
 
+    if isinstance(a, complex):
+        a = np.full(mesh.cellCount(), a)
+
     if a is None:
         a = pg.Vector(mesh.cellCount(), 1.0)
 
     A = None
+
 
     if isVector is False:
         if isinstance(a[0], float) or \
@@ -1992,7 +1996,7 @@ def createStiffnessMatrix(mesh, a=None, isVector=False):
             A = pg.matrix.SparseMatrix()
             A.fillStiffnessMatrix(mesh, a)
             return A
-
+    
         dof = 0
         nDof = mesh.nodeCount()
     else:
@@ -2016,7 +2020,7 @@ def createStiffnessMatrix(mesh, a=None, isVector=False):
         if isComplex is True:
             # al.gradU2(c, 1.0)
             al.ux2uy2uz2(c)
-            A.add(al, scale=a[c.id()])
+            A.add(al, f=a[c.id()], scale=1.0)
         else:
             if pg.isScalar(a[c.id()]):
                 al.gradU2(c, a[c.id()])

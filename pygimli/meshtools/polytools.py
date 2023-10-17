@@ -162,6 +162,7 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     >>> pg.viewer.mpl.drawSensors(ax, pnts5)
     """
     pnts = kwargs.pop('pnts', None)
+    
     if pnts is not None:
         if len(pnts) == 1:
             return createRectangle(pos=pnts[0], size=[1, 1], **kwargs)
@@ -178,8 +179,8 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
             yMax = max(pg.y(pnts))
 
             bb = np.asarray([[xMin, yMin], [xMax, yMax]])
-
             bbScale = (bb[1]-bb[0])*(minBBBoundary-np.asarray([1.0, 1.0]))
+
             return createRectangle(start=bb[0]-bbScale, end=bb[1]+bbScale,
                                    **kwargs)
         else:
@@ -1155,6 +1156,7 @@ def createParaMeshSurface(sensors, paraBoundary=None, boundary=-1,
     boundaryRect = pg.meshtools.createRectangle(pnts=sensors[:, 0:2],
                                                 minBB=False,
                                                 minBBOffset=boundary)
+
     for i in range(4):
         boundaryRect.boundary(i).setMarker(i+1)
         boundaryRect.node(i).setMarker((i % 4 + 1) * 10)

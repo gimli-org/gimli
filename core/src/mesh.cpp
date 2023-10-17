@@ -191,18 +191,6 @@ Node * Mesh::createNodeGC_(const RVector3 & pos, int marker){
                 // __MS(b->rtti())
                 if (b->rtti() == MESH_POLYGON_FACE_RTTI){
 
-                    // if (n->id() == 18 && b->id() == 6){
-                    //     std::cout << pos[0] << " " << pos[1] << " "<< pos[2] << std::endl;
-                    //     __MS(pos)
-                    //     for (auto *n: b->nodes()){
-                    //         //print(*n);
-                    //         std::cout.precision(14);
-                    //         std::cout << n->pos()[0] << " " << n->pos()[1] << " "<< n->pos()[2] << std::endl;
-                    //     }
-                    //     print(b->shape().touch(n->pos(), 1e-6, true));
-                    // }
-                    // __MS(pos)
-                    // __MS(b->center())
                     if (b->shape().touch(n->pos())){
                         //  __MS(pos)
                         //  __MS(b->node(0).pos(), b->node(1).pos(),

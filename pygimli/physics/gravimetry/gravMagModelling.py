@@ -4,16 +4,12 @@
 
 Some numerical and analytical tools.
 """
-
 import sys
-
 import numpy as np
-
 import pygimli as pg
 
-# from geomagnetics import GeoMagT0  # , date
 
-mu0 = pg.physics.constants.mu0
+mu0 = pg.physics.constants.mu0  # magn. field const.
 G = pg.physics.constants.GmGal  # gravitation constant in mGal
 
 deltaACyl = lambda R__, rho__: 2. * np.pi * R__**2. * rho__
@@ -348,8 +344,8 @@ def lineIntegralZ_WonBevis(p1, p2):
     -------
         g = -grad u =(Fx, 0.0, Fz), dFz(Fzx, Fzy, Fzz)
     """
-    dg = pg.RVector3(0.0, 0.0, 0.0)
-    dgz = pg.RVector3(0.0, 0.0, 0.0)
+    dg = pg.Pos(0.0, 0.0, 0.0)
+    dgz = pg.Pos(0.0, 0.0, 0.0)
     pg.core.lineIntegralZ_WonBevis(p1, p2, dg, dgz)
     return (np.asarray((dg[0], dg[1], dg[2])),
             np.asarray((dgz[0], dgz[1], dgz[2])))
@@ -675,7 +671,7 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
     dgzi = None
 
     for i, p in enumerate(pnts):
-        mesh.translate(-pg.RVector3(p))
+        mesh.translate(-p)
 
         for b in mesh.boundaries():
             if b.marker() != 0 or hasattr(dDensity, '__len__') or \
@@ -721,7 +717,7 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
                     if complete:
                         dgz[i] += dgzi * dDensity
 
-        mesh.translate(pg.RVector3(p))
+        mesh.translate(p)
 
 #    import matplotlib.pyplot as plt
 #    print("times:", sum(times), np.mean(times))

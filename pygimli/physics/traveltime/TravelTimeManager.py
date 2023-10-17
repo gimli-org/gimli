@@ -195,7 +195,7 @@ class TravelTimeManager(MeshMethodManager):
             pg.verbose("Absolute error estimates (min:max) {0}:{1}".format(
                 min(ret['err']), max(ret['err'])))
 
-            t += pg.randn(ret.size(), seed=seed) * ret('err')
+            t += pg.randn(ret.size(), seed=seed) * ret['err']
 
         if kwargs.pop('returnArray', False) is True:
             return t

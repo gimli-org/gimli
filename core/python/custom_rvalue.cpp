@@ -165,6 +165,13 @@ template < class ValueType, class SeqType > void * checkConvertibleSequenz(PyObj
         bp::object element = py_sequence[0];
         __DC(obj, "\t seq[0]: is of type: ", element.ptr()->ob_type->tp_name)
 
+        if (typeid(ValueType) == typeid(GIMLI::Pos) && 
+            strcmp(element.ptr()->ob_type->tp_name, "int") == 0){
+            __DC(obj, "\t abborting: Pos requested but sequence of ",    
+                     element.ptr()->ob_type->tp_name)
+                return NULL;
+        }
+
         //** do not convert [long] || [ulong]  > [bool]
         if (typeid(ValueType) == typeid(GIMLI::Index) || typeid(ValueType) == typeid(GIMLI::SIndex)){
             if (strcmp(element.ptr()->ob_type->tp_name, "bool") == 0) {

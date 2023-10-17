@@ -60,30 +60,30 @@ class TestMisc(unittest.TestCase):
         data.resize(5)
 
         data.markValid([0, 4])
-        self.assertEqual(data('valid'), [1.0, 0.0, 0.0, 0.0, 1.0])
+        self.assertEqual(data['valid'], [1.0, 0.0, 0.0, 0.0, 1.0])
 
         data.markInvalid(pg.core.IndexArray(np.arange(5, dtype="long")))
-        self.assertEqual(data('valid'), [0.0, 0.0, 0.0, 0.0, 0.0])
+        self.assertEqual(data['valid'], [0.0, 0.0, 0.0, 0.0, 0.0])
         
         data.markValid(np.arange(5, dtype="long"))
-        self.assertEqual(data('valid'), [1.0, 1.0, 1.0, 1.0, 1.0])
+        self.assertEqual(data['valid'], [1.0, 1.0, 1.0, 1.0, 1.0])
         
         data.markInvalid(range(5))
-        self.assertEqual(data('valid'), [0.0, 0.0, 0.0, 0.0, 0.0])
+        self.assertEqual(data['valid'], [0.0, 0.0, 0.0, 0.0, 0.0])
 
         x = np.arange(5, dtype='float')
 
         data.markValid(pg.Vector(x) > 2.0)
-        self.assertEqual(data('valid'), [0.0, 0.0, 0.0, 1.0, 1.0])
+        self.assertEqual(data['valid'], [0.0, 0.0, 0.0, 1.0, 1.0])
         
         data.markValid(pg.BVector(x < 2.0))
-        self.assertEqual(data('valid'), [1.0, 1.0, 0.0, 1.0, 1.0])
+        self.assertEqual(data['valid'], [1.0, 1.0, 0.0, 1.0, 1.0])
 
         data.markInvalid(pg.find(x > 3.0))
-        self.assertEqual(data('valid'), [1.0, 1.0, 0.0, 1.0, 0.0])
+        self.assertEqual(data['valid'], [1.0, 1.0, 0.0, 1.0, 0.0])
         
         data.markInvalid(x < 1.0)
-        self.assertEqual(data('valid'), [0.0, 1.0, 0.0, 1.0, 0.0])
+        self.assertEqual(data['valid'], [0.0, 1.0, 0.0, 1.0, 0.0])
 
     def test_DataContainerSensors(self):
         data = pg.DataContainer()
@@ -141,10 +141,10 @@ class TestMisc(unittest.TestCase):
         pos = range(4)
         data.addFourPointData(pos[0], pos[1], pos[2], pos[3])
         #print(data('a'), data('b'), data('m'), data('n'))
-        self.assertEqual(sum(data('a')), 9*0)
-        self.assertEqual(sum(data('b')), 9*1)
-        self.assertEqual(sum(data('m')), 9*2)
-        self.assertEqual(sum(data('n')), 9*3)
+        self.assertEqual(sum(data['a']), 9*0)
+        self.assertEqual(sum(data['b']), 9*1)
+        self.assertEqual(sum(data['m']), 9*2)
+        self.assertEqual(sum(data['n']), 9*3)
 
     def test_PosConstMember(self):
         p1 = pg.Pos(1.0, 0.0, 0.0)
@@ -186,9 +186,9 @@ class TestMisc(unittest.TestCase):
 
         d2.resize(10)
         self.assertTrue(d1.hash() == d2.hash())
-        d2('a')[3] = 2.0
-        self.assertFalse(d1.hash() == d2.hash())
-        d2('a')[3] = 1.0
+        d2['a'][3] = 2.0
+        self.assertFalse(d1.hash() != d2.hash())
+        d2['a'][3] = 1.0
         self.assertTrue(d1.hash() == d2.hash())
 
     def test_HashMesh(self):

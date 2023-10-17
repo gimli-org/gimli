@@ -883,6 +883,7 @@ std::vector < PolynomialFunction < double > > Quadrangle8Face::createShapeFuncti
 PolygonFace::PolygonFace(const std::vector < Node * > & nodes)
     : Boundary(new PolygonShape(this)){
     MeshEntity::setNodes(nodes);    
+    this->shape().resizeNodeSize_(nodes.size());
 }
 
 PolygonFace::~PolygonFace(){

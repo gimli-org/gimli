@@ -14,14 +14,14 @@ class TestConversionMethods(unittest.TestCase):
         self.assertEqual(a.size(), 10.0)
         self.assertEqual(sum(a), 0.0)
 
-    def test_ListToRVector3(self):
+    def test_ListToPos(self):
         """ implemented in custom_rvalue.cpp"""
         x = [0.0, 1.0, 0.0]
-        p = pg.RVector3(x)
+        p = pg.Pos(x)
         self.assertEqual(p.dist(x), 0.0)
         self.assertEqual(p.dist([1.0, 1.0]), 1.0)
 
-        p = pg.RVector3((0.0, 1.0, 0.0))
+        p = pg.Pos((0.0, 1.0, 0.0))
         self.assertEqual(p.dist([0.0, 1.0, 0.0]), 0.0)
 
     def test_ListToIndexArray(self):
@@ -58,7 +58,7 @@ class TestConversionMethods(unittest.TestCase):
     def test_ListToR3Vector(self):
         """ implemented in custom_rvalue.cpp"""
         x = [0.0, 1.0, 0.0]
-        p = pg.RVector3(x)
+        p = pg.Pos(x)
         pl = [p, p, p]
         t = pg.core.R3Vector(pl)
         self.assertEqual(t.size(), len(pl))
@@ -215,15 +215,15 @@ class TestConversionMethods(unittest.TestCase):
         self.assertEqual(A.row(1), M[:,1])
 
 
-    def test_NumpyToRVector3(self):
+    def test_NumpyToPos(self):
         """Implemented in custom_rvalue.cpp."""
         x = np.array([0.0, 1.0, 0.0])
-        p = pg.RVector3(x)
+        p = pg.Pos(x)
         self.assertEqual(p.dist(x), 0.0)
         self.assertEqual(p.dist([1.0, 1.0]), 1.0)
 
         x = np.array([0.0, 1.0])
-        p = pg.RVector3(x)
+        p = pg.Pos(x)
         self.assertEqual(p.dist([0.0, 1.0, 0.0]), 0.0)
 
     def __test_array_conversion(self, v, dtype, perf=False):
@@ -347,9 +347,9 @@ class TestConversionMethods(unittest.TestCase):
         self.__test_array_conversion(v, 'int32', perf=False)
 
 
-    def test_RVector3ToNumpy(self):
+    def test_PosToNumpy(self):
         """Implemented through hand_made_wrapper.py"""
-        v = pg.RVector3()
+        v = pg.Pos()
 
         a = np.array(v)
         self.assertEqual(type(a), np.ndarray)

@@ -129,7 +129,7 @@ def createRAData(sensors, shotDistance=1):
     data.resize(len(S))
     data.set("s", S)
     data.set("g", G)
-    data.set("valid", np.abs(np.sign(data("g") - data("s"))))
+    data.set("valid", np.abs(np.sign(data["g"] - data["s"])))
 
     return data
 

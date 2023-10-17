@@ -104,7 +104,7 @@ ElementMatrix < double >::operator += (const ElementMatrix < double > & E){
             THROW_TO_IMPL
         }
     }
-    if (this->isIntegrated()){
+    if (1 || this->isIntegrated()){ // force allways to stay compatible to oldfea
         if (this->rows() == E.rows() && this->cols() == E.cols()){
             this->mat_ += E.mat();
         } else {

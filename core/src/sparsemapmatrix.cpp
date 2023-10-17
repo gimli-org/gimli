@@ -107,57 +107,60 @@ SparseMapMatrix< double, Index >::add(const ElementMatrix < double > & A,
                                       const Vector < double > & f, const double & scale){
     A.integrate();
     __MS("inuse?")
+    THROW_TO_IMPL
+    // check if f[i] or f[A.rowIDs()[i]] -- ensure sizes if in use
     
-    double tol = 1e-25;
-    for (Index i = 0, imax = A.rows(); i < imax; i++){
-        for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
-            double v = A.getVal(i, j) * f[i] * scale;
+    // double tol = 1e-25;
+    // for (Index i = 0, imax = A.rows(); i < imax; i++){
+    //     for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
+    //         double v = A.getVal(i, j) * f[i] * scale;
             
-            this->addVal(A.rowIDs()[i], A.colIDs()[j], v);
+    //         this->addVal(A.rowIDs()[i], A.colIDs()[j], v);
             
-            if (::fabs(v) > tol){
-            }
-        }
-    }
+    //         if (::fabs(v) > tol){
+    //         }
+    //     }
+    // }
 }
 template <> void 
 SparseMapMatrix< Complex, Index >::add(const ElementMatrix < double > & A, 
-                                       const Complex & f, const double & scale){
+                                       const Complex & f, const Complex & scale){
     A.integrate();
-    // __MS("inuse?")
     
     for (Index i = 0, imax = A.rows(); i < imax; i++){
         for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
-            double v = A.getVal(i, j);
-            (*this)[A.rowIDs()[i]][A.colIDs()[j]] += v * f * scale;
+            Complex v = A.getVal(i, j) * f * scale;
+            
+            this->addVal(A.rowIDs()[i], A.colIDs()[j], v);
         }
     }
 }
 template <> void 
 SparseMapMatrix< Complex, Index >::add(const ElementMatrix < double > & A, 
                                        const Vector < Complex > & f, 
-                                       const double & scale){
+                                       const Complex & scale){
     A.integrate();
-    // __MS("inuse?")
-    
-    for (Index i = 0, imax = A.rows(); i < imax; i++){
-        for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
-            double v = A.getVal(i, j);
-            (*this)[A.rowIDs()[i]][A.colIDs()[j]] += v * f[i] * scale;
-        }
-    }
+    __MS("inuse?")
+    // check if f[i] or f[A.rowIDs()[i]] -- ensure sizes if in use
+
+    // for (Index i = 0, imax = A.rows(); i < imax; i++){
+    //     for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
+    //         double v = A.getVal(i, j);
+    //         (*this)[A.rowIDs()[i]][A.colIDs()[j]] += v * f[i] * scale;
+    //     }
+    // }
 }
 template <> void
 SparseMapMatrix< Complex, Index >::add(const ElementMatrix < double > & A, 
                                        const CSmallMatrix & f, 
-                                       const double & scale){
+                                       const Complex & scale){
     A.integrate();
     THROW_TO_IMPL
 }
 template <> void 
 SparseMapMatrix< Complex, Index >::add(const ElementMatrix < double > & A, 
                                        const Pos & f, 
-                                       const double & scale){
+                                       const Complex & scale){
     A.integrate();
     THROW_TO_IMPL
 }

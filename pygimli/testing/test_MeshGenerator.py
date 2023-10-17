@@ -191,6 +191,12 @@ class TestMeshGenerator(unittest.TestCase):
         #         print(c.shape().isInside(pos, True))
 
 
+    def test_appendTetrahedron(self):
+        grid = pg.meshtools.createGrid(5,5,5)
+        mesh = pg.meshtools.appendBoundary(grid, xbound=5, ybound=5, zbound=5,
+                                 isSubSurface=False)
+        ax, _ = pg.show(mesh, mesh.cellMarkers(), showMesh=True,
+                        filter={'clip':{}})
 
     def test_meshBMS(self):
         # text bms version v3 which stores geometry flag

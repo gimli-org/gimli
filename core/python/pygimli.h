@@ -188,14 +188,14 @@ namespace GIMLI{
     inline RMatrix operator OP (const RMatrix & a, const double & b){ \
         RMatrix ret(a);   ret OP##=b; return ret; } \
     inline RMatrix operator OP (const double & a, const RMatrix & b){ \
-        RMatrix ret(b.rows()); for (Index i = 0; i < b.rows(); i ++) ret[i] = a OP b[i]; return ret; } \
+        RMatrix ret(b.rows(), b.cols()); for (Index i = 0; i < b.rows(); i ++) ret[i] = a OP b[i]; return ret; } \
     inline RMatrix operator OP (const RMatrix & a, const RMatrix & b){ \
          RMatrix ret(a);   ret OP##=b; return ret; } \
         /*!*/ \
     inline RDenseMatrix operator OP (const RDenseMatrix & a, const double & b){ \
         RDenseMatrix ret(a);   ret OP##=b; return ret; } \
     inline RDenseMatrix operator OP (const double & a, const RDenseMatrix & b){ \
-        RDenseMatrix ret(b.rows()); for (Index i = 0; i < b.rows(); i ++) ret[i] = a OP b[i]; return ret; } \
+        RDenseMatrix ret(b.rows(), b.cols()); for (Index i = 0; i < b.rows(); i ++) ret[i] = a OP b[i]; return ret; } \
     inline RDenseMatrix operator OP (const RDenseMatrix & a, const RDenseMatrix & b){ \
          RDenseMatrix ret(a);   ret OP##=b; return ret; } \
         /*!*/ \
@@ -251,6 +251,8 @@ namespace GIMLI{
         stdVectorR3Vector ret(b); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
     inline stdVectorR3Vector operator OP (double a, const stdVectorR3Vector & b){ \
         stdVectorR3Vector ret(b); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
+    inline Pos operator OP (const Pos & a, long b){ \
+        Pos ret(a); return ret OP##= double(b); } \
 
 DEFINE_PY_VEC_OPERATOR__(+)
 DEFINE_PY_VEC_OPERATOR__(-)

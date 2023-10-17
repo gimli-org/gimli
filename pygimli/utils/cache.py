@@ -72,6 +72,8 @@ def valHash(a):
     elif hasattr(a, '__hash__') and not callable(a):
         # pg._r('has hash: ', a, hash(a))
         return hash(a)    
+    elif isinstance(a, pg.DataContainer):
+        return hash(a)
     elif callable(a):
         if hasattr(a, '_funct'):
             ## FEAFunctions or any other wrapper containing lambda as _funct
@@ -83,6 +85,7 @@ def valHash(a):
 
     pg.critical('cannot find hash for:', a)
     return hash(a)
+
 
 class Cache(object):
     def __init__(self, hashValue):
@@ -202,12 +205,8 @@ class Cache(object):
                     r = []
                     with open(self.info['file'] + '.npy', 'rb') as f:
                         v = np.load(f)
-                        pg._g(v)
-                        pg._b('--------')
                         r.append(v)
-                    pg._r(self._value)
                     self._value = (*r,)
-                    pg._y(self._value)
 
                 else:
                     self._value = np.load(self.info['file'] + '.npy',
@@ -230,6 +229,7 @@ class Cache(object):
                 traceback.print_exc(file=sys.stdout)
                 print(self.info)
                 pg.error('Cache restoring failed.')
+
 
 #@pg.singleton
 class CacheManager(object):

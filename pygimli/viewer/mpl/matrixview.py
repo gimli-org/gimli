@@ -84,7 +84,7 @@ def drawBlockMatrix(ax, mat, **kwargs):
     >>> B.add(SM, 10, 10)
     1
     >>> print(B)
-    pg.matrix.BlockMatrix of size 20 x 21 consisting of 2 submatrices.
+    BlockMatrix of size 20 x 21 consisting of 2 submatrices.
     >>> fig, (ax1, ax2) = pg.plt.subplots(1, 2, sharey=True)
     >>> _ = pg.show(B, ax=ax1)
     >>> _ = pg.show(B, spy=True, ax=ax2)

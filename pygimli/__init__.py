@@ -6,7 +6,7 @@ import sys
 import locale
 
 from .core.decorators import (renamed, singleton, moduleProperty,
-                              skipOnDefaultTest,
+                              skipOnDefaultTest, deprecated,
                               )
 
 # Import everything that should be accessible through main namespace.

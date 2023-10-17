@@ -365,6 +365,9 @@ void ModellingBase::initConstraints(){
 }
 
 void ModellingBase::setConstraints(MatrixBase * C){
+    if (!C){
+        THROW_TO_IMPL
+    }
     if (!constraints_ && ownConstraints_){
         delete constraints_;
     }

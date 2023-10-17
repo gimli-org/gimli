@@ -187,13 +187,31 @@ class TestRVectorMethods(unittest.TestCase):
         """ Pos
         """
         p = pg.Pos(1.0, 0.0)
+        
+        #pg.core.setDeepDebug(2)
+        
+        p2 = p + 2
+
+        #exit()
+        #np.testing.assert_array_equal(p + p/2, p + p/2.)
+
         np.testing.assert_array_equal(p, [1.0, 0.0, 0.0])
         np.testing.assert_array_equal(p + p, [2.0, 0.0, 0.0])
         np.testing.assert_array_equal(p + [0., 1, .0], [1.0, 1.0, 0.0])
-
+        np.testing.assert_array_equal(p + [0, 1, 0], [1.0, 1.0, 0.0])
+        np.testing.assert_array_equal([0., 1, 0] + p, [1.0, 1.0, 0.0])
+        np.testing.assert_array_equal([0, 1, 0] + p, [1.0, 1.0, 0.0])
+        np.testing.assert_array_equal([0., 1, 0] - p, [-1.0, 1.0, 0.0])
+        np.testing.assert_array_equal([0, 1, 0] - p, [-1.0, 1.0, 0.0])
+        np.testing.assert_array_equal(p + p/2, p + p/2.)
+        np.testing.assert_array_equal(p + p+2, p + p+2.)
+        np.testing.assert_array_equal(p + p*2, p + p*2.)
+        np.testing.assert_array_equal(p + p-2, p + p-2.)
 
         p = pg.Pos(1.0, 1.0, 1.0)
         #np.testing.assert_equal(abs(p), p.abs()) # not implemented
+        
+        
 
     def test_R3VectorOP(self):
         """ [Pos, ...]

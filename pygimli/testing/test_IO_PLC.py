@@ -48,12 +48,10 @@ class TestPLCIO(unittest.TestCase):
         # 2D, test triangle mesh for consistincy
         poly = pg.meshtools.readPLC(name2D)
 
-        np.testing.assert_allclose(poly.regionMarkers()[0].array(),
-                                   np.array([0., -2.5, 0.]))
-        np.testing.assert_allclose(poly.holeMarkers()[0].array(),
-                                   np.array([0., 0., 0.]))
-        np.testing.assert_allclose(np.sort(poly.positions().array()),
-                                   np.sort(m.positions().array()))
+        np.testing.assert_allclose(poly.regionMarkers()[0], [0., -2.5, 0.])
+        np.testing.assert_allclose(poly.holeMarkers()[0], [0., 0., 0.])
+        np.testing.assert_allclose(np.sort(poly.positions()),
+                                   np.sort(m.positions()))
         np.testing.assert_equal(poly.regionMarkers()[0].area(), 42.42)
 
         try:
@@ -112,10 +110,8 @@ class TestPLCIO(unittest.TestCase):
         # 3D, test tetgen plc for validity
         poly = pg.meshtools.readPLC(name3D)
 
-        np.testing.assert_allclose(poly.regionMarkers()[0].array(),
-                                   np.array([-1.99, 0.001, 1e-6]))
-        np.testing.assert_allclose(poly.holeMarkers()[0].array(),
-                                   cube.holeMarkers()[0].array())
+        np.testing.assert_allclose(poly.regionMarkers()[0], [-1.99, 0.001, 1e-6])
+        np.testing.assert_allclose(poly.holeMarkers()[0], cube.holeMarkers()[0])
         np.testing.assert_allclose(np.sort(poly.positions().array()),
                                    np.sort(cube.positions().array()))
         np.testing.assert_equal(poly.regionMarkers()[0].area(), 42.42)

@@ -528,10 +528,11 @@ def interpolate(*args, **kwargs):
     """
     fallback = kwargs.pop('fallback', 0.0)
     verbose = kwargs.pop('verbose', False)
-    pgcore = False
 
-    if 'srcMesh' in kwargs:
-        pgcore = True
+    if 'srcMesh' in kwargs and len(args) == 0:
+        return pg.core.interpolate(**kwargs,
+                                   fillValue=fallback,
+                                   verbose=verbose)
 
     elif len(args) > 0:
         if isinstance(args[0], pg.Mesh):
@@ -539,11 +540,6 @@ def interpolate(*args, **kwargs):
                 return pg.core.interpolate(args[0], args[1],
                                            fillValue=fallback,
                                            verbose=verbose)
-
-            if len(args) == 3 and isinstance(args[1], pg.Mesh):
-                pgcore = False  # (outMesh, inMesh, vals)
-            else:
-                pgcore = True   # (inMesh, *args)
 
         if len(args) == 4 and isinstance(args[3], str):
             return pg.interpolate(args[0], args[1], args[2], method=args[3], 
@@ -591,18 +587,20 @@ def interpolate(*args, **kwargs):
                                            fillValue=fallback,
                                            verbose=verbose)
 
+
         if len(args) == 3 and pg.isPosList(args[2]):
             # args: (inMesh, inData(dim==1), posList)
             return pg.core.interpolate(args[0], args[1], destPos=args[2],
-                                   fillValue=fallback,
-                                   verbose=verbose)
+                                       fillValue=fallback,
+                                       verbose=verbose)
 
         try:
             # check for Boost.Python.ArgumentError
             return pg.core.interpolate(*args, **kwargs,
-                                    fillValue=fallback,
-                                    verbose=verbose)
-        except:
+                                        fillValue=fallback,
+                                        verbose=verbose)
+        except Exception as e:
+            
             pass
 
     
