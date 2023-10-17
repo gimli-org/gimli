@@ -10,6 +10,7 @@ prism mesh (triangles in x-y plane and regular along z). This is beneficial
 in cases of a predominant layering that can be accounted for by using the
 zWeight inversion parameter because the boundaries are perfectly vertical.
 """
+# sphinx_gallery_thumbnail_number = 5
 
 # %%%
 # We import the used libraries pygimli, meshtools the ERT module and a function
@@ -61,8 +62,8 @@ rect = mt.createRectangle(pnts=elPosXY, minBBOffset=1.4, marker=2)
 for elpos in elPosXY:
     rect.createNode(*elpos, 0)
 
-ax, cb = pg.show(rect)
-_ = ax.plot(*elPosXY.T, "mx")
+# ax, cb = pg.show(rect)
+# _ = ax.plot(*elPosXY.T, "mx")
 
 # %%%
 # From this PLC, we create a mesh using a maximum cell size.
@@ -70,7 +71,7 @@ _ = ax.plot(*elPosXY.T, "mx")
 #
 
 bnd = 5
-rectMesh = mt.createMesh(rect, quality=34.5, area=.2)
+rectMesh = mt.createMesh(rect, quality=34.3, area=.4)
 mesh2d = mt.appendTriangleBoundary(
     rectMesh, boundary=bnd, isSubSurface=False, marker=1)
 ax, cb = pg.show(mesh2d, markers=True, showMesh=True)
@@ -80,12 +81,12 @@ _ = ax.plot(*elPosXY.T, "mx")
 # We create a vertical discretization vector with dense spacing in the range of
 # the electrodes and a coarser discretization above and below.
 
-dTop, dBot = 3.5, 10.7
-dzIn, dzOut = 0.3, 0.7
-zTop = -np.arange(0, dTop, dzOut)  # the upper layer
-zMid = -np.arange(dTop, dBot, dzIn)  # the middle
-zBot = -np.arange(dBot, dBot+bnd+.1, dzOut)  # the lower layer
-zVec = np.concatenate([zTop, zMid, zBot])  # all vectors together
+dTop, dBot = 4.1, 10.1
+dzIn, dzOut = 0.4, 0.8
+zTop = np.arange(0, dTop, dzOut)  # the upper layer
+zMid = np.arange(zTop[-1], dBot, dzIn)  # the middle
+zBot = np.arange(zMid[-1], dBot+bnd+.1, dzOut)  # the lower layer
+zVec = -np.concatenate([zTop, zMid[1:], zBot[1:]])  # all vectors together
 print(zVec)
 
 # %%%
@@ -116,7 +117,7 @@ _ = ax.plot(pg.x(data), pg.z(data), "mo", markersize=1)
 
 data["err"] = ert.estimateError(data)
 mgr = ert.Manager(data)
-mgr.invert(mesh=mesh, zWeight=0.4, verbose=True)
+mgr.invert(mesh=mesh, zWeight=0.3, verbose=True)
 
 # %%%
 # Eventually, we are able to fit the data to a chi-square value close to 1, or
@@ -135,6 +136,15 @@ pl.camera.azimuth = 20
 pl.camera.elevation = 20
 pl.camera.zoom(1.2)
 _ = pl.show()
+
+# %%%
+# We also have a closer look at a slice through the middle.
+
+para = mgr.paraDomain
+para["res"] = mgr.paraModel()
+slice = mt.extract2dSlice(para, origin=[4, 4, 0], normal=[1, 1, 0])
+pg.show(slice, "res", cMap="Spectral_r", cMin=100, cMax=500)
+
 
 # %%%
 # References

@@ -6,6 +6,7 @@
 
 Inversion of 2D crosshole field data.
 """
+# sphinx_gallery_thumbnail_number = 4
 
 # %%%
 # We import the used libraries pygimli, meshtools the ERT module and a function
@@ -55,14 +56,14 @@ showDataContainerAsMatrix(data, m, data["a"], "rhoa", cMap="Spectral_r")
 
 ex = np.unique(pg.x(data))
 ez = np.unique(pg.z(data))
-dx = 0.05
-nb = 8
+dx = 0.1
+nb = 4
 xmin, xmax = min(ex) - nb*dx, max(ex) + nb*dx
 zmin, zmax = min(ez) - nb*dx, 0
 x = np.arange(xmin, xmax+.001, dx)
 z = np.arange(zmin, zmax+.001, dx)
 grid = mt.createGrid(x, z, marker=2)
-ax, cb = pg.show(grid)
+ax, cb = pg.show(grid, showMesh=True, markers=True)
 ax.plot(pg.x(data), pg.z(data), "mx")
 print(grid)
 
@@ -71,10 +72,16 @@ print(grid)
 # outside that is automatically treated as background because they have a
 # region marker of 1 and so-called world boundary conditions, i.e. Neumann BC
 # at the Earth's surface and mixed boundary conditions at the other boundaries.
+# Additionally, we give all the boundaries at a specific depth a marker > 0 so
+# that this is treated as known interface where smoothness does not apply.
 #
 
-mesh = mt.appendTriangleBoundary(grid, marker=1, boundary=5, worldMarkers=1)
-pg.show(mesh, markers=True)
+mesh = mt.appendTriangleBoundary(grid, marker=1, boundary=4, worldMarkers=True)
+for b in mesh.boundaries():
+    if np.isclose(b.center().y(), -1.7):
+        b.setMarker(1)
+
+# pg.show(mesh, markers=True)
 
 # %%%
 # We estimate an error using default values, i.e. 3% relative error and an
@@ -82,9 +89,8 @@ pg.show(mesh, markers=True)
 # Inversion is run with half as much weight into the vertical direction.
 #
 
-data["err"] = ert.estimateError(data)
+data.estimateError()
 mgr = ert.Manager(data)
-mgr.inv.setRegularization(correlationLengths=[1, 0.5])
 mgr.invert(mesh=mesh, verbose=True)
 mgr.showResult(cMin=15, cMax=200)
 

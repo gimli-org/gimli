@@ -67,7 +67,7 @@ print(max(data["err"]))
 #
 
 # We create a piece-wise linear complex (PLC) as for a case with topography
-plc = mt.createParaMeshPLC(data, paraDepth=20, boundary=0.1)
+plc = mt.createParaMeshPLC(data, paraDepth=20, boundary=1)
 ax, _ = pg.show(plc, markers=True);
 for i, n in enumerate(plc.nodes()[:12]):
     ax.text(n.x(), n.y(), str(i))
@@ -93,7 +93,7 @@ pg.show(plc, markers=True);
 # boundary, we set its marker >0 by iterating through all boundaries.
 #
 
-mesh = mt.createMesh(plc, quality=34.4)
+mesh = mt.createMesh(plc, quality=34.2)
 for b in mesh.boundaries():
     if b.marker() == -1 and not b.outside():
         b.setMarker(2)

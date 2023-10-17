@@ -355,26 +355,26 @@ def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
 
     Assumes UTM in given zone.
     """
-    url = 'https://sg.geodatenzentrum.de/wms_' + service
+    url = 'https://sgx.geodatenzentrum.de/wms_' + service
     if usetls:
         url = 'https://sgtls12.geodatenzentrum.de/wms_' + service  # new
-    stdarg = '&SERVICE=WMS&VERSION=1.1.0&LAYERS=' + layer
-    stdarg += '&STYLES=default&FORMAT=' + fmt
+    stdarg = '?service=wms&version=1.3.0&request=GetMap&Layers=' + layer
+    stdarg += '&STYLES=default'
     if epsg == 0:
-        epsg = 32600 + zone  # WGS 84 / UTM zone 32N
-#        epsg = 25800 + zone  # ETRS89 / UTM zone 32N
-    srsstr = 'SRS=EPSG:' + str(epsg)  # EPSG definition of UTM
+        # epsg = 32600 + zone  # WGS 84 / UTM zone 32N
+        epsg = 25800 + zone  # ETRS89 / UTM zone 32N
+    srsstr = 'CRS=EPSG:' + str(epsg)  # EPSG definition of UTM
 
     if imsize is None or imsize <= 1:
         imsize = int((xlim[1] - xlim[0])/0.4) + 1  # take 40cm DOP resolution
         print('choose image size ', imsize)
     box = ','.join(str(int(v)) for v in [xlim[0], ylim[0], xlim[1], ylim[1]])
     ysize = int((imsize - 1.) * (ylim[1] - ylim[0]) / (xlim[1] - xlim[0])) + 1
-    sizestr = 'WIDTH=' + str(imsize) + '&HEIGHT=' + '%d' % ysize
+    sizestr = 'width=' + str(imsize) + '&Height=' + '%d' % ysize
     if uuid:
         url += '__' + uuid
-    addr = url + '?REQUEST=GetMap' + stdarg + '&' + srsstr + \
-        '&' + 'BBOX=' + box + '&' + sizestr
+    addr = url + stdarg + '&' + srsstr + \
+        '&' + 'bbox=' + box + '&' + sizestr + '&Format=' + fmt
 
     return addr, box
 
@@ -417,10 +417,10 @@ def underlayBKGMap(ax, mode='DOP', utmzone=32, epsg=0, imsize=2500, uuid='',
         except ImportError:
             import urllib2
 
-        ext = {'DOP': '.jpg', 'DTK': '.png'}  # extensions for different maps
-        wms = {'DOP': 'dop40', 'DTK': 'dtk25'}  # wms service name for maps
-        fmt = {'DOP': 'image/jpeg', 'DTK': 'image/png'}  # format
-        lay = {'DOP': 'rgb', 'DTK': '0'}
+        ext = {'DOP': '.jpg', 'DTK': '.png', 'MAP': '.png'}  # extensions for different maps
+        wms = {'DOP': 'dop40', 'DTK': 'dtk25', 'MAP': 'basemapde'}  # wms service name for maps
+        fmt = {'DOP': 'image/jpeg', 'DTK': 'image/png', 'MAP': 'image/png'}  # format
+        lay = {'DOP': 'rgb', 'DTK': '0', 'MAP': 'de_basemapde_web_raster_farbe'}
         if imsize < 1:  # 0, -1 or 0.4 could be reasonable parameters
             ax = ax.get_xlim()
             imsize = int((ax[1] - ax[0]) / 0.4)  # use original 40cm pixel size
