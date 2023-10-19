@@ -464,6 +464,8 @@ class Cm05Matrix(MatrixBase):
                 self.EV = self.EV[:, self.ew > thrsh]
                 self.ew = self.ew[self.ew > thrsh]
 
+            self.resize(len(self.ew), len(self.ew))
+
             if verbose:
                 pg.info('(C) Time for eigenvalue decomposition {:.1f}s'.format(
                         pg.dur(key='init cm05')))
@@ -489,14 +491,7 @@ class Cm05Matrix(MatrixBase):
         d = np.load(fileName + '.npy', allow_pickle=True).tolist()
         self.ew = d['ew']
         self.EV = d['EV']
-
-    def rows(self):
-        """Return number of rows (using underlying matrix)."""
-        return len(self.ew)
-
-    def cols(self):
-        """Return number of columns (using underlying matrix)."""
-        return self.row()
+        self.resize(len(self.ew), len(self.ew))
 
     def mult(self, x):
         """Multiplication from right-hand side (dot product)."""
@@ -793,7 +788,7 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
         d = np.load(fileName + '.npy', allow_pickle=True).tolist()
         self.setVerbose(d['verbose'], )
         self.withRef = d['withRef']
-        self.Cm05 = Cm05Matrix(d['Cm05'])
+        # self.Cm05 = Cm05Matrix(d['Cm05'])
 
     def mult(self, x):
         return self.Cm05.mult(x) - self.spur * x
@@ -815,6 +810,7 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
     def clear(self):
         self._Cm05 = None
         self._spur = None
+        self.resize(0, 0)
 
 
 def hstack(mats):

@@ -323,14 +323,14 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
 
     uniquemarkers = None
     ### if levels equals unqiue cell data, plot as markers
-    if kwargs.get('levels', None):
+    if kwargs.get('levels', None) is not None:
         ud = pg.unique(data)
-        levs = kwargs.pop('levels')
-        if ud == levs:
+        levs = kwargs['levels']
+        if len(ud) == len(levs) and ud == levs:
             kwargs["boundaryMarkers"] = kwargs.get("boundaryMarkers", False)
 
-            uniquemarkers, uniqueidx = np.unique(
-                    np.array(data), return_inverse=True)
+            uniquemarkers, uniqueidx = np.unique(np.array(data), 
+                                                 return_inverse=True)
 
             markers = True
 

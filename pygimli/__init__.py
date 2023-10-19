@@ -490,6 +490,8 @@ def _plt():
             try:
                 get_ipython().run_line_magic('matplotlib', rc['matplotlib'])
                 debug('matplotlib notebook backend set to: ', rc['matplotlib'])
+            except NameError as e:
+                pass
             except BaseException as e:
                 info(f"matplotlib notebook backend set to {rc['matplotlib']} failed: ", e)
         # tic()        

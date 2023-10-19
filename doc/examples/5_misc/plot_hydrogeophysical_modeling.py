@@ -22,7 +22,7 @@ from pygimli.physics import ERTManager
 ################################################################################
 # Create geometry definition for the modeling domain
 world = mt.createWorld(start=[-20, 0], end=[20, -16], layers=[-2, -8],
-                       worldMarker=False)
+                       worldMarkers=False)
 
 # Create a heterogeneous block
 block = mt.createRectangle(start=[-6, -3.5], end=[6, -6.0], marker=4,

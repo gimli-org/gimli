@@ -926,6 +926,8 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
         Values for contour lines. If empty auto generated from nLevs.
     nLevs : int
         Number of contour levels based on cMin, cMax and logScale.
+    nCols : int
+        Number of color, can be different from nLevs.
     cMin : float [None]
         Minimal contour value. If None min(data).
     cMax : float [None]
@@ -976,6 +978,8 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
     if levels is None:
         levels = autolevel(data, nLevs,
                            zMin=cMin, zMax=cMax, logScale=logScale)
+    else:
+        nCols = len(levels)-1
 
     if len(z) == len(triangles) and len(data) != mesh.nodeCount():
         shading = kwargs.pop('shading', 'flat')
@@ -1022,7 +1026,10 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
 
             if contourLines is True:
                 ax.tricontour(x, y, triangles, z, levels=levels,
-                              colors=kwargs.pop('colors', ['0.5']), **kwargs)
+                              colors=kwargs.pop('colors', ['0.5']), 
+                              alpha=kwargs.pop('alpha', 0.5), 
+                              linewidths=kwargs.pop('lw', 1.0), 
+                              **kwargs)
     else:
         gci = None
         raise Exception("Data size does not fit mesh size: ", len(z),

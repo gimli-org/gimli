@@ -274,7 +274,7 @@ def prettyFloat(value, roundValue=None, mathtex=False):
 
     if isinstance(roundValue, int) and abs(round(value)-value) < 1e-4 and abs(value) < 1e3 and 0:
         string = str(int(round(value, roundValue)))
-    elif abs(value) < 1e-15:
+    elif abs(value) < 1e-25:
         string = "0"
     elif abs(value) > 1e4 or abs(value) <= 1e-3:
         string = str("%.1e" % value)
@@ -1016,16 +1016,23 @@ class Report(ScoobyReport):
 class Table(object):
     """Simple table for nice formated output
     """
-    def __init__(self, table, header=None, align=None):
+    def __init__(self, table, header=None, align=None, pn=None):
         """
         """
         self.table = table
         self.header = header
         self.align = align
+        self.pn = pn
+
+        if self.pn is not None:
+            for i, row in enumerate(self.table):
+                #self.table[i][self.pn] = f'${pg.pf(row[self.pn], mathtex=True)}$'
+                self.table[i][self.pn] = f'{pg.pf(row[self.pn])}'
 
     def __str__(self):
 
-        fmt = dict(floatfmt=".1f", stralign="left", )
+        #fmt = dict(floatfmt=".1f", stralign="left", )
+        fmt = dict(stralign="left", )
         
         ca = []
         if self.align is not None:
@@ -1044,7 +1051,8 @@ class Table(object):
             from IPython.display import display, Markdown, Latex
             
             from tabulate import tabulate
-            md = tabulate(self.table, headers=self.header, tablefmt="pipe", **fmt)
+            md = tabulate(self.table, headers=self.header, 
+                          tablefmt="pipe", **fmt)
 
             # md =  '| | | Value | Unit | Dim |\n'
             # md += '| :- | :- | -: | :- | -:|\n'

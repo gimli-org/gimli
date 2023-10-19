@@ -614,12 +614,8 @@ class MeshModelling(Modelling):
                     mesh=self.paraDomain, I=cL, dip=dip, strike=strike,
                 )
                 foundGeoStat = True
-
-                pg._r(self._C, self._C.rows(), self._C.cols())
-                # X = pg.core.RMatrix(100, 100)
-                # self.setConstraints(X)
-
                 self.setConstraints(self._C)
+
         if foundGeoStat is False:
             super().createConstraints()
 

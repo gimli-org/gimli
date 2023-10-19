@@ -84,7 +84,7 @@ u = solve(grid, f=0., bc={'Dirichlet': dirichletBC, 'Neumann': neumannBC})
 
 ax = show(grid, data=u, filled=True, orientation='vertical',
           label='Solution $u$',
-          levels=np.linspace(min(u), max(u), 14), hold=True)[0]
+          levels=np.linspace(min(u), max(u), 14))[0]
 
 # Instead of the grid we now want to add streamlines to show the gradients of
 # the solution (i.e., the flow direction).

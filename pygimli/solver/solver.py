@@ -2121,6 +2121,10 @@ def _feNorm(u, mat):
 def normL2(u, mat=None, mesh=None, warn=True):
     r"""Create Lebesgue (L2) norm for finite element space.
 
+    Note
+    ----
+        * wrong implementation .. better to come
+        
     Find the L2 norm for a solution in the finite element space. :math:`u` exact solution,
     :math:`{\bf M}` Mass matrix, i.e., Finite element identity matrix.
 
@@ -2177,6 +2181,10 @@ def normL2(u, mat=None, mesh=None, warn=True):
 
 def normH1(u, mat=None, mesh=None):
     r"""Create (H1) norm for the finite element space.
+
+    Note
+    ----
+        * wrong implementation .. better to come
 
     Parameters
     ----------
@@ -2238,7 +2246,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         c \frac{\partial u}{\partial t} & = \nabla\cdot(a \nabla u)
         + b u + f(\mathbf{r},t)~~|~~\Omega_{\text{Mesh}}\\
         u & = h~~|~~\Gamma_{\text{Dirichlet}}\\
-        \frac{\partial u}{\partial \mathbf{n}} & =
+        a\frac{\partial u}{\partial \mathbf{n}} & =
         g~~|~~\Gamma_{\text{Neumann}}\\
         \alpha u + \beta\frac{\partial u}{\partial \mathbf{n}} & =
         \gamma~~|~~\Gamma_{\text{Robin}}\\
@@ -2688,6 +2696,9 @@ def crankNicolson(times, S, I, f=None,
     if len(times) < 2:
         raise BaseException("We need at least 2 times for "
                             "Crank-Nicolsen time discretization." + str(len(times)))
+
+    if swatches is None:
+        swatches = pg.tictoc('Crank-Nicolson')
 
     with swatches('prep'):
         

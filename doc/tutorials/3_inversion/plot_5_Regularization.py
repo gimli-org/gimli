@@ -239,6 +239,7 @@ ax.set_title("geostat I=2m")
 # We change the correlation lengths and the dip to be inclining
 #
 
+pg._b()
 inv.setRegularization(correlationLengths=[2, 0.5, 2], dip=-20)
 result = inv.run(**invkw)
 ax, _ = pg.show(mesh, result, **plotkw)
@@ -248,7 +249,7 @@ ax.set_title("geostat I=(2m, 0.5m), dip=-20°")
 # %%%
 # We now add many more points.
 #
-
+np.random.seed(42)
 N = 30
 x = np.random.rand(N) * 10
 y = -np.random.rand(N) * 10
@@ -257,7 +258,6 @@ v = np.random.rand(N) * 10 + 10
 # %%%
 # and repeat the above computations
 #
-
 pos = [pg.Pos(xi, yi) for xi, yi in zip(x, y)]
 fop = PriorModelling(mesh, pos)
 inv = pg.Inversion(fop=fop, verbose=True)

@@ -208,6 +208,7 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
 
     if levels is not None:
         nLevs = len(levels)
+        nCols = nLevs-1
 
     if cMap is not None:
         if isinstance(cMap, str):
@@ -252,7 +253,6 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
             norm = mpl.colors.Normalize(vmin=cMin, vmax=cMax)
 
         mappable.set_norm(norm)
-
 
     if needLevelUpdate is True:
         if cbar is not None:

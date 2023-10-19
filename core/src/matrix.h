@@ -270,12 +270,16 @@ public:
 
     /*! Fill Vector with 0.0. Don't change size.*/
     virtual void clean() {
+        this->_rows = 0;
+        this->_cols = 0;
         log(Warning, "no clean() implemented for: ", typeid(*this).name());
     }
     /*! Fill Vector with 0.0. Don't change size. For compatibility with eigen interface.*/
     inline void setZero() { this->clean(); }
     /*! Clear the data, set size to zero and frees memory. */
     virtual void clear() {
+        this->_rows = 0;
+        this->_cols = 0;
         log(Warning, "no clear() implemented for: ", typeid(*this).name());
     }
 
@@ -416,8 +420,7 @@ public:
 
     /*! Constructor with number of rows/colums. */
     IdentityMatrix(Index rows, double val=1.0)
-        : MatrixBase(), val_(val){
-        _rows = rows;
+        : MatrixBase(rows, rows), val_(val){
     }
 
     /*! Default destructor. */
