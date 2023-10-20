@@ -10,6 +10,7 @@ from pygimli.frameworks import MeshMethodManager
 
 from pygimli.utils import getSavePath
 from . modelling import TravelTimeDijkstraModelling, FatrayDijkstraModelling
+from . plotting import drawFirstPicks
 
 
 class TravelTimeManager(MeshMethodManager):
@@ -258,6 +259,15 @@ class TravelTimeManager(MeshMethodManager):
         self.fw.model = 1.0 / self.fw.model #C42 self.fw only hold non-mapped model
         # that needs to be compatible to self.fw.mesh
         return velocity
+
+    def showFit(self, axs=None, firstPicks=True, **kwargs):
+        """Show data fit as first-break picks or apparent velocity."""
+        if firstPicks:
+            kwargs.setdefault("linestyle", "None")
+            ax, _ = self.showData(firstPicks=True, **kwargs)
+            drawFirstPicks(ax, self.data, self.inv.response, marker=None)
+        else:
+            super().showFit(axs=axs, **kwargs)
 
     def getRayPaths(self, model=None):
         """Compute ray paths.
