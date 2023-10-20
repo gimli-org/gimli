@@ -265,7 +265,7 @@ class TravelTimeManager(MeshMethodManager):
         if firstPicks:
             kwargs.setdefault("linestyle", "None")
             ax, _ = self.showData(firstPicks=True, **kwargs)
-            drawFirstPicks(ax, self.data, self.inv.response, marker=None)
+            drawFirstPicks(ax, self.fop.data, self.inv.response, marker=None)
         else:
             super().showFit(axs=axs, **kwargs)
 
