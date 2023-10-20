@@ -12,7 +12,7 @@ import numpy as np
 
 import pygimli as pg
 import pygimli.meshtools as mt
-from pygimli.physics import TravelTimeManager
+import pygimli.physics.traveltime as tt
 # sphinx_gallery_thumbnail_number = 2
 
 
@@ -46,7 +46,7 @@ pg.show(mesh)
 # shot and receiver indices.
 numberGeophones = 48
 sensors = np.linspace(0., 117.5, numberGeophones)
-scheme = pg.physics.traveltime.createRAData(sensors)
+scheme = tt.createRAData(sensors)
 
 # Adapt sensor positions to slope
 pos = np.array(scheme.sensors())
@@ -65,7 +65,7 @@ scheme.setSensors(pos)
 # velocities (in m/s) and generate a velocity vector. To check whether the
 # model looks correct, we plot it along with the sensor positions.
 
-mgr = TravelTimeManager()
+mgr = tt.TravelTimeManager()
 vp = np.array(mesh.cellMarkers())
 vp[vp == 1] = 250
 vp[vp == 2] = 500
@@ -112,9 +112,9 @@ pg.show(geom, ax=ax, fillRegion=False, regionMarker=False)
 #
 
 ###############################################################################
-# Another useful method is to show the model along with its response
-# on the data.
-mgr.showResultAndFit(cMin=min(vp), cMax=max(vp))
+# It is always important to have a look at the data fit.
+
+mgr.showFit(firstPicks=True)
 
 ###############################################################################
 # .. note:: Takeaway message

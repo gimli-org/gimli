@@ -21,7 +21,6 @@ import numpy as np
 import pygimli as pg
 import pygimli.meshtools as mt
 import pygimli.physics.traveltime as tt
-# from pygimli.physics.traveltime import TravelTimeManager, createCrossholeData
 
 pg.utils.units.quants['vel']['cMap'] = 'inferno_r'
 ###############################################################################
