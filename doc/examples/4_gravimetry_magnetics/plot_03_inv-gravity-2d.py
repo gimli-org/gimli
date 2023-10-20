@@ -95,7 +95,7 @@ fop = GravityModelling2D(mesh=mesh, points=pnts)
 cz = -pg.y(mesh.cellCenters())
 z0 = 5
 wz = 1 / (cz+z0)**1.5
-pg.plt.plot(cz, wz, ".")
+pg.show()[0].plot(cz, wz, ".")
 
 # %%%
 # Inversion

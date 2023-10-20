@@ -176,7 +176,7 @@ class ERTModelling(ERTModellingBase):
             mod = self.flipImagPart(mod)
 
         resp = self._core.response(mod)
-
+        
         if self.complex() and self._conjImag:
             pg.warn('backflip imaginary part after response calc')
             resp = self.flipImagPart(resp)
