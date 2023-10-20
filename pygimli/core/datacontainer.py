@@ -169,3 +169,14 @@ def __DataContainer_show(self, *args, **kwargs):
     return pg.show(self, *args, **kwargs)
 
 DataContainer.show = __DataContainer_show
+
+
+def __DataContainer_getIndices(self, **kwargs):
+    """Return indices for all data keys equalling values."""
+    good = np.ones(self.size(), dtype=bool)
+    for k, v in kwargs.items():
+        good = np.bitwise_and(good, self[k] == v)
+
+    return np.nonzero(good)[0]
+
+DataContainer.getIndices = __DataContainer_getIndices
