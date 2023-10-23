@@ -87,7 +87,7 @@ class TimelapseERT():
                 timestr = np.loadtxt(filename[:-4]+".times", dtype=str)
                 self.times = np.array([datetime.fromisoformat(s) for s in timestr])
         elif "*" in filename:
-            DATA = [ert.load(fname) for fname in glob("*.dat")]
+            DATA = [ert.load(fname) for fname in glob(filename)]
             self.data, self.DATA, self.ERR = combineMultipleData(DATA)
 
         self.name = filename[:-4].replace("*", "All")
@@ -275,8 +275,11 @@ class TimelapseERT():
 
     def createMesh(self, **kwargs):
         """Generate inversion mesh."""
-        self.mesh = ert.createInversionMesh(**kwargs)
+        self.mesh = ert.createInversionMesh(self.data, **kwargs)
         self.mgr.setMesh(mesh=self.mesh)
+        if kwargs.pop("show", False):
+            print(self.mesh)
+            pg.show(self.mesh, markers=True, showMesh=True)
 
     def invert(self, t=None, reg={}, **kwargs):
         """Run inversion for a specific timestep or all subsequently."""
@@ -287,7 +290,7 @@ class TimelapseERT():
             self.createMesh()
         self.mgr.fop.setVerbose(False)
         if isinstance(reg, dict):
-            self.mgr.inv.setRegularization(correlationLengths=[1.5, 0.7])
+            self.mgr.inv.setRegularization(**reg)
         if t is None:  # all
             t = np.arange(len(self.times))
 
@@ -307,6 +310,8 @@ class TimelapseERT():
 
         if len(t) == 1:
             self.mgr.showResult()
+
+        self.pd = self.mgr.paraDomain
 
     def fullInversion(self, scalef=1.0, **kwargs):
         """Full (4D) inversion."""
@@ -343,11 +348,16 @@ class TimelapseERT():
 
     def generateModelPDF(self, **kwargs):
         """Generate a multi-page pdf with the model results."""
+        kwargs.setdefault('label', pg.unit('res'))
+        kwargs.setdefault('cMap', pg.utils.cMap('res'))
+        kwargs.setdefault('logScale', True)
+        kwargs.setdefault("cMap", "Spectral_r")
         with PdfPages(self.name+'-model.pdf') as pdf:
             fig = plt.figure(figsize=kwargs.pop("figsize", [5, 5]))
             for i, model in enumerate(self.models):
                 ax = fig.subplots()
-                self.mgr.showResult(model, ax=ax, **kwargs)
+                # self.mgr.showResult(model, ax=ax, **kwargs)
+                pg.show(self.pd, model, ax=ax, **kwargs)
                 ax.set_title(str(i)+": " + self.times[i].isoformat(" ", "minutes"))
                 fig.savefig(pdf, format='pdf')
                 fig.clf()
