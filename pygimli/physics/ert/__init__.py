@@ -9,6 +9,7 @@
     Main entry functions or classes:
     * simulate - synthetic (real or complex-valued) modelling
     * createData - generate data sets for synthetic modelling
+    * ERTModelling - Modelling operator
     * ERTManager - data inversion and modelling for real resistivity
     * ERTIPManager - extension to IP (either frequency or time domain)
     * TimelapseERT - processing and inversion of timelapse ERT data
@@ -22,6 +23,8 @@ from .ertManager import ERTManager
 from .ertIPManager import ERTIPManager
 from .ertModelling import ERTModelling, ERTModellingReference
 from .ertScheme import createData
+from .timelapse import TimelapseERT
+from .crosshole import CrossholeERT
 from pygimli.physics.ves import VESManager  # backward compatibility
 from pygimli.physics.ves.vesModelling import VESModelling
 # , VESCModelling, VESRhoModelling
