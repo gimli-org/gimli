@@ -581,13 +581,10 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             pass
 
     pg.viewer.mpl.updateAxes(ax)
-
     pg.viewer.mpl.hold(val=lastHoldStatus)
-
 
     if kwargs.get('depth', False):
         pg.viewer.mpl.adjustWorldAxes(ax)
-
 
     if savefig:
         print('saving: ' + savefig + ' ...')
@@ -686,26 +683,22 @@ def show1D(mesh, obj, **kwargs):
         return show1D(mesh, np.array(obj),  ax=ax, **kwargs)
     elif hasattr(obj, 'ndim') and obj.ndim == 2 and pg.isArray(obj[0], mesh.nodeCount()):
         return showAnimation(mesh, obj, ax=ax, **kwargs)
-        
     else:
         pg._r(kwargs)
         pg._r(mesh)
         pg._r(obj)
         pg.critical('implementme')
 
-
     swapAxes = kwargs.pop('swapAxes', False)
     label = kwargs.pop('label', None)
     grid = kwargs.pop('grid', True)
-        
-    
     xLabel = kwargs.pop('xl', 'Depth in m')
+
     if swapAxes is True:
         ax.set_ylabel(xLabel)
         pg.viewer.mpl.renameDepthTicks(ax)
     else:
         ax.set_xlabel(xLabel)
-    
 
     if 'yl' in kwargs:
         if not isinstance(obj, (list, np.ndarray)):

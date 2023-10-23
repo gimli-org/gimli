@@ -1043,9 +1043,22 @@ class Table(object):
                     ca.append('center')
                 elif a == 'r':
                     ca.append('right')
-    
-            fmt['colalign'] = ca
-
+            
+        else:
+            for j, col in enumerate(self.table[0]):
+                if j == 0:
+                    ca.append('left')
+                elif j == len(self.table[0]) -1:
+                    ca.append('right')
+                else:
+                    if isinstance(col, int):
+                        ca.append('center')
+                    elif not isinstance(col, str):
+                        ca.append('right')
+                    else:
+                        ca.append('left')
+            
+        fmt['colalign'] = ca
 
         if pg.isNotebook():
             from IPython.display import display, Markdown, Latex
