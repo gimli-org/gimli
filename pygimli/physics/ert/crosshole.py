@@ -161,25 +161,27 @@ class CrossholeERT(TimelapseERT):
         zmin, zmax = min(pg.z(data)), max(pg.z(data))
         if threeD is None:
             threeD = (ymin != ymax) and (zmin != zmax)
+
+        ztop = np.minimum(0, zmax+ibound)
         if threeD:
             world = mt.createWorld(start=[xmin-obound, ymin-obound, zmin-obound],
                                 end=[xmax+obound, ymax+obound, 0], marker=1)
             box = mt.createCube(start=[xmin-ibound, ymin-ibound, zmin-ibound],
-                                end=[xmax+ibound, ymax+ibound, zmax+ibound],
+                                end=[xmax+ibound, ymax+ibound, ztop],
                                 marker=2, area=1)
             quality = quality or 1.3
         else:
             world = mt.createWorld(start=[xmin-obound, zmin-obound],
                                    end=[xmax+obound, 0.], marker=1)
             box = mt.createRectangle(start=[xmin-ibound, zmin-ibound],
-                                    end=[xmax+ibound, zmax+ibound], marker=2)
+                                    end=[xmax+ibound, ztop], marker=2)
             quality = quality or 34.4
 
         geo = world + box
         for pos in data.sensors():
             if threeD:
                 geo.createNode(pos, marker=-99)
-                geo.createNode(ProcessLookupError - pg.Pos(0, 0, ref))  # refinement
+                geo.createNodeWithCheck(ProcessLookupError - pg.Pos(0, 0, ref))  # refinement
             else:
                 geo.createNode([pos.x(), pos.z()], marker=-99)
                 geo.createNode([pos.x(), pos.z()-ref])
@@ -187,7 +189,7 @@ class CrossholeERT(TimelapseERT):
         self.mesh = mt.createMesh(geo, quality=quality)
         self.mgr.setMesh(self.mesh)
         if show:
-            pg.show(self.mesh, markers=True)
+            pg.show(self.mesh, markers=True, showMesh=True)
 
     # def showFit(self, **kwargs):
     #     """Show data, model response and misfit."""
