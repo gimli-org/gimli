@@ -92,7 +92,7 @@ class TimelapseERT():
 
         self.name = filename[:-4].replace("*", "All")
         nt = self.DATA.shape[1]
-        if self.times != nt:  # default: days from now
+        if len(self.times) != nt:  # default: days from now
             self.times = datetime.now() + np.arange(nt) * timedelta(days=1)
 
     def saveData(self, filename=None):
@@ -351,17 +351,31 @@ class TimelapseERT():
         kwargs.setdefault('label', pg.unit('res'))
         kwargs.setdefault('cMap', pg.utils.cMap('res'))
         kwargs.setdefault('logScale', True)
-        kwargs.setdefault("cMap", "Spectral_r")
         with PdfPages(self.name+'-model.pdf') as pdf:
-            fig = plt.figure(figsize=kwargs.pop("figsize", [5, 5]))
+            fig = plt.figure(figsize=kwargs.pop("figsize", [8, 5]))
             for i, model in enumerate(self.models):
                 ax = fig.subplots()
-                # self.mgr.showResult(model, ax=ax, **kwargs)
                 pg.show(self.pd, model, ax=ax, **kwargs)
                 ax.set_title(str(i)+": " + self.times[i].isoformat(" ", "minutes"))
                 fig.savefig(pdf, format='pdf')
                 fig.clf()
 
+    def generateRatioPDF(self, **kwargs):
+        """Generate a multi-page pdf with the model results."""
+        kwargs.setdefault('label', 'ratio')
+        kwargs.setdefault('cMap', 'bwr')
+        kwargs.setdefault('logScale', True)
+        kwargs.setdefault("cMax", 2.0)
+        kwargs.setdefault("cMin", 1/kwargs["cMax"])
+        basemodel = self.models[0]
+        with PdfPages(self.name+'-ratio.pdf') as pdf:
+            fig = plt.figure(figsize=kwargs.pop("figsize", [8, 5]))
+            for i, model in enumerate(self.models[1:]):
+                ax = fig.subplots()
+                pg.show(self.pd, model[i+1]/basemodel, ax=ax, **kwargs)
+                ax.set_title(str(i)+": " + self.times[i+1].isoformat(" ", "minutes"))
+                fig.savefig(pdf, format='pdf')
+                fig.clf()
 
 
 if __name__ == "__main__":
