@@ -36,6 +36,32 @@ def uniqueERTIndex(data, nI=0, reverse=False):
 
     return np.array(ind, dtype=np.int64)
 
+def generateDataFromUniqueIndex(ind, data=None, nI=None):
+    """Generate data container from unique index."""
+    scheme = pg.DataContainerERT()
+    if isinstance(data, pg.DataContainer):
+        scheme = pg.DataContainerERT(data)
+    elif isinstance(data, pg.PosVector):
+        scheme.setSensorPositions(data)
+    elif isinstance(data, int):  # check for positions
+        for i in range(data):
+            scheme.createSensor([i, 0, 0])
+
+    nI = nI or scheme.sensorCount() + 1
+    scheme.resize(0)  # make sure all data are deleted
+    scheme.resize(len(ind))
+    nmba = np.zeros([len(ind), 4], dtype=int)
+    for i in range(4):
+        col = ind % nI
+        ind -= col
+        ind = ind // nI
+        nmba[:, i] = col
+
+    for i, tok in enumerate("nmba"):
+        scheme[tok] = nmba[:, i] - 1
+
+    scheme["valid"] = 1
+    return scheme
 
 def getReciprocals(data, change=False, remove=False):
     """Compute data reciprocity from forward and backward data.
