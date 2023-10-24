@@ -6,7 +6,7 @@ import pygimli as pg
 from .ert import createGeometricFactors
 
 
-def uniqueERTIndex(data, nI=0, reverse=False):
+def uniqueERTIndex(data, nI=0, reverse=False, unify=True):
     """Generate unique index from sensor indices A/B/M/N for matching
 
     Parameters
@@ -22,14 +22,19 @@ def uniqueERTIndex(data, nI=0, reverse=False):
     """
     if nI == 0:
         nI = data.sensorCount() + 1
-    normABMN = {'a': np.minimum(data('a'), data('b')) + 1,
-                'b': np.maximum(data('a'), data('b')) + 1,
-                'm': np.minimum(data('m'), data('n')) + 1,
-                'n': np.maximum(data('m'), data('n')) + 1}
-    abmn = ['a', 'b', 'm', 'n']   # 1 2 8 7
+
+    if unify:
+        normABMN = {'a': np.minimum(data('a'), data('b')) + 1,
+                    'b': np.maximum(data('a'), data('b')) + 1,
+                    'm': np.minimum(data('m'), data('n')) + 1,
+                    'n': np.maximum(data('m'), data('n')) + 1}
+    else:
+        normABMN = {tok: data[tok] + 1 for tok in "abmn"}
+
+    abmn = "abmn"
     if reverse:
-        abmn = ['m', 'n', 'a', 'b']   # 7 8 2 1
-#        abmn = ['n', 'm', 'b', 'a']   # 7 8 2 1
+        abmn = "mnab"  # nmba?
+
     ind = 0
     for el in abmn:
         ind = ind * nI + normABMN[el]  # data(el)
@@ -145,10 +150,11 @@ def combineMultipleData(DATA):
     uIs = [uniqueERTIndex(data) for data in DATA]
     uI = np.unique(np.hstack(uIs))
     scheme = generateDataFromUniqueIndex(uI, DATA[0])
+    # uI1 = uniqueERTIndex(scheme)  # why is this not the same?
+    # print(np.column_stack([uI, uI1]))
     uI = uniqueERTIndex(scheme)  # why is this not the same?
     R = np.ones([scheme.size(), len(DATA)]) * np.nan
     ERR = np.zeros_like(R)
-    scheme.save("bla.shm", "a b m n")
     if not scheme.haveData('k'):  # just do that only once
         scheme['k'] = createGeometricFactors(scheme)  # check numerical
 
