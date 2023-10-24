@@ -204,7 +204,10 @@ class TimelapseERT():
             rhoa = self.DATA[:, t]
             v = rhoa.data
             v[rhoa.mask] = np.nan
-        if 0:  # 3D case to be
+
+        if kwargs.pop("crossplot", "x" in kwargs and "y" in kwargs):
+            x = kwargs.pop("x", ["a", "b"])
+            y = kwargs.pop("y", ["m", "n"])
             return pg.viewer.mpl.showDataContainerAsMatrix(
                 self.data, x, y, v, **kwargs)
         else:
@@ -281,7 +284,7 @@ class TimelapseERT():
             print(self.mesh)
             pg.show(self.mesh, markers=True, showMesh=True)
 
-    def invert(self, t=None, reg={}, **kwargs):
+    def invert(self, t=None, reg={}, regTL={}, **kwargs):
         """Run inversion for a specific timestep or all subsequently."""
         if t is not None:
             t = self.timeIndex(t)
@@ -296,9 +299,11 @@ class TimelapseERT():
 
         t = np.atleast_1d(t)
         self.models = []
+        self.responses = []
         self.chi2s = []
         startModel = kwargs.pop("startModel", 100)
         creep = kwargs.pop("creep", False)
+        lam = kwargs.pop("lam", 20)
         for i, ti in enumerate(np.atleast_1d(t)):
             self.mgr.setData(self.chooseTime(ti))
             self.model = self.mgr.invert(startModel=startModel, **kwargs)
@@ -307,6 +312,9 @@ class TimelapseERT():
 
             self.models.append(self.model)
             self.chi2s.append(self.mgr.inv.chi2())
+            if i == 0:
+                kwargs.update(regTL)
+                # self.mgr.inv.setRegularization(**regTL)
 
         if len(t) == 1:
             self.mgr.showResult()
@@ -333,6 +341,7 @@ class TimelapseERT():
         kwargs.setdefault("startModel", startModel)
         model = inv.run(dataVec, errorVec, **kwargs)
         self.models = np.reshape(model, [len(DATA), -1])
+        self.responses = np.reshape(inv.response, [DATA[0].size(), -1])
         self.pd = fop.paraDomain
         return model
 
@@ -368,14 +377,18 @@ class TimelapseERT():
         kwargs.setdefault("cMax", 2.0)
         kwargs.setdefault("cMin", 1/kwargs["cMax"])
         basemodel = self.models[0]
+        creep = kwargs.pop("creep", False)
         with PdfPages(self.name+'-ratio.pdf') as pdf:
             fig = plt.figure(figsize=kwargs.pop("figsize", [8, 5]))
             for i, model in enumerate(self.models[1:]):
                 ax = fig.subplots()
                 pg.show(self.pd, model[i+1]/basemodel, ax=ax, **kwargs)
-                ax.set_title(str(i)+": " + self.times[i+1].isoformat(" ", "minutes"))
+                ax.set_title(str(i)+": " + self.times[i+1].isoformat(" ", "minutes") + "/" +
+                             self.times[i].isoformat(" ", "minutes"))
                 fig.savefig(pdf, format='pdf')
                 fig.clf()
+                if creep:
+                    basemodel = model
 
 
 if __name__ == "__main__":
