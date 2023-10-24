@@ -98,7 +98,10 @@ class TimelapseERT():
     def saveData(self, filename=None):
         """Save all data as datacontainer, times, rhoa and error arrays."""
         filename = filename or self.name
-        self.data.save(filename + ".shm")
+        if filename.endswith(".shm"):
+            filename = filename[:-4]
+
+        self.data.save(filename+".shm", "a b m n k")
         np.savetxt(filename+".rhoa", self.DATA, fmt="%6.2f")
         if np.any(self.ERR):
             np.savetxt(filename+".err", self.ERR, fmt="%6.2f")
