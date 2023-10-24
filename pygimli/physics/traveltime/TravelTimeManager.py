@@ -388,8 +388,8 @@ class TravelTimeManager(MeshMethodManager):
 
     def rayCoverage(self):
         """Ray coverage, i.e. summed raypath lengths."""
-        return self.fop.jacobian().transMult(
-            np.ones(self.fop.jacobian().rows()))
+        J = self.fop.jacobian()
+        return J.transMult(np.ones(J.rows()))
 
     def standardizedCoverage(self):
         """Standardized coverage vector (0|1) using neighbor info."""
