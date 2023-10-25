@@ -556,6 +556,18 @@ class Test3DMerge(unittest.TestCase):
         # except:
         #     pass
 
+    def test_patch_on_facet(self):
+        world = mt.createWorld(start=[-1, -1, -1], end=[1, 1, 0])
+        
+        pad = mt.createFacet(mt.createCircle(pos=[0, 0, 0], radius=0.5, isHole=True)) 
+        plc = (world + pad)
+        plc.createBoundary(plc.nodes([plc.createNode(n.pos()).id() for n in pad.nodes() ]), marker=2)
+
+        mesh = mt.createMesh(plc)
+        np.testing.assert_array_equal(np.unique(mesh.boundaryMarkers()),
+                                     [-2, -1,  0, 2]) 
+
+        #pg.show(mesh, markers=True, showMesh=True)
 
 if __name__ == '__main__':
     unittest.main()
