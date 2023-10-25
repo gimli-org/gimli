@@ -53,17 +53,9 @@ mgr.invert(secNodes=3, paraMaxCellSize=5.0,
            zWeight=0.2, vTop=500, vBottom=5000, verbose=1)
 
 ###############################################################################
-# First have a look at the data fit.
-# Plot the measured (crosses) and modelled (lines) traveltimes.
+# Look at the fit between measured (crosses) and modelled (lines) traveltimes.
 
-ax, cbar = mgr.showData(firstPicks=True, linewidth=0)
-tt.drawFirstPicks(ax, data, mgr.inv.response, marker=None)
-
-###############################################################################
-# Show resulting tomogram along with fit. You may want to save your results.
-
-mgr.showResultAndFit()
-# mgr.saveResult()  # saves the results (mesh, velocity, vtk) in a folder
+mgr.showFit(firstPicks=True)
 
 ###############################################################################
 # You can plot only the model and customize with a bunch of keywords

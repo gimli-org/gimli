@@ -11,6 +11,8 @@ def __DataContainer_str(self):
         str(self.size()) + ", nonzero entries: " + \
         str([d for d in self.dataMap().keys() if self.isSensorIndex(d) or
              self.haveData(d)])
+
+
 DataContainer.__repr__ = __DataContainer_str
 DataContainer.__str__ = __DataContainer_str
 
@@ -42,11 +44,15 @@ def __DataContainer_setSensors(self, sensors):
             self.createSensor(nS)
         else:
             self.setSensorPosition(i, nS)
+
+
 DataContainer.setSensors = __DataContainer_setSensors
 
 
 def __DataContainer_copy(self):
     return type(self)(self)
+
+
 DataContainer.copy = __DataContainer_copy
 
 
@@ -60,6 +66,8 @@ def __DC_setVal(self, key, val):
         self.resize(len(val))
 
     self.set(key, val)
+
+
 DataContainer.__setitem__ = __DC_setVal
 
 
@@ -68,6 +76,8 @@ def __DC_getVal(self, key):
         return np.array(self(key), dtype=int)
     # return self(key).array() // d['a'][2] = 0.0, would be impossible
     return self(key)
+
+
 DataContainer.__getitem__ = __DC_getVal
 
 
@@ -77,6 +87,8 @@ def __DataContainer_ensure2D(self):
             (not yVari(sen) and max(abs(y(sen))) < 1e-8)):
         swapYZ(sen)
         self.setSensorPositions(sen)
+
+
 DataContainer.ensure2D = __DataContainer_ensure2D
 
 
@@ -84,6 +96,8 @@ def __DataContainer_swapXY(self):
     sen = self.sensors()
     swapYZ(sen)
     self.setSensorPositions(sen)
+
+
 DataContainer.swapXY = __DataContainer_swapXY
 
 
@@ -145,11 +159,24 @@ def __DataContainerERT_addFourPointData(self, *args,
             self.add(k)
         self.ref(k)[idx] = v
     return idx
-DataContainerERT.addFourPointData = __DataContainerERT_addFourPointData
 
+
+DataContainerERT.addFourPointData = __DataContainerERT_addFourPointData
 
 def __DataContainer_show(self, *args, **kwargs):
     """Use data.show(**) instead of pg.show(data, *) syntactic sugar."""
     import pygimli as pg
     return pg.show(self, *args, **kwargs)
+
 DataContainer.show = __DataContainer_show
+
+
+def __DataContainer_getIndices(self, **kwargs):
+    """Return indices for all data keys equalling values."""
+    good = np.ones(self.size(), dtype=bool)
+    for k, v in kwargs.items():
+        good = np.bitwise_and(good, self[k] == v)
+
+    return np.nonzero(good)[0]
+
+DataContainer.getIndices = __DataContainer_getIndices

@@ -10,6 +10,7 @@ from pygimli.frameworks import MeshMethodManager
 
 from pygimli.utils import getSavePath
 from . modelling import TravelTimeDijkstraModelling, FatrayDijkstraModelling
+from . plotting import drawFirstPicks
 
 
 class TravelTimeManager(MeshMethodManager):
@@ -259,6 +260,15 @@ class TravelTimeManager(MeshMethodManager):
         # that needs to be compatible to self.fw.mesh
         return velocity
 
+    def showFit(self, axs=None, firstPicks=True, **kwargs):
+        """Show data fit as first-break picks or apparent velocity."""
+        if firstPicks:
+            kwargs.setdefault("linestyle", "None")
+            ax, _ = self.showData(firstPicks=True, **kwargs)
+            drawFirstPicks(ax, self.fop.data, self.inv.response, marker=None)
+        else:
+            super().showFit(axs=axs, **kwargs)
+
     def getRayPaths(self, model=None):
         """Compute ray paths.
 
@@ -378,8 +388,8 @@ class TravelTimeManager(MeshMethodManager):
 
     def rayCoverage(self):
         """Ray coverage, i.e. summed raypath lengths."""
-        return self.fop.jacobian().transMult(
-            np.ones(self.fop.jacobian().rows()))
+        J = self.fop.jacobian()
+        return J.transMult(np.ones(J.rows()))
 
     def standardizedCoverage(self):
         """Standardized coverage vector (0|1) using neighbor info."""
