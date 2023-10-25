@@ -86,6 +86,7 @@ void Mesh::copy_(const Mesh & mesh){
     dimension_ = mesh.dim();
     nodeVector_.reserve(mesh.nodeCount());
     secNodeVector_.reserve(mesh.secondaryNodeCount());
+    setGeometry(mesh.isGeometry());
 
     for (Index i = 0; i < mesh.nodeCount(); i ++){
         this->createNode(mesh.node(i));
@@ -99,7 +100,7 @@ void Mesh::copy_(const Mesh & mesh){
     for (Index i = 0; i < mesh.boundaryCount(); i ++){
         this->createBoundary(mesh.boundary(i));
     }
-
+    
     cellVector_.reserve(mesh.cellCount());
     for (Index i = 0; i < mesh.cellCount(); i ++){
         this->createCell(mesh.cell(i));
@@ -113,7 +114,6 @@ void Mesh::copy_(const Mesh & mesh){
     }
 
     // we don't need expensive tests for copying
-    setGeometry(mesh.isGeometry());
     setDataMap(mesh.dataMap());
     setCellAttributes(mesh.cellAttributes());
 
@@ -347,7 +347,17 @@ Boundary * Mesh::createBoundary(const Boundary & bound, bool check){
 
     if (bound.rtti() == MESH_POLYGON_FACE_RTTI){
         const PolygonFace & f = dynamic_cast< const PolygonFace & >(bound);
-        b = createBoundaryChecked_< PolygonFace >(nodes, bound.marker(), check);
+
+        Boundary * b = findBoundary(nodes);
+        // __MS(bound)
+        // if (b) __MS(*b)
+        if (b && (b->nodeCount() != bound.nodeCount())) {
+            // exclude the check if all nodes of bound are a hole in b
+            b = createBoundaryChecked_< PolygonFace >(nodes, bound.marker(), false);
+        } else {
+            b = createBoundaryChecked_< PolygonFace >(nodes, bound.marker(), check);
+        }
+
         for (Index i = 0; i < f.subfaceCount(); i ++ ){
             dynamic_cast< PolygonFace* >(b)->addSubface(
                 this->nodes(ids(f.subface(i))));

@@ -248,7 +248,7 @@ ax.set_title("geostat I=(2m, 0.5m), dip=-20°")
 # %%%
 # We now add many more points.
 #
-
+np.random.seed(42) # reproducabilty is our friend
 N = 30
 x = np.random.rand(N) * 10
 y = -np.random.rand(N) * 10

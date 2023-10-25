@@ -556,6 +556,36 @@ class Test3DMerge(unittest.TestCase):
         # except:
         #     pass
 
+    def test_patch_on_facet(self):
+        world = mt.createWorld(start=[-1, -1, -1], end=[1, 1, 0])
+        
+        pad = mt.createFacet(mt.createCircle(pos=[0, 0, 0], radius=0.5, isHole=True)) 
+        plc = (world + pad)
+        plc.createBoundary(plc.nodes([plc.createNode(n.pos()).id() for n in pad.nodes() ]), marker=2)
+
+        # instead of the above  -- IMPLEMENTME
+        #pad = mt.createFacet(mt.createCircle(pos=[0, 0, 0], radius=0.5, marker=2)) 
+        #plc = world + pad
+        
+        mesh = mt.createMesh(plc)
+        np.testing.assert_array_equal(np.unique(mesh.boundaryMarkers()),
+                                     [-2, -1,  0, 2]) 
+        #pg.show(mesh, markers=True, showMesh=True)
+
+        plc = mt.createWorld(start=[-1, -1, -1], end=[2, 1, 0])
+        for i in range(4):
+            pad = mt.createFacet(mt.createCircle(pos=[i*0.5, 0, 0], radius=0.1, isHole=True)) 
+            plc += pad
+            plc.createBoundary([plc.createNode(n.pos()).id() for n in pad.nodes()], marker=i+1)
+
+        mesh = mt.createMesh(plc)
+
+        #pg.show(mesh, showMesh=True, markers=True, backend="trame")
+        ## colorbar wrong - FIXME
+        np.testing.assert_array_equal(np.unique(mesh.boundaryMarkers()),
+                                     [-2, -1,  0,  1,  2,  3,  4]) 
+                                     
+
 
 if __name__ == '__main__':
     unittest.main()
