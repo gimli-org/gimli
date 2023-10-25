@@ -147,10 +147,10 @@ def combineMultipleData(DATA):
 
     nEls = [data.sensorCount() for data in DATA]
     assert max(np.abs(np.diff(nEls))) == 0, "Electrodes not equal"
-    uIs = [uniqueERTIndex(data, unify=False) for data in DATA]
+    uIs = [uniqueERTIndex(data) for data in DATA]
     uI = np.unique(np.hstack(uIs))
     scheme = generateDataFromUniqueIndex(uI, DATA[0])
-    uI = uniqueERTIndex(scheme, unify=False)
+    uI = uniqueERTIndex(scheme)   #, unify=False)
     R = np.ones([scheme.size(), len(DATA)]) * np.nan
     ERR = np.zeros_like(R)
     if not scheme.haveData('k'):  # just do that only once
@@ -167,5 +167,5 @@ def combineMultipleData(DATA):
         R[ii, i] = di['r']
         ERR[ii, i] = di['err']
 
-    RHOA = np.reshape(scheme['k'], [-1, 1]) * R
+    RHOA = np.abs(np.reshape(scheme['k'], [-1, 1]) * R)
     return scheme, RHOA, ERR
