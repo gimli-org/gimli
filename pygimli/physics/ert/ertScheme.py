@@ -266,6 +266,7 @@ class DataSchemeBase(object):
                **kwargs):
         """."""
         self.createElectrodes(nElectrodes, electrodeSpacing, sensorList)
+        self.setMaxSeparation(kwargs.pop("maxSeparation", 999))
         self.createData(**kwargs)
 
         if self.addInverse_:
