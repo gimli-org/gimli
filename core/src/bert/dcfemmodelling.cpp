@@ -1672,14 +1672,12 @@ void DCMultiElectrodeModelling::calculate(const std::vector < ElectrodeShape * >
     if (!subSolutions_) {
         subpotOwner_ = true;
         if (complex_){
-            subSolutions_ = new CMatrix(0);
+            subSolutions_ = new CMatrix(0, 0);
         } else {
-            subSolutions_ = new RMatrix(0);
+            subSolutions_ = new RMatrix(0, 0);
         }
     }
-
     uint nCurrentPattern = eA.size();
-
     subSolutions_->resize(nCurrentPattern * kValues_.size(),
                           mesh_->nodeCount());
 
@@ -1696,21 +1694,6 @@ void DCMultiElectrodeModelling::calculate(const std::vector < ElectrodeShape * >
     // create or find primary potentials
     preCalculate(eA, eB);
 
-#ifdef HAVE_LIBBOOST_THREAD
-    uint kIdx = 0;
-    while (kIdx < kValues_.size()){
-        boost::thread_group threads;
-        for (uint thread = 0; thread < nThreads_; thread ++){
-            if (kIdx <  kValues_.size()){
-                threads.create_thread(CalculateMT(this,
-                                                  eA, eB,
-                                                  kIdx, *subSolutions_));
-                kIdx ++;
-            }
-        }
-        threads.join_all();
-    }
-#else
     for (Index kIdx = 0; kIdx < kValues_.size(); kIdx ++){
         //if (verbose_ && kValues_.size() > 1) std::cout << "\r" << kIdx + 1 << "/" << kValues_.size();
 
@@ -1720,7 +1703,7 @@ void DCMultiElectrodeModelling::calculate(const std::vector < ElectrodeShape * >
             calculateK(eA, eB, dynamic_cast< RMatrix & > (*subSolutions_), kIdx);
         }
     }
-#endif
+
     for (Index kIdx = 0; kIdx < kValues_.size(); kIdx ++){
         for (Index i = 0; i < nCurrentPattern; i ++) {
             if (kIdx == 0) {

@@ -120,7 +120,7 @@ def simulate(mesh, scheme, res, **kwargs):
     # fop = self.createForwardOperator(useBert=True, sr=sr, verbose=verbose)
     fop.data = scheme
     fop.setMesh(mesh, ignoreRegionManager=True)
-
+    fop._core.setContactImpedances([1e-3, 1e-4, 1e-5, 1e-6])
     rhoa = None
     phia = None
 
