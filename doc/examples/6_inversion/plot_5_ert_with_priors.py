@@ -7,6 +7,7 @@ Prior data can often help to overcome ambiguity in the inversion process.
 Here we demonstrate the use of direct push (DP) data in an ERT inversion of
 data collected at the surface.
 """
+# sphinx_gallery_thumbnail_number = 5
 
 # %%
 import matplotlib.pyplot as plt
@@ -115,8 +116,8 @@ ax.grid(True)
 ax.legend()
 
 # %%%
-# As alternative to smoothness, we can use a geostatistic model. The vertical 
-# range can be well estimated from the DP data using a variogram analysis, we 
+# As alternative to smoothness, we can use a geostatistic model. The vertical
+# range can be well estimated from the DP data using a variogram analysis, we
 # guess 8m. For the horizontal one, we can only guess a ten times higher value.
 #
 
