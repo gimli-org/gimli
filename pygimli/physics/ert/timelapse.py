@@ -308,19 +308,20 @@ class TimelapseERT():
             t = np.arange(len(self.times))
 
         t = np.atleast_1d(t)
-        self.models = []
-        self.responses = []
+        models = []
+        responses = []
         self.chi2s = []
         startModel = kwargs.pop("startModel", 100)
         creep = kwargs.pop("creep", False)
-        lam = kwargs.pop("lam", 20)
+        kwargs.setdefault("isReference", True)
         for i, ti in enumerate(np.atleast_1d(t)):
             self.mgr.setData(self.chooseTime(ti))
             self.model = self.mgr.invert(startModel=startModel, **kwargs)
             if i == 0 or creep:
                 startModel = self.model.copy()
 
-            self.models.append(self.model)
+            models.append(self.model)
+            responses.append(self.mgr.inv.response)
             self.chi2s.append(self.mgr.inv.chi2())
             if i == 0:
                 kwargs.update(regTL)
@@ -329,6 +330,8 @@ class TimelapseERT():
         if len(t) == 1:
             self.mgr.showResult()
 
+        self.models = np.array(models)
+        self.responses = np.array(responses)
         self.pd = self.mgr.paraDomain
 
     def fullInversion(self, scalef=1.0, **kwargs):
@@ -363,6 +366,35 @@ class TimelapseERT():
                       cMin=cb.vmin, cMax=cb.vmax, verbose=False)
         misfit = self.mgr.inv.response / self.data["rhoa"] * 100 - 100
         self.showData(misfit, ax=ax[2], cMin=-10, cMax=10, cMap="bwr", verbose=0)
+        return ax
+
+    def showAllModels(self, ncols=2, **kwargs):
+        """Show all models as subplots."""
+        nT = self.DATA.shape[1]
+        showRatio = kwargs.pop("ratio", False)
+        nrows = int(np.ceil(nT/ncols))
+        _, ax = plt.subplots(nrows=nrows, ncols=ncols,
+                            figsize=kwargs.pop("figsize", [8, 5]))
+        ratiokw = kwargs.copy()
+        kwargs.setdefault("cMin", np.min(self.models))
+        kwargs.setdefault("cMax", np.max(self.models))
+        kwargs.setdefault("cMap", "Spectral_r")
+        kwargs.setdefault("logScale", True)
+        models = self.models.copy()
+        if showRatio:
+            models = self.models / self.models[0]
+            rmax = np.maximum(np.max(models), 1/np.min(models))
+            ratiokw["cMax"] = kwargs.pop("rMax", rmax)
+            ratiokw["cMin"] = 1 / ratiokw["cMax"]
+            ratiokw["cMap"] = "bwr"
+            ratiokw["logScale"] = True
+
+        for i, model in enumerate(models):
+            if i == 0 or not showRatio:
+                pg.show(self.pd, self.models[i], ax=ax.flat[i], **kwargs)
+            else:
+                pg.show(self.pd, model, ax=ax.flat[i], **ratiokw)
+
         return ax
 
     def generateModelPDF(self, **kwargs):
