@@ -84,9 +84,9 @@ ax, cb = mgr.showResult(cMin=50, cMax=1500)
 # At other positions like at the beginning of the profile, it does not show
 # such strong contrasts indicating that the bedrock interface is probably more
 # shallow and there is likely a weathered zone.
+#
 
-###############################################################################
-
+# %%%
 # References
 # Doetsch, J., Linde, N., Pessognelli, M., Green, A.G. & Günther, T. (2012):
 # Constraining 3-D electrical resistance tomography with GPR data for improved
@@ -109,3 +109,4 @@ ax, cb = mgr.showResult(cMin=50, cMax=1500)
 # geoelectrical pre-study of Älvkarleby test embankment dam: 3D forward
 # modelling and effects of structural constraints on the 3D inversion model of
 # zoned embankment dams. J. Appl. Geophys. 191, 104355, doi:10.1016/j.jappgeo.2021.104355.
+#
