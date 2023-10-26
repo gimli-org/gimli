@@ -650,7 +650,8 @@ class Inversion(object):
         self.inv.start()
         self.maxIter = maxIterTmp
         if self.verbose:
-            print("chi² = {0}".format(round(self.chi2(), 2)))
+            print("inv.iter 0 ... chi² = {:7.2f}".format(self.chi2()))
+            # print("inv.iter 0 ... chi² = {0}".format(round(self.chi2(), 2)))
 
         if self._postStep and callable(self._postStep):
             self._postStep(0, self)
@@ -706,8 +707,8 @@ class Inversion(object):
             dPhi = phi / lastPhi
 
             if self.verbose:
-                print("chi² = {0} (dPhi = {1}%) lam: {2}".format(
-                    round(chi2, 2), round((1 - dPhi) * 100, 2), lam))
+                print("chi² = {:7.2f} (dPhi = {:.2f}%) lam: {:.1f}".format(
+                    chi2, (1 - dPhi) * 100, lam))
 
             if chi2 <= 1 and self.stopAtChi1:
                 print("\n")
