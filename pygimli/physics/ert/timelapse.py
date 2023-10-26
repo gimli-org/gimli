@@ -129,7 +129,7 @@ class TimelapseERT():
             t = datetime.fromisoformat(t) # check others
         if isinstance(t, datetime): # detect closest point
             return np.argmin(np.abs(self.times-t))
-        elif isinstance(t, (int, np.int32)):
+        elif isinstance(t, (int, np.int32, np.int64)):
             return t
         elif hasattr(t, "__iter__"):
             return np.array([self.timeIndex(ti) for ti in t], dtype=int)
@@ -273,7 +273,7 @@ class TimelapseERT():
         ----------
         t : int|str|datetime
         """
-        if not isinstance(t, int):
+        if not isinstance(t, (int, np.int32, np.int64)):
             t = self.timeIndex(t)
 
         rhoa = self.DATA[:, t].copy()
