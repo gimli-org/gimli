@@ -232,8 +232,9 @@ def simulate(mesh, scheme, res, **kwargs):
                                          relativeError=noiseLevel,
                                          absoluteUError=noiseAbs,
                                          absoluteCurrent=1))
-            print("Data error estimate (min:max) ",
-                  min(ret('err')), ":", max(ret('err')))
+            if verbose:
+                pg.info("Data error estimate (min:max) ",
+                      min(ret('err')), ":", max(ret('err')))
 
         rhoa *= 1. + pg.randn(ret.size(), seed=seed) * ret('err')
         ret.set('rhoa', rhoa)
