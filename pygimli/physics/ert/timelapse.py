@@ -52,17 +52,27 @@ class TimelapseERT():
         self.ERR = kwargs.pop("ERR", [])
         self.times = kwargs.pop("times", [])
         self.mesh = kwargs.pop("mesh", None)
+        self.name = "new"
         self.models = []
         self.chi2s = []
         self.model = None
         self.mgr = ert.ERTManager()
         if filename is not None:
-            self.load(filename, **kwargs)
-        else:
-            self.name = kwargs.pop("name", "new")
+            if isinstance(filename, str):
+                self.load(filename, **kwargs)
+            else:
+                self.DATA = filename
 
         if np.any(self.DATA):
+            if isinstance(self.DATA[0], pg.DataContainerERT):
+                self.data, self.DATA, self.ERR = combineMultipleData(self.DATA)
             self.mask()
+
+        if "name" in kwargs:
+            self.name = kwargs["name"]
+        nt = self.DATA.shape[1]
+        if len(self.times) != nt:  # default: days from now
+            self.times = datetime.now() + np.arange(nt) * timedelta(days=1)
 
     def __repr__(self):  # for print function
         """Return string representation of the class."""
@@ -91,9 +101,6 @@ class TimelapseERT():
             self.data, self.DATA, self.ERR = combineMultipleData(DATA)
 
         self.name = filename[:-4].replace("*", "All")
-        nt = self.DATA.shape[1]
-        if len(self.times) != nt:  # default: days from now
-            self.times = datetime.now() + np.arange(nt) * timedelta(days=1)
 
     def saveData(self, filename=None):
         """Save all data as datacontainer, times, rhoa and error arrays."""
