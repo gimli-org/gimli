@@ -89,10 +89,14 @@ for i in range(nT+1):
     if i < nT:
         rhomap[3+i][1] = rhoTracer
 
+for i in range(nT):
+    for j in range(3):
+        ax[j, i+1].set_yticklabels([])
+
 cDict.pop('colorBar')
 cDict['label'] = r'$\rho$ [$\Omega$m]'
 pg.viewer.mpl.colorbar.createColorBarOnly(ax=ax[2, 0], **cDict)
-# ax[2, 0].set_aspect(0.3)
+ax[2, 0].set_aspect(3)
 
 # %%%
 # We initialize the `TimelapseERT` class by passing the list of data.
@@ -133,24 +137,36 @@ print(tl)
 # wanted, a different regularization for the timesteps by `regTL`.
 #
 
-tl.invert(zWeight=0.3)
+tl.invert(zWeight=0.3, lam=100)
 print(tl.chi2s)
 
 # %%%
-# After inversion, on can show the models by `showAllModels`. For convenience,
-# one can also generate a multi-page pdf by `generateModelPDF`.
+# After inversion, on can show the models by `tl.showAllModels`. For convenience
+# (and if many timesteps are involved), one can also generate a multi-page pdf
+# by `tl.generateModelPDF`. The user can access the individual models by
+# `tl.models[i]` and plot them using `tl.mgr.showResult(tl.models[i])` or
+# `pg.show(tl.pd, tl.models[i])`.
 #
 
 tl.showAllModels();
+for a in ax.flat:
+    pg.viewer.mpl.drawPLC(a, geom, fillRegion=False, fitView=False)
 
 # %%%
-# Often, one is interested in the changes or differences, which are in the
-# usual logarithmic scale the ratios.
+# We can observe the major laying and also clear indications of the tracer
+# injection. Often, one is interested in the changes or differences, which
+# are in the usual logarithmic scale the ratios.
 #
 
-ax = tl.showAllModels(ratio=True, rMax=3)
+ax = tl.showAllModels(ratio=True, rMax=2)
+for a in ax.flat:
+    pg.viewer.mpl.drawPLC(a, geom, fillRegion=False, fitView=False)
 
 # %%%
+# Here we see that we clearly see all the anomalies, but the first one is
+# very slight due to its size. Additionally, we see artifacts of increased
+# resistivity.
+#
 # As powerful alternative to a sequential inversion, one can invert all
 # timesteps together with constraints along the spatial and temporal
 # dimensions. For this there is a special call `fullInversion` that might
@@ -159,7 +175,15 @@ ax = tl.showAllModels(ratio=True, rMax=3)
 #
 
 tl.fullInversion(zWeight=0.3, lam=100)
-ax = tl.showAllModels(ratio=True, rMax=3)
+ax = tl.showAllModels(ratio=True, rMax=2)
+for a in ax.flat:
+    pg.viewer.mpl.drawPLC(a, geom, fillRegion=False, fitView=False)
+
+# %%%
+# Here, the results are gone due to the stabilizing smoothness across the time.
+# To change the temporal smoothness, one can use the frame scale `scalef`,
+# e.g., `tl.fullInversion(scalef=0.5)` for more changes in time.
+#
 
 # %%%
 # References
