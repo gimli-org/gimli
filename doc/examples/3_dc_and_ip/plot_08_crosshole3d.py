@@ -10,7 +10,7 @@ prism mesh (triangles in x-y plane and regular along z). This is beneficial
 in cases of a predominant layering that can be accounted for by using the
 zWeight inversion parameter because the boundaries are perfectly vertical.
 """
-# sphinx_gallery_thumbnail_number = 5
+# sphinx_gallery_thumbnail_number = 4
 
 # %%%
 # We import the used libraries pygimli, meshtools the ERT module and a function

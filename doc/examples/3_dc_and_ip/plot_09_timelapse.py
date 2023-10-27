@@ -73,7 +73,7 @@ mgr = ert.Manager()
 data = ert.simulate(mesh=mesh, res=rhomap, scheme=scheme, **noise)
 rhoTracer = 10
 cDict = dict(colorBar=False, cMin=10, cMax=100, logScale=1, cMap='Spectral_r')
-fig, ax = pg.plt.subplots(figsize=(10, 6), ncols=nT+1, nrows=3)
+fig, ax = plt.subplots(figsize=(10, 6), ncols=nT+1, nrows=3)
 DATA = []
 for i in range(nT+1):
     pg.show(mesh, rhomap, ax=ax[0, i], **cDict)
