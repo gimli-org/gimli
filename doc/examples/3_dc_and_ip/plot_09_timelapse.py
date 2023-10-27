@@ -79,7 +79,6 @@ for i in range(nT+1):
     ax[0, i].set_xlim(0, 40)
     ax[0, i].set_ylim(-10, 0)
     data = ert.simulate(mesh, res=rhomap, scheme=scheme, **noise)
-    data.save('data{:d}.dat'.format(i))
     DATA.append(data)
     ert.show(data, ax=ax[1, i], **cDict)
     ratio = data('rhoa') / DATA[0]('rhoa')
@@ -184,8 +183,3 @@ for a in ax.flat:
 # To change the temporal smoothness, one can use the frame scale `scalef`,
 # e.g., `tl.fullInversion(scalef=0.5)` for more changes in time.
 #
-
-# %%%
-# References
-# ==========
-# To be filled.
