@@ -31,8 +31,7 @@ from pygimli.physics import ert
 # We create a data container with a dipole-dipole array.
 #
 
-scheme = ert.createData(elecs=42, spacing=0.5, schemeName='dd',
-                        maxSeparation=14)
+scheme = ert.createData(elecs=41, spacing=1, schemeName='dd', maxSeparation=15)
 print(scheme)
 
 # %%%
@@ -41,17 +40,17 @@ print(scheme)
 #
 
 world = mt.createWorld(start=[-50, 0], end=[100, -50], boundary=1,
-                       layers=[-1, -5], worldMarker=True)
+                       layers=[-1, -7], worldMarker=True)
 for pos in scheme.sensorPositions():
     world.createNode(pos, marker=-99)
     world.createNode(pos+pg.RVector3(0, -0.2))
 
 # Create some heterogeneous block
 plcs = [world]
-pos = [5, 6, 9, 15]
+pos = [10, 12, 16, 26]
 nT = len(pos) - 1  # number of time steps
 for i in range(nT):
-    block = mt.createRectangle(start=[pos[i], -3], end=[pos[i+1], -2],
+    block = mt.createRectangle(start=[pos[i], -5], end=[pos[i+1], -3],
                                area=0.1, marker=4+i)
     plcs.append(block)
 
@@ -59,8 +58,8 @@ geom = mt.mergePLC(plcs)
 mesh = mt.createMesh(geom, quality=34.4)
 print(mesh)
 ax, _ = pg.show(mesh, markers=True, boundaryMarkers=False, showMesh=True)
-ax.set_xlim(0, 20)
-ax.set_ylim(-8, 0)
+ax.set_xlim(0, 40)
+ax.set_ylim(-10, 0)
 
 # %%%
 # We associate 100 Ohmm to the first layer, 50 to the second and 20 to the last
@@ -77,8 +76,8 @@ fig, ax = plt.subplots(figsize=(10, 6), ncols=nT+1, nrows=3)
 DATA = []
 for i in range(nT+1):
     pg.show(mesh, rhomap, ax=ax[0, i], **cDict)
-    ax[0, i].set_xlim(0, 20)
-    ax[0, i].set_ylim(-8, 0)
+    ax[0, i].set_xlim(0, 40)
+    ax[0, i].set_ylim(-10, 0)
     data = ert.simulate(mesh, res=rhomap, scheme=scheme, **noise)
     data.save('data{:d}.dat'.format(i))
     DATA.append(data)
