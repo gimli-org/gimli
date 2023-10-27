@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-# Timelapse ERT
+Timelapse ERT
+-------------
+
 Since pyGIMLi we have a class dedicated to timelapse ERT processing & inversion.
 The inversion supports different schemes from simple individual over constrained
 inversion to fully coupled ("4D") inversion using pyGIMLi's `MultiFrameModelling`
@@ -162,5 +164,5 @@ ax = tl.showAllModels(ratio=True, rMax=3)
 
 # %%%
 # References
-# ----------
+# ==========
 # To be filled.
