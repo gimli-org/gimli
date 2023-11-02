@@ -61,7 +61,7 @@ class TravelTimeDijkstraModelling(MeshModelling):
 
     def createGraph(self, slowness):
         """Create Dijkstra graph."""
-        self._core.createGraph(slowness)
+        return self._core.createGraph(slowness)
 
     def createStartModel(self, dataVals):
         """Create a starting model from data values (gradient or constant)."""
