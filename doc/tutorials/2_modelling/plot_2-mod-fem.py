@@ -186,7 +186,7 @@ u = pg.solver.linSolve(A, b)
 ###############################################################################
 # The resulting scalar field can displayed with the `pg.show` shortcut.
 #
-pg.show(domain, u, label='Approximated solution $\mathrm{u}$', nLevs=7)
+ax, cb = pg.show(domain, u, label='Approximated solution $u$', nLevs=7)
 
 ###############################################################################
 # For analyzing the accuracy for the approximation we apply the
@@ -236,9 +236,4 @@ for c in domain.cells():
                                                theta=45/180 * np.pi)
 
 u = pg.solve(domain, a=a, f=f, bc={'Dirichlet':{'*': 0}})
-pg.show(domain, u, label='Solution $\mathrm{u}$ for anisotrop material parameter $a$', nLevs=7)
-
-
-
-
-
+ax, cb = pg.show(domain, u, label='Solution $u$ for anisotropic $a$', nLevs=7)
