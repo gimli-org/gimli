@@ -58,7 +58,11 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
 
     dataName = kwargs.pop('label', list(mesh.cell_data.keys())[0])
 
-    theme = pv.themes.DefaultTheme()
+    try:
+        theme = pv.themes.Theme()
+    except:  # older pv versions
+        theme = pv.themes.DefaultTheme()
+
     theme.background = bc
     # seems to be broken .. results on pure black screens on some machines
     # theme.antialiasing = True
