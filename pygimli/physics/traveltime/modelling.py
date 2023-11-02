@@ -12,7 +12,7 @@ from .plotting import drawVA
 
 
 class TravelTimeDijkstraModelling(MeshModelling):
-    """Forward modelling class for traveltime using Dijsktras method."""
+    """Forward modelling class for traveltime using Dijktras method."""
 
     def __init__(self, **kwargs):
         secNodes = kwargs.pop("secNodes", 3)
@@ -58,6 +58,10 @@ class TravelTimeDijkstraModelling(MeshModelling):
     def setDataPost(self, data):
         """Set data after forward operator has been initalized."""
         self._core.setData(data)
+
+    def createGraph(self, slowness):
+        """Create Dijkstra graph."""
+        self._core.createGraph(slowness)
 
     def createStartModel(self, dataVals):
         """Create a starting model from data values (gradient or constant)."""
