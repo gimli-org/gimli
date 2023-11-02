@@ -100,7 +100,7 @@ np.testing.assert_array_less(mgr.inv.inv.chi2(), 1.1)
 # For comparison we plot the geometry on top.
 
 ax, _ = mgr.showResult(cMin=min(vp), cMax=max(vp), logScale=False)
-pg.show(geom, ax=ax, fillRegion=False, regionMarker=False)
+ax, _ = pg.show(geom, ax=ax, fillRegion=False, regionMarker=False)
 
 ###############################################################################
 # Note that internally the following is called
