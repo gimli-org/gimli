@@ -28,4 +28,5 @@ ax, cb = pg.show(circle, circle.cellMarkers(), label="Cell Markers")
 
 z = np.geomspace(1, 5, 5)-1
 cylinder = pg.meshtools.extrudeMesh(circle, a=z)
-ax, cb = pg.show(cylinder, cylinder.cellMarkers(), label="Cell markers")
+pl, _ = pg.show(cylinder, cylinder.cellMarkers(), label="Cell markers")
+pl.show()
