@@ -12,7 +12,9 @@ def createGrid(x=None, y=None, z=None, **kwargs):
     Generate simple grid with defined node positions for each dimension.
     The resulting grid depends on the amount of given coordinate arguments
     and consists out of edges (1D - x), quads (2D- x and y), or
-    hexahedrons(3D- x, y, and z).
+    hexahedrons(3D- x, y, and z). For grids with world boundary markers 
+    (-1 surface and -2 subsurface) the y or z array need to be in increasing
+    order.
 
     Parameters
     ----------
@@ -68,7 +70,7 @@ def createGrid(x=None, y=None, z=None, **kwargs):
             z = list(range(z))
         kwargs['z'] = z
 
-    return pg.core.pgcore.createGrid(**kwargs)
+    return pg.core.createGrid(**kwargs)
 
 
 def createGridPieShaped(x, degree=10.0, h=2, marker=0):
@@ -164,7 +166,7 @@ def createGridPieShaped(x, degree=10.0, h=2, marker=0):
 
 
 def appendBoundary(mesh, **kwargs):
-    """ Append Boundary to a given mesh.
+    """Append Boundary to a given mesh.
 
     Syntactic sugar for :py:mod:`pygimli.meshtools.appendTriangleBoundary`
     and :py:mod:`pygimli.meshtools.appendTetrahedronBoundary`.
@@ -174,9 +176,9 @@ def appendBoundary(mesh, **kwargs):
     mesh: :gimliapi:`GIMLI::Mesh`
         "2d or 3d Mesh to which the boundary will be appended.
 
-    Additional Args
-    ---------------
-    ** kwargs forwarded to :py:mod:`pygimli.meshtools.appendTriangleBoundary`
+    Keyword Args
+    ------------
+    **kwargs forwarded to :py:mod:`pygimli.meshtools.appendTriangleBoundary`
     or :py:mod:`pygimli.meshtools.appendTetrahedronBoundary`.
 
     Returns
@@ -198,14 +200,15 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
     """Add a triangle mesh boundary to a given mesh.
 
     Returns a new mesh that contains a triangulated box around a given mesh
-    suitable for geo-simulation (surface boundary with marker = -1  at top and
-    marker = -2 in the inner subsurface). The old boundary marker from mesh
-    will be preserved, except for marker == -2 which will be switched to 2 as
-    we assume -2 is the world marker for outer boundaries in the subsurface.
+    suitable for geo-simulation (surface boundary with marker == -1  at the top
+    and marker == -2 in the inner subsurface). The old boundary marker from the
+    input mesh are preserved, except for marker == -2 which will be changed
+    to +2 as we assume marker == -2 is the world marker for outer boundaries in
+    the subsurface.
 
-    Note that this all will only work stable if the mesh generator (triangle)
-    preserve all input boundaries. This will lead to bad quality meshes for the
-    boundary region so its a good idea to play with the addNodes keyword
+    Note, this all will only work stable if the mesh generator (triangle)
+    preserve all input boundaries. However this will lead to bad quality meshes 
+    for the boundary region so its a good idea to play with the addNodes keyword
     argument to manually refine the newly created outer boundaries.
 
     Parameters
@@ -222,8 +225,8 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
         Apply boundary conditions suitable for geo-simulation and prolongate
         mesh to the surface if necessary.
 
-    Additional Args
-    ---------------
+    Keyword Args
+    ------------
     ** kargs forwarded to pg.createMesh
 
     quality : float, optional
@@ -392,7 +395,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
 
     for b in mesh3.boundaries():
         if b.outside() and b.marker() > -1:
-            if b.norm().x() != 0 or b.norm().y() == -1.0:
+            if b.norm().x() != 0 or b.norm().y() == -1.0 or not isSubSurface:
                 b.setMarker(pg.core.MARKER_BOUND_MIXED)
             else:
                 b.setMarker(pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
@@ -402,7 +405,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
 
 def appendBoundaryGrid(grid, xbound=None, ybound=None, zbound=None,
                        marker=1, isSubSurface=True, **kwargs):
-    """ Return a copy of grid surrounded by a boundary grid.
+    """Return a copy of grid surrounded by a boundary grid.
 
     Note, the input grid needs to be a 2d or 3d grid with quad/hex cells.
 
@@ -416,16 +419,20 @@ def appendBoundaryGrid(grid, xbound=None, ybound=None, zbound=None,
     grid: :gimliapi:`GIMLI::Mesh`
         2D or 3D Mesh that must contain structured quads or hex cells
     xbound: iterable of type float [None]
-        Needed for 2D or 3D grid prolongation and will be added on the left side in opposit order and on the right side in normal order.
+        Needed for 2D or 3D grid prolongation and will be added on the left
+        side in opposit order and on the right side in normal order.
     ybound: iterable of type float [None]
-        Needed for 2D or 3D grid prolongation and will be added (2D bottom, 3D fron) in opposit order and (2D top, 3D back) in normal order.
+        Needed for 2D or 3D grid prolongation and will be added (2D bottom,
+        3D front) in opposit order and (2D top, 3D back) in normal order.
     zbound: iterable of type float [None]
-        Needed for 3D grid prolongation and will be added the bottom side in opposit order on the top side in normal order.
+        Needed for 3D grid prolongation and will be added the bottom side in
+        opposite order on the top side in normal order.
     marker: int [1]
         Cellmarker for the cells in the boundary region
     isSubSurface : boolean, optional
         Apply boundary conditions suitable for geo-simulaion and prolongate
         mesh to the surface if necessary, e.i., no boundary on top of the grid.
+
     Examples
     --------
     >>> import pygimli as pg
@@ -494,7 +501,7 @@ def appendBoundaryGrid(grid, xbound=None, ybound=None, zbound=None,
 
 def appendTetrahedronBoundary(mesh, xbound=10, ybound=10, zbound=10,
                               marker=1, isSubSurface=True, **kwargs):
-    """ Return a copy of mesh surrounded by a tetrahedron mesh as boundary.
+    """Return a copy of mesh surrounded by a tetrahedron mesh as boundary.
 
     Returns a new mesh that contains a tetrahedron mesh box around a given mesh
     suitable for geo-simulation (surface boundary with marker = -1  at top and

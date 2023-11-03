@@ -24,6 +24,29 @@ class TestMeshGenerator(unittest.TestCase):
         self.assertEqual(mesh.cellCount(), 2)
         self.assertEqual(mesh.boundaryCount(), 5)
 
+    def test_triangle_MAC(self):
+        """ There seems to be an issue on Mac for higher quality, which produce 
+            different meshes on mac vs. Linux/Windows. Needs observation and/or 
+            clarfication."""
+        import pygimli as pg
+        import pygimli.meshtools as mt
+        plc = mt.createCircle(nSegments=24)
+        l = mt.createLine(start=[0, -1], end=[0, -0.1], boundaryMarker=2)
+        mesh = mt.createMesh([plc, l], area=0.1, quality=30)
+        print(mesh)
+        # On Linux and Mac: Mesh: Nodes: 43 Cells: 60 Boundaries: 102
+        self.assertEqual(mesh.nodeCount(), 43)
+
+        mesh = mt.createMesh([plc, l], area=0.1, quality=32)
+        print(mesh)
+        if sys.platform == "darwin":
+            # On Mac: Mesh: Nodes: 46 Cells: 66 Boundaries: 111
+            self.assertEqual(mesh.nodeCount(), 46)
+        else:
+            # On Linux Mesh: Nodes: 43 Cells: 60 Boundaries: 102 (same as for quality=30)
+            self.assertEqual(mesh.nodeCount(), 43)
+        
+
     def test_createGrid(self):
         mesh = pg.createGrid(3)
         self.assertEqual(mesh.xmax(), 2.0)
@@ -201,6 +224,14 @@ class TestMeshGenerator(unittest.TestCase):
         # mesh = pg.meshtools.readMeshIO("grid1.vtk")
         # print(mesh)
         # print(mesh["Marker"])
+
+    def test_VTK_ExportVTU(self):
+        """ Test to fix export bug
+        """
+        mesh = pg.createGrid(4,4,4)
+        mesh.exportBoundaryVTU("bounds.vtu")
+
+
 
     def test_SimpleMeshExport(self):
        

@@ -176,7 +176,7 @@ def __Mesh_getVal(self, key):
             except:
                 return uniqueNames[key]
 
-        critical('The mesh does not have the requested data:', key,
+        critical(NameError, 'The mesh does not have the requested data:', key,
                     '. Available:', uniqueNames)
 
 
@@ -473,7 +473,7 @@ def __Mesh_cutBoundary__(self, marker, boundaryMarker=None):
     >>> import pygimli.meshtools as mt
     >>> plc = mt.createCircle(nSegments=24)
     >>> l = mt.createLine(start=[0, -1], end=[0, -0.1], boundaryMarker=2)
-    >>> mesh = mt.createMesh([plc, l], area=0.1)
+    >>> mesh = mt.createMesh([plc, l], area=0.1, quality=30)
     >>> fig, axs= pg.plt.subplots(1, 2)
     >>> ax ,_ = pg.show(mesh, boundaryMarkers=True, ax=axs[0])
     >>> oldNodeCount = mesh.nodeCount()

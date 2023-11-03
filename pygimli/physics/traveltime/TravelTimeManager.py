@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Class for managing first arrival travel time inversions"""
+"""Class for managing first arrival travel time inversions."""
 import os
 import numpy as np
 
@@ -9,7 +9,8 @@ import pygimli as pg
 from pygimli.frameworks import MeshMethodManager
 
 from pygimli.utils import getSavePath
-from . modelling import TravelTimeDijkstraModelling
+from . modelling import TravelTimeDijkstraModelling, FatrayDijkstraModelling
+from . plotting import drawFirstPicks
 
 
 class TravelTimeManager(MeshMethodManager):
@@ -28,10 +29,11 @@ class TravelTimeManager(MeshMethodManager):
             You can initialize the Manager with data or give them a dataset
             when calling the inversion.
         """
-        self._useFMM = False
-        self.secNodes = 2  # default number of secondary nodes for inversion
+        self.useFatray = kwargs.pop("fatray", False)
+        self.frequency = kwargs.pop("frequency", 100.)
+        self.secNodes = kwargs.pop("secNodes", 2)
 
-        super(TravelTimeManager, self).__init__(data=data, **kwargs)
+        super().__init__(data=data, **kwargs)
 
         self.inv.dataTrans = pg.trans.Trans()
 
@@ -47,7 +49,10 @@ class TravelTimeManager(MeshMethodManager):
         Your want your Manager use a special forward operator you can add them
         here on default Dijkstra is used.
         """
-        fop = TravelTimeDijkstraModelling(**kwargs)
+        if self.useFatray:
+            fop = FatrayDijkstraModelling(frequency=self.frequency, **kwargs)
+        else:
+            fop = TravelTimeDijkstraModelling(**kwargs)
         return fop
 
     def load(self, fileName):
@@ -55,7 +60,7 @@ class TravelTimeManager(MeshMethodManager):
         self.data = pg.physics.traveltime.load(fileName)
         return self.data
 
-    def createMesh(self, data=None, **kwargs):
+    def createMeshMovedToMeshManager(self, data=None, **kwargs):
         """Create default inversion mesh.
 
         Inversion mesh for traveltime inversion does not need boundary region.
@@ -69,12 +74,12 @@ class TravelTimeManager(MeshMethodManager):
         ------------
         Forwarded to `:py:func:pygimli.meshtools.createParaMesh`
         """
-        d = data or self.data
+        data = data or self.data
 
-        if d is None:
-            pg.critical('Please provide a data file for mesh generation')
+        if not hasattr(data, 'sensors'):
+            pg.critical('Please provide a data container for mesh generation')
 
-        return pg.meshtools.createParaMesh(d.sensors(),
+        return pg.meshtools.createParaMesh(data.sensors(), paraBoundary=0,
                                            boundary=0, **kwargs)
 
     def checkData(self, data):
@@ -127,10 +132,9 @@ class TravelTimeManager(MeshMethodManager):
 
             * a single array of len mesh.cellCount()
             * a matrix of N slowness distributions of len mesh.cellCount()
-            * a res map as [[marker0, res0], [marker1, res1], ...]
+            * a slowness map [[marker0, slow0], [marker1, slow1], ...]
         vel : array(mesh.cellCount()) | array(N, mesh.cellCount())
-            Velocity distribution for the given mesh cells.
-            Will overwrite given slowness.
+            Velocity distribution for the mesh cells (overwrites slowness!).
         secNodes: int [2]
             Number of refinement nodes to increase accuracy of the forward
             calculation.
@@ -153,7 +157,8 @@ class TravelTimeManager(MeshMethodManager):
         Returns
         -------
         t : array(N, data.size()) | DataContainer
-            The resulting simulated travel time values.
+            The resulting simulated travel time values (returnArray=True)
+            or DataContainer containing them in t field (returnArray=False).
             Either one column array or matrix in case of slowness matrix.
         """
         verbose = kwargs.pop('verbose', self.verbose)
@@ -174,52 +179,55 @@ class TravelTimeManager(MeshMethodManager):
 
         if len(slowness) == self.fop.mesh().cellCount():
             t = fop.response(slowness)
+            if verbose:
+                print('min/max t:', min(t), max(t))
         else:
             print(self.fop.mesh())
             print("slowness: ", slowness)
             pg.critical("Simulate called with wrong slowness array.")
 
         ret = pg.DataContainer(scheme)
-        ret.set('t', t)
 
         if noiseLevel > 0 or noiseAbs > 0:
             if not ret.allNonZero('err'):
-                ret.set('t', t)
                 err = noiseAbs + t * noiseLevel
-                ret.set('err', err)
+                ret['err'] = err
 
             pg.verbose("Absolute error estimates (min:max) {0}:{1}".format(
-                min(ret('err')), max(ret('err'))))
+                min(ret['err']), max(ret['err'])))
 
             t += pg.randn(ret.size(), seed=seed) * ret('err')
-            ret.set('t', t)
 
         if kwargs.pop('returnArray', False) is True:
             return t
 
+        ret['t'] = t
         return ret
 
     def invert(self, data=None, useGradient=True, vTop=500, vBottom=5000,
-               secNodes=2, **kwargs):
+               secNodes=None, **kwargs):
         """Invert data.
 
         Parameters
         ----------
         data : pg.DataContainer()
-            Data container with at least SensorIndieces 's g' and
-            data values 't' (traveltime in ms) and 'err' (absolute error in ms)
+            Data container with at least SensorIndices 's g' (shot/geophone) &
+            data values 't' (traveltime in s) and 'err' (absolute error in s)
         useGradient: bool [True]
-            Use a gradient like starting model suited for standard flat
-            earth cases. [Default]
-            For cross tomography geometry you should set this to False for a
-            non gradient startind model.
+            Use gradient starting model typical for refraction cases.
+            For crosshole tomography geometry you should set this to False for
+            a non-gradient (e.g. homogeneous) starting model.
         vTop: float
-            Top velocity for gradient stating model.
+            Top velocity for gradient starting model.
         vBottom: float
-            Bottom velocity for gradient stating model.
+            Bottom velocity for gradient starting model.
         secNodes: int [2]
-            Amount of secondary nodes used for ensure accuracy of the forward
-            operator.
+            Number of secondary nodes for accuracy of forward computation.
+
+        Returns
+        -------
+        model:
+            Mapped (for paradomain) velocity model.
 
         Keyword Arguments
         -----------------
@@ -228,8 +236,8 @@ class TravelTimeManager(MeshMethodManager):
             See :py:mod:`pygimli.frameworks.MeshMethodManager.invert`
         """
         mesh = kwargs.pop('mesh', None)
-
-        self.secNodes = secNodes
+        if secNodes is not None:
+            self.secNodes = secNodes
 
         if 'limits' in kwargs:
             if kwargs['limits'][0] > 1:
@@ -244,14 +252,26 @@ class TravelTimeManager(MeshMethodManager):
         else:
             self.fop._useGradient = None
 
+        ### invert return mapped models
         slowness = super().invert(data, mesh, **kwargs)
         velocity = 1.0 / slowness
-        self.fw.model = velocity
+        velocity.isParaModel = slowness.isParaModel
+        self.fw.model = 1.0 / self.fw.model #C42 self.fw only hold non-mapped model
+        # that needs to be compatible to self.fw.mesh
         return velocity
+
+    def showFit(self, axs=None, firstPicks=True, **kwargs):
+        """Show data fit as first-break picks or apparent velocity."""
+        if firstPicks:
+            kwargs.setdefault("linestyle", "None")
+            ax, _ = self.showData(firstPicks=True, **kwargs)
+            drawFirstPicks(ax, self.fop.data, self.inv.response, marker=None)
+        else:
+            super().showFit(axs=axs, **kwargs)
 
     def getRayPaths(self, model=None):
         """Compute ray paths.
-        
+
         If model is not specified, the last calculated Jacobian is used.
 
         Parameters
@@ -338,20 +358,17 @@ class TravelTimeManager(MeshMethodManager):
 
         Examples
         --------
-        >>> # No reason to import matplotlib
         >>> import pygimli as pg
-        >>> from pygimli.physics import TravelTimeManager
-        >>> from pygimli.physics.traveltime import createRAData
+        >>> from pygimli.physics import traveltime as tt
         >>>
         >>> x, y = 8, 6
         >>> mesh = pg.createGrid(x, y)
-        >>> data = createRAData([(0,0)] + [(x, i) for i in range(y)],
-        ...                     shotDistance=y+1)
-        >>> data.set("t", pg.Vector(data.size(), 1.0))
-        >>> tt = TravelTimeManager()
-        >>> tt.fop.setData(data)
-        >>> tt.applyMesh(mesh, secNodes=10)
-        >>> ax, cb = tt.showRayPaths(showMesh=True, diam=0.1)
+        >>> data = tt.createRAData([(0, 0)] + [(x, i) for i in range(y)],
+        ...                       shotDistance=y+1)
+        >>> data["t"] = 1.0
+        >>> mgr = tt.Manager(data)
+        >>> mgr.applyMesh(mesh, secNodes=10)
+        >>> ax, cb = mgr.showRayPaths(showMesh=True, diam=0.1)
         """
         if model is None:
             if self.fop.jacobian().size() == 0:
@@ -371,8 +388,8 @@ class TravelTimeManager(MeshMethodManager):
 
     def rayCoverage(self):
         """Ray coverage, i.e. summed raypath lengths."""
-        return self.fop.jacobian().transMult(
-            np.ones(self.fop.jacobian().rows()))
+        J = self.fop.jacobian()
+        return J.transMult(np.ones(J.rows()))
 
     def standardizedCoverage(self):
         """Standardized coverage vector (0|1) using neighbor info."""

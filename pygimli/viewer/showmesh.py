@@ -195,7 +195,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         . iterable of type [float, float] -- vector field
             forward to :py:mod:`pygimli.viewer.mpl.drawStreams`
 
-        . pg.core.R3Vector -- vector field
+        . pg.PosVector -- vector field
             forward to :py:mod:`pygimli.viewer.mpl.drawStreams`
 
         . pg.core.stdVectorRVector3 -- sensor positions
@@ -303,7 +303,8 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         if mesh.cellCount() > 0:
             uniquemarkers, uniqueidx = np.unique(
                 np.array(mesh.cellMarkers()), return_inverse=True)
-            label = "Cell markers"
+            
+            label = label or "Cell markers"
             cMap = pg.plt.cm.get_cmap("Set3", len(uniquemarkers))
             kwargs["logScale"] = False
             kwargs["cMin"] = -0.5
@@ -318,7 +319,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
 
     elif isinstance(data, pg.core.stdVectorRVector3):
         drawSensors(ax, data, **kwargs)
-    elif isinstance(data, pg.core.R3Vector):
+    elif isinstance(data, pg.PosVector):
         drawStreams(ax, mesh, data, **kwargs)
     else:
 
@@ -435,6 +436,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             showBoundary = False
             # ax.plot(pg.x(mesh), pg.y(mesh), '.', color='black')
         else:
+            kwargs['orientation'] = cBarOrientation
             pg.viewer.mpl.drawPLC(ax, mesh, **kwargs)
 
     if showMesh:
@@ -500,10 +502,9 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             for marker in uniquemarkers:
                 labels.append(str((marker)))
             cBar.set_ticklabels(labels)
-    
 
     if coverage is not None:
-        if isinstance(coverage, float):
+        if isinstance(coverage, (float, int)):
             gci.set_alpha(coverage)
         elif len(data) == len(coverage) == mesh.cellCount():
             addCoverageAlpha(gci, coverage,
@@ -514,7 +515,8 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             # addCoverageAlpha(gci, pg.core.cellDataToPointData(mesh,
             #                                                   coverage))
 
-    if not hold or block is not False and pg.plt.get_backend().lower() != "agg":
+    if not hold or block is not False and \
+            pg.plt.get_backend().lower() != "agg":
         if data is not None:
             if len(data) == mesh.cellCount():
                 CellBrowser(mesh, data, ax=ax)
@@ -558,7 +560,6 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
 
     Parameters
     ----------
-
     mesh : :gimliapi:`GIMLI::Mesh`
         2D or 3D GIMLi mesh
 
@@ -609,15 +610,19 @@ __Animation_Keeper__ = None
 def showAnimation(mesh, data, ax=None, **kwargs):
     """Show timelapse mesh data.
 
-    Time will be annotated if the mesh contains a valid 'times' data array.
+    Time will be annotated if the mesh contains a valid 'times' data array. 
+    Note, there can be only one animation per time. 
+
+    Best viewed in a notebook, because of caching and better animation control 
+    elements.
 
     TODO
     ----
         * 3D
+        * allow for multiple animations per script
 
     Parameters
     ----------
-
     mesh: :gimliapi:`GIMLI::Mesh`
         2D GIMLi mesh
     data: [NxM] iterable
@@ -642,11 +647,13 @@ def showAnimation(mesh, data, ax=None, **kwargs):
 
     plt.ioff()
 
-    pg.show(mesh, data[0], ax=ax)
+    pg.show(mesh, data[0], ax=ax, **kwargs)
+    if flux is not None:
+        pg.show(mesh, flux[0], ax=ax)
 
     try:
         times = mesh['times']
-    except Exception:
+    except Exception as e:
         times = None
 
     p = pg.utils.ProgressBar(len(data))
@@ -655,6 +662,7 @@ def showAnimation(mesh, data, ax=None, **kwargs):
         p.update(t)
         ax.clear()
         pg.show(mesh, data[t], ax=ax, **kwargs)
+
         if flux is not None:
             pg.show(mesh, flux[t], ax=ax)
 

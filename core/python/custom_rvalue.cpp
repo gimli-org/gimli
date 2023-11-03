@@ -27,7 +27,7 @@ static int __numpy_initialized = 0;
 
 int initNumpy(){
     // Needed or py* checks will segfault
-    if (__numpy_initialized == 0){
+	if (__numpy_initialized == 0){
         import_array2("Cannot import numpy.core.multiarray c-api for rvalue converters.", 0);
         __numpy_initialized = 1;
     }
@@ -192,6 +192,7 @@ template < class ValueType > void * checkConvertibleNumpyScalar(PyObject * obj){
                 return NULL;
             }
         }
+        __DC("\t" << obj << "\t ok.")
         return obj;
     }
     __DC("\t" << obj << "\t abort: no numpy scalar.")

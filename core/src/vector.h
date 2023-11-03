@@ -53,6 +53,7 @@
 #include <iterator>
 
 #ifdef USE_BOOST_BIND
+    // deprecated
     #include <boost/bind.hpp>
 #else
     #include <functional>
@@ -340,7 +341,7 @@ public:
     }
     /*!
      * Return a new vector that based on indices's.
-     * Throws exception if indices's are out of bound
+     * Throws exception if indices's are out of bound. 
      */
     inline Vector < ValueType > operator () (const SIndexArray & siArray) const {
         return get_(siArray);
@@ -370,7 +371,10 @@ public:
     Vector < ValueType > get_(const BVector & bv) const {
         return this->get_(GIMLI::find(bv));
     }
-    Vector < ValueType > getIA_(const IndexArray & iA) const {
+    Vector < ValueType > getVUI_(const IndexArray & iA) const {
+        return this->get_(iA);
+    }
+    Vector < ValueType > getVSI_(const IVector & iA) const {
         return this->get_(iA);
     }
 
@@ -587,13 +591,15 @@ public:
 
     Vector < ValueType > getVal(Index start, SIndex end) const {
         Index e = (Index) end;
-        if (end == -1 || end > (SIndex)size_) e = size_;
-
+        if (end < 0){
+            e = max(start, size_ + end);
+        }
+        
         Vector < ValueType > v(e-start);
 
-        if ((SIndex)start == end) return v;
+        if (start == e) return v;
 
-        if ((SIndex)start >= 0 && start < e){
+        if (start >= 0 && start < e){
             std::copy(& data_[start], & data_[e], &v[0]);
         } else {
             throwLengthError(WHERE_AM_I + " bounds out of range " +

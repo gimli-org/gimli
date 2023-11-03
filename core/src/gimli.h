@@ -118,11 +118,23 @@ typedef int64_t int64;
 	#endif
 #endif
 
+
+/*!Replace from with to inside str and return the result*/
+DLLEXPORT  std::string replace(const std::string & str, 
+                               const std::string & from, 
+                               const std::string & to);
+
+#ifndef SRC_DIR
+    #define SRC_DIR "./"
+#endif
+
 #ifdef _WIN64__
-    #define __FILENAME__ std::max<const char*>(__FILE__,\
-        std::max(strrchr(__FILE__, '\\')+1, strrchr(__FILE__, '/')+1))
+    /// testme and refactor with below # 1.3.1
+    #define __FILENAME__ GIMLI::replace(__FILE__, SRC_DIR, ".")
+    // #define __FILENAME__ std::max<const char*>(__FILE__,\
+    //     std::max(strrchr(__FILE__, '\\')+1, strrchr(__FILE__, '/')+1))
 #else
-    #define __FILENAME__ __FILE__
+    #define __FILENAME__ GIMLI::replace(__FILE__, SRC_DIR, ".")
 #endif
 
 
@@ -138,7 +150,6 @@ template< typename T > inline std::string str(const T & v){
 enum LogType {Verbose, Info, Warning, Error, Debug, Critical};
 DLLEXPORT void log(LogType type, const std::string & msg);
 
-
 template<typename Value, typename... Values>
 std::string str(Value v, Values... vs){
     std::ostringstream os;
@@ -147,6 +158,7 @@ std::string str(Value v, Values... vs){
     (void) expander{ 0, (os << " " << vs, void(), 0)... };
     return os.str();
 }
+
 template<typename... Values>
 void log(LogType type, Values... vs){
     return log(type, str(vs...));
@@ -325,6 +337,7 @@ typedef Matrix < double > RMatrix;
 typedef Matrix3< double > RMatrix3;
 typedef Matrix < Complex > CMatrix;
 typedef BlockMatrix < double > RBlockMatrix;
+
 
 //#typedef Vector< unsigned char > BVector;
 

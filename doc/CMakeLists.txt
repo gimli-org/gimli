@@ -75,7 +75,7 @@ add_custom_target(sphinxapi
     ALL
         # Copy build scripts for API doc generation
     COMMAND
-  	    sphinx-autogen -i ${SPHINX_SRC_DIR}/doc/pygimliapi/*.rst -t ${SPHINX_SRC_DIR}/doc/_templates -o ${SPHINX_SRCBUILD_DIR}/doc/pygimliapi/_generated &&
+  	    mkdir -p ${SPHINX_SRCBUILD_DIR}/doc/pygimliapi/_generated &&
         cp -f ${SPHINX_SRC_DIR}/doc/pygimliapi/viewer_overwrite ${SPHINX_SRCBUILD_DIR}/doc/pygimliapi/_generated/pygimli.viewer.rst &&
         cp -f ${SPHINX_SRC_DIR}/doc/pygimliapi/physics_overwrite ${SPHINX_SRCBUILD_DIR}/doc/pygimliapi/_generated/pygimli.physics.rst
 
@@ -184,8 +184,7 @@ add_custom_target(html
 
 add_custom_target(doc
     COMMENT
-        "Building HTML, API and PDF Documentation"
+    "Building HTML and API documentation"
     DEPENDS
         sphinxhtml
-        sphinxpdf
 )

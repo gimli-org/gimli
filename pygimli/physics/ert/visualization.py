@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""View ERT data
-"""
+"""View ERT data."""
 
 from math import pi
 import numpy as np
@@ -18,14 +17,17 @@ def generateDataPDF(data, filename="data.pdf"):
         data = pg.load(data)
 
     from matplotlib.backends.backend_pdf import PdfPages
+    logToks = ["Uout(V)", "u", "i", "r", "rhoa"]
     with PdfPages(filename) as pdf:
-        fig, ax = pg.plt.subplots()
+        fig = pg.plt.figure()
         for tok in data.tokenList().split():
             if data.haveData(tok):
-                pg.show(data, tok, ax=ax, label=tok)
+                vals = data[tok]
+                logScale = min(vals) > 0 and tok in logToks
+                ax = fig.add_subplot()
+                pg.show(data, vals, ax=ax, label=tok, logScale=logScale)
                 fig.savefig(pdf, format='pdf')
-                ax.cla()
-
+                fig.clf()
 
 def showERTData(data, vals=None, **kwargs):
     """Plot ERT data as pseudosection matrix (position over separation).
@@ -34,16 +36,23 @@ def showERTData(data, vals=None, **kwargs):
 
     Parameters
     ----------
-
     data : :gimliapi:`BERT::DataContainerERT`
 
     **kwargs :
 
+        * vals : Array[nData] | str
+            Values to be plotted. Default is data['rhoa'].
+            Can be a string whose data field is extracted.
         * axes : matplotlib.axes
-            Axes to plot into. Default is None and a new figure and
-            axes are created.
-        * vals : Array[nData]
-            Values to be plotted. Default is data('rhoa').
+            Axes to plot into. By default (None), a new figure with
+            a single Axes is created.
+    
+    Returns
+    -------
+    ax : matplotlib.axes
+        axis containing the plots
+    cb : matplotlib.colorbar
+        colorbar instance
     """
     var = kwargs.pop('var', 0)
     if var > 0:
@@ -75,6 +84,7 @@ def showERTData(data, vals=None, **kwargs):
 
     if isinstance(vals, str):
         if data.haveData(vals):
+            kwargs.setdefault('label', pg.utils.unit(vals))
             vals = data(vals)
         else:
             pg.critical('field not in data container: ', vals)
@@ -128,7 +138,7 @@ def drawERTData(ax, data, vals=None, **kwargs):
     ----------
     data : DataContainerERT
         data container with sensorPositions and a/b/m/n fields
-    vals : iterable of data.size() [data('rhoa')]
+    vals : iterable of data.size() [data['rhoa']]
         vector containing the vals to show
     ax : mpl.axis
         axis to plot, if not given a new figure is created
@@ -154,7 +164,7 @@ def drawERTData(ax, data, vals=None, **kwargs):
         The used Colorbar or None
     """
     if vals is None:
-        vals = data('rhoa')
+        vals = data['rhoa']
 
     valid = data.get("valid").array().astype("bool")
     vals = ma.array(vals, mask=~valid)
@@ -281,7 +291,7 @@ def midconfERT(data, ind=None, rnum=1, circular=False, switch=False):
         de = np.median(np.diff(ux)).round(1)
         ne = np.array(xe/de, dtype=int)
 
-    # a, b, m, n = data('a'), data('b'), data('m'), data('n')
+    # a, b, m, n = data['a'], data['b'], data['m'], data['n']
     # check if xe[a]/a is better suited (has similar size)
     if circular:
         # for circle geometry
@@ -310,10 +320,10 @@ def midconfERT(data, ind=None, rnum=1, circular=False, switch=False):
         n = np.unwrap(n) % (np.pi*2)
 
     else:
-        a = np.array([ne[int(i)] for i in data('a')])
-        b = np.array([ne[int(i)] for i in data('b')])
-        m = np.array([ne[int(i)] for i in data('m')])
-        n = np.array([ne[int(i)] for i in data('n')])
+        a = np.array([ne[int(i)] for i in data['a']])
+        b = np.array([ne[int(i)] for i in data['b']])
+        m = np.array([ne[int(i)] for i in data['m']])
+        n = np.array([ne[int(i)] for i in data['n']])
 
     if ind is not None:
         a = a[ind]

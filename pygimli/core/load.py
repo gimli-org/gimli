@@ -67,6 +67,7 @@ def optImport(module, requiredFor="use the full functionality"):
 
 
 def opt_import(*args, **kwargs):
+    """Optionally import module (deprecated)."""
     pg.deprecated()  # last vis: 20190903
     return optImport(*args, **kwargs)
 
@@ -153,6 +154,9 @@ def load(fname, verbose=False, testAll=True, realName=None):
         # Misc
         ".gpx": readGPX,  # read gpx waypoints
         ".xy": np.loadtxt,  #
+        ".txt": np.loadtxt,  #
+        ".npy": np.load,  # numpy binary format (important for pg.getExample*)
+        ".npz": np.load,  #
     }
 
     if fname.startswith('https://') or fname.startswith('http://'):
@@ -166,6 +170,7 @@ def load(fname, verbose=False, testAll=True, realName=None):
         files = os.listdir(fname)
         if verbose:
             print("Reading %s with %d files..." % (fname, len(files)))
+
         return [load(os.path.join(fname, f)) for f in files]
 
     suffix = None
@@ -175,7 +180,6 @@ def load(fname, verbose=False, testAll=True, realName=None):
         suffix = os.path.splitext(fname)[1]
 
     if suffix in ImportFilter:
-
         importTrys = ImportFilter[suffix]
         if not isinstance(importTrys, list):
             importTrys = [importTrys]
@@ -212,8 +216,7 @@ def load(fname, verbose=False, testAll=True, realName=None):
 
 
 def getMD5(fileName):
-    """ Return md5 checksum for given fileName.
-    """
+    """Return md5 checksum for given fileName."""
     import hashlib
     md5 = hashlib.md5()
 
@@ -225,8 +228,7 @@ def getMD5(fileName):
 
 
 def getUrlFile(url, fileName, timeout=10, verbose=False):
-    """ Write file from url. Path will be created.
-    """
+    """Write file from url. Path will be created."""
     import hashlib
     md5_hash = hashlib.md5()
 
@@ -298,15 +300,15 @@ def getExampleFile(path, load=False, force=False, verbose=False, **kwargs):
     branch = kwargs.pop('branch', 'master')
 
     fileName = ''
-    if not path.startswith('http://'): 
+    if not path.startswith('http://'):
         url = '/'.join(('https://raw.githubusercontent.com/',  # RAW files
-                           repo, branch, path))
+                        repo, branch, path))
 
         pg.info(f'Looking for {path} in {repo}')
 
         fileName = os.path.join(getCachePath(),
-                            __gimliExampleDataBase__,
-                            repo, branch, path)
+                                __gimliExampleDataBase__,
+                                repo, branch, path)
     else:
         url = path
         fileName = os.path.join(getCachePath(),
@@ -314,7 +316,8 @@ def getExampleFile(path, load=False, force=False, verbose=False, **kwargs):
                                 *url.split('http://')[1].split('/'),
                                 )
 
-        pg.info(f'Looking for {url}')
+        if verbose is True:
+            pg.info(f'Looking for {url}')
 
     if not os.path.exists(fileName) or force is True:
         if verbose:
@@ -327,6 +330,7 @@ def getExampleFile(path, load=False, force=False, verbose=False, **kwargs):
 
     if load is True:
         return pg.load(fileName, verbose=verbose)
+
     return fileName
 
 

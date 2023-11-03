@@ -206,6 +206,10 @@ class TestRVectorMethods(unittest.TestCase):
         np.testing.assert_array_equal(a[:, np.newaxis], 
                                       np.array(a)[:, np.newaxis])
         np.testing.assert_array_equal(a[::], np.arange(10.)[::])
+        np.testing.assert_array_equal(a[:-1], np.arange(10.)[:-1])
+        np.testing.assert_array_equal(a[:-9], np.arange(10.)[:-9])      
+        np.testing.assert_array_equal(a[:-10], np.arange(10.)[:-10])      
+
         np.testing.assert_array_equal(a[::1], np.arange(10.)[::1])
         np.testing.assert_array_equal(a[::-1], np.arange(10.)[::-1])
 
@@ -313,6 +317,26 @@ class TestRVectorMethods(unittest.TestCase):
 
         np.testing.assert_equal(len(a < b), 10)
         np.testing.assert_equal(len(a > b), 10)
+
+    def testUFunc(self):
+        t = pg.Vector(5, 1)
+        
+        np.testing.assert_equal(t*2, np.array(t)*2.0)
+        np.testing.assert_equal(2*t, np.array(t)*2.0)
+        
+        np.testing.assert_equal(t*np.float64(2), np.array(t)*2.0)
+        np.testing.assert_equal(np.float64(2)*t, np.array(t)*2.0)
+        np.testing.assert_equal(np.int64(2)*t, np.array(t)*2.0)
+        np.testing.assert_equal(t*np.int64(2), np.array(t)*2.0)
+        
+        M = pg.Matrix(3, 3) + 1.0
+        np.testing.assert_equal(np.float64(2)*M, 2*np.array(M))
+        np.testing.assert_equal(M*np.float64(2), 2*np.array(M))
+        np.testing.assert_equal(np.int64(2)*M, 2*np.array(M))
+        np.testing.assert_equal(M*np.int64(2), 2*np.array(M))
+        np.testing.assert_equal(np.int64(2) + M, 2+np.array(M))
+        np.testing.assert_equal(M + np.int64(2), 2+np.array(M))
+
 
     def testRMatrixIndex(self):
         A = pg.Matrix(3,4)

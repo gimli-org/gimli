@@ -26,8 +26,10 @@ tab.
 If the installation fails you can try the following instructions for manual
 installation.
 
-Detailed Installation on Debian Stretch
+Detailed Installation on Debian
 .......................................
+
+Tested on Debian 12 (Bookworm).
 
 In order to build pygimli (and gimli) Python 3, install
 the required packages:
@@ -36,18 +38,16 @@ the required packages:
 
     sudo apt-get install wget subversion git cmake mercurial g++ \
         libboost-all-dev libblas-dev liblapack-dev libopenblas-dev \
-        libedit-dev python3-dev \
+        libsuitesparse-dev libedit-dev python3-dev \
         python3-numpy python3-matplotlib \
         python3-setuptools
 
-Create a directory for your installation, e.g., $HOME/src
+Create a directory for your installation, e.g., $HOME/src/gimli
 
 .. code-block:: bash
 
-    mkdir -p ~/src
-    cd src
-    mkdir -p gimli
-    cd gimli
+    mkdir -p ~/src/gimli
+    cd ~/src/gimli
 
 Checkout the current sources for libgimli:
 
@@ -111,9 +111,10 @@ example assumes that the **src** directory resides in your home directory):
 
 .. code-block:: bash
 
-    export PYTHONPATH=$PYTHONPATH:$HOME/src/gimli/gimli
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/src/gimli/build/lib
-    export PATH=$PATH:$HOME/src/gimli/build/bin
+    GIMLI_INSTALLATION=$HOME/src/gimli
+    export PYTHONPATH=$PYTHONPATH:$GIMLI_INSTALLATION/gimli
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$GIMLI_INSTALLATION/build/lib
+    export PATH=$PATH:$GIMLI_INSTALLATION/build/bin
 
 If you want to use the C++ command line applications, call
 
@@ -149,12 +150,14 @@ then you can run the internal test suite with
 
     python -c "import pygimli; pygimli.test()"
 
-Using Docker to build in Debian stretch (for advanced users only!)
-..................................................................
+Using Docker to build in Debian Bookworm (for advanced users only!)
+...................................................................
 
 If you want to use a Docker container to build (and possibly use) pyGIMLi, you
-can use the Dockerfile found in the **scripts/** subdirectory named
-*Dockerfile_DebianStretch*. Please refer to the file for further instructions.
+can use the Dockerfile found in the
+`scripts/ <https://github.com/gimli-org/gimli/tree/master/core/scripts>`_
+subdirectory named *Dockerfile_DebianBookworm*. Please refer to the file for
+further instructions.
 
 Example Installation on Ubuntu
 ..............................
@@ -163,6 +166,7 @@ Example Installation on Ubuntu
 
     sudo apt-get install libc-dev subversion git cmake mercurial
     sudo apt-get install libboost-all-dev libblas-dev liblapack-dev libedit-dev
+    sudo apt-get install libsuitesparse-dev
     sudo apt-get install python3-dev python3-matplotlib python3-numpy
 
     mkdir -p ~/src/gimli
@@ -190,15 +194,6 @@ You can force cmake to select the correct version with:
 .. code-block:: bash
 
     cmake ../gimli -DBoost_PYTHON_LIBRARY=/usr/lib64/libboost_python3.so
-
-If the build misses libedit:
-
-.. code-block:: bash
-
-    /usr/bin/ld: cannot find -ledit
-
-Install *libedit*, e.g. 'apt-get install libedit' on Debian/Ubuntu.
-
 
 castXML
 .......

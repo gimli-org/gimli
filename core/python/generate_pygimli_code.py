@@ -46,9 +46,7 @@ from pyplusplus.decl_wrappers.doc_extractor import doc_extractor_i
 
 import hashlib
 
-
 MAIN_NAMESPACE = 'GIMLI'
-
 
 def samefile(sourcefile, destfile):
     """
@@ -195,7 +193,7 @@ def generate(defined_symbols, extraIncludes):
     import platform
 
     defines = ['PYGIMLI_CAST', 'HAVE_BOOST_THREAD_HPP']
-    caster = 'gccxml'
+    caster = 'castxml'
     compiler_path = options.clang
 
     if platform.system() == 'Windows':
@@ -227,16 +225,13 @@ def generate(defined_symbols, extraIncludes):
             casterpath = settings.caster_path.replace('\\', '\\\\')
             casterpath = settings.caster_path.replace('/', '\\')
 
-            if 'gccxml' not in casterpath:
-                caster = 'castxml'
-
             if '.exe' not in casterpath:
                 casterpath += '\\' + caster + '.exe'
 
+            cflags = ''
         else:
             casterpath = settings.caster_path
-            if 'gccxml' not in casterpath:
-                caster = 'castxml'
+            cflags = '-std=c++11'
 
     except Exception as e:
         logger.info("caster_path=%s" % casterpath)
@@ -259,15 +254,14 @@ def generate(defined_symbols, extraIncludes):
                                         include_paths=settings.includesPaths,
                                         define_symbols=defines,
                                         ignore_gccxml_output=False,
-                                        cflags="",
+                                        cflags=cflags,
                                         compiler_path=compiler_path)
 
-    mb = module_builder.module_builder_t(
-                                [xml_cached_fc],
-                                indexing_suite_version=2,
-                                xml_generator_config=xml_generator_config
-                                )
-
+    mb = module_builder.module_builder_t([xml_cached_fc],
+                                         indexing_suite_version=2,
+                                         xml_generator_config=xml_generator_config
+                                        )
+    
     logger.info("Reading of c++ sources done.")
 
     mb.classes().always_expose_using_scope = True
@@ -409,7 +403,7 @@ def generate(defined_symbols, extraIncludes):
                 #'::GIMLI::VectorIterator<double>',
                 #'::GIMLI::VectorIterator<long>',
                 # ::GIMLI::VectorIterator<unsigned long>', needed
-                #'::GIMLI::VectorIterator<std::complex<double> >', 
+                #'::GIMLI::VectorIterator<std::complex<double> >',
                   ]
             )
 
@@ -629,7 +623,7 @@ def generate(defined_symbols, extraIncludes):
                 # mem_fun.call_policies = \
                 #   call_policies.return_value_policy(call_policies.copy_non_const_reference)
 
-    logger.info("Create api documentation from Doxgen comments.")
+    logger.info("Create API documentation from Doxygen comments.")
     # Now it is the time to give a name to our module
     from doxygen import doxygen_doc_extractor
     extractor = doxygen_doc_extractor()
@@ -653,6 +647,8 @@ def generate(defined_symbols, extraIncludes):
     additional_files = [
         os.path.join(
             os.path.abspath(os.path.dirname(__file__)), 'custom_rvalue.cpp'),
+        os.path.join(
+            os.path.abspath(os.path.dirname(__file__)), 'explicit_instances.cpp'),
         os.path.join(
             os.path.abspath(os.path.dirname(__file__)), 'generators.h'),
         os.path.join(

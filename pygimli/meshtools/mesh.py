@@ -81,7 +81,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
     if isinstance(poly, list) or \
         isinstance(poly, type(zip)) or \
         isinstance(poly, pg.core.stdVectorRVector3) or \
-        isinstance(poly, pg.core.R3Vector) or \
+        isinstance(poly, pg.PosVector) or \
             (isinstance(poly, np.ndarray) and poly.ndim == 2):
         delPLC = pg.Mesh(2)
         for p in poly:

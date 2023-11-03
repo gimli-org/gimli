@@ -229,12 +229,18 @@ class CacheManager(object):
         codeHash = strHash(inspect.getsource(funct))
 
         argHash = 0
-        for a in args:
-            argHash = argHash ^ valHash(a)
+        for i, a in enumerate(args):
+            if pg.isScalar(a):
+                argHash = argHash ^ valHash(str(i) + str(a))
+            else:
+                argHash = argHash ^ (valHash(i) ^ valHash(a))
 
         for k, v in kwargs.items():
-            argHash = argHash ^ valHash(k) ^ valHash(v)
-            
+            if pg.isScalar(v):
+                argHash = argHash ^ (valHash(k + str(v)))
+            else:
+                argHash = argHash ^ valHash(k) ^ valHash(v)
+                            
         pg.debug("Hashing took:", pg.dur(), "s")
         return funcHash ^ versionHash ^ codeHash ^ argHash
 
@@ -255,7 +261,11 @@ def cache(funct):
     """Cache decorator."""
     def wrapper(*args, **kwargs):
 
-        if '--noCache' in sys.argv or '-N' in sys.argv or __NO_CACHE__ is True:
+        nc = kwargs.pop('skipCache', False)
+        
+        if any(('--noCache' in sys.argv,
+                '-N' in sys.argv, nc is True, __NO_CACHE__)):
+
             return funct(*args, **kwargs)
 
         cache = CacheManager().cache(funct, *args, **kwargs)
@@ -263,7 +273,7 @@ def cache(funct):
             return cache.value
         else:
             # pg.tic will not work because there is only one global __swatch__
-            sw = pg.core.Stopwatch(True)
+            sw = pg.Stopwatch(True)
             rv = funct(*args, **kwargs)
             cache.info['date'] = time.time()
             cache.info['dur'] = sw.duration()

@@ -9,6 +9,7 @@ warnings.filterwarnings("ignore", category=UserWarning,
                                 " non-GUI backend, so cannot show the figure.")
 
 import random
+import datetime
 import os
 import re
 import sys
@@ -32,12 +33,14 @@ try:
     # from _build.doc.conf_environment import *
     from conf_environment import *
     pygimli.boxprint("Building documentation out-of-source. Good.")
+    in_source = False
     print("DOXY_BUILD_DIR", DOXY_BUILD_DIR)
 except ImportError:
     TRUNK_PATH = ".."
     SPHINXDOC_PATH = "."
     DOC_BUILD_DIR = ""
     DOXY_BUILD_DIR = ""
+    in_source = True
     pygimli.boxprint("Building documentation in-source. Don't forget to make clean.")
 
 sys.path.append(os.path.abspath(SPHINXDOC_PATH))
@@ -71,7 +74,7 @@ for dep in deps:
 if req:
     msg = "Sorry, there are missing dependencies to build the docs.\n" + \
           "Try: sudo pip install %s.\n" % (" ".join(req)) + \
-          "Or install all dependencies with: pip install -r requirements.txt\n" + \
+          "Or install all dependencies with: pip install -r dev_requirements.txt\n" + \
           "You can install them all in userspace by adding the --user flag."
     print((pkg_resources.working_set))
     raise ImportError(msg)
@@ -91,6 +94,7 @@ extensions = ["sphinx.ext.autodoc",
               "matplotlib.sphinxext.plot_directive",
               "srclinks",
               "sphinxcontrib.doxylink",
+              "sphinx_design",
               # "sphinxcontrib.spelling"
               ]
 
@@ -113,7 +117,6 @@ try:
                           join(SPHINXDOC_PATH, "tutorials")],
         "gallery_dirs": ["_examples_auto", "_tutorials_auto"],
 
-        # Currently deactivated until this is fixed: https://github.com/sphinx-gallery/sphinx-gallery/issues/967
         # "reference_url": {
         #     "pygimli": "https://pygimli.org",
         #     "python": "https://docs.python.org/dev",
@@ -142,6 +145,9 @@ try:
         "first_notebook_cell": ("# Checkout www.pygimli.org for more examples"),
 
         "reset_modules": (reset_mpl),
+
+        # Avoid representation of mpl axis, LineCollections, etc.
+        "ignore_repr_types": r"matplotlib[text, axes, collections]",
         }
 
     pyvista = pygimli.optImport("pyvista", "build the gallery with 3D visualizations")
@@ -176,10 +182,11 @@ except ImportError:
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
-    "matplotlib": ("http://matplotlib.org/stable/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
 }
 
+autosectionlabel_prefix_document = True
 autoclass_content = "class"
 autosummary_generate = True
 autosummary_generate_overwrite = False
@@ -206,7 +213,9 @@ templates_path = [join(SPHINXDOC_PATH, "_templates"),
                   join(DOC_BUILD_DIR, "_templates")]
 
 # MPL plot directive settings
-plot_formats = [("png", 96), ("pdf", 96)]
+plot_formats = [("png", 96)]
+if not in_source:
+    plot_formats.append(("pdf", 96))
 plot_include_source = True
 plot_html_show_source_link = False
 plot_apply_rcparams = True  # if context option is used
@@ -222,7 +231,8 @@ master_doc = "documentation"
 
 # General information about the project.
 project = "pyGIMLi"
-copyright = "2022 - GIMLi Development Team"
+year = datetime.date.today().year
+copyright = f"{year} - pyGIMLi Development Team"
 
 # The version info for the project you"re documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -270,26 +280,35 @@ exclude_patterns = ["_build", "_sphinx-ext", "_templates", "tmp", "examples",
 # output. They are ignored by default.
 # show_authors = False
 
-# The name of the Pygments (syntax highlighting) style to use.
-pygments_style = "default"
-
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
 
 # -- Options for HTML output --------------------------------------------------
 
 # Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = [join(SPHINXDOC_PATH, "_themes")]
+# html_theme_path = [join(SPHINXDOC_PATH, "_themes")]
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 
-html_theme = "gimli"
+html_theme = "pydata_sphinx_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-# html_theme_options = {}
+html_theme_options = {
+    "logo": {
+      "text": "py<b>GIMLi</b>",
+    },
+    "secondary_sidebar_items": ["page-toc", "improve-this-page"],
+    "footer_items": ["footer"],
+    "pygment_light_style": "friendly",
+    "pygment_dark_style": "native"
+}
+
+html_css_files = [
+    'css/custom.css',
+]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -300,7 +319,7 @@ html_short_title = "pyGIMLi"
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-# html_logo = "_static/resisnet.png"
+html_logo = join(SPHINXDOC_PATH, "_static/gimli_logo_simple.svg")
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -321,7 +340,9 @@ html_last_updated_fmt = "%b %d, %Y"  # + " with " + version
 html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-# html_sidebars = {}
+html_sidebars = {
+  "index": [],
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -531,7 +552,11 @@ make_gallery(os.path.abspath(SPHINXDOC_PATH), os.path.abspath(DOC_BUILD_DIR))
 # Add carousel to start page
 from paper_carousel import showcase
 random.shuffle(showcase) # mix it up
-html_context = {"showcase": showcase, "publications": publications}
+html_context = {
+    "showcase": showcase,
+    "publications": publications,
+    "default_mode": "light"
+}
 
 srclink_project = "https://github.com/gimli-org/gimli"
 srclink_src_path = "doc/"

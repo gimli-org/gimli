@@ -16,6 +16,7 @@ class LSQRInversion(pg.Inversion):
         self.G = None
         self.c = None
         self.my = 1.0
+        self.LSQRiter = 200
 
     def setParameterConstraints(self, G, c, my=1.0):
         """Set parameter constraints G*p=c."""
@@ -25,7 +26,7 @@ class LSQRInversion(pg.Inversion):
 
     def oneStep(self):
         """One inversion step."""
-        print("Running one inversion step!")
+        pg.verbose("Running LSQR inversion step!")
         model = self.model
         if len(self.response) != len(self.dataVals):
             self.setResponse(self.fop.response(model))
@@ -74,8 +75,9 @@ class LSQRInversion(pg.Inversion):
             deltaG = (self.c - self.G * model) * sqrt(self.my)
             rhs = pg.cat(pg.cat(deltaD, deltaC), deltaG)
 
-        dM = lssolver(self.A, rhs, verbose=True)
+        dM = lssolver(self.A, rhs, maxiter=self.LSQRiter, verbose=self.verbose)
         tau, responseLS = self.lineSearchInter(dM)
+        pg.debug(f"tau={tau}")
         if tau < 0.1:  # did not work out
             tau = self.lineSearchQuad(dM, responseLS)
         if tau > 0.9:  # save time and take 1
@@ -94,25 +96,23 @@ class LSQRInversion(pg.Inversion):
         return True
 
     def lineSearchInter(self, dM, nTau=100):
-        """Optimizes line search parameter by linear respones interpolation."""
+        """Optimizes line search parameter by linear response interpolation."""
         tD = self.dataTrans
         tM = self.modelTrans
         model = self.model
         response = self.response
         modelLS = tM.update(model, dM)
         responseLS = self.fop.response(modelLS)
-        taus = np.linspace(0.0, 1.0, nTau)
+        taus = np.arange(1, nTau+1) / nTau
         phi = np.ones_like(taus) * self.phi()
         phi[-1] = self.phi(modelLS, responseLS)
         t0 = tD.fwd(response)
         t1 = tD.fwd(responseLS)
-        for i in range(1, len(taus)-1):
-            tau = taus[i]
+        for i, tau in enumerate(taus):
             modelI = tM.update(model, dM*tau)
             responseI = tD.inv(t1*tau+t0*(1.0-tau))
             phi[i] = self.phi(modelI, responseI)
 
-        pg.plt.plot(phi)
         return taus[np.argmin(phi)], responseLS
 
     def lineSearchQuad(self, dM, responseLS):
@@ -126,8 +126,7 @@ if __name__ == '__main__':
     errPerc = 3.  # relative error of 3 percent
     ab2 = np.logspace(-1, 2, 50)  # AB/2 distance (current electrodes)
     mn2 = ab2 / 3.  # MN/2 distance (potential electrodes)
-    # f = pg.core.DC1dModelling(nlay, ab2, mn2)
-    f = pg.physics.ert.VESModelling(ab2=ab2, mn2=mn2, nLayers=nlay)
+    f = pg.physics.ves.VESModelling(ab2=ab2, mn2=mn2, nLayers=nlay)
     synres = [100., 500., 20., 800.]  # synthetic resistivity
     synthk = [0.5, 3.5, 6.]  # synthetic thickness (nlay-th layer is infinite)
     rhoa = f(synthk+synres)
@@ -135,26 +134,36 @@ if __name__ == '__main__':
     tLog = pg.trans.TransLog()
 
     inv = LSQRInversion(fop=f, verbose=True)
-    # inv = pg.Inversion(fop=f)
+    inv.LSQRiter = 20
     inv.dataTrans = tLog
     inv.modelTrans = tLog
     startModel = pg.cat(pg.Vector(nlay-1, 5), pg.Vector(nlay, pg.median(rhoa)))
     inv.inv.setMarquardtScheme()
+    # unconstrained
+    model1 = inv.run(rhoa, pg.Vector(len(rhoa), errPerc/100), lam=1000,
+                     startModel=startModel)
+    print(model1)
+    # constrained
     G = pg.Matrix(rows=1, cols=len(startModel))
     for i in range(3):
         G.setVal(0, i, 1)
 
     c = pg.Vector(1, pg.sum(synthk))
     inv.setParameterConstraints(G, c, 100)
-    model = inv.run(rhoa, pg.Vector(len(rhoa), errPerc/100), lam=1000,
-                    startModel=startModel)
-    print(model)
+    model2 = inv.run(rhoa, pg.Vector(len(rhoa), errPerc/100), lam=1000,
+                     startModel=startModel)
+    print(model2)
     print(inv.chi2(), inv.relrms(), pg.sum(inv.model[:nlay-1]))
     # %%
-    fig, ax = plt.subplots()
+    fig, ax = pg.plt.subplots()
     ax.loglog(rhoa, ab2, "x")
     ax.loglog(inv.response, ab2, "-")
     # %%
     fig, ax = pg.plt.subplots()
-    pg.viewer.mpl.drawModel1D(ax, model=model, plot="semilogx")
-    pg.viewer.mpl.drawModel1D(ax, synthk, synres)
+    pg.viewer.mpl.drawModel1D(ax, synthk, synres, plot="semilogx",
+                              label="synth")
+    pg.viewer.mpl.drawModel1D(ax, model=model1, label="unconstrained")
+    pg.viewer.mpl.drawModel1D(ax, model=model2, label="constrained")
+    ax.set_ylim(15, 0)
+    ax.grid(True)
+    ax.legend();

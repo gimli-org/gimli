@@ -1,18 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Plotting functions for traveltime."""
+"""General convenience functions for traveltime module."""
+
 # general purpose
+import numpy as np
 import pygimli as pg
+from pygimli.viewer.mpl import createColorBar
 from .TravelTimeManager import TravelTimeManager
+from .utils import createCrossholeData, createRAData
+from .plotting import drawTravelTimeData, drawVA, drawFirstPicks
+# Manager = TravelTimeManager  # convenience alias
 
 
-def simulate(mesh, scheme, slowness=None, vel=None, **kwargs):
+def simulate(mesh, scheme, slowness=None, **kwargs):
     """Simulate traveltime data."""
     mgr = TravelTimeManager()
-    return mgr.simulate(mesh, scheme, slowness=slowness, vel=vel, **kwargs)
+    return mgr.simulate(mesh=mesh, scheme=scheme, slowness=slowness, **kwargs)
 
 
-simulate.__doc__ = TravelTimeManager.__doc__
+simulate.__doc__ = TravelTimeManager.simulate.__doc__
 
 
 class DataContainerTT(pg.DataContainer):
@@ -31,3 +37,18 @@ class DataContainerTT(pg.DataContainer):
             self.registerSensorIndex("g")
             if isinstance(data, str):
                 self.load(data)
+
+
+def show(data, **kwargs):
+    """Show data."""
+    ax, _ = pg.show(ax=kwargs.pop("ax", None))
+    va = kwargs.pop("va", None)
+    if va is None:  # check if refraction
+        va = len(np.unique(pg.x(data))) < data.sensorCount()
+
+    if va:
+        gci = drawVA(ax, data=data, **kwargs)
+        cBar = createColorBar(gci, **kwargs)
+    else:
+        drawFirstPicks(ax, data, tt=kwargs.pop("t", None), **kwargs)
+        # drawTravelTimeData(ax, data, **kwargs)

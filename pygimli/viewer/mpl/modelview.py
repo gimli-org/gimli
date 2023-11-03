@@ -1,20 +1,22 @@
 # -*- coding: utf-8 -*-
 """Model viewer functions."""
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+from matplotlib.collections import PatchCollection
+from matplotlib.colors import LogNorm
 
 import pygimli as pg
+from pygimli.utils import rndig
 
 from .colorbar import setMappableData
-
-# from pygimli.viewer.mpl.modelview import cmapFromName
-from pygimli.utils import rndig
 from .utils import updateAxes as updateAxes_
 
 
 def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
                 plot='plot',
                 xlabel=r'Resistivity $(\Omega$m$)$', zlabel='Depth (m)',
-                z0=0,
+                z0=0, zmax=None,
                 **kwargs):
     """Draw 1d block model into axis ax.
 
@@ -95,7 +97,7 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
         px[2 * i + 1] = values[i]
 
         if i == nLayers - 1:
-            pz[2 * i + 1] = z1[i - 1] * 1.2
+            pz[2 * i + 1] = zmax or z1[i - 1] * 1.2
         else:
             pz[2 * i + 1] = z1[i]
             pz[2 * i + 2] = z1[i]
@@ -119,8 +121,8 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
     ax.grid(True)
 
 
-def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
-                 cmap=None, name=None, textoffset=0.0):
+def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cMin=1, cMax=1000,
+                 cMap=None, name=None, textoffset=0.0, **kwargs):
     """Draw a 1D column (e.g., from a 1D inversion) on a given ax.
 
     Examples
@@ -135,11 +137,7 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     <matplotlib.collections.PatchCollection object at ...>
     >>> _ = ax.set_ylim(-np.sum(thk), 0)
     """
-    from matplotlib.patches import Rectangle
-    from matplotlib.collections import PatchCollection
-    import matplotlib.colors as colors
-
-    z = -np.hstack((0., np.cumsum(thk), np.sum(thk) * 1.5)) + ztopo
+    z = -np.hstack([0., np.cumsum(thk), np.sum(thk) * 1.5]) + ztopo
     recs = []
     for i in range(len(val)):
         recs.append(Rectangle((x - width / 2., z[i]), width, z[i + 1] - z[i]))
@@ -148,17 +146,19 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     col = ax.add_collection(pp)
 
     pp.set_edgecolor(None)
-    pp.set_linewidths(0.0)
+    pp.set_linewidth(0.0)
 
-    if cmap is not None:
-        if isinstance(cmap, str):
-            pp.set_cmap(pg.viewer.mpl.cmapFromName(cmap))
+    if cMap is not None:
+        if isinstance(cMap, str):
+            pp.set_cmap(pg.viewer.mpl.cmapFromName(cMap))
         else:
-            pp.set_cmap(cmap)
+            pp.set_cmap(cMap)
 
-    pp.set_norm(colors.LogNorm(cmin, cmax))
+    if kwargs.pop("logScale", True):
+        pp.set_norm(LogNorm(cMin, cMax))
+    
     pp.set_array(np.array(val))
-    pp.set_clim(cmin, cmax)
+    pp.set_clim(cMin, cMax)
     if name:
         ax.text(x+textoffset, ztopo, name, ha='center', va='bottom')
 
@@ -176,12 +176,16 @@ def showmymatrix(mat, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
 
     if xlab is not None:
         plt.xlabel(xlab)
+
     if ylab is not None:
         plt.ylabel(ylab)
+
     plt.axis('auto')
     if cbar is not None:
         plt.colorbar(orientation=cbar)
+
     return
+
 
 def draw1dmodelErr(x, xL, xU=None, thk=None, xcol='g', ycol='r', **kwargs):
     """TODO."""
@@ -310,7 +314,7 @@ def showStitchedModels(models, ax=None, x=None, cMin=None, cMax=None, thk=None,
     ax.add_collection(p)
 
     if logScale:
-        norm = colors.LogNorm(cMin, cMax)
+        norm = LogNorm(cMin, cMax)
         p.set_norm(norm)
 
     if 'cMap' in kwargs:
@@ -401,7 +405,7 @@ def showStitchedModels_Redundant(mods, ax=None,
         pp.set_cmap(kwargs['cmap'])
 
     print(cmin, cmax)
-    norm = colors.LogNorm(cmin, cmax)
+    norm = LogNorm(cmin, cmax)
     pp.set_norm(norm)
     pp.set_array(np.array(RES))
 #    pp.set_clim(cmin, cmax)

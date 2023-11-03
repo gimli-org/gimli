@@ -2,7 +2,7 @@
 # encoding: utf-8
 r"""
 Geostatistical regularization
------------------------------
+=============================
 
 In this example we illustrate the use of geostatistical constraints on
 irregular meshes as presented by :cite:`jordi2018geostatistical`, compared to
@@ -35,6 +35,7 @@ from matplotlib.colors import LogNorm
 import numpy as np
 import pygimli as pg
 import pygimli.meshtools as mt
+from pygimli.frameworks import PriorModelling
 
 # We create a rectangular domain and mesh it with small triangles
 rect = mt.createRectangle(start=[0, -10], end=[10, 0])
@@ -122,37 +123,12 @@ ax, cb = pg.show(mesh, pg.abs(Cdip * vec), **kwLog)
 # that projects the model vector to the forward response.
 # This matrix is also the Jacobian matrix for the inversion.
 
-
-class PriorFOP(pg.Modelling):
-    """Forward operator for grabbing values."""
-
-    def __init__(self, mesh, pos, **kwargs):
-        """Init with mesh and some positions that are converted into ids."""
-        super().__init__(**kwargs)
-        self.setMesh(mesh)
-        self.ind = [mesh.findCell(po).id() for po in pos]
-        self.J = pg.SparseMapMatrix()
-        self.J.resize(len(self.ind), mesh.cellCount())
-        for i, ii in enumerate(self.ind):
-            self.J.setVal(i, ii, 1.0)
-
-        self.setJacobian(self.J)
-
-    def response(self, model):
-        """Return values at the indexed cells."""
-        return model[self.ind]
-
-    def createJacobian(self, model):
-        """Do nothing (linear)."""
-        pass
-
-
 # %%
 # Inversion with geostatistical constraints
 # -----------------------------------------
 # We choose some positions and initialize the forward operator
 pos = [[2, -2], [8, -2], [5, -5], [2, -8], [8, -8]]
-fop = PriorFOP(mesh, pos)
+fop = PriorModelling(mesh, pos)
 # For plotting the results, we create a figure and define some plotting options
 fig, ax = plt.subplots(nrows=2, ncols=2, sharex=True, sharey=True)
 kw = dict(
@@ -164,41 +140,40 @@ kw = dict(
     logScale=True)
 
 # We want to use a homogenenous starting model
-vals = [30, 50, 300, 100, 200]
+vals = np.array([30, 50, 300, 100, 200])
 # We assume a 5% relative accuracy of the values
-error = pg.Vector(len(vals), 0.05)
+relError = 0.05
 # set up data and model transformation log-scaled
 tLog = pg.trans.TransLog()
 inv = pg.Inversion(fop=fop)
 inv.transData = tLog
 inv.transModel = tLog
-inv.lam = 40
-inv.startModel = 30
+inv.startModel = 30  # for all
+
 # Initially, we use the first-order constraints (default)
-res = inv.run(vals, error, cType=1, lam=30)
+# inv.setRegularization(cType=2)
+res = inv.run(vals, relativeError=relError, cType=1, lam=30)
 print(('Ctype=1: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[0, 0], **kw)
 ax[0, 0].set_title("1st order")
 np.testing.assert_array_less(inv.chi2(), 1.2)
 
 # Next, we use the second order (curvature) constraint type
-res = inv.run(vals, error, cType=2, lam=25)
+res = inv.run(vals, relativeError=relError, cType=2, lam=25)
 print(('Ctype=2: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[0, 1], **kw)
 ax[0, 1].set_title("2nd order")
 np.testing.assert_array_less(inv.chi2(), 1.2)
 
 # Now we set the geostatistic isotropic operator with 5m correlation length
-fop.setConstraints(C)
-res = inv.run(vals, error, lam=15)
+res = inv.run(vals, relativeError=relError, lam=15, C=C)
 print(('Cg-5/5m: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[1, 0], **kw)
 ax[1, 0].set_title("I=5")
 np.testing.assert_array_less(inv.chi2(), 1.2)
 
 # and finally we use the dipping constraint matrix
-fop.setConstraints(Cdip)
-res = inv.run(vals, error, lam=15)
+res = inv.run(vals, relativeError=relError, lam=15, C=Cdip)
 print(('Cg-9/2m: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[1, 1], **kw)
 ax[1, 1].set_title("I=[10/2], dip=25")

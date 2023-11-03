@@ -34,7 +34,6 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
         The plotter
     """
     # sort out a few kwargs to not confuse the plotter initialization
-    show_edges = kwargs.pop('show_edges', True)
     opacity = kwargs.pop('alpha', kwargs.pop('opacity', 1))
     cMap = kwargs.pop('cMap', None)
     color = kwargs.pop('color', None)
@@ -43,41 +42,52 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     showMesh = kwargs.pop('showMesh', False)
     grid = kwargs.pop('grid', False)
     colorBar = kwargs.pop('colorBar', style != 'wireframe')
-    name = kwargs.pop('name', 'Mesh')
-    bc = kwargs.pop('bc', '#EEEEEE') # background color
+    bc = kwargs.pop('bc', '#EEEEEE')  # background color
     lw = kwargs.pop('line_width', 0.1)
     filt = kwargs.pop('filter', {})
+    log_scale = kwargs.pop("logScale", False)
+    clim = None
+    if "cMin" in kwargs and "cMax" in kwargs:
+        clim = [kwargs.pop("cMin"), kwargs.pop("cMax")]
+
+    # show_edges = kwargs.pop('show_edges', True)  # not used
+    # name = kwargs.pop('name', 'Mesh')  # not used
+
+    if isinstance(mesh, pg.Mesh):
+        mesh = pgMesh2pvMesh(mesh)
+
     dataName = kwargs.pop('label', list(mesh.cell_data.keys())[0])
 
-    theme = pv.themes.DefaultTheme()
-    theme.background = bc
+    try:
+        theme = pv.themes.Theme()
+    except:  # older pv versions
+        theme = pv.themes.DefaultTheme()
 
+    theme.background = bc
     # seems to be broken .. results on pure black screens on some machines
     # theme.antialiasing = True
 
     theme.font.color = 'k'
 
     if ax is None:
-        ax = pv.Plotter(notebook=notebook,
-                        theme=theme,
-                        **kwargs
-                        )
-    # if grid is True:
-        # implementme
+        ax = pv.Plotter(notebook=notebook, theme=theme, **kwargs)
+
+    if grid is True:
+        pass  # implementme
 
     ax.show_bounds(all_edges=True, minor_ticks=True)
     ax.add_axes()
 
-    if isinstance(mesh, pg.Mesh):
-        mesh = pgMesh2pvMesh(mesh)
-
     for k, fi in filt.items():
         if k.lower() == 'clip':
-
             if isinstance(mesh, pv.core.pointset.UnstructuredGrid):
-                fi['crinkle'] = fi.pop('crinkle', True)
+                fi.setdefault('crinkle', True)
 
             mesh = mesh.clip(**fi)
+        elif k.lower() == 'threshold':
+            mesh = mesh.threshold(**fi)
+        elif k.lower() == 'slice':
+            mesh = mesh.slice(**fi)
         else:
             pg.error('filter:', k, 'not yet implemented')
 
@@ -91,6 +101,8 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
                          # edge_color='white',
                          show_scalar_bar=colorBar,
                          opacity=opacity,
+                         clim=clim,
+                         log_scale=log_scale
                          )
 
     if returnActor:
@@ -132,7 +144,7 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
     else:
 
         if data is not None or len(mesh.dataMap()) != 0:
-            kwargs['style'] = 'surface'
+            kwargs.setdefault('style', 'surface')
             kwargs['color'] = None
         if dataName is None and data is not None:
             if len(data) == mesh.cellCount():
@@ -176,7 +188,7 @@ def drawSensors(ax, sensors, diam=0.01, color='grey', **kwargs):
 
 
 def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
-    """
+    """Draw a slice in a 3D mesh for given pygimli mesh.
 
     Parameters
     ----------
@@ -192,16 +204,19 @@ def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
     ax: pyvista.Plotter
         The plotter containing the mesh and drawn electrode positions.
 
-    Note
-    ----
-    Possible kwargs are:
-    normal: tuple(float), str
-    origin: tuple(float)
-    generate_triangles: bool, optional
-    contour: bool, optional
+    Keyword arguments passed to pyvista
+    -----------------------------------
+    normal: [float, float, float] | str
+        normal vector constructing the slice
+    origin: [float, float, float]
+        origin for the slice (by default mesh center)
+    generate_triangles: bool [False]
+        generate triangle mesh
+    contour: bool [False]
+        draw contours instead
 
-    They can be found at
-    https://docs.pyvista.org/core/filters.html#pyvista.CompositeFilters.slice
+    More information can be found at
+    https://docs.pyvista.org/api/core/filters.html
     """
     label = kwargs.pop('label', None)
     data = kwargs.pop('data', None)
@@ -245,7 +260,7 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
     Note
     ----
     All kwargs will be forwarded to pyvistas streamline filter:
-    https://docs.pyvista.org/core/filters.html?highlight=streamlines#pyvista.DataSetFilters.streamlines
+    https://docs.pyvista.org/api/core/_autosummary/pyvista.DataSetFilters.streamlines.html
     """
     if label is None:
         label = 'grad'

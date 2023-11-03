@@ -181,8 +181,9 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
             gci.set_norm(norm)
 
         if cbar is not None:
-            cbar.on_mappable_changed(gci)
-            # cbar.update_normal(gci)
+            #cbar.on_mappable_changed(gci)
+            cbar.update_normal(gci)
+
         mappable = gci
     else:
         mappable = cbar.mappable
@@ -234,7 +235,8 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
 
         mappable.set_norm(norm)
 
-    if needLevelUpdate:
+
+    if needLevelUpdate is True:
         if cbar is not None:
             setCbarLevels(cbar, cMin, cMax, nLevs, levels)
             if label is not None:
@@ -293,12 +295,12 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
             pass
 
     cbar = None
-    if hasattr(ax, '__cBar__'):
-        # update colorbar is broken and will not work as supposed so we need
-        # to remove them for now
-        ax.__cBar__.remove()
-        delattr(ax, '__cBar__')
-        pass
+    # if hasattr(ax, '__cBar__'):
+    #     # update colorbar is broken and will not work as supposed so we need
+    #     # to remove them for now
+    #     #ax.__cBar__.remove()
+    #     # delattr(ax, '__cBar__')
+    #     pass
 
     if hasattr(ax, '__cBar__'):
         cbar = ax.__cBar__
@@ -455,12 +457,15 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
 
     mappable.set_clim(vmin=cMin, vmax=cMax)
 
-
     if hasattr(cbar, 'set_ticks'):
         # cbar is a ColorBar with ticks
         cbar.set_ticks(cbarLevels)
         # cbar.set_ticklabels(cbarLevelsString)
-        cbar.draw_all()
+        try:
+            cbar.ax.figure.draw_without_rendering()
+            #cbar._draw_all() # work but dunno how long this will exists
+        except: 
+            cbar.draw_all() # removed by mpl-3.8
 
         # necessary since mpl 3.0
         cbar.ax.minorticks_off()

@@ -81,8 +81,8 @@ class BoreHole(object):
             cm = plt.get_cmap('jet', len(self.unique_classes))
 
         draw1DColumn(ax, self.inline_pos[0], self.class_id, thickness,
-                     ztopo=self.inline_pos[1], width=plot_thickness, cmin=cmin,
-                     cmax=cmax, name=self.borehole_id, cmap=cm,
+                     ztopo=self.inline_pos[1], width=plot_thickness, cMin=cmin,
+                     cMax=cmax, name=self.borehole_id, cMap=cm,
                      textoffset=self._textoffset)
 
         if do_legend:

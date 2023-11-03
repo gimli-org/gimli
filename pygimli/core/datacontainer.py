@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
-"""
-Extensions to the core DataContainer class[es].
-"""
+"""Extensions to the core DataContainer class[es]."""
 import numpy as np
-from . logger import deprecated, info, warn, critical, verbose
-from .core import (RVector3, RVector, IndexArray,
-                   DataContainer, DataContainerERT)
+from . logger import critical, verbose
+from .core import (RVector, RVector3, DataContainer, DataContainerERT)
+from .core import (yVari, zVari, swapXY, swapYZ, y, z)
+
 
 def __DataContainer_str(self):
     return "Data: Sensors: " + str(self.sensorCount()) + " data: " + \
         str(self.size()) + ", nonzero entries: " + \
-        str([d for d in self.dataMap().keys() if self.isSensorIndex(d) or 
+        str([d for d in self.dataMap().keys() if self.isSensorIndex(d) or
              self.haveData(d)])
-DataContainer.__repr__ =__DataContainer_str
-DataContainer.__str__ =__DataContainer_str
+
+
+DataContainer.__repr__ = __DataContainer_str
+DataContainer.__str__ = __DataContainer_str
 
 
 def __DataContainer_setSensors(self, sensors):
@@ -44,24 +45,63 @@ def __DataContainer_setSensors(self, sensors):
         else:
             self.setSensorPosition(i, nS)
 
+
 DataContainer.setSensors = __DataContainer_setSensors
 
+
+def __DataContainer_copy(self):
+    return type(self)(self)
+
+
+DataContainer.copy = __DataContainer_copy
+
+
 def __DC_setVal(self, key, val):
-    if len(val) >  self.size():
+    """Set datacontainer values for specific token: data[token] = x."""
+    if isinstance(val, (float, int)):
+        val = RVector(self.size(), val)
+
+    if len(val) > self.size():
         verbose("DataContainer resized to:", len(val))
         self.resize(len(val))
+
     self.set(key, val)
+
+
 DataContainer.__setitem__ = __DC_setVal
+
 
 def __DC_getVal(self, key):
     if self.isSensorIndex(key):
         return np.array(self(key), dtype=int)
-    #return self(key).array() // d['a'][2] = 0.0, would be impossible
+    # return self(key).array() // d['a'][2] = 0.0, would be impossible
     return self(key)
+
+
 DataContainer.__getitem__ = __DC_getVal
 
 
-def __DataContainerERT_addFourPointData(self, *args, 
+def __DataContainer_ensure2D(self):
+    sen = self.sensors()
+    if ((zVari(sen) or max(abs(z(sen))) > 0) and
+            (not yVari(sen) and max(abs(y(sen))) < 1e-8)):
+        swapYZ(sen)
+        self.setSensorPositions(sen)
+
+
+DataContainer.ensure2D = __DataContainer_ensure2D
+
+
+def __DataContainer_swapXY(self):
+    sen = self.sensors()
+    swapYZ(sen)
+    self.setSensorPositions(sen)
+
+
+DataContainer.swapXY = __DataContainer_swapXY
+
+
+def __DataContainerERT_addFourPointData(self, *args,
                                         indexAsSensors=False, **kwargs):
     """Add a new data point to the end of the dataContainer.
 
@@ -73,7 +113,7 @@ def __DataContainerERT_addFourPointData(self, *args,
     *args: [int]
         At least four index values for A, B, M and N.
     indexAsSensors: bool [False]
-        The indices A, B, M and N are additionally interpreted as sensor position in [m, 0, 0]. 
+        Indices A, B, M and N are interpreted as sensor position in [m, 0, 0].
     **kwargs: dict
         Named values for the data configuration.
 
@@ -109,7 +149,6 @@ def __DataContainerERT_addFourPointData(self, *args,
             n = self.createSensor([float(n), 0.0, 0.0])
         idx = self.createFourPointData(self.size(), a, b, m, n)
 
-
     except Exception as e:
         print(e)
         print("args:", args, len(args))
@@ -121,4 +160,33 @@ def __DataContainerERT_addFourPointData(self, *args,
         self.ref(k)[idx] = v
     return idx
 
+
 DataContainerERT.addFourPointData = __DataContainerERT_addFourPointData
+
+def __DataContainer_show(self, *args, **kwargs):
+    """Use data.show(**) instead of pg.show(data, *) syntactic sugar."""
+    import pygimli as pg
+    return pg.show(self, *args, **kwargs)
+
+DataContainer.show = __DataContainer_show
+
+
+def __DataContainer_getIndices(self, **kwargs):
+    """Return indices for all data keys equalling values."""
+    good = np.ones(self.size(), dtype=bool)
+    for k, v in kwargs.items():
+        good = np.bitwise_and(good, self[k] == v)
+
+    return np.nonzero(good)[0]
+
+DataContainer.getIndices = __DataContainer_getIndices
+
+def __DataContainer_subset(self, **kwargs):
+    """Return a subset for which all conditions hold."""
+    new = self.copy()
+    new["valid"] = 0
+    new.markValid(self.getIndices(**kwargs))
+    new.removeInvalid()
+    return new
+
+DataContainer.subset = __DataContainer_subset

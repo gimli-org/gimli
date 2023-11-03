@@ -11,6 +11,7 @@ _generated/
 doc/_templates/gallery.html
 doc/_static/usecases/original/
 *.ipynb
+*.ipynb_checkpoints*
 
 # Customizations
 *.log
@@ -30,11 +31,17 @@ command.history
 *.xyz
 *.dat
 *.ves
+constraint.matrix
+chi.txt
+*.data
 
 # Gmsh
 *.geo.*
 *.geo
 *.msh
+
+# Mac
+*.DS_Store*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

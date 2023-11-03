@@ -29,6 +29,7 @@ def generateMatrix(xvec, yvec, vals, **kwargs):
     xmap/ymap : dict {key: num}
         dictionaries for accessing matrix position (row/col number from x/y[i])
     """
+    verbose = kwargs.get("verbose", True)
     if kwargs.pop('full', False):
         xymap = {xy: ii
                  for ii, xy in enumerate(np.unique(np.hstack((xvec, yvec))))}
@@ -37,10 +38,12 @@ def generateMatrix(xvec, yvec, vals, **kwargs):
     else:
         xu, yu = np.unique(xvec), np.unique(yvec)
         if kwargs.pop('fillx', False):
-            print('filling x', len(xu))
+            if verbose:
+                pg.info('filling x', len(xu))
             dx = np.median(np.diff(xu)).round(1)
             xu = np.arange(0, xu[-1] - xu[0] + dx * 0.5, dx) + xu[0]
-            print(len(xu))
+            if verbose:
+                pg.info(len(xu))
         if kwargs.pop('filly', False):
             dy = np.median(np.diff(yu)).round(1)
             yu = np.arange(0, yu[-1] - yu[0] + dy * 0.5, dy) + yu[0]
@@ -58,9 +61,11 @@ def generateMatrix(xvec, yvec, vals, **kwargs):
         A[ymap[yi], xmap[xi]] = vals[i]
 
     if len(inot) > 0:
-        print(len(inot), "data of", nshow, "not shown")
+        if verbose:
+            pg.info(len(inot), "data of", nshow, "not shown")
         if len(inot) < 30:
-            print(inot)
+            if verbose:
+                pg.info(inot)
 
     return A, xmap, ymap
 
@@ -383,7 +388,7 @@ def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
 
 
 def plotMatrix(mat, *args, **kwargs):
-    """Naming conventions. Use drawDataMatrix or showDataMatrix"""
+    """Naming conventions. Use drawDataMatrix or showDataMatrix instead."""
     pg.deprecated("use drawDataMatrix or showMatrix")
     return showDataMatrix(*args, **kwargs)
 
@@ -483,8 +488,7 @@ def drawDataMatrix(ax, mat, xmap=None, ymap=None, cMin=None, cMax=None,
 
 
 def plotVecMatrix(xvec, yvec, vals, full=False, **kwargs):
-    """DEPRECATED for nameing
-    """
+    """Plot vectors as matrix (deprecated)."""
     pg.deprecated("use showVecMatrix")
     return showVecMatrix(xvec, yvec, vals, full, **kwargs)
 
@@ -519,17 +523,19 @@ def showVecMatrix(xvec, yvec, vals, full=False, **kwargs):
     cb : matplotlib colorbar
         colorbar object
     """
-    A, xmap, ymap = generateMatrix(xvec, yvec, vals, full=full)
+    A, xmap, ymap = generateMatrix(xvec, yvec, vals, full=full, 
+                                   verbose=kwargs.get("verbose", True))
     return showDataMatrix(A, xmap=xmap, ymap=ymap, **kwargs)
 
 
 def drawVecMatrix(ax, xvec, yvec, vals, full=False, **kwargs):
+    """Draw x, y, v vectors in form of a matrix."""
     A, xmap, ymap = generateMatrix(xvec, yvec, vals, full=full)
     return drawDataMatrix(ax, A, xmap=xmap, ymap=ymap, **kwargs)
 
 
 def plotDataContainerAsMatrix(*args, **kwargs):
-    "DEPRECATED naming scheme"""
+    """Plot datacontainer as matrix (deprecated)."""
     pg.deprecated('plotDataContainerAsMatrix', 'showDataContainerAsMatrix')
     return showDataContainerAsMatrix(*args, **kwargs)
 
@@ -543,10 +549,10 @@ def showDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
     yToken = ''
     mul = kwargs.pop('mul', 10**int(np.ceil(np.log10(data.sensorCount()))))
     plus = kwargs.pop('plus', 1)  # add 1 to count
-    verbose = kwargs.pop('verbose', False)
+    verbose = kwargs.get('verbose', True)
     if isinstance(x, str):
-        x = data(x)
         xToken = x
+        x = data(x)
     elif hasattr(x, '__iter__') and isinstance(x[0], str):
         num = np.zeros(data.size())
         for token in x:
@@ -555,20 +561,12 @@ def showDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
             xToken += token + ' '
         x = num.copy()
 
-    print("found " + str(len(np.unique(x))) + " x values")
-
-#        kwargs.setdefault('xmap', {n: i for i, n in enumerate(np.unique(x))})
-#        xmap = {}
-#        for i, n in enumerate(np.unique(x)):
-#            st = ''
-#            while n > 0:
-#                st = str(n % mul) + '-' + st
-#                n = n // mul
-#            xmap[]
+    if verbose:
+        pg.info("found " + str(len(np.unique(x))) + " x values")
 
     if isinstance(y, str):
-        y = data(y)
         yToken = y
+        y = data(y)
     elif hasattr(y, '__iter__') and isinstance(y[0], str):
         num = np.zeros(data.size())
         for token in y:
@@ -577,13 +575,12 @@ def showDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
             yToken += token + ' '
         y = num.copy()
 
-    print("found " + str(len(np.unique(y))) + " y values")
-#        kwargs.setdefault('ymap', {n: i for i, n in enumerate(np.unique(y))})
-
     if isinstance(v, str):
         v = data(v)
 
+#        kwargs.setdefault('ymap', {n: i for i, n in enumerate(np.unique(y))})
     if verbose:
+        pg.info("found " + str(len(np.unique(y))) + " y values")
         pg.info("x vector length: {:d}".format(len(x)))
         pg.info("y vector length: {:d}".format(len(y)))
         pg.info("v vector length: {:d}".format(len(v)))

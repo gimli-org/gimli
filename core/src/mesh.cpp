@@ -28,8 +28,6 @@
 #include "sparsematrix.h"
 #include "stopwatch.h"
 
-#include <boost/bind.hpp>
-
 #include <map>
 
 namespace GIMLI{
@@ -101,7 +99,7 @@ void Mesh::copy_(const Mesh & mesh){
     for (Index i = 0; i < mesh.boundaryCount(); i ++){
         this->createBoundary(mesh.boundary(i));
     }
-
+    
     cellVector_.reserve(mesh.cellCount());
     for (Index i = 0; i < mesh.cellCount(); i ++){
         this->createCell(mesh.cell(i));
@@ -115,9 +113,9 @@ void Mesh::copy_(const Mesh & mesh){
     }
 
     // we don't need expensive tests for copying
-    setGeometry(mesh.isGeometry());
     setDataMap(mesh.dataMap());
     setCellAttributes(mesh.cellAttributes());
+    setGeometry(mesh.isGeometry());
 
     if (mesh.neighborsKnown()){
         this->createNeighborInfos(true);
@@ -349,7 +347,16 @@ Boundary * Mesh::createBoundary(const Boundary & bound, bool check){
 
     if (bound.rtti() == MESH_POLYGON_FACE_RTTI){
         const PolygonFace & f = dynamic_cast< const PolygonFace & >(bound);
-        b = createBoundaryChecked_< PolygonFace >(nodes, bound.marker(), check);
+
+        Boundary * bt = findBoundary(nodes);
+       
+        if (bt && (bt->nodeCount() != bound.nodeCount())) {
+            // exclude the check if all nodes of bound are a hole in b
+            b = createBoundaryChecked_< PolygonFace >(nodes, bound.marker(), false);
+        } else {
+            b = createBoundaryChecked_< PolygonFace >(nodes, bound.marker(), check);
+        }
+        
         for (Index i = 0; i < f.subfaceCount(); i ++ ){
             dynamic_cast< PolygonFace* >(b)->addSubface(
                 this->nodes(ids(f.subface(i))));
@@ -365,6 +372,7 @@ Boundary * Mesh::createBoundary(const Boundary & bound, bool check){
     for (Index j = 0; j < bound.secondaryNodes().size(); j ++){
         b->addSecondaryNode(& this->node(bound.secondaryNodes()[j]->id()));
     }
+    
     return b;
 }
 
@@ -914,28 +922,37 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
             throwError(WHERE_AM_I +
                        " no nearest node to pos. This is a empty mesh");
         }
-        if (refNode->cellSet().empty()){
+        if (refNode->cellSet().empty() && refNode->boundSet().empty()){
             std::cout << "Node: " << *refNode << std::endl;
+            
             throwError(WHERE_AM_I +
-                       " no cells for this node. This is a corrupt mesh");
+                       " no cells or boundaries for this node. This may be a corrupt mesh");
         }
 //         std::cout << "Node: " << *refNode << std::endl;
 
         // small fast precheck to avoid strange behaviour for symmetric SF.
-        for (std::set< Cell * >::iterator it = refNode->cellSet().begin();
-             it != refNode->cellSet().end(); it ++){
-//             std::cout << (*it)->id() << std::endl;
+        // __MS(pos << " " << refNode->pos())
 
-           if ((*it)->shape().isInside(pos, false)) return *it;
-
+        if (!refNode->cellSet().empty()){
+                
+            for (auto *c: refNode->cellSet()){
+                // std::cout << (*it)->id() << std::endl;
+                //** isInside useing shapefunctions only work for aligned dimensions
+                if (c->shape().isInside(pos, false)) return c;
+            }
+        
+            //         exportVTK("slopesearch");
+            //         exit(0);
+            cell = findCellBySlopeSearch_(pos, *refNode->cellSet().begin(),
+                                          count, false);
+            if (cell) return cell;
+        } else {
+            for (auto *b: refNode->boundSet()){
+                if (b->leftCell()) return b->leftCell();
+                if (b->rightCell()) return b->rightCell();
+            }
         }
 
-        cell = findCellBySlopeSearch_(pos, *refNode->cellSet().begin(),
-                                      count, false);
-        if (cell) return cell;
-
-//         exportVTK("slopesearch");
-//         exit(0);
         if (extensive || 0){
 //             __M
 //             std::cout << "More expensive test here" << std::endl;
@@ -1133,7 +1150,7 @@ void Mesh::setCellMarkers(const RVector & attribute){
 IVector Mesh::cellMarkers() const{
     IVector tmp(cellCount());
     std::transform(cellVector_.begin(), cellVector_.end(), tmp.begin(),
-                    std::mem_fn(&Cell::marker));
+                   std::mem_fn(&Cell::marker));
     return tmp;
 }
 
@@ -2517,8 +2534,12 @@ void Mesh::fillKDTree_() const {
     if (tree_->size() != nodeCount(true)){
 
         if (tree_->size() == 0){
-            for_each(nodeVector_.begin(), nodeVector_.end(), boost::bind(&KDTreeWrapper::insert, tree_, _1));
-            for_each(secNodeVector_.begin(), secNodeVector_.end(), boost::bind(&KDTreeWrapper::insert, tree_, _1));
+            // for_each(nodeVector_.begin(), nodeVector_.end(), boost::bind(&KDTreeWrapper::insert, tree_, _1));
+            // for_each(secNodeVector_.begin(), secNodeVector_.end(), boost::bind(&KDTreeWrapper::insert, tree_, _1));
+            for_each(nodeVector_.begin(), nodeVector_.end(), 
+                     [&](Node * n){tree_->insert(n);});
+            for_each(secNodeVector_.begin(), secNodeVector_.end(), 
+                     [&](Node * n){tree_->insert(n);});
 
             tree_->tree()->optimize();
         } else {

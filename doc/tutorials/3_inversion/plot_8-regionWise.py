@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# sphinx_gallery_thumbnail_number = 12
 r"""
 Region-wise regularization
 ==========================
@@ -10,6 +9,7 @@ subsurface regions individually by using an ERT field case. The data is a 2d
 profile that was measured in 2005 on the bottom of a lake. The water body is
 of course influencing the fields and needs to be treated accordingly.
 """
+# sphinx_gallery_thumbnail_number = 12
 
 # %%%
 # We first import pygimli and the modules for ERT and mesh building.
@@ -67,8 +67,8 @@ print(max(data["err"]))
 #
 
 # We create a piece-wise linear complex (PLC) as for a case with topography
-plc = mt.createParaMeshPLC(data, paraDepth=20, boundary=0.1)
-ax, _ = pg.show(plc, markers=True);
+plc = mt.createParaMeshPLC(data, paraDepth=20, boundary=1)
+ax, _ = pg.show(plc, markers=True)
 for i, n in enumerate(plc.nodes()[:12]):
     ax.text(n.x(), n.y(), str(i))
     print(i, n.x(), n.y())
@@ -86,20 +86,20 @@ for i in range(95, plc.nodeCount()):
 
 plc.createEdge(plc.node(10), plc.node(100), marker=-1)
 plc.addRegionMarker([50, -0.1], marker=3)
-pg.show(plc, markers=True);
+ax, _ = pg.show(plc, markers=True)
 
 # %%%
 # As the lake bottom is not a surface boundary (-1) anymore, but an inside
 # boundary, we set its marker >0 by iterating through all boundaries.
 #
 
-mesh = mt.createMesh(plc, quality=34.4)
+mesh = mt.createMesh(plc, quality=34.2)
 for b in mesh.boundaries():
     if b.marker() == -1 and not b.outside():
         b.setMarker(2)
 
 print(mesh)
-pg.show(mesh, markers=True, showMesh=True);
+ax, _ = pg.show(mesh, markers=True, showMesh=True)
 
 # %%%
 # Inversion with the ERT manager
@@ -108,7 +108,7 @@ pg.show(mesh, markers=True, showMesh=True);
 
 mgr = ert.ERTManager(data, verbose=True)
 mgr.setMesh(mesh)  # use this mesh for all subsequent runs
-mgr.invert()
+mgr.invert(maxIter=1)
 # mgr.invert(mesh=mesh) would only temporally use the mesh
 
 # %%%
@@ -137,11 +137,16 @@ ax, cb = mgr.showResult(**kw)
 # Apparently, the two regions are already decoupled from each other which
 # makes sense. Let us look in detail at the water cells by extracting the
 # water body.
+# Note. The manager class performs a model value permutation to fit
+# the parametric mesh cell. So if you want to relate model values to the input
+# mesh, you need to use the unpermutated model values directly from the
+# inversion framework instance: `mgr.fw.model``
 #
 
 water = mesh.createSubMesh(mesh.cells(mesh.cellMarkers() == 3))
-resWater = mgr.model[len(mgr.model)-water.cellCount():]
+resWater = mgr.fw.model[len(mgr.model)-water.cellCount():]
 ax, cb = pg.show(water, resWater)
+
 
 # %%%
 # Apparently, all values are below the expected 22.5\ $\Omega$\ m
@@ -199,9 +204,6 @@ mgr.inv.setRegularization(3, single=True)
 mgr.invert()
 ax, cb = mgr.showResult(**kw)
 
-print(mgr.inv.model)
-print(min(mgr.model))
-
 # %%%
 # The last value represents the value for the lake, close to our measurement.
 # This value can, however, also be set beforehand.
@@ -234,7 +236,7 @@ ax, cb = mgr.showResult(**kw)
 
 mgr = ert.ERTManager(data, verbose=True)
 mgr.setMesh(mesh)
-print(mgr.fop.regionManager().regionCount())
+print("Number of regions: ", mgr.fop.regionManager().regionCount())
 mgr.inv.setRegularization(cType=1, zWeight=0.2)
 mgr.fop.setInterRegionCoupling(2, 3, 1.0)  # normal coupling
 mgr.invert()

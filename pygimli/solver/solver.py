@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""TODO DOCUMENT ME"""
+"""Finite-element solver and utility functions."""
 from copy import deepcopy
 
 import numpy as np
-import numpy.matlib
 import pygimli as pg
 
 
@@ -457,8 +456,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
     """
     bc = []
     bounds = []
-    if isinstance(pair[1], list):
-        #  [marker, [callable, *kwargs]]
+    if isinstance(pair[1], list):  #  [marker, [callable, *kwargs]]
         if callable(pair[1][0]):
             pair = [pair[0]] + pair[1]
 
@@ -479,6 +477,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
             val = pair[1:]
         else:
             val = pair[1]
+        
         bc.append([b, val])
 
         # print('-'*50)
@@ -950,7 +949,7 @@ def divergence(mesh, func=None, normMap=None, order=1):
         if directionCheck:
             if b.leftCell() is None and b.rightCell() is None:
                 # print(b.id(), b.leftCell(), b.rightCell())
-                sw = pg.core.Stopwatch(True)
+                sw = pg.Stopwatch(True)
                 mesh.createNeighborInfos()
                 print("NeighborInfos()", sw.duration(True))
                 # return gauss(grid, F)
@@ -2195,7 +2194,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
     The Domain :math:`\Omega` and the Boundary :math:`\Gamma` are defined
     through the mesh with appropriate boundary marker.
 
-    Note, to ensure vector solution either set vector forces or at least on
+    To ensure vector solution, either set vector forces or at least one
     vector component boundary condition.
 
     TODO
@@ -2267,7 +2266,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             Returns the system matrix A and the rhs vector.
         fixPureNeumann: bool [auto]
             If set or detected automatic, we add the additional condition:
-            :math:`\int_domain u dv = 0` making elliptic problems well-posed.
+            :math:`\int_\Omega u dv = 0` making elliptic problems well-posed.
         rhs: iterable
             Pre assembled rhs. Will preferred on any f settings.
         ws: dict
@@ -2289,20 +2288,17 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
 
     Examples
     --------
+    >>> # no need to import matplotlib, pygimli show does.
     >>> import pygimli as pg
-    >>> from pygimli.meshtools import polytools as plc
-    >>> from pygimli.viewer.mpl import drawField, drawMesh
-    >>> import matplotlib.pyplot as plt
-    >>> world = plc.createWorld(start=[-10, 0], end=[10, -10],
-    ...                         marker=1, worldMarker=False)
-    >>> c1 = plc.createCircle(pos=[0.0, -5.0], radius=3.0, area=.1, marker=2)
-    >>> mesh = pg.meshtools.createMesh([world, c1], quality=34.3)
+    >>> import pygimli.meshtools as mt
+    >>> world = mt.createWorld(start=[-10, 0], end=[10, -10],
+    ...                        marker=1, worldMarker=False)
+    >>> c1 = mt.createCircle(pos=[0.0, -5.0], radius=3.0, area=.1, marker=2)
+    >>> mesh = mt.createMesh([world, c1], quality=34.3)
     >>> u = pg.solver.solveFiniteElements(mesh, a={1: 100.0, 2: 1.0},
-    ...                                   bc={'Dirichlet':{4: 1.0, 2: 0.0}})
-    >>> fig, ax = plt.subplots()
-    >>> pc = drawField(ax, mesh, u)
-    >>> drawMesh(ax, mesh)
-    >>> plt.show()
+    ...                                   bc={'Dirichlet':{4: 1.0, 3: 0.0}})
+    >>> ax = pg.show(mesh, u, showMesh=True)[0]
+    >>> _ = pg.show(c1, ax=ax, fillRegion=False)
     """
     if bc is None:
         bc = {}
@@ -2355,7 +2351,6 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         A = S
 
     if times is None:
-
         if len(list(bc.items())) == 0 or \
            (len(list(bc.items())) == 1 and list(bc.keys())[0] == 'Neumann'):
             pn = True
@@ -2447,7 +2442,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         return u
 
     else:  # times given
-        pg.solver.checkCFL(times, mesh, max(a))
+        pg.solver.checkCFL(times, mesh, max(np.array(a).flatten()))
 
         if debug:
             print("start TL", swatch.duration())
@@ -2504,7 +2499,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             swatch.reset()
             # (A + a*B)u is fastest,
             # followed by A*u + (B*u)*a and finally A*u + a*B*u and
-            br = (M + (dt * (theta - 1.)) * S) * U[n - 1] + \
+            br = (M + S*(dt * (theta - 1.))) * U[n - 1] + \
                 dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
 
             # print ('a',swatch.duration(True))
