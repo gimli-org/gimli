@@ -895,17 +895,12 @@ ElementMatrixMap createIdentityMap(const Mesh & mesh, Index order,
 }
 
 void sym(const ElementMatrixMap & A, ElementMatrixMap & ret){
-/*! Return symmetrized copy of A as 0.5*(A + A.T).
-ATM. Only for gradients without Voigt or Kelvin notation.
-*/
     ret.resize(A.size());
     Index i = 0;
     for (auto &m: A.mats()){
         sym(m, *ret.pMat(i));
         i++;
     }
-    // set row ids() .. maybe rename to dofs
-    THROW_TO_IMPL
 }
 
 
@@ -917,7 +912,6 @@ ElementMatrixMap sym(const ElementMatrixMap & A){
 
 
 void trace(const ElementMatrixMap & A, ElementMatrixMap & ret){
-
     ret.resize(A.size());
     Index i = 0;
     //#pragma omp parallel not without check

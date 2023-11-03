@@ -258,10 +258,20 @@ DLLEXPORT ElementMatrixMap
 createIdentityMap(const Mesh & mesh, Index order,
                   Index nCoeff, Index dofOffset);
 
+/*! Return symmetrized copy of A as 0.5*(A + A.T).
+ATM. Only for gradients without Voigt or Kelvin notation.
+*/
 DLLEXPORT ElementMatrixMap sym(const ElementMatrixMap & A);
+/*! Fill ret with symmetrized copy of A as 0.5*(A + A.T).
+ATM. Only for gradients without Voigt or Kelvin notation.
+*/
 DLLEXPORT void sym(const ElementMatrixMap & A, ElementMatrixMap & ret);
-
+/*! Return trace of A.
+ATM. Only for gradients without Voigt or Kelvin notation.
+*/
 DLLEXPORT ElementMatrixMap trace(const ElementMatrixMap & A);
+/*! Fill ret with trace of A.
+*/
 DLLEXPORT void trace(const ElementMatrixMap & A, ElementMatrixMap & ret);
 
 DLLEXPORT void createUMap_(const Mesh & mesh, Index order, ElementMatrixMap & ret,

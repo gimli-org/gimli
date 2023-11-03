@@ -2900,7 +2900,8 @@ void sym(const ElementMatrix < double > & A, ElementMatrix < double > & B){
     B.copyFrom(A, false);
 
     for (auto &m : *B.pMatX()){
-        if (m.rows() == 4){
+        if (m.rows() == 1){
+        } else if (m.rows() == 4){
             // __MS(m)
             m.row(1) = 0.5*m.row(1) + 0.5*m.row(2);
             m.row(2) = m.row(1);
@@ -2918,11 +2919,11 @@ void sym(const ElementMatrix < double > & A, ElementMatrix < double > & B){
             // _matX[i][7].setVal(dNdy_[i], 2 * nVerts, 3 * nVerts); //dNz/dy
             // _matX[i][8].setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
 
-            m.row(1) = 0.5*m.row(1) + 0.5*m.row(3);
+            m.row(1) = 0.5 * m.row(1) + 0.5 * m.row(3);
             m.row(3) = m.row(1);
-            m.row(2) = 0.5*m.row(2) + 0.5*m.row(6);
+            m.row(2) = 0.5 * m.row(2) + 0.5 * m.row(6);
             m.row(6) = m.row(2);
-            m.row(5) = 0.5*m.row(5) + 0.5*m.row(7);
+            m.row(5) = 0.5 * m.row(5) + 0.5 * m.row(7);
             m.row(7) = m.row(5);
         } else {
             __MS(A)
@@ -2948,8 +2949,7 @@ void trace(const ElementMatrix < double > & A, ElementMatrix < double > & B){
 
     for (auto &m : *B.pMatX()){
         if (m.rows() == 1){
-        }
-        if (m.rows() == 4){
+        } else if (m.rows() == 4){
             tr = m.row(0) + m.row(3);
             m *= 0.0;
             m.row(0) = tr;
