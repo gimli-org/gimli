@@ -65,6 +65,10 @@ void Vector< double >::add(const ElementMatrix < double > & A, bool neg){
 template <>
 void Vector< double >::add(const ElementMatrix < double > & A,
                            const double & scale, bool neg){
+    // inuse?
+    if (neg == true) THROW_TO_IMPL
+    A.integrate();
+
     //__MS(A.oldStyle(), scale, A)
     if (A.oldStyle()){
         if (A.cols() == 1){
@@ -73,10 +77,29 @@ void Vector< double >::add(const ElementMatrix < double > & A,
             addVal(A.mat().row(0) * scale, A.ids());
         }
     } else {
+
+        //** rows are indices
+        //** cols are components
+        Index colStep = 1;
+        if (A.nCoeff() == 2 and A.cols() == 4){
+            // xx, xy, yy
+            // A is 2d grad so we ignore d_ij
+            colStep = 3; // [0, 3]
+        } else if (A.nCoeff() == 2 and A.cols() == 3){
+            // xx, yy, xy
+            THROW_TO_IMPL
+        } else if (A.nCoeff() == 3 and A.cols() == 9){
+            // xx, xy, xz, yx, yy, zy, zx, zy, zz
+            // A is 3d grad so we ignore d_ij
+            colStep = 4; // [0, 4, 8]
+        } else if (A.nCoeff() == 3 and A.cols() == 6){
+            // xx, yy, zz, xy, yz, zx !!check order!!
+            THROW_TO_IMPL
+        }
+        
         // switch to A.mat() transpose
         //__MS("inuse?")
-        A.integrate();
-        for (Index i = 0; i < A.cols(); i++){
+        for (Index i = 0; i < A.cols(); i+= colStep){
             for (Index j = 0; j < A.rows(); j++){
                 data_[A.rowIDs()[j]] += A.mat()(j,i) * scale;
             }
@@ -86,6 +109,9 @@ void Vector< double >::add(const ElementMatrix < double > & A,
 template <>
 void Vector< double >::add(const ElementMatrix < double > & A,
                            const RVector3 & scale, bool neg){
+    // inuse?
+    if (neg == true) THROW_TO_IMPL
+        
     // __MS("inuse?")
     if (A.oldStyle()){
         THROW_TO_IMPL
@@ -101,18 +127,25 @@ void Vector< double >::add(const ElementMatrix < double > & A,
 }
 template <>
 void Vector< double >::add(const ElementMatrix < double > & A,
-                           const RSmallMatrix & scale, bool neg){
-    if (A.oldStyle()){
-        THROW_TO_IMPL
-    } else {
-        THROW_TO_IMPL
-    }
-}
-template <>
-void Vector< double >::add(const ElementMatrix < double > & A,
                            const RVector & scale){
+    // inuse?
+    // if (neg == true) THROW_TO_IMPL
+    A.integrate();
     
-    if (!A.oldStyle()){
+    if (A.oldStyle()){
+        //!! warning this will lead to incorrect results with non constant scale
+        //!! use new fea style for correct integration
+        // __M
+        if (A.cols() == 1){
+            // addVal(A.mat().col(0) * scale.get_(A.rowIDs()), A.rowIDs());
+            addVal(A.mat().col(0), A.rowIDs(), scale);
+        } else {
+            //** This[ids] += vals[:] * scale[ids] 
+            // __MS(A.mat().row(0))
+            // addVal(A.mat().row(0) * scale.get_(A.ids()), A.ids());
+            addVal(A.mat().row(0), A.ids(), scale);
+        }
+    } else {
         Index jID = 0;
         for (Index j = 0; j < A.rows(); j++){
             jID = A.rowIDs()[j];
@@ -122,18 +155,14 @@ void Vector< double >::add(const ElementMatrix < double > & A,
         }
         return;
     }
-    A.integrate();
-    //!! warning this will lead to incorrect results with non constant scale
-    //!! use new fea style for correct integration
-    // __M
-    if (A.cols() == 1){
-        // addVal(A.mat().col(0) * scale.get_(A.rowIDs()), A.rowIDs());
-        addVal(A.mat().col(0), A.rowIDs(), scale);
+}
+template <>
+void Vector< double >::add(const ElementMatrix < double > & A,
+                           const RSmallMatrix & scale, bool neg){
+    if (A.oldStyle()){
+        THROW_TO_IMPL
     } else {
-        //** This[ids] += vals[:] * scale[ids] 
-        // __MS(A.mat().row(0))
-        // addVal(A.mat().row(0) * scale.get_(A.ids()), A.ids());
-        addVal(A.mat().row(0), A.ids(), scale);
+        THROW_TO_IMPL
     }
 }
 

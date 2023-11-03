@@ -907,18 +907,30 @@ ATM. Only for gradients without Voigt or Kelvin notation.
     // set row ids() .. maybe rename to dofs
     THROW_TO_IMPL
 }
+
+
 ElementMatrixMap sym(const ElementMatrixMap & A){
     ElementMatrixMap ret;
     sym(A, ret);
     return ret;
 }
 
-void tr(const ElementMatrixMap & A, RVector & ret){
-    THROW_TO_IMPL
+
+void trace(const ElementMatrixMap & A, ElementMatrixMap & ret){
+
+    ret.resize(A.size());
+    Index i = 0;
+    //#pragma omp parallel not without check
+    for (auto &m: A.mats()){
+        trace(m, *ret.pMat(i));
+        i++;
+    }
 }
-RVector tr(const ElementMatrixMap & A){
-    RVector ret;
-    tr(A, ret);
+
+
+ElementMatrixMap trace(const ElementMatrixMap & A){
+    ElementMatrixMap ret;
+    trace(A, ret);
     return ret;
 }
 

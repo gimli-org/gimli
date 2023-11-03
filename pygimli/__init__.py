@@ -496,7 +496,15 @@ def _plt():
                 info(f"matplotlib notebook backend set to {rc['matplotlib']} failed: ", e)
         # tic()        
         import matplotlib.pyplot as plt
-        # print('############### importing plt took ', dur())
+        
+        # if isNotebook():
+        #     pass    
+        # else:
+        #     import matplotlib
+        #     matplotlib.use('qtagg')
+        #     print('############### importing plt took ', dur())
+            
+        #     print('############### backend:', plt.get_backend())
 
         from .viewer.mpl import registerShowPendingFigsAtExit, hold
         registerShowPendingFigsAtExit()

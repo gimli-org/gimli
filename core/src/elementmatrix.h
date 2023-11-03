@@ -94,6 +94,9 @@ public:
     /*! Return data for col i. */
     Vector< ValueType > col(Index i) const;
 
+    /*! Set specific columns to zero. */
+    void cleanCols(const IndexArray & c);
+
     /*! Fill the node ids with a number of coefficents.
     For vector field approximation give field dimension 2 or 3.
     Please note that you need to give the number of nodes to the ElementMatrix constructor.
@@ -549,6 +552,10 @@ template < > DLLEXPORT
 void ElementMatrix < double >::init(Index nCoeff, Index dofPerCoeff,
                                     Index dofOffset);
 
+template < > DLLEXPORT
+void ElementMatrix < double >::cleanCols(const IndexArray & c);
+
+
 #define DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(OP) \
 template < > DLLEXPORT ElementMatrix < double > & \
 ElementMatrix < double >::operator OP##= (double val); \
@@ -706,6 +713,12 @@ DLLEXPORT ElementMatrix < double > sym(const ElementMatrix < double > & A);
 
 /*! copy symmetrized A as 0.5*(A + A.T) into B.*/
 DLLEXPORT void sym(const ElementMatrix < double > & A, ElementMatrix < double > & B);
+
+/*! Return the trace of A as I * trace(A). Only for gradients without Voigt or Kelvin notation. */
+DLLEXPORT ElementMatrix < double > trace(const ElementMatrix < double > & A);
+
+/*! Copy the trace of A as B = I * trace(A). */
+DLLEXPORT void trace(const ElementMatrix < double > & A, ElementMatrix < double > & B);
 
 
 #define DEFINE_CREATE_FORCE_VECTOR(A_TYPE) \

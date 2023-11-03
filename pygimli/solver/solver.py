@@ -1110,6 +1110,9 @@ class LinSolver(object):
                 from scipy.sparse import spmatrix
                 if isinstance(mat, spmatrix):
                     solver = 'SciPy'
+                else:
+                    print(mat)
+                    pg.critical("Data format for matrix not recognized.")
 
         if solver.lower() == 'pg':
             self.solverStr = 'PG'
@@ -1240,6 +1243,9 @@ def linSolve(mat, b, solver=None, verbose=False, **kwargs):
             from scipy.sparse import spmatrix
             if isinstance(mat, spmatrix):
                 solver = 'scipy'
+            else:
+                print(mat)
+                pg.critical("Data format for matrix not recognized.")
 
     if solver.lower() == 'pg':
         # core proxy to cholmod and LDL for float and umfpack for complex

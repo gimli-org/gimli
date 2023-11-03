@@ -122,6 +122,12 @@ ElementMatrix < double >::operator += (const ElementMatrix < double > & E){
 //     // return mat_.row(row);
 // }
 
+/*! Set specific columns to zero. */
+template < > void 
+ElementMatrix < double >::cleanCols(const IndexArray & c){
+    this->mat_.cleanCols(c);    
+}
+
 template < > DLLEXPORT Vector< double >
 ElementMatrix < double >::row_RM(Index i) const {
     // #if USE_EIGEN3
@@ -1957,10 +1963,14 @@ ElementMatrix < double >::traceX() const {
     // __MS(ret.rows(), ret.cols())
     Index i = 0;
     for (auto & m: _matX){
-        if (m.size() == 4){
+        if (m.size() == 2){
+            // 1D vecspace no elastic
+            ret[i] = m[0];
+        } else if (m.size() == 4){
             // 2D vecspace no elastic
             ret[i] = m[0] + m[3];
         } else if (m.size() == 9){
+            // 3D vecspace no elastic
             ret[i] = m[0] + m[4] + m[8];
         } else {
             __MS(m)
@@ -2923,11 +2933,49 @@ void sym(const ElementMatrix < double > & A, ElementMatrix < double > & B){
     B.setValid(true);
     B.integrated(false);
 }
+
+
 ElementMatrix < double > sym(const ElementMatrix < double > & A){
     ElementMatrix < double > B;
     sym(A, B);
     return B;
 }
+
+
+void trace(const ElementMatrix < double > & A, ElementMatrix < double > & B){
+    B.copyFrom(A, false);
+    RVector tr(A.rows());
+
+    for (auto &m : *B.pMatX()){
+        if (m.rows() == 1){
+        }
+        if (m.rows() == 4){
+            tr = m.row(0) + m.row(3);
+            m *= 0.0;
+            m.row(0) = tr;
+            m.row(3) = tr;
+        } else if (m.rows() == 9) {
+            tr = m.row(0) + m.row(4) + m.row(8);
+            m *= 0.0;
+            m.row(0) = tr;
+            m.row(4) = tr;
+            m.row(8) = tr;
+        } else {
+            __MS(A)
+            log(Critical, "Don't not how to trace A");
+        }
+    }
+    B.setValid(true);
+    B.integrated(false);
+}
+
+
+ElementMatrix < double > trace(const ElementMatrix < double > & A){
+    ElementMatrix < double > B;
+    trace(A, B);
+    return B;
+}
+
 
 template < class Vec >
 void createForceVectorPerCell_(const Mesh & mesh, Index order, RVector & ret,

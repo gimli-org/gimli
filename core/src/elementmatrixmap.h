@@ -261,8 +261,8 @@ createIdentityMap(const Mesh & mesh, Index order,
 DLLEXPORT ElementMatrixMap sym(const ElementMatrixMap & A);
 DLLEXPORT void sym(const ElementMatrixMap & A, ElementMatrixMap & ret);
 
-DLLEXPORT RVector tr(const ElementMatrixMap & A);
-DLLEXPORT void tr(const ElementMatrixMap & A, RVector & ret);
+DLLEXPORT ElementMatrixMap trace(const ElementMatrixMap & A);
+DLLEXPORT void trace(const ElementMatrixMap & A, ElementMatrixMap & ret);
 
 DLLEXPORT void createUMap_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
                 Index nCoeff, Index dofOffset);

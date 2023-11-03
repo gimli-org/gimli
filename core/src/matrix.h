@@ -636,13 +636,23 @@ public:
     inline void setRow(Index i, const Vector< ValueType > & r) {
         row(i).assign(r);
     }
-    inline void setCol(Index j, const Vector< ValueType > & r) const {
+    inline void setCol(Index j, const Vector< ValueType > & r) {
+        ASSERT_LOWER(j, this->_cols)
         for (Index i = 0; i < this->_rows; i ++){
             _data[i*this->_cols + j] = r[i];
         }
     }
+    inline void cleanCols(const IndexArray & c) {
+        for (Index i = 0; i < this->_rows; i ++){
+            for (auto j: c){
+                ASSERT_LOWER(j, this->_cols)
+                _data[i*this->_cols + j] = 0;
+            }
+        }
+    }
 
     inline Vector< ValueType > col(Index c) const {
+        ASSERT_LOWER(c, this->_cols)
         Vector < ValueType > ret(this->_rows);
         for (Index i = 0; i < this->_rows; i ++){
             ret[i] = _data[i*this->_cols + c];
