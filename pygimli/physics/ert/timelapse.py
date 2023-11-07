@@ -348,7 +348,7 @@ class TimelapseERT():
         errorVec = np.concatenate([data["err"] for data in DATA])
         startModel = fop.createStartModel(dataVec)
         inv = pg.Inversion(fop=fop, startModel=startModel, verbose=True)
-        fop.createConstraints()
+        fop.createConstraints(C=kwargs.pop("C", None))
         kwargs.setdefault("maxIter", 10)
         kwargs.setdefault("verbose", True)
         kwargs.setdefault("startModel", startModel)
