@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 Timelapse ERT
--------------
+=============
 
 Since pyGIMLi we have a class dedicated to timelapse ERT processing & inversion.
 The inversion supports different schemes from simple individual over constrained

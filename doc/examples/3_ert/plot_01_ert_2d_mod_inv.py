@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-2D ERT modeling and inversion
+2D ERT modelling and inversion
 =============================
 """
 # sphinx_gallery_thumbnail_number = 6
@@ -69,7 +69,7 @@ rhomap = [[1, 100.],
 pg.show(mesh, data=rhomap, label=pg.unit('res'), showMesh=True)
 
 ###############################################################################
-# Perform the modeling with the mesh and the measuring scheme itself
+# Perform the modelling with the mesh and the measuring scheme itself
 # and return a data container with apparent resistivity values,
 # geometric factors and estimated data errors specified by the noise setting.
 # The noise is also added to the data. Here 1% plus 1µV.

@@ -45,7 +45,7 @@ help:
 
 auto: api
 	# Used to auto-update website in local build. Requires sphinx-autobuild.
-	sphinx-autobuild --delay 2 --ignore "pygimliapi/*" --ignore "*gallery.html" --ignore "*.pickle" . _build/html -D plot_gallery=0
+	sphinx-autobuild --delay 2 --ignore "pygimliapi/*" --ignore "pygimliapi/_generated/*" --ignore "*gallery.html" --ignore "*.examples" --ignore "*.ipynb" --ignore "*.zip" --ignore "*.pickle" . _build/html -D plot_gallery=0
 
 clean:
 	rm -rf $(BUILDDIR)

@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # coding: utf-8
 """
-Hydrogeophysical modeling
--------------------------
+Hydrogeophysical modelling
+--------------------------
 
-Coupled hydrogeophysical modeling example. This essentially represents the
-forward modeling step of the example presented in section 3.2 of the `pyGIMLi
+Coupled hydrogeophysical modelling example. This essentially represents the
+forward modelling step of the example presented in section 3.2 of the `pyGIMLi
 paper <http://www.sciencedirect.com/science/article/pii/S0098300417300584/pdfft?md5=44253eaacd5490e3fb32210671672496&pid=1-s2.0-S0098300417300584-main.pdf>`_.
 """
 # sphinx_gallery_thumbnail_number = 8
@@ -20,7 +20,7 @@ from pygimli.physics import ERTManager
 
 
 ################################################################################
-# Create geometry definition for the modeling domain
+# Create geometry definition for the modelling domain
 world = mt.createWorld(start=[-20, 0], end=[20, -16], layers=[-2, -8],
                        worldMarker=False)
 

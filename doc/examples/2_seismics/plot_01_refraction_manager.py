@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-2D Refraction modeling and inversion
-====================================
+2D Refraction modelling and inversion
+=====================================
 
 This example shows how to use the TravelTime manager to generate the response
 of a three-layered sloping model and to invert the synthetic noisified data."""

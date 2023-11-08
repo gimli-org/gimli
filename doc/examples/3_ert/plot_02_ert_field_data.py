@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 r"""
 ERT field data with topography
-------------------------------
+==============================
 
 Simple example of data measured over a slagdump demonstrating:
 

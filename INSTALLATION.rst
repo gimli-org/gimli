@@ -84,7 +84,7 @@ again and install pygimli using conda just as mentioned above.
 
     import condacolab
     condacolab.check()
-    !conda install -c gimli pygimli=1.4.1
+    !conda install -c gimli pygimli=1.4.5
 
 Testing the installation
 ------------------------

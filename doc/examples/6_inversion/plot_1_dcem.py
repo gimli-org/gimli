@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-DC-EM Joint inversion
+DC-EM joint inversion
 ---------------------
 
 Joint inversion is an important method to improve resolution properties by

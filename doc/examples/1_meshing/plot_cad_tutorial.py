@@ -26,7 +26,7 @@ In this example you will learn how to create a geometry in
 # `website <https://www.freecadweb.org/downloads.php>`_ will give you the
 # most up to date version.
 #
-# This example is based on an ERT modeling and inversion experiment on a
+# This example is based on an ERT modelling and inversion experiment on a
 # small dike. However, this FreeCAD → Gmsh workflow can easily be
 # translated to other geophysical methods. The geometry and acquisition
 # design come from the IDEA League `master
@@ -37,11 +37,11 @@ In this example you will learn how to create a geometry in
 # FreeCAD: create the geometry
 # ----------------------------
 #
-# Two geometries have to be created. One for modeling and one for
-# inversion. When the same meshes are used for modeling and inversion,
+# Two geometries have to be created. One for modelling and one for
+# inversion. When the same meshes are used for modelling and inversion,
 # the geometry of the sand channel is alreadyincluded in the structure
 # of the mesh. Therefore, the mesh itself would act as prior information
-# to the inversion. The modeling geometry consists of three regions: the
+# to the inversion. The modelling geometry consists of three regions: the
 # outer region; the inner region (same as inversion region in this
 # example) and the sand channel. The inversion geometry consists of two
 # regions: the outer region and the inversion region.
@@ -305,7 +305,7 @@ if gmsh:
 # The final mesh should look something like the figure below. Check
 # whether the Physical Groups are defined correctly using the
 # Visibility window as shown in the figure. Finally make the inversion
-# mesh in the same way as the modeling mesh. The differences being that
+# mesh in the same way as the modelling mesh. The differences being that
 # (a) there should be no sand channel in the geometry of the inversion
 # mesh. Meaning that there are also only 2 volumes: the outer region
 # and the dike, i.e. inversion region. And (b) that the mesh does not
@@ -318,7 +318,7 @@ if gmsh:
 # .. figure:: ../../_static/cad_tutorial/gmsh_fig.png
 #     :align: center
 #
-#     Gmsh visualizatin of the modeling mesh of the dike, with visibility dialog.
+#     Gmsh visualizatin of the modelling mesh of the dike, with visibility dialog.
 #
 # Additional very useful material
 # -------------------------------

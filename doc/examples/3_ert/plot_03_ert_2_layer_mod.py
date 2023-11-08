@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 r"""
 2D FEM modelling on two-layer example
--------------------------------------
+=====================================
 
 Compare 2D FEM modelling with 1D VES sounding with and without complex
 resistivity values.
@@ -36,7 +36,7 @@ plc = mt.createWorld(start=[-200, -100], end=[200, 0],
 for s in scheme.sensors():
     plc.createNode(s + [0.0, -0.2])
 
-# Now we can create our forward modeling mesh.
+# Now we can create our forward modelling mesh.
 mesh = mt.createMesh(plc, quality=33)
 
 pg.show(mesh, data=mesh.cellMarkers(), label='Marker', showMesh=True)
@@ -48,7 +48,7 @@ pg.show(mesh, data=mesh.cellMarkers(), label='Marker', showMesh=True)
 mesh = mesh.createP2()
 
 ###############################################################################
-# Perform the modeling using the static convenience call for ERT.
+# Perform the modelling using the static convenience call for ERT.
 # Res is the resistivity mapping regarding the regions of the given geometry.
 # Region with marker 1 is the upper layer, maker 2 is the background
 data = ert.simulate(mesh, res=[[1, 100.0], [2, 1.0]],

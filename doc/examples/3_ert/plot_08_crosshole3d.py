@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 3D crosshole ERT inversion
---------------------------
+==========================
 
 In this example, we demonstrate the inversion of 3D crosshole field data.
 Instead of a regular grid or an irregular tetrahedral mesh, we use triangular

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-3D modeling in a closed geometry
+3D modelling in a closed geometry
 ================================
 
 This is a synthetic model of an experimental tank with a highly heterogeneous
