@@ -43,6 +43,10 @@ help:
 	@echo "  xml        to make Docutils-native XML files"
 	@echo "  pseudoxml  to make pseudoxml-XML files for display purposes"
 
+auto: api
+	# Used to auto-update website in local build. Requires sphinx-autobuild.
+	sphinx-autobuild --delay 2 --ignore "pygimliapi/*" --ignore "*gallery.html" --ignore "*.pickle" . _build/html -D plot_gallery=0
+
 clean:
 	rm -rf $(BUILDDIR)
 	rm -rf _examples_auto
