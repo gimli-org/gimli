@@ -201,13 +201,13 @@ if gmsh:
     gmsh.model.occ.synchronize()
     # Set mesh sizes for the dike and outer region.
     # The order, in which mesh sizes are set, matters. Big -> Small
-    gmsh.model.mesh.setSize(            # Especially t16.py, also t2; 15; 18; 21
-        gmsh.model.getBoundary(         # get dimTags of boundary elements of
-            (3, tags["outer region"]),  # dimTag: (dim, tag)
-            recursive=True),            # recursive -> dimTags of points
+    gmsh.model.mesh.setSize(              # Especially t16.py, also t2; 15; 18; 21
+        gmsh.model.getBoundary(           # get dimTags of boundary elements of
+            [(3, tags["outer region"])],  # dimTag: (dim, tag)
+            recursive=True),              # recursive -> dimTags of points
         cl_outer)
     gmsh.model.mesh.setSize(
-        gmsh.model.getBoundary((3, tags["dike"]),recursive=True),
+        gmsh.model.getBoundary([(3, tags["dike"])],recursive=True),
         cl_dike)
 
 ###############################################################################
