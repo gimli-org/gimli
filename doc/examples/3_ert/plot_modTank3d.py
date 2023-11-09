@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 3D modelling in a closed geometry
-================================
+=================================
 
 This is a synthetic model of an experimental tank with a highly heterogeneous
 resistivity, motivated by the BAM Berlin.

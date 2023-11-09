@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 r"""
 Complex-valued electrical modelling
-----------------------------------
+===================================
 
 In this example, an electrical complex-valued forward modelling is conducted.
 The use of complex resistivities implies an out-of-phase polarization response

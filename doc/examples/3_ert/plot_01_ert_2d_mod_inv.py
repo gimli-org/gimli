@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 2D ERT modelling and inversion
-=============================
+==============================
 """
 # sphinx_gallery_thumbnail_number = 6
 
