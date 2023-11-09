@@ -69,24 +69,26 @@ public:
     DEFINE_INTEGRATOR_LF(std::vector< std::vector< RSmallMatrix > >, vvrm)// mat for quadr. on each cells
     #undef DEFINE_INTEGRATOR_LF
 
-    #define DEFINE_INTEGRATOR_LF_NODE(A_TYPE, varname) \
-        /*! R = \int_mesh this * f \d d mesh and R = RVector(dof) and \
-            f = A_TYPE \
-        */ \
-        void integrate_n(const A_TYPE & varname, RVector & R, const double & alpha=1.0) const; \
-        /*! Integrate into linear form R = alpha * \int_mesh this * f * R \d d mesh and \
-        R = RVector(dof) and f = A_TYPE \
-        */ \
-        void integrate_n(const A_TYPE & varname, RVector & R, const RVector & alpha) const; \
-        /*! Integrate into linear form R = alpha[cellID]*\int_mesh this * f * R \d d mesh and \
-        R = RVector(dof) and f = A_TYPE \
+    #define DEFINE_INTEGRATOR_LF_NODE(A_TYPE, varname)                         \
+        /*! R = \int_mesh this * f \d d mesh and R = RVector(dof) and          \
+            f = A_TYPE                                                         \        
+        */                                                                     \
+        void integrate_n(const A_TYPE & varname, RVector & R,                  \
+                         const double & alpha=1.0) const;                      \
+        /*! Integrate into linear form R = alpha * \int_mesh                   \
+        this * f * R \d d mesh and R = RVector(dof) and f = A_TYPE             \
+        */                                                                     \
+        void integrate_n(const A_TYPE & varname, RVector & R,                  \
+                         const RVector & alpha) const;                         \
+        /*! Integrate into linear form R = alpha[cellID]*\int_mesh             \
+        this * f * R \d d mesh and R = RVector(dof) and f = A_TYPE             \
         */ 
-    DEFINE_INTEGRATOR_LF_NODE(RVector, rv)      // const scalar for each cells | nodes
-    DEFINE_INTEGRATOR_LF_NODE(PosVector, pv)    // const vector for each cells
-    DEFINE_INTEGRATOR_LF_NODE(std::vector< RSmallMatrix >, vrm)// const matrix for each cells
-    DEFINE_INTEGRATOR_LF_NODE(std::vector< RVector >, vrv)// scalar for quadr. on each cells
-    DEFINE_INTEGRATOR_LF_NODE(std::vector< PosVector >, vpv)// vector for quadr. on each cells
-    DEFINE_INTEGRATOR_LF_NODE(std::vector< std::vector< RSmallMatrix > >, vvrm)// mat for quadr. on each cells
+    DEFINE_INTEGRATOR_LF_NODE(RVector, rv)      // const scalar for each node
+    DEFINE_INTEGRATOR_LF_NODE(PosVector, pv)    // const vector for each node
+    DEFINE_INTEGRATOR_LF_NODE(std::vector< RSmallMatrix >, vrm)// const matrix for each node
+    DEFINE_INTEGRATOR_LF_NODE(std::vector< RVector >, vrv)// scalar for quadr. on each node
+    DEFINE_INTEGRATOR_LF_NODE(std::vector< PosVector >, vpv)// vector for quadr. on each node
+    DEFINE_INTEGRATOR_LF_NODE(std::vector< std::vector< RSmallMatrix > >, vvrm)// mat for quadr. on each node
     #undef DEFINE_INTEGRATOR_LF_NODE
 
     #define DEFINE_INTEGRATOR(A_TYPE) \

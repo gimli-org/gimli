@@ -60,21 +60,21 @@ void _T_integrateLConst(const ElementMatrixMap * self,
     }
 }
 template < class ValueType >
-void _T_integrate_LF_PerNode(const ElementMatrixMap * self,
-                          const ValueType & f, RVector & R, const double & alpha){
-    ASSERT_VEC_SIZE(f, self->dof())
-    __MS("** EMM.intLPerNode(A, ...)") 
+void _T_integrate_LF_PerNode(const ElementMatrixMap * self, const ValueType & f,
+                             RVector & R, const double & alpha){
+    ASSERT_VEC_SIZE(f, self->dofPerCoeff())
+    // __MS("** EMM.intLPerNode(A, ...)") 
     // assuming per node values
     for (auto &m : self->mats()){
         m.integrate_n(f, R, alpha);
     }
 }
 template < class ValueType >
-void _T_integrate_LF_PerNode(const ElementMatrixMap * self,
-                          const ValueType & f, RVector & R, const RVector & alpha){
+void _T_integrate_LF_PerNode(const ElementMatrixMap * self, const ValueType & f, 
+                             RVector & R, const RVector & alpha){
     ASSERT_EQUAL_SIZE(self->mats(), alpha)
-    ASSERT_VEC_SIZE(f, self->dof())
-    __MS("** EMM.intLPerNode(A, ...)") 
+    ASSERT_VEC_SIZE(f, self->dofPerCoeff())
+    // __MS("** EMM.intLPerNode(A, ...)") 
     // assuming per node values
     for (auto &m : self->mats()){
         m.integrate_n(f, R, alpha[m.entity()->id()]);
@@ -197,8 +197,8 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R,
 
 template < class ValueType >
 void _T_integrateBLConst(const ElementMatrixMap & A,
-                        const ElementMatrixMap & B,
-                        const ValueType & f, SparseMatrixBase & R, 
+                         const ElementMatrixMap & B,
+                         const ValueType & f, SparseMatrixBase & R, 
                          const double & scale){
 
     // __MS(f)
@@ -251,9 +251,9 @@ void _T_integrateBLConst(const ElementMatrixMap & A,
 
 template < class ValueType >
 void _T_integrateBLPerCell(const ElementMatrixMap & A,
-                          const ElementMatrixMap & B,
-                          const ValueType & f, SparseMatrixBase & R, 
-                          const double & scale){
+                           const ElementMatrixMap & B,
+                           const ValueType & f, SparseMatrixBase & R, 
+                           const double & scale){
 
 // __M
     ASSERT_EQUAL_SIZE(A.mats(), B.mats())
@@ -309,14 +309,16 @@ void ElementMatrixMap::add(const ElementMatrixMap & B,
     // __MS(*ret.pMat(0))
 }
 
-#define DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL(A_TYPE) \
-void ElementMatrixMap::integrate(const A_TYPE & f, RVector & R, const double & alpha) const { \
-    _T_integrate_LF_PerCell(this, f, R, alpha); \
-} \
-void ElementMatrixMap::integrate(const A_TYPE & f, RVector & R, const RVector & alpha) const { \
-    _T_integrate_LF_PerCell(this, f, R, alpha); \
-} \
-void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const { \
+#define DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL(A_TYPE)                   \
+void ElementMatrixMap::integrate(const A_TYPE & f,                             \
+                                 RVector & R, const double & alpha) const {    \
+    _T_integrate_LF_PerCell(this, f, R, alpha);                                \
+}                                                                              \
+void ElementMatrixMap::integrate(const A_TYPE & f,                             \
+                                 RVector & R, const RVector & alpha) const {   \
+    _T_integrate_LF_PerCell(this, f, R, alpha);                                \
+}                                                                              \
+void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const {  \
     ret.resize(this->size()); \
     ret.setDof(this->dofA(), this->dofB()); \
     if (f.size() == this->dofA()){ \
@@ -346,13 +348,15 @@ DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL(std::vector< std::vector< RSmallMat
 #undef DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL
 
 
-#define DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_NODE_IMPL(A_TYPE) \
-void ElementMatrixMap::integrate_n(const A_TYPE & f, RVector & R, const double & alpha) const { \
-    _T_integrate_LF_PerNode(this, f, R, alpha); \
-} \
-void ElementMatrixMap::integrate_n(const A_TYPE & f, RVector & R, const RVector & alpha) const { \
-    _T_integrate_LF_PerNode(this, f, R, alpha); \
-} 
+#define DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_NODE_IMPL(A_TYPE)                   \
+void ElementMatrixMap::integrate_n(const A_TYPE & f,                           \
+                                   RVector & R, const double & alpha) const {  \
+    _T_integrate_LF_PerNode(this, f, R, alpha);                                \
+}                                                                              \
+void ElementMatrixMap::integrate_n(const A_TYPE & f,                           \
+                                   RVector & R, const RVector & alpha) const { \
+    _T_integrate_LF_PerNode(this, f, R, alpha);                                \
+}                                                               
 DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_NODE_IMPL(RVector)
 DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_NODE_IMPL(PosVector)
 DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_NODE_IMPL(std::vector< RSmallMatrix >)
@@ -442,8 +446,7 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
 
         // __MS(A)
         ret.resize(B.size());
-        ret.setDof(A.nCoeff() + A.dofOffset(), 
-                   B.dof());
+        ret.setDof(A.nCoeff() + A.dofOffset(), B.dof());
 
         Index row = A.dofOffset();
         Index i = 0;
@@ -741,7 +744,8 @@ void createUMap(const Mesh & mesh, Index order, ElementMatrixMap & ret,
         ret.pMat(0)->resize(1, 1, false);
         ret.pMat(0)->pMat()->setVal(0, 0, 1.);
         ret.pMat(0)->setIds(range(dofOffset, dofOffset+nCoeff), {0});
-        ret.setDof(dofOffset+nCoeff);
+        //ret.setDof(dofOffset+nCoeff);
+        ret.setDofs(nCoeff, 1, dofOffset);
         return;
     }
 
@@ -789,7 +793,8 @@ void createUMap0_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
         ret.pMat(0)->resize(1, 1, false);
         ret.pMat(0)->pMat()->setVal(0, 0, 1.);
         ret.pMat(0)->setIds(range(dofOffset, dofOffset+nCoeff), {0});
-        ret.setDof(dofOffset+nCoeff);
+        // ret.setDof(dofOffset+nCoeff);
+        ret.setDofs(nCoeff, 1, dofOffset);
         return;
     }
 
@@ -849,8 +854,8 @@ void createdUMap(const Mesh & mesh, Index order,
         // don't use cache here // check!
 
     ret.resize(mesh.cellCount());
-    ret.setDof(mesh.nodeCount() * nCoeff + dofOffset,
-               mesh.nodeCount() * nCoeff + dofOffset);
+    ret.setDofs(nCoeff, mesh.nodeCount(), dofOffset);
+    //ret.setDof(mesh.nodeCount() * nCoeff + dofOffset);
 
     for (auto &cell: mesh.cells()){
         // grad(const MeshEntity & ent, Index order,
@@ -884,7 +889,7 @@ void createIdentityMap(const Mesh & mesh, Index order,
         ret.pMat(cell->id())->identity(*cell, order,
                                        nCoeff, mesh.nodeCount(), dofOffset);
     }
-    ret.setDof(mesh.nodeCount()*nCoeff + dofOffset);
+    ret.setDofs(nCoeff, mesh.nodeCount(), dofOffset);
 }
 
 ElementMatrixMap createIdentityMap(const Mesh & mesh, Index order,

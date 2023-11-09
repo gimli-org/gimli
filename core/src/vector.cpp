@@ -58,6 +58,28 @@ Vector< double >::setVal(const Eigen::VectorXd & v, const IVector & ids){
 
 #endif    
 
+Index _getColSTep(const ElementMatrix < double > & A){
+    //** rows are indices
+    //** cols are components
+    Index colStep = 1;
+    if (A.nCoeff() == 2 and A.cols() == 4){
+        // xx, xy, yy
+        // A is 2d grad so we ignore d_ij
+        colStep = 3; // [0, 3]
+    } else if (A.nCoeff() == 2 and A.cols() == 3){
+        // xx, yy, xy
+        THROW_TO_IMPL
+    } else if (A.nCoeff() == 3 and A.cols() == 9){
+        // xx, xy, xz, yx, yy, zy, zx, zy, zz
+        // A is 3d grad so we ignore d_ij
+        colStep = 4; // [0, 4, 8]
+    } else if (A.nCoeff() == 3 and A.cols() == 6){
+        // xx, yy, zz, xy, yz, zx !!check order!!
+        THROW_TO_IMPL
+    }
+    return colStep;
+}
+
 template<>
 void Vector< double >::add(const ElementMatrix < double > & A, bool neg){
     return this->add(A, 1.0, neg);
@@ -78,27 +100,8 @@ void Vector< double >::add(const ElementMatrix < double > & A,
         }
     } else {
 
-        //** rows are indices
-        //** cols are components
-        Index colStep = 1;
-        if (A.nCoeff() == 2 and A.cols() == 4){
-            // xx, xy, yy
-            // A is 2d grad so we ignore d_ij
-            colStep = 3; // [0, 3]
-        } else if (A.nCoeff() == 2 and A.cols() == 3){
-            // xx, yy, xy
-            THROW_TO_IMPL
-        } else if (A.nCoeff() == 3 and A.cols() == 9){
-            // xx, xy, xz, yx, yy, zy, zx, zy, zz
-            // A is 3d grad so we ignore d_ij
-            colStep = 4; // [0, 4, 8]
-        } else if (A.nCoeff() == 3 and A.cols() == 6){
-            // xx, yy, zz, xy, yz, zx !!check order!!
-            THROW_TO_IMPL
-        }
-        
         // switch to A.mat() transpose
-        //__MS("inuse?")
+        Index colStep = _getColSTep(A);
         for (Index i = 0; i < A.cols(); i+= colStep){
             for (Index j = 0; j < A.rows(); j++){
                 data_[A.rowIDs()[j]] += A.mat()(j,i) * scale;
@@ -118,9 +121,10 @@ void Vector< double >::add(const ElementMatrix < double > & A,
     } else {
         // switch to A.mat() transpose
         A.integrate();
-        for (Index i = 0; i < A.cols(); i++){
+        Index colStep = _getColSTep(A);
+        for (Index i = 0; i < A.cols(); i+=colStep){
             for (Index j = 0; j < A.rows(); j++){
-                data_[A.rowIDs()[j]] += A.mat()(j,i) * scale[i];
+                data_[A.rowIDs()[j]] += A.mat()(j,i) * scale[i/colStep];
             }
         }
     }
@@ -147,10 +151,22 @@ void Vector< double >::add(const ElementMatrix < double > & A,
         }
     } else {
         Index jID = 0;
+        Index colStep = _getColSTep(A);
         for (Index j = 0; j < A.rows(); j++){
             jID = A.rowIDs()[j];
-            for (Index i = 0; i < A.cols(); i++){
-                data_[jID] += A.mat()(j, i) * scale[jID];
+ 
+            if (A.nCoeff() == 1 or scale.size() == A.dofPerCoeff()*A.nCoeff()){
+                // scale unsqueezed PosList
+                for (Index i = 0; i < A.cols(); i+= colStep){
+                    // __MS(i, j, jID, scale[jID], A.mat()(j, i))
+                    data_[jID] += A.mat()(j, i) * scale[jID];
+                }
+            } else if (scale.size() == A.dofPerCoeff()){
+                // scale is RVector(nodeCount()) and nCoeff > 1
+
+                for (Index i = 0; i < A.cols(); i+= colStep){
+                    data_[jID] += A.mat()(j, i) * scale[jID%A.dofPerCoeff()];
+                }
             }
         }
         return;

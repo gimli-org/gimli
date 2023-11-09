@@ -640,11 +640,10 @@ DEFINE_INTEGRATOR_LF_N(const std::vector< std::vector< RSmallMatrix > > &)
 
 // Special declares to handle ambiguities for the python binding
 /*! scalar per quadrature point */
-DLLEXPORT inline void mult_s_q(const ElementMatrix < double > & A, 
-                               const RVector & b,
-                               ElementMatrix < double > & C){
-    mult(A, b, C);
-}
+DLLEXPORT void mult_s_q(const ElementMatrix < double > & A, 
+                        const RVector & b,
+                        ElementMatrix < double > & C);
+                        
 /*! vector per quadrature */
 DLLEXPORT inline void mult_v_q(const ElementMatrix < double > & A, 
                                const PosVector & b,
@@ -754,9 +753,13 @@ DEFINE_CREATE_FORCE_VECTOR(const FEAFunction &)
 /*!Interface to function q=f(p, ent) with q, p = Pos() in R1, R2, R 3
 and ent assiated mesh entity.*/
 class DLLEXPORT FEAFunction {
+    // evalOrder == 0: at Cell center
+    // evalOrder == 1: at Nodes
+    // evalOrder == 2: at Quads (default and fallback)
+
 public:
     FEAFunction(Index valueSize)
-        : _valueSize(valueSize), _evalOnCellCenter(false){ }
+        : _valueSize(valueSize), _evalOnCellCenter(false), _evalOrder(2){ }
 
     virtual ~FEAFunction() { }
 
@@ -785,9 +788,16 @@ public:
     /*!Mark the function to evaluate on cell centers instead of quadrature points. */
     void setEvalOnCellCenter(bool e) { _evalOnCellCenter = e; }
 
+    /*! Set evaluation order, i.e., mark the function to be evaluatated 
+    on cell centers(2), on nodes(1) or at quadrature points (2). */
+    inline void setEvalOrder(Index o) { this->_evalOrder = o; }
+    /*! Get evaluation order. */
+    inline Index evalOrder() const { return this->_evalOrder; }
+
 protected:
     Index _valueSize;
     bool _evalOnCellCenter;
+    Index _evalOrder;
 };
 
 template < class ValueType > std::ostream & operator << (std::ostream & str,
