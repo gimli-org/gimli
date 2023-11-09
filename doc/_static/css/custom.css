@@ -35,6 +35,13 @@ a:hover {
     color: #107896;
     text-decoration: none;
 }
+.btn.btn-primary {
+    color: white;
+}
+.btn.btn-primary:hover {
+    color: white;
+    text-decoration: underline;
+}
 
 h1,
 h2,
