@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.15)
-#BOOST_MAX_VERISION: 1.65 UBUNTU:18
 
 if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(FATAL_ERROR "In-source builds not allowed.
             Please make a new directory (called a build directory)
             and run CMake from there. You may need to remove CMakeCache.txt." )
 endif()
-
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/core/cmake")
 include(GIMLImacros)
 
@@ -17,12 +16,6 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Sets the configuration to build (Release, Debug, etc...)")
 endif()
 
-
-#if (WIN32)
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -target x86_64-w64-windows-gnu")
-#    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -target x86_64-w64-windows-gnu")
-#endif()
-
 project(libgimli)
 include(CheckIncludeFileCXX)
 
@@ -31,14 +24,11 @@ message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID}")
 
 message(STATUS "UNIX:   " ${UNIX} " on all UNIX-like OS's, including Apple OS X and CygWin")
 message(STATUS "WIN32:  " ${WIN32} " on Windows. Prior to 2.8.4 this included CygWin")
-message(STATUS "APPLE:  " ${APPLE} " on Apple systems. does not imply the
-system is Mac OS X.")
+message(STATUS "APPLE:  " ${APPLE} " on Apple systems. does not imply the system is Mac OS X.")
 message(STATUS "MINGW:  " ${MINGW} " using the MinGW compiler in Windows")
 message(STATUS "MSYS:   " ${MSYS} "  using the MSYS developer environment in Windows")
 message(STATUS "CYGWIN: " ${CYGWIN} " using the CygWin version of cmake")
 message(STATUS "MSVC:   " ${MSVC} " ")
-
-
 
 if (POLICY CMP0025) # recognize appleclang
     cmake_policy(SET CMP0025 NEW)
@@ -223,6 +213,7 @@ endif()
 #   boost
 ################################################################################
 message(STATUS "********** BOOST ***********")
+#set(Boost_USE_STATIC_LIBS ON)
 
 if (BUILD_BOOST)
     message(STATUS "Forced boost build.")
@@ -394,7 +385,7 @@ if (NOT Boost_PYTHON_LIBRARY)
                        "any libboost_python* on your system and "
                        "provide it to the authors so we can try to fix "
                        "this here.")
-        exit()
+        #exit()
     endif()
 endif()
 
@@ -562,7 +553,6 @@ endif()
 find_or_build_package(castxml castxmlbin LOCAL)
 set(CASTER_EXECUTABLE ${CASTXML_EXECUTABLE})
 
-
 find_or_build_package(pygccxml pygccxml LOCAL)
 find_or_build_package(pyplusplus pygccxml LOCAL)
 
@@ -646,14 +636,15 @@ if (Python_EXECUTABLE
     message(STATUS "**********************************************************************")
     message(STATUS "")
 else()
+    #set (PYGIMLI 1)
+    # temporary disable
     message (FATAL_ERROR "pygimli cannot be build due to some missing packages.
-Check above for python, castxml, pygccxml, pyplusplus, boost_python, numpy")
-endif ()
+    Check above for python, castxml, pygccxml, pyplusplus, boost_python, numpy")
+endif()
 
 configure_file("${PROJECT_SOURCE_DIR}/core/config.cmake.h.in"
                "${PROJECT_BINARY_DIR}/config.cmake.h" )
 add_definitions(-DHAVE_CONFIG_CMAKE_H)
-
 
 add_custom_target(removedoc
    COMMAND
