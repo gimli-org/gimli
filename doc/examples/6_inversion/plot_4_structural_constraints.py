@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 Inversion with structural constraints
----------------------
+=====================================
 
 Any inversion suffers from ambiguity and missing resolution at depth.
 Structural information can provide valuable information about geological
@@ -16,9 +16,7 @@ We demonstrate on a very simple example from a bedrock detection how
 a structural interface from a seismic refraction can lead to models that
 are far easier to interpret.
 """
-# sphinx_gallery_thumbnail_number = 4
 
-# %%%
 # We import the numpy and matplotlib
 import numpy as np
 # Next we import pyGIMLi and the ERT and mesh tools modules
@@ -29,6 +27,7 @@ from pygimli.physics import ert
 # %%%
 # First we load the data and the interface
 #
+# sphinx_gallery_thumbnail_number = 4
 
 data = pg.getExampleData("ert/struct.dat")
 xz = pg.getExampleData("ert/struct.txt")

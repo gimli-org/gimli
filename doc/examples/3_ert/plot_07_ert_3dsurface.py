@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 3D surface ERT inversion
-------------------------
+========================
 
 Inversion of 3D surface ERT field data (the gallery).
 """

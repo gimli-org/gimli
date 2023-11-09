@@ -1,4 +1,4 @@
-Flow & Transport
-----------------
+Flow and transport
+------------------
 
-Flow (Darcy) and transport (Advection-Dispersion) modelling.
+Flow (Darcy) and transport (advection-dispersion) modelling linked to geophysical processes.

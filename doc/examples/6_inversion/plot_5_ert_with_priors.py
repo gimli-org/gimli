@@ -9,7 +9,6 @@ data collected at the surface.
 """
 # sphinx_gallery_thumbnail_number = 5
 
-# %%
 import matplotlib.pyplot as plt
 import numpy as np
 import pygimli as pg

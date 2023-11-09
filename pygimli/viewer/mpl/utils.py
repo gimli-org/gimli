@@ -81,7 +81,7 @@ def registerShowPendingFigsAtExit():
         import atexit
 
         #pg._y('register wait on exit')
-        ## first  call one empty show to initial QtManager befor register 
+        ## first  call one empty show to initial QtManager before register 
         # onExit to avoid RuntimeError: wrapped C/C++ object of type MainWindow has been deleted
         if 'matplotlib.pyplot' in sys.modules:
             import matplotlib.pyplot as plt

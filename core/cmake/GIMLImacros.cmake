@@ -22,6 +22,7 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
     add_definitions(-DBOOST_PYTHON_USE_GCC_SYMBOL_VISIBILITY)
     
     add_library(${PYTHON_TARGET_NAME} MODULE ${${PYTHON_MODULE_NAME}_SOURCE_FILES})
+    set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES PREFIX "")
         
     if (APPLE)
         target_link_libraries(${PYTHON_TARGET_NAME} "${CMAKE_BINARY_DIR}/${LIBRARY_INSTALL_DIR}/libgimli.dylib") 
@@ -31,7 +32,6 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
         set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES SUFFIX ".pyd")
     else()
         target_link_libraries(${PYTHON_TARGET_NAME} "${CMAKE_BINARY_DIR}/${LIBRARY_INSTALL_DIR}/libgimli.so") 
-        set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES PREFIX "")
     endif()
     
     target_link_libraries(${PYTHON_TARGET_NAME} ${Boost_PYTHON_LIBRARY})
@@ -54,6 +54,7 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
 
     if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_CLANGXX)
 	    set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES COMPILE_FLAGS "-fvisibility=hidden -Wno-unused-value -Wno-infinite-recursion")
+        
         if (WIN32 AND ADDRESSMODEL EQUAL "64")
             set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES DEFINE_SYMBOL "MS_WIN64")
         endif()

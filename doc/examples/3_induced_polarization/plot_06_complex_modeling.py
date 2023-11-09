@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 r"""
-Complex-valued electrical modeling
+Complex-valued electrical modelling
 ----------------------------------
 
-In this example, an electrical complex-valued forward modeling is conducted.
+In this example, an electrical complex-valued forward modelling is conducted.
 The use of complex resistivities implies an out-of-phase polarization response
 of the subsurface, commonly being measured in the frequency domain as complex
 resistivity (CR), or, if multiple frequencies are measured, also referred to as
@@ -81,7 +81,7 @@ fig.tight_layout()
 fig.show()
 
 ###############################################################################
-# Do the actual forward modeling
+# Do the actual forward modelling
 data = ert.simulate(
     mesh,
     res=rhomap,

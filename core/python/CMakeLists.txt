@@ -57,19 +57,6 @@ endif(WIN32)
 add_python_module(pygimli "${CMAKE_CURRENT_BINARY_DIR}/generated/" "gimli" "${CMAKE_SOURCE_DIR}/pygimli/core")
 include_directories(${Python_NumPy_INCLUDE_DIRS})
 
-if(WIN32)
-    ADD_CUSTOM_TARGET(mvlib_pg)
-    ADD_CUSTOM_COMMAND(
-        COMMAND
-            mv ${CMAKE_SOURCE_DIR}/pygimli/core/lib_pygimli_.pyd ${CMAKE_SOURCE_DIR}/pygimli/core/_pygimli_.pyd
-        TARGET
-            mvlib_pg
-        COMMENT
-            "correct weird modulname lib_pygimli_.pyd -> _pygimli_.pyd"
-    )
-endif(WIN32)
-
-
 add_dependencies(pggen gimli)
 add_dependencies(copy_python pggen)
 add_dependencies(fixpygimlisrc pggen)
@@ -84,13 +71,7 @@ endif(WIN32)
 
 # for calling the build only
 ADD_CUSTOM_TARGET(pg ALL)
-if(WIN32)
-    add_dependencies(mvlib_pg _pygimli_)
-    add_dependencies(pg mvlib_pg)
-else()
-    add_dependencies(pg _pygimli_)
-endif()
-
+add_dependencies(pg _pygimli_)
 
 ADD_CUSTOM_TARGET(pgtest)
 ADD_CUSTOM_COMMAND(
