@@ -11,7 +11,7 @@ directory via:
 
 .. code-block:: bash
 
-   curl -Ls install.pygimli.org | bash
+    curl -Ls install.pygimli.org | bash
 
 This script accepts a few more options. For help see:
 
@@ -21,13 +21,55 @@ This script accepts a few more options. For help see:
 
 If something goes wrong please take a look at the error message. In most cases
 there are missing or outdated packages. Please have a look at the prerequisites
-tab.
+tab or in the following Ubuntu section.
 
 If the installation fails you can try the following instructions for manual
 installation.
 
+
+Example Installation on Ubuntu 
+..............................
+
+Last try on Ubuntu 22.04.03 (23-11-14)
+
+.. code-block:: bash
+
+    sudo apt-get install build-essential g++ subversion git cmake \
+                 python3-dev python3-matplotlib python3-numpy python3-pyqt5 \
+                 python3-scipy libboost-all-dev libedit-dev \
+                 libsuitesparse-dev libopenblas-openmp-dev libumfpack5 \
+                 libcppunit-dev clang 
+    
+    mkdir -p ~/src/gimli
+    cd ~/src/gimli
+    git clone https://github.com/gimli-org/gimli.git
+
+    mkdir -p build
+    cd build
+    cmake ../gimli
+    make -j 4 gimli
+    make pygimli J=4
+
+To use the gimli installation you need to set some environment variables (this
+example assumes that the **src** directory resides in your home directory):
+
+.. code-block:: bash
+
+    GIMLI_INSTALLATION=$HOME/src/gimli
+    export PYTHONPATH=$PYTHONPATH:$GIMLI_INSTALLATION/gimli
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$GIMLI_INSTALLATION/build/lib
+    export PATH=$PATH:$GIMLI_INSTALLATION/build/bin
+
+You can do a quick test of the pygimli build and installation with:
+
+.. code-block:: bash
+
+    python -c 'import pygimli as pg; print(pg.__version__)'
+
+
 Detailed Installation on Debian
-.......................................
+...............................
+(Probably outdated.)
 
 Tested on Debian 12 (Bookworm).
 
@@ -150,6 +192,7 @@ then you can run the internal test suite with
 
     python -c "import pygimli; pygimli.test()"
 
+
 Using Docker to build in Debian Bookworm (for advanced users only!)
 ...................................................................
 
@@ -159,25 +202,6 @@ can use the Dockerfile found in the
 subdirectory named *Dockerfile_DebianBookworm*. Please refer to the file for
 further instructions.
 
-Example Installation on Ubuntu
-..............................
-
-.. code-block:: bash
-
-    sudo apt-get install libc-dev subversion git cmake mercurial
-    sudo apt-get install libboost-all-dev libblas-dev liblapack-dev libedit-dev
-    sudo apt-get install libsuitesparse-dev
-    sudo apt-get install python3-dev python3-matplotlib python3-numpy
-
-    mkdir -p ~/src/gimli
-    cd ~/src/gimli
-    git clone https://github.com/gimli-org/gimli.git
-
-    mkdir -p build
-    cd build
-    cmake ../gimli
-    make -j 4 gimli
-    make pygimli J=4
 
 Troubleshooting
 ...............

@@ -24,6 +24,8 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
     add_library(${PYTHON_TARGET_NAME} MODULE ${${PYTHON_MODULE_NAME}_SOURCE_FILES})
     set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES PREFIX "")
         
+    #TODO check!! (python3-config --extension-suffix)
+
     if (APPLE)
         target_link_libraries(${PYTHON_TARGET_NAME} "${CMAKE_BINARY_DIR}/${LIBRARY_INSTALL_DIR}/libgimli.dylib") 
         target_link_libraries(${PYTHON_TARGET_NAME} "-bundle -undefined dynamic_lookup")
