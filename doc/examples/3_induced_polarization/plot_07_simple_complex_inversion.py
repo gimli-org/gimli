@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 r"""
 Naive complex-valued electrical inversion
------------------------------------------
+=========================================
 
 This example presents a quick and dirty proof-of-concept for a complex-valued
 inversion, similar to Kemna, 2000. The normal equations are solved using numpy,

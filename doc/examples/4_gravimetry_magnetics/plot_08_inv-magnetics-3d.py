@@ -12,7 +12,7 @@ In the following, we will build the model, create synthetic data, and do
 inversion using a depth-weighting function as outlined in the paper.
 
 """
-# %%%
+# sphinx_gallery_thumbnail_number = 2
 import numpy as np
 import pygimli as pg
 from pygimli.viewer import pv

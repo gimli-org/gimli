@@ -3,6 +3,7 @@
 r"""
 Synthetic TDIP modelling and inversion
 ======================================
+
 This example demonstrates the ERTIPManager introduced in
 pyGIMLi v1.4.3 for use with time-domain chargeability.
 

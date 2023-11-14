@@ -8,7 +8,7 @@ Please provide the output of `print(pygimli.Report())` here. If that does not
 work, please give provide some additional information on your:
 
 **Operating system**: e.g. Windows, Linux or Mac?
-**Python version**: e.g. 3.8, 3.9, etc.?
+**Python version**: e.g. 3.9, 3.10, etc.?
 **pyGIMLi version**: Output of `print(pygimli.__version__)`
 **Way of installation**: e.g. Conda package, manual compilation from source, etc.
 
@@ -30,7 +30,7 @@ Tell us what should happen or what you want to achieve.
 Tell us what happens instead and/or provide the output of your script.
 
 ```
-Paste output here.
+Paste your script output here.
 ```
 
 > If possible, please add one or more labels to your issue, e.g. if you expect that your issue is rather a question than a problem with the code, please add the label "question".

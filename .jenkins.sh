@@ -80,7 +80,7 @@ OMP_THREAD_LIMIT=4 python -c "import pygimli; print(pygimli.Report()); pygimli.t
 # Setup for 3D visualizations
 # ------------------------------------------------
 export DISPLAY=:99.0
-export PYVISTA_OFF_SCREEN=True
+export PYVISTA_OFF_SCREEN=true
 # ------------------------------------------------
 
 make clean-gallery

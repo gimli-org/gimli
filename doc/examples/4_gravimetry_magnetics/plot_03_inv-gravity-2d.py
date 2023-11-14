@@ -8,7 +8,6 @@ In the following, we will build the model, create synthetic data, and do
 inversion using a depth-weighting function as outlined in the paper.
 """
 
-# %%%
 import numpy as np
 import pygimli as pg
 import pygimli.meshtools as mt

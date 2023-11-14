@@ -140,7 +140,7 @@ for ci in c[1:][::200]:
 # Create a dipole-dipole measurement scheme and a suitable mesh for ERT forward
 # simulations.
 
-ertScheme = ert.createERTData(pg.utils.grange(-20, 20, dx=1.0), schemeName='dd')
+ertScheme = ert.createData(pg.utils.grange(-20, 20, dx=1.0), schemeName='dd')
 
 meshERT = mt.createParaMesh(ertScheme, quality=33, paraMaxCellSize=0.2,
                             boundaryMaxCellSize=50, smooth=[1, 2])
