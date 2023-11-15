@@ -508,8 +508,8 @@ endif()
 #exit()
 
 #find_or_build_package(CHOLMOD suitesparse)
-find_package(CHOLMOD REQUIRED)
 find_package(UMFPACK REQUIRED)
+find_package(CHOLMOD REQUIRED)
 
 if (NOT AVOID_CPPUNIT)
     find_package(CppUnit)
