@@ -662,3 +662,18 @@ def __Mesh__swapOrientation__(self):
     self.scale([1, 1, -1])  # revert z
 
 Mesh.swapOrientation = __Mesh__swapOrientation__
+
+def __Mesh__copy(self):
+    """Return copy of a mesh."""
+    return Mesh(self)
+
+Mesh.copy = __Mesh__copy
+
+
+def __Mesh__NED__(self):
+    """Return NED copy of mesh."""
+    newmesh = self.copy()
+    newmesh.swapOrientation()
+    return newmesh
+
+Mesh.NED = __Mesh__NED__
