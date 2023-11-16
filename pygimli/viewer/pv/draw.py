@@ -217,16 +217,27 @@ def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
 
     Keyword arguments passed to pyvista.add_mesh
     --------------------------------------------
+    cmap|cMap : str [None]
+        colormap
+    log_scale|logScale : bool [False]
+        use logarithmic colormap scaling
+    clim : [float, float]
+        color limits as tuple/list
+    cMin, cMax : float
+        color limits in pg style
 
     More information at
-    https://docs.pyvista.org/api/core/filters.html
+    https://docs.pyvista.org/api/core/_autosummary/pyvista.CompositeFilters.slice.html
     """
     label = kwargs.pop('label', None)
     data = kwargs.pop('data', None)
-    cMap = kwargs.pop('cMap', 'viridis')
     origin = kwargs.pop('origin', None)
     generate_triangles = kwargs.pop('generate_triangles', False)
     contour = kwargs.pop('contour', False)
+    kwargs.setdefault('cmap', kwargs.pop('cMap', None))
+    kwargs.setdefault('log_scale', kwargs.pop('logScale', False))
+    if 'cMin' in kwargs and 'cMax' in kwargs:
+        kwargs.setdefault('clim', [kwargs.pop('cMin'), kwargs.pop('cMax')])
     pvmesh = pgMesh2pvMesh(mesh, data, label)
 
     try:
