@@ -204,8 +204,8 @@ def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
     ax: pyvista.Plotter
         The plotter containing the mesh and drawn electrode positions.
 
-    Keyword arguments passed to pyvista
-    -----------------------------------
+    Keyword arguments passed to pyvista.slice
+    -----------------------------------------
     normal: [float, float, float] | str
         normal vector constructing the slice
     origin: [float, float, float]
@@ -215,16 +215,23 @@ def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
     contour: bool [False]
         draw contours instead
 
-    More information can be found at
+    Keyword arguments passed to pyvista.add_mesh
+    --------------------------------------------
+
+    More information at
     https://docs.pyvista.org/api/core/filters.html
     """
     label = kwargs.pop('label', None)
     data = kwargs.pop('data', None)
+    cMap = kwargs.pop('cMap', 'viridis')
+    origin = kwargs.pop('origin', None)
+    generate_triangles = kwargs.pop('generate_triangles', False)
+    contour = kwargs.pop('contour', False)
     pvmesh = pgMesh2pvMesh(mesh, data, label)
 
     try:
-        single_slice = pvmesh.slice(normal, **kwargs)
-
+        single_slice = pvmesh.slice(normal, origin=origin, contour=contour,
+                                    generate_triangles=generate_triangles)
     except AssertionError as e:
         # 'contour' kwarg only works with point data and breaks execution
         pg.error(e)
@@ -232,7 +239,7 @@ def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
         # REVIEW: bounds and axes might be confused with the outline..?!
         outline = pvmesh.outline()
         ax.add_mesh(outline, color="k")
-        ax.add_mesh(single_slice)
+        ax.add_mesh(single_slice, **kwargs)
 
     return ax
 
