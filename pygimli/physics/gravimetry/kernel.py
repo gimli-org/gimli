@@ -13,7 +13,8 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf=None, foot=np.inf):
     pnts : list|array of (x, y, z)
         measuring points
     cmp : list of str
-        component list of: gx, gy, gz, TFA, Bx, By, Bz, Bxy, Bxz, Byy, Byz, Bzz
+        component list of type str, valid values are:
+        gx, gy, gz, TFA, Bx, By, Bz, Bxx, Bxy, Bxz, Byy, Byz, Bzz
     igrf : list|array of size 3 or 7
         international geomagnetic reference field, either
         [D, I, H, X, Y, Z, F] - declination, inclination, horizontal field,
