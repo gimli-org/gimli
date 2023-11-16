@@ -220,17 +220,17 @@ def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
     """
     label = kwargs.pop('label', None)
     data = kwargs.pop('data', None)
-    mesh = pgMesh2pvMesh(mesh, data, label)
+    pvmesh = pgMesh2pvMesh(mesh, data, label)
 
     try:
-        single_slice = mesh.slice(normal, **kwargs)
+        single_slice = pvmesh.slice(normal, **kwargs)
 
     except AssertionError as e:
         # 'contour' kwarg only works with point data and breaks execution
         pg.error(e)
     else:
         # REVIEW: bounds and axes might be confused with the outline..?!
-        outline = mesh.outline()
+        outline = pvmesh.outline()
         ax.add_mesh(outline, color="k")
         ax.add_mesh(single_slice)
 
@@ -269,7 +269,7 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
 
         # create gradient of cell data if not provided
         if np.ndim(data) == 1:
-            grad = pg.solver.grad(mesh, data)
+            grad = pg.solver.grad(mesh, data)  # should be -grad
         else:
             grad = data
 
