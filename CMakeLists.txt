@@ -41,6 +41,7 @@ endif()
 # Check if conda package is created
 if (DEFINED ENV{CONDA_BUILD})
     message(STATUS "Conda package is being created.")
+    message(STATUS "CMAKE_PREFIX_PATH = ${CMAKE_PREFIX_PATH}")
     set(CONDA_BUILD TRUE)
     set(Boost_INCLUDE_DIR "${CMAKE_PREFIX_PATH}/include")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-class-memaccess") # new since gcc.8 maybe need to be checked, not on apple
@@ -421,16 +422,21 @@ message(STATUS "Triangle_LIBRARIES = ${Triangle_LIBRARIES}")
 find_or_build_package(Triangle triangle LOCAL)
 #find_package(Triangle)
 
-set(BLA_VENDOR OpenBLAS)
-#find_package(BLAS)
-#find_package(LAPACK)
-#find_package(blas)
-#find_package(lapack)
-#exit()
-find_or_build_package(BLAS lapack)
-find_or_build_package(LAPACK lapack)
-find_or_build_package(CHOLMOD suitesparse)
-find_package(UMFPACK)
+
+if (CONDA_BUILD)
+# (231115) there is a missing symlink to libopenblas.so in ${CMAKE_PREFIX_PATH}/lib 
+# so we need to search for libblas.so
+    set(BLA_VENDOR Generic) 
+else()
+    set(BLA_VENDOR OpenBLAS)
+endif()
+
+find_package(BLAS REQUIRED)
+
+set(CMAKE_FIND_DEBUG_MODE TRUE)
+set(CMAKE_FIND_DEBUG_MODE FALSE)
+# message(STATUS "BLAS_LINKER_FLAGS = ${BLAS_LINKER_FLAGS}")
+# message(STATUS "BLAS_LIBRARIES = ${BLAS_LIBRARIES}")
 
 ################################################################################
 # Manuall check for openblas
@@ -455,33 +461,39 @@ if (BLAS_FOUND)
     endif()
 
     if (NOT OpenBLAS_INCLUDE_DIR)
-        message(STATUS "openblas header not found")
+        message(STATUS "search for OpenBLAS cblas.h in prefered paths.")
+
         FIND_PATH(OpenBLAS_INCLUDE_DIR
             NAMES
                 cblas.h
             PATHS
+                ../../_build_env/include/ # for conda
+                ${CMAKE_PREFIX_PATH}/include
                 /usr/include/openblas/
                 /usr/include/OpenBLAS/
                 /mingw64/include/OpenBLAS/
-            HINTS ${CMAKE_C_IMPLICIT_LINK_DIRECTORIES}
-            NO_DEFAULT_PATH
-        )
+            HINTS 
+                NO_DEFAULT_PATH
+            )
+        #set(CMAKE_FIND_DEBUG_MODE TRUE)
+        #set(CMAKE_FIND_DEBUG_MODE FALSE)
+        message(STATUS "OpenBLAS cblas.h: ${OpenBLAS_INCLUDE_DIR}")
     endif()
 
     if (NOT OpenBLAS_INCLUDE_DIR)
-        message(STATUS "No OpenBLAS cblas.h in prefered paths .. searching defaults")
-
+        message(STATUS "search for OpenBLAS cblas.h in default paths.")
+        
         FIND_PATH(OpenBLAS_INCLUDE_DIR
             NAMES
                 cblas.h
         )
+        message(STATUS "OpenBLAS cblas.h: ${OpenBLAS_INCLUDE_DIR}")
     endif()
-    message(STATUS "OpenBLAS cblas.h: ${OpenBLAS_INCLUDE_DIR}")
 
     if (OpenBLAS_INCLUDE_DIR)
-    set(OPENBLAS_CBLAS_FOUND TRUE)
+        set(OPENBLAS_CBLAS_FOUND TRUE)
     else()
-    set(OPENBLAS_CBLAS_FOUND FALSE)
+        set(OPENBLAS_CBLAS_FOUND FALSE)
     endif()
 
     set(OPENBLAS_FOUND TRUE)
@@ -490,6 +502,14 @@ else()
     set(OPENBLAS_FOUND FALSE)
     set(OPENBLAS_CBLAS_FOUND FALSE)
 endif()
+
+#exit()
+#find_package(suitesparse)
+#exit()
+
+#find_or_build_package(CHOLMOD suitesparse)
+find_package(UMFPACK REQUIRED)
+find_package(CHOLMOD REQUIRED)
 
 if (NOT AVOID_CPPUNIT)
     find_package(CppUnit)
@@ -597,21 +617,23 @@ message(STATUS "****************************************************************
 message(STATUS "************************* Dependencies found *************************")
 message(STATUS "**********************************************************************")
 
-message(STATUS "THREADS             : ${THREADS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_THREAD_LIBRARIES}")
-message(STATUS "USE_OPENBLAS        : ${OPENBLAS_FOUND} OPENBLAS_CBLAS_FOUND :${OPENBLAS_CBLAS_FOUND} OpenBLAS_INCLUDE_DIR :${OpenBLAS_INCLUDE_DIR}")
-message(STATUS "CHOLMOD_LIBRARIES   : ${CHOLMOD_LIBRARIES}")
-message(STATUS "UMFPACK_LIBRARIES   : ${UMFPACK_LIBRARIES}")
-message(STATUS "TRIANGLE_FOUND      : ${TRIANGLE_FOUND} Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
-message(STATUS "Python_EXECUTABLE   : ${Python_EXECUTABLE}" )
-message(STATUS "Python_LIBRARY_DIRS : ${Python_LIBRARY_DIRS}")
-message(STATUS "Python_LIBRARIES    : ${Python_LIBRARIES}" )
-message(STATUS "Python_INCLUDE_DIRS : ${Python_INCLUDE_DIRS}")
-message(STATUS "Boost_INCLUDE_DIR   : ${Boost_INCLUDE_DIR}")
-message(STATUS "Boost_PYTHON_LIBRARY: ${Boost_PYTHON_LIBRARY}" )
-message(STATUS "Python_NumPy        : ${Python_NumPy_FOUND} ${Python_NumPy_INCLUDE_DIRS} ver: ${Python_NumPy_VERSION}")
-message(STATUS "CASTER_FOUND        : ${CASTER_FOUND} Caster: ${CASTER_EXECUTABLE}")
-message(STATUS "PYGCCXML_FOUND      : ${PYGCCXML_FOUND} PYGCCXML: ${PYGCCXML_PATH}" )
-message(STATUS "PYPLUSPLUS_FOUND    : ${PYPLUSPLUS_FOUND} PYPLUSPLUS_PATH: ${PYPLUSPLUS_PATH}" )
+message(STATUS "THREADS              : ${THREADS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_THREAD_LIBRARIES}")
+message(STATUS "USE_OPENBLAS         : ${OPENBLAS_FOUND}, OPENBLAS_CBLAS_FOUND :${OPENBLAS_CBLAS_FOUND}")
+message(STATUS "BLAS_LIBRARIES       : ${BLAS_LIBRARIES}")
+message(STATUS "OpenBLAS_INCLUDE_DIR : ${OpenBLAS_INCLUDE_DIR}")
+message(STATUS "CHOLMOD_LIBRARIES    : ${CHOLMOD_LIBRARIES}")
+message(STATUS "UMFPACK_LIBRARIES    : ${UMFPACK_LIBRARIES}")
+message(STATUS "TRIANGLE_FOUND       : ${TRIANGLE_FOUND} Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
+message(STATUS "Python_EXECUTABLE    : ${Python_EXECUTABLE}" )
+message(STATUS "Python_LIBRARY_DIRS  : ${Python_LIBRARY_DIRS}")
+message(STATUS "Python_LIBRARIES     : ${Python_LIBRARIES}" )
+message(STATUS "Python_INCLUDE_DIRS  : ${Python_INCLUDE_DIRS}")
+message(STATUS "Boost_INCLUDE_DIR    : ${Boost_INCLUDE_DIR}")
+message(STATUS "Boost_PYTHON_LIBRARY : ${Boost_PYTHON_LIBRARY}" )
+message(STATUS "Python_NumPy         : ${Python_NumPy_FOUND} ${Python_NumPy_INCLUDE_DIRS} ver: ${Python_NumPy_VERSION}")
+message(STATUS "CASTER_FOUND         : ${CASTER_FOUND} Caster: ${CASTER_EXECUTABLE}")
+message(STATUS "PYGCCXML_FOUND       : ${PYGCCXML_FOUND} PYGCCXML: ${PYGCCXML_PATH}" )
+message(STATUS "PYPLUSPLUS_FOUND     : ${PYPLUSPLUS_FOUND} PYPLUSPLUS_PATH: ${PYPLUSPLUS_PATH}" )
 message(STATUS "")
 message(STATUS "**********************************************************************")
 message(STATUS "*************** Optional Dependencies found **************************")
