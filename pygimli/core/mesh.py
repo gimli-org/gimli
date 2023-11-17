@@ -688,7 +688,7 @@ Mesh.NED = __Mesh__NED__
 
 
 def __Mesh__midpoint__(self):
-    "Return midpoint."""
+    """Return midpoint."""
     return sum(self.bb()) / 2
 
 Mesh.midpoint = __Mesh__midpoint__
@@ -738,3 +738,19 @@ def __Mesh__extent__(self, axis=None):
         return abs(dist[axis])
     
 Mesh.extent = __Mesh__extent__
+
+
+def __Mesh__populate__(self, prop:str, value):
+    """Fill property of mesh with values from map or vector."""
+    from pygimli.solver import parseMapToCellArray
+    if isinstance(value, dict):
+        self[prop] =  parseMapToCellArray(value, self)
+    elif hasattr(value, '__iter__'):
+        if hasattr(value[0], '__iter__'):
+            self[prop] =  parseMapToCellArray(value, self)
+        elif len(value) == mesh.cellCount():
+            self[prop] = value
+        else:
+            raise Exception("Length mismatch!")
+
+Mesh.populate = __Mesh__populate__
