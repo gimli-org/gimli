@@ -677,3 +677,9 @@ def __Mesh__NED__(self):
     return newmesh
 
 Mesh.NED = __Mesh__NED__
+
+def __Mesh__midpoint__(self):
+    "Return midpoint."""
+    return sum(self.bb()) / 2
+
+Mesh.midpoint = __Mesh__midpoint__
