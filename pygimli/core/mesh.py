@@ -696,7 +696,7 @@ Mesh.midpoint = __Mesh__midpoint__
 
 def __Mesh__extent__(self, axis=None):
     """Return extent of mesh.
-    
+
     Parameters
     ----------
     axis : str|int
@@ -706,7 +706,7 @@ def __Mesh__extent__(self, axis=None):
         2|'z' : z direction
         None|'max' : maximum of x, y, z
         -1|'d' : diagonal
-    
+
     Example
     -------
     >>> import numpy as np
@@ -721,7 +721,7 @@ def __Mesh__extent__(self, axis=None):
     >>> print(np.round(m.extent('d'), 2))
     3.74
     """
-    bb = self.bb()    
+    bb = self.bb()
     dist = bb[1]- bb[0]
     if isinstance(axis, str):
         sa0 = axis.lower()[0]
@@ -736,7 +736,7 @@ def __Mesh__extent__(self, axis=None):
         return dist.abs()
     else:
         return abs(dist[axis])
-    
+
 Mesh.extent = __Mesh__extent__
 
 
@@ -748,9 +748,16 @@ def __Mesh__populate__(self, prop:str, value):
     elif hasattr(value, '__iter__'):
         if hasattr(value[0], '__iter__'):
             self[prop] =  parseMapToCellArray(value, self)
-        elif len(value) == mesh.cellCount():
+        elif len(value) == self.cellCount():
             self[prop] = value
         else:
             raise Exception("Length mismatch!")
 
 Mesh.populate = __Mesh__populate__
+
+
+def __Mesh__innerBoundaryCenters__(self):
+    """Center of all inner boundaries (C1-constraints)."""
+    return [b.center() for b in self.boundaries() if not b.outside()]
+
+Mesh.innerBoundaryCenters = __Mesh__innerBoundaryCenters__
