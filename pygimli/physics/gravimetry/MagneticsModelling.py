@@ -22,6 +22,7 @@ class MagneticsModelling(pg.frameworks.MeshModelling):
             [D, I, H, X, Y, Z, F] - declination, inclination, horizontal field,
                                    X/Y/Z components, total field OR
             [X, Y, Z] - X/Y/Z components
+            [lat, lon] - latitude, longitude (automatic IGRF)
         """
         # check if components do not contain g!
         super().__init__(mesh=mesh)
@@ -29,7 +30,13 @@ class MagneticsModelling(pg.frameworks.MeshModelling):
         self.mesh_ = mesh
         self.sensorPositions = points
         self.components = cmp
-        self.igrf = igrf
+        self.igrf = None
+        if hasattr(igrf, "__iter__"):
+            if len(igrf) == 2: # lat lon
+                import pyIGRF
+                self.igrf = pyIGRF.igrf_value(*igrf)
+            else:
+                self.igrf = igrf
         self.footprint = foot
         self.kernel = SolveGravMagHolstein(self.mesh_,
                                            pnts=self.sensorPositions,

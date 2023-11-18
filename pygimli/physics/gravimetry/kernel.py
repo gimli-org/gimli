@@ -80,7 +80,7 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf=None, foot=np.inf):
         r2 = r1[:, rs, :]
         r0 = r2 - r1
         u = np.sum(np.cross(r1, r2), 1)
-        u = u / np.expand_dims(np.linalg.norm(u, axis=1), axis=1)
+        u = u / np.expand_dims(np.linalg.norm(u, axis=1)+1e-16, axis=1)
         ut = np.tile(u, lb[1]).reshape((lb[0], lb[1], 3))
         ll = np.linalg.norm(r0, axis=2)
         t = r0/np.expand_dims(ll, axis=2)
