@@ -28,25 +28,27 @@ class MagManager():  # MeshMethodManager):
         self.inv = None #
         self.fwd = None
         if isinstance(data, str):
-            self.DATA = np.genfromtxt("fault-synth.mag", names=True)
+            self.DATA = np.genfromtxt(data, names=True)
             self.x = self.DATA["x"]
             self.y = self.DATA["y"]
             self.z = np.abs(self.DATA["z"])
             self.cmp = [t for t in self.DATA.dtype.names
                         if t.startswith("B") or t.startswith("T")]
 
-    def showData(self, cmp=None):
+    def showData(self, cmp=None, **kwargs):
         """Show data."""
         cmp = cmp or self.cmp
         nc = 2 if len(cmp) > 1 else 1
         nr = (len(cmp)+1) // 2
         fig, ax = plt.subplots(nr, nc, sharex=True, sharey=True, squeeze=False,
-                               figsize=(7, len(self.cmp)*1.2))
+                               figsize=(7, len(self.cmp)*1+3))
         axs = np.atleast_1d(ax.flat)
+        kwargs.setdefault("cmap", "bwr")
         for i, c in enumerate(cmp):
             fld = self.DATA[c]
             vv = max(-np.min(fld)*1., np.max(fld)*1.)
-            sc = axs[i].scatter(self.x, self.y, c=fld, cmap="bwr", vmin=-vv, vmax=vv)
+            sc = axs[i].scatter(self.x, self.y, c=fld,
+                                vmin=-vv, vmax=vv, **kwargs)
             axs[i].set_title(c)
             axs[i].set_aspect(1.0)
             fig.colorbar(sc, ax=ax.flat[i])
