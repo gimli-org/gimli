@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.viewer import pv
-from pygimli.frameworks import MeshMethodManager
+# from pygimli.frameworks import MeshMethodManager
 from .MagneticsModelling import MagneticsModelling
 from .tools import depthWeighting
 
@@ -25,6 +25,7 @@ class MagManager():  # MeshMethodManager):
         self.mesh = kwargs.pop("mesh", None)
         self.cmp = kwargs.pop("cmp", ["TFA"])
         # super().__init__()
+        self.inv = None #
         self.fwd = None
         if isinstance(data, str):
             self.DATA = np.genfromtxt("fault-synth.mag", names=True)
@@ -44,9 +45,9 @@ class MagManager():  # MeshMethodManager):
         axs = np.atleast_1d(ax.flat)
         for i, c in enumerate(cmp):
             fld = self.DATA[c]
-            vv = max(-min(fld), max(fld))
+            vv = max(-np.min(fld)*1., np.max(fld)*1.)
             sc = axs[i].scatter(self.x, self.y, c=fld, cmap="bwr", vmin=-vv, vmax=vv)
-            axs[i].set_title(cmp[i])
+            axs[i].set_title(c)
             axs[i].set_aspect(1.0)
             fig.colorbar(sc, ax=ax.flat[i])
 
@@ -74,9 +75,9 @@ class MagManager():  # MeshMethodManager):
 
     def inversion(self, noise_level=2, noisify=False, **kwargs):
         """Inversion."""
-        self.datavec = np.concatenate([self.DATA[c] for c in self.cmp])
+        datavec = np.concatenate([self.DATA[c] for c in self.cmp])
         if noisify:
-            self.datavec += np.random.randn(len(self.datavec)) * noise_level
+            datavec += np.random.randn(len(datavec)) * noise_level
 
         self.inv = pg.Inversion(fop=self.fwd, verbose=True)
         # self.inv.setForwardOperator(self.fwd)
@@ -89,7 +90,7 @@ class MagManager():  # MeshMethodManager):
             self.inv.dataTrans = pg.trans.TransSymLog(thrs)
 
         limits = kwargs.pop("limits", [0, 0.1])
-        self.inv.setRegularization(limits=[0, 0.1])
+        self.inv.setRegularization(limits=limits)
         C = kwargs.pop("C", 1)
         cType = kwargs.pop("cType", C)
         if hasattr(C, "__iter__"):
@@ -110,21 +111,24 @@ class MagManager():  # MeshMethodManager):
             dw *= kwargs.pop("mul", 1)
             self.inv.setConstraintWeights(dw)
 
-        model = self.inv.run(self.datavec, absoluteError=noise_level, **kwargs)
+        model = self.inv.run(datavec, absoluteError=noise_level, **kwargs)
         return model
 
     def showDataFit(self):
         """Show data, model response and misfit."""
         nc = len(self.cmp)
-        fig, ax = pg.plt.subplots(ncols=3, nrows=nc, figsize=(12, 3*nc), sharex=True, sharey=True, squeeze=False)
-        vals = np.reshape(self.datavec, [nc, -1])
+        _, ax = pg.plt.subplots(ncols=3, nrows=nc, figsize=(12, 3*nc), sharex=True, sharey=True, squeeze=False)
+        vals = np.reshape(self.inv.dataVals, [nc, -1])
         mm = np.max(np.abs(vals))
         resp = np.reshape(self.inv.response, [nc, -1])
-        misf = (vals - resp) / (np.reshape(self.inv.errorVals, [nc, -1]) *  vals)
+        errs = np.reshape(self.inv.errorVals, [nc, -1])  # relative!
+        misf = (vals - resp) / np.abs(errs *  vals)
+        fkw = dict(cmap="bwr", vmin=-mm, vmax=mm)
+        mkw = dict(cmap="bwr", vmin=-3, vmax=3)
         for i in range(nc):
-            ax[i, 0].scatter(self.x, self.y, c=vals[i], cmap="bwr", vmin=-mm, vmax=mm)
-            ax[i, 1].scatter(self.x, self.y, c=resp[i], cmap="bwr", vmin=-mm, vmax=mm)
-            ax[i, 2].scatter(self.x, self.y, c=misf[i], cmap="bwr", vmin=-3, vmax=3)
+            ax[i, 0].scatter(self.x, self.y, c=vals[i], **fkw)
+            ax[i, 1].scatter(self.x, self.y, c=resp[i], **fkw)
+            ax[i, 2].scatter(self.x, self.y, c=misf[i], **mkw)
 
     def show3DModel(self, label=None, trsh=0.025, synth=None, cMin=0, cMax=0.03, cMap="Spectral_r",
                 position="yz", elevation=10, azimuth=25, zoom=1.2, invert=False):
@@ -160,4 +164,4 @@ class MagManager():  # MeshMethodManager):
 
 
 if __name__ == "__main__":
-      pass
+    pass
