@@ -1,3 +1,4 @@
+"""Magnetics forward operator."""
 import numpy as np
 import pygimli as pg
 from .kernel import SolveGravMagHolstein

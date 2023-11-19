@@ -80,19 +80,18 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf=None, foot=np.inf):
         r2 = r1[:, rs, :]
         r0 = r2 - r1
         u = np.sum(np.cross(r1, r2), 1)
-        u = u / np.expand_dims(np.linalg.norm(u, axis=1)+1e-16, axis=1)
-        ut = np.tile(u, lb[1]).reshape((lb[0], lb[1], 3))
+        u /= np.expand_dims(np.linalg.norm(u, axis=1)+1e-16, axis=1)
+        ut = np.tile(u, lb[1]).reshape((lb[0], lb[1], 3))  # broadcasting!
         ll = np.linalg.norm(r0, axis=2)
-        t = r0/np.expand_dims(ll, axis=2)
+        t = r0 / np.expand_dims(ll, axis=2)
         lm = (np.sum(r1*t, 2) + np.sum(r2*t, 2)) / 2
         h = np.cross(t, ut)
         hn = np.sum(h*r1, 2)
         v = np.sum(ut*r1, 2)
         r1n = np.linalg.norm(r1, axis=2)
         r2n = np.linalg.norm(r2, axis=2)
-        rm = (r1n+r2n)/2
-        lumbda = ll/(2*rm)
-
+        rm = (r1n + r2n)/2
+        lumbda = ll / (2*rm)
         jj = 0
         if doG: # gravitational field
             g = hn*np.arctanh(lumbda)-np.sign(v)*v*np.arctan2(
@@ -195,7 +194,8 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf=None, foot=np.inf):
                     temp[i, :, jj] = fakt * B_tens[:, 2, 2]
                     jj += 1
 
-    pBar.update(i)
+        pBar.update(i)
+
     kernel += np.array([np.sum(temp[:, cl[cl[:, 1] == j, 0]], 1) for j in rr])
     kernel -= np.array([np.sum(temp[:, cr[cr[:, 1] == j, 0]], 1) for j in rr])
 
