@@ -1,8 +1,10 @@
 """Kernel computation for gravity and magnetics."""
 import numpy as np
+import pygimli as pg
 from pygimli.utils import ProgressBar
 
 
+@pg.cache
 def SolveGravMagHolstein(mesh, pnts, cmp, igrf=None, foot=np.inf):
     """Solve gravity and/or magnetics problem after Holstein (1997).
 
