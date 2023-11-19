@@ -57,9 +57,14 @@ class MagManager():  # MeshMethodManager):
         z = np.arange(-depth, .1, dx)
         self.mesh = mt.createGrid(x=x, y=y, z=z)
 
-    def createMesh(self):
+    def createMesh(self, area=1e5, quality=1.3, addPLC=None):
         """Create an unstructured mesh."""
-        pass
+        geo = mt.createCube(start=[-600, -600, -800], end=[600, 600, 0])
+        for xi, yi in zip(self.x, self.y):
+            geo.createNode([xi, yi, 0])
+        if addPLC:
+            geo += addPLC
+        self.mesh = mt.createMesh(geo, quality=quality, area=area)
 
     def createFOP(self):
         """Create forward operator (computationally extensive!)."""
@@ -131,18 +136,20 @@ class MagManager():  # MeshMethodManager):
             label = "bla"
 
         flt = None
+        pl, _ = pg.show(self.mesh, style="wireframe", hold=True,
+                        alpha=0.1, backend="trame")
+        # mm = [min(self.mesh[label]), min(self.mesh[label])]
         if trsh > 0:
             flt = {"threshold": dict(value=trsh, scalars=label, invert=invert)}
-        pl, _ = pg.show(self.mesh, label=label, style="surface", hold=True,
-                        backend="trame", cMin=cMin, cMax=cMax, cMap=cMap,
-                        filter=flt)
-
-        if synth:
-            pv.drawModel(pl, synth, style="wireframe")
+            pv.drawModel(pl, self.mesh, label=label, style="surface",
+                        cMin=cMin, cMax=cMax, cMap=cMap, filter=flt)
 
         pv.drawMesh(pl, self.mesh, label=label, style="surface",
                     cMap=cMap, cMin=cMin, cMax=cMax,
                     filter={"slice": dict(normal=[-1, 0, 0], origin=[0, 0, 0])})
+
+        if synth:
+            pv.drawModel(pl, synth, style="wireframe")
 
         pl.camera_position = position
         pl.camera.azimuth = azimuth
