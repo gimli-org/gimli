@@ -7,7 +7,7 @@ from .kernel import SolveGravMagHolstein
 class MagneticsModelling(pg.frameworks.MeshModelling):
     """Magnetics modelling operator using Holstein (2007)."""
 
-    def __init__(self, mesh, points, cmp, igrf, foot=None):
+    def __init__(self, mesh=None, points=None, cmp=["TFA"], igrf=[50, 13], foot=None):
         """Setup forward operator.
 
         Parameters
@@ -26,10 +26,12 @@ class MagneticsModelling(pg.frameworks.MeshModelling):
             [lat, lon] - latitude, longitude (automatic IGRF)
         """
         # check if components do not contain g!
-        super().__init__(mesh=mesh)
-        self.createRefinedForwardMesh(refine=False, pRefine=False)
+        super().__init__()
+        self._refineH2 = False
+        # self.createRefinedForwardMesh(refine=False, pRefine=False)
         self.mesh_ = mesh
         self.sensorPositions = points
+
         self.components = cmp
         self.igrf = None
         if hasattr(igrf, "__iter__"):
@@ -39,9 +41,19 @@ class MagneticsModelling(pg.frameworks.MeshModelling):
             else:
                 self.igrf = igrf
         self.footprint = foot
-        self.kernel = SolveGravMagHolstein(self.mesh_,
-                                           pnts=self.sensorPositions,
-                                           cmp=self.components, igrf=self.igrf,
+        self.kernel = None
+        self.J = pg.matrix.BlockMatrix()
+        if self.mesh_ is not None:
+            self.setMesh(self.mesh_)
+
+    def computeKernel(self):
+        """Compute the kernel."""
+        points = np.column_stack([self.sensorPositions[:, 1],
+                                  self.sensorPositions[:, 0],
+                                  -np.abs(self.sensorPositions[:, 2])])
+        self.kernel = SolveGravMagHolstein(self.mesh().NED(),
+                                           pnts=points, igrf=self.igrf,
+                                           cmp=self.components,
                                            foot=self.footprint)
         self.J = pg.matrix.BlockMatrix()
         self.Ki = []
@@ -62,6 +74,9 @@ class MagneticsModelling(pg.frameworks.MeshModelling):
 
     def response(self, model):
         """Compute forward response."""
+        if self.kernel is None:
+            self.computeKernel()
+
         return self.J.dot(model)
 
     def createJacobian(self, model):
