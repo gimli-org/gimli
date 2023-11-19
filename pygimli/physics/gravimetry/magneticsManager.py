@@ -74,7 +74,45 @@ class MagManager():  # MeshMethodManager):
                                       cmp=self.cmp, igrf=self.igrf)
 
     def inversion(self, noise_level=2, noisify=False, **kwargs):
-        """Inversion."""
+        """Run Inversion (requires mesh and FOP).
+
+        Parameters
+        ----------
+        noise_level : float|array
+            absolute noise level (absoluteError)
+        noisify : bool
+            add noise before inversion
+        relativeError : float|array [0.01]
+            relative error to stabilize very low data
+        depthWeighting : bool [True]
+            apply depth weighting after Li&Oldenburg (1996)
+        z0 : float
+            skin depth for depth weighting
+        mul : array
+            multiply constraint weight with
+
+        standard inversion keyword arguments
+        ....................................
+        C(,cType) : int|Matrix|[float, float, float]
+            constraint order, matrix or correlation lengths
+        limits : [float, float]
+            lower and upper parameter limits
+        symlogThreshold : float [0]
+            threshold for symlog data trans (0 = linear)
+        startModel : float|array
+            starting model (typically homogeneous)
+        lam : float
+            regularization strength
+        robustData, blockyModel : bool
+            L1 norm on data misfit and model roughness
+        maxIter : int
+            maximum iteration number
+
+        Returns
+        -------
+        model : array
+            model vector (also saved in self.inv.model)
+        """
         datavec = np.concatenate([self.DATA[c] for c in self.cmp])
         if noisify:
             datavec += np.random.randn(len(datavec)) * noise_level
@@ -102,7 +140,7 @@ class MagManager():  # MeshMethodManager):
             self.inv.setRegularization(cType=C)
 
         z0 = kwargs.pop("z0", 25)  # Oldenburg&Li(1996)
-        if kwargs.pop("depthWeighting", False):
+        if kwargs.pop("depthWeighting", True):
             cw = self.fwd.regionManager().constraintWeights()
             dw = depthWeighting(self.mesh, cell=not(cType==1), z0=z0)
             if len(dw) == len(cw):
@@ -130,8 +168,8 @@ class MagManager():  # MeshMethodManager):
             ax[i, 1].scatter(self.x, self.y, c=resp[i], **fkw)
             ax[i, 2].scatter(self.x, self.y, c=misf[i], **mkw)
 
-    def show3DModel(self, label=None, trsh=0.025, synth=None, cMin=0, cMax=0.03, cMap="Spectral_r",
-                position="yz", elevation=10, azimuth=25, zoom=1.2, invert=False):
+    def show3DModel(self, label=None, trsh=0.025, synth=None, invert=False,
+                    position="yz", elevation=10, azimuth=25, zoom=1.2, **kwargs):
         """Standard 3D view."""
         if label is None:
             label = self.inv.model
@@ -139,6 +177,10 @@ class MagManager():  # MeshMethodManager):
             self.mesh["bla"] = np.array(label)
             label = "bla"
 
+        kwargs.setdefault("cMin", 0.001)
+        kwargs.setdefault("cMax", max(self.mesh[label]))
+        kwargs.setdefault("cMap", "Spectral_r")
+        kwargs.setdefault("logScale", False)
         flt = None
         pl, _ = pg.show(self.mesh, style="wireframe", hold=True,
                         alpha=0.1, backend="trame")
@@ -146,10 +188,9 @@ class MagManager():  # MeshMethodManager):
         if trsh > 0:
             flt = {"threshold": dict(value=trsh, scalars=label, invert=invert)}
             pv.drawModel(pl, self.mesh, label=label, style="surface",
-                        cMin=cMin, cMax=cMax, cMap=cMap, filter=flt)
+                        filter=flt, **kwargs)
 
-        pv.drawMesh(pl, self.mesh, label=label, style="surface",
-                    cMap=cMap, cMin=cMin, cMax=cMax,
+        pv.drawMesh(pl, self.mesh, label=label, style="surface", **kwargs,
                     filter={"slice": dict(normal=[-1, 0, 0], origin=[0, 0, 0])})
 
         if synth:
