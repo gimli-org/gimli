@@ -7,12 +7,12 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.viewer import pv
-# from pygimli.frameworks import MeshMethodManager
+from pygimli.frameworks import MeshMethodManager
 from .MagneticsModelling import MagneticsModelling
 from .tools import depthWeighting
 
 
-class MagManager():  # MeshMethodManager):
+class MagManager(MeshMethodManager):
     """Magnetics Manager."""
 
     def __init__(self, data=None, **kwargs):
@@ -22,11 +22,9 @@ class MagManager():  # MeshMethodManager):
         self.y = kwargs.pop("y", None)
         self.z = kwargs.pop("z", None)
         self.igrf = kwargs.pop("igrf", None)
-        self.mesh = kwargs.pop("mesh", None)
-        self.cmp = kwargs.pop("cmp", ["TFA"])
-        # super().__init__()
-        self.inv = None #
-        self.fwd = None
+        self.mesh_ = kwargs.pop("mesh", None)
+
+        # self.inv_ = pg.frameworks.Inversion()
         if isinstance(data, str):
             self.DATA = np.genfromtxt(data, names=True)
             self.x = self.DATA["x"]
@@ -34,6 +32,11 @@ class MagManager():  # MeshMethodManager):
             self.z = np.abs(self.DATA["z"])
             self.cmp = [t for t in self.DATA.dtype.names
                         if t.startswith("B") or t.startswith("T")]
+
+        self.cmp = kwargs.pop("cmp", ["TFA"])
+        super().__init__()
+        if self.mesh_ is not None:
+            self.setMesh(self.mesh_)
 
     def showData(self, cmp=None, **kwargs):
         """Show data."""
@@ -58,7 +61,9 @@ class MagManager():  # MeshMethodManager):
         x = np.arange(min(self.x)-bnd, max(self.x)+bnd+.1, dx)
         y = np.arange(min(self.y)-bnd, max(self.y)+bnd+.1, dx)
         z = np.arange(-depth, .1, dx)
-        self.mesh = mt.createGrid(x=x, y=y, z=z)
+        self.mesh_ = mt.createGrid(x=x, y=y, z=z)
+        self.fop.setMesh(self.mesh_)
+        # self.fwd.mesh_ = self.mesh_,
 
     def createMesh(self, area=1e5, quality=1.3, addPLC=None):
         """Create an unstructured mesh."""
@@ -67,13 +72,16 @@ class MagManager():  # MeshMethodManager):
             geo.createNode([xi, yi, 0])
         if addPLC:
             geo += addPLC
-        self.mesh = mt.createMesh(geo, quality=quality, area=area)
+        self.mesh_ = mt.createMesh(geo, quality=quality, area=area)
+        self.fop.setMesh(self.mesh_)
+        # self.fwd.mesh_ = self.mesh_
 
-    def createFOP(self):
+    def createForwardOperator(self, **kwargs):
         """Create forward operator (computationally extensive!)."""
         points = np.column_stack([self.x, self.y, -np.abs(self.z)])
-        self.fwd = MagneticsModelling(self.mesh.NED(), points,
+        self.fwd = MagneticsModelling(points=points,
                                       cmp=self.cmp, igrf=self.igrf)
+        return self.fwd
 
     def inversion(self, noise_level=2, noisify=False, **kwargs):
         """Run Inversion (requires mesh and FOP).
@@ -119,8 +127,8 @@ class MagManager():  # MeshMethodManager):
         if noisify:
             datavec += np.random.randn(len(datavec)) * noise_level
 
-        self.inv = pg.Inversion(fop=self.fwd, verbose=True)
-        # self.inv.setForwardOperator(self.fwd)
+        # self.inv_ = pg.Inversion(fop=self.fwd, verbose=True)
+        self.inv.setForwardOperator(self.fwd)
         kwargs.setdefault("startModel", 0.001)
         kwargs.setdefault("relativeError", 0.001)
         kwargs.setdefault("lam", 10)
@@ -144,7 +152,7 @@ class MagManager():  # MeshMethodManager):
         z0 = kwargs.pop("z0", 25)  # Oldenburg&Li(1996)
         if kwargs.pop("depthWeighting", True):
             cw = self.fwd.regionManager().constraintWeights()
-            dw = depthWeighting(self.mesh, cell=not(cType==1), z0=z0)
+            dw = depthWeighting(self.mesh_, cell=not(cType==1), z0=z0)
             if len(dw) == len(cw):
                 dw *= cw
 
@@ -176,23 +184,23 @@ class MagManager():  # MeshMethodManager):
         if label is None:
             label = self.inv.model
         if not isinstance(label, str):
-            self.mesh["bla"] = np.array(label)
+            self.mesh_["bla"] = np.array(label)
             label = "bla"
 
         kwargs.setdefault("cMin", 0.001)
-        kwargs.setdefault("cMax", max(self.mesh[label]))
+        kwargs.setdefault("cMax", max(self.mesh_[label]))
         kwargs.setdefault("cMap", "Spectral_r")
         kwargs.setdefault("logScale", False)
         flt = None
-        pl, _ = pg.show(self.mesh, style="wireframe", hold=True,
+        pl, _ = pg.show(self.mesh_, style="wireframe", hold=True,
                         alpha=0.1, backend="trame")
-        # mm = [min(self.mesh[label]), min(self.mesh[label])]
+        # mm = [min(self.mesh_[label]), min(self.mesh_[label])]
         if trsh > 0:
             flt = {"threshold": dict(value=trsh, scalars=label, invert=invert)}
-            pv.drawModel(pl, self.mesh, label=label, style="surface",
+            pv.drawModel(pl, self.mesh_, label=label, style="surface",
                         filter=flt, **kwargs)
 
-        pv.drawMesh(pl, self.mesh, label=label, style="surface", **kwargs,
+        pv.drawMesh(pl, self.mesh_, label=label, style="surface", **kwargs,
                     filter={"slice": dict(normal=[-1, 0, 0], origin=[0, 0, 0])})
 
         if synth:
