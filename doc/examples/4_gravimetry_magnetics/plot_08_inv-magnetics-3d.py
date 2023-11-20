@@ -29,7 +29,7 @@ from pygimli.physics.gravimetry import MagneticsModelling
 dx = 50
 x = np.arange(0., 1001, dx)
 y = np.arange(0., 1001, dx)
-z = np.arange(0., 501, dx)
+z = np.arange(-500., .1, dx)
 grid = pg.createGrid(x, y, z)
 print(grid)
 
@@ -86,11 +86,11 @@ igrf = [D, I, H, X, Y, Z, F]
 py, px = np.meshgrid(x, y)
 px = px.ravel()
 py = py.ravel()
-points = np.column_stack((px, py, -np.ones_like(px)*20))
+points = np.column_stack((px, py, np.ones_like(px)*20))
 
 # The forward operator
 cmp = ["TFA"]  # ["Bx", "By", "Bz"]
-fop = MagneticsModelling(grid, points, cmp, igrf)
+fop = MagneticsModelling(mesh=grid, points=points, cmp=cmp, igrf=igrf)
 model = pg.Vector(grid.cellCount(), 1.0)
 data = fop.response(grid["synth"])
 
@@ -116,7 +116,7 @@ data += np.random.randn(len(data)) * noise_level
 #
 
 # depth weighting
-bz = np.array([b.center().z() for b in grid.boundaries() if not b.outside()])
+bz = np.array([abs(b.center().z()) for b in grid.boundaries() if not b.outside()])
 z0 = 25
 wz = 100 / (bz+z0)**1.5
 print(min(wz), max(wz))
