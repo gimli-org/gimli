@@ -63,18 +63,20 @@ class MagManager(MeshMethodManager):
         z = np.arange(-depth, .1, dx)
         self.mesh_ = mt.createGrid(x=x, y=y, z=z)
         self.fop.setMesh(self.mesh_)
-        # self.fwd.mesh_ = self.mesh_,
+        return self.mesh_
 
-    def createMesh(self, area=1e5, quality=1.3, addPLC=None):
+    def createMesh(self, bnd=0, area=1e5, depth=800, quality=1.3, addPLC=None, addPoints=True):
         """Create an unstructured mesh."""
-        geo = mt.createCube(start=[-600, -600, -800], end=[600, 600, 0])
-        for xi, yi in zip(self.x, self.y):
-            geo.createNode([xi, yi, 0])
+        geo = mt.createCube(start=[min(self.x)-bnd, min(self.x)-bnd, -depth], end=[max(self.x)+bnd, max(self.y)+bnd, 0])
+        if addPoints:
+            for xi, yi in zip(self.x, self.y):
+                geo.createNode([xi, yi, 0])
         if addPLC:
             geo += addPLC
+
         self.mesh_ = mt.createMesh(geo, quality=quality, area=area)
         self.fop.setMesh(self.mesh_)
-        # self.fwd.mesh_ = self.mesh_
+        return self.mesh_
 
     def createForwardOperator(self, **kwargs):
         """Create forward operator (computationally extensive!)."""
