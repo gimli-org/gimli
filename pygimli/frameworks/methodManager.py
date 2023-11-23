@@ -848,7 +848,7 @@ class MeshMethodManager(MethodManager):
         """Show data and the inversion result model response."""
         orientation = 'vertical'
         if axs is None:
-            _, axs = pg.plt.subplots(nrows=1, ncols=2)
+            _, axs = pg.plt.subplots(nrows=1, ncols=2, sharex=True, sharey=True)
             orientation = 'horizontal'
 
         kwargs.setdefault("cMin", min(self.inv.dataVals))

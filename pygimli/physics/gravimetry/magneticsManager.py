@@ -56,6 +56,8 @@ class MagManager(MeshMethodManager):
             axs[i].set_aspect(1.0)
             fig.colorbar(sc, ax=ax.flat[i])
 
+        return ax
+
     def createGrid(self, dx=50, depth=800, bnd=0):
         """Create a grid."""
         x = np.arange(min(self.x)-bnd, max(self.x)+bnd+.1, dx)
@@ -157,6 +159,9 @@ class MagManager(MeshMethodManager):
             dw = depthWeighting(self.mesh_, cell=not(cType==1), z0=z0)
             if len(dw) == len(cw):
                 dw *= cw
+                print(min(dw), max(dw))
+            else:
+                print("lengths not matching!")
 
             dw *= kwargs.pop("mul", 1)
             self.inv.setConstraintWeights(dw)
@@ -186,8 +191,8 @@ class MagManager(MeshMethodManager):
         if label is None:
             label = self.inv.model
         if not isinstance(label, str):
-            self.mesh_["bla"] = np.array(label)
-            label = "bla"
+            self.mesh_["sus"] = np.array(label)
+            label = "sus"
 
         kwargs.setdefault("cMin", 0.001)
         kwargs.setdefault("cMax", max(self.mesh_[label]))
