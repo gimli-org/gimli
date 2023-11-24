@@ -100,6 +100,7 @@ class TravelTimeManager(MeshMethodManager):
             return err['err'] / dataVals
 
         return err
+        
 
     def applyMesh(self, mesh, secNodes=None, ignoreRegionManager=False):
         """Apply mesh, i.e. set mesh in the forward operator class."""
@@ -112,6 +113,8 @@ class TravelTimeManager(MeshMethodManager):
                 mesh = self.fop.createRefinedFwdMesh(mesh)
 
         self.fop.setMesh(mesh, ignoreRegionManager=ignoreRegionManager)
+        self.fop.jacobian().clear()
+
 
     def simulate(self, mesh, scheme, slowness=None, vel=None, seed=None,
                  secNodes=2, noiseLevel=0.0, noiseAbs=0.0, **kwargs):
@@ -287,8 +290,6 @@ class TravelTimeManager(MeshMethodManager):
         if model is not None:
             if self.fop.jacobian().size() == 0 or model != self.model:
                 self.fop.createJacobian(1/model)
-        else:
-            model = self.model
 
         shots = self.fop.data.id("s")
         recei = self.fop.data.id("g")
