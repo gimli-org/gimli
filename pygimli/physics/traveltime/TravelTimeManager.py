@@ -100,7 +100,7 @@ class TravelTimeManager(MeshMethodManager):
             return err['err'] / dataVals
 
         return err
-        
+
 
     def applyMesh(self, mesh, secNodes=None, ignoreRegionManager=False):
         """Apply mesh, i.e. set mesh in the forward operator class."""
@@ -116,7 +116,7 @@ class TravelTimeManager(MeshMethodManager):
         self.fop.jacobian().clear()
 
 
-    def simulate(self, mesh, scheme, slowness=None, vel=None, seed=None,
+    def simulate(self, mesh=None, scheme=None, slowness=None, vel=None, seed=None,
                  secNodes=2, noiseLevel=0.0, noiseAbs=0.0, **kwargs):
         """Simulate traveltime measurements.
 
@@ -167,6 +167,7 @@ class TravelTimeManager(MeshMethodManager):
         verbose = kwargs.pop('verbose', self.verbose)
 
         fop = self.fop
+        scheme = scheme or self.data
         fop.data = scheme
         fop.verbose = verbose
 
@@ -288,8 +289,8 @@ class TravelTimeManager(MeshMethodManager):
         list of two-column array holding x and y positions
         """
         if model is not None:
-            if self.fop.jacobian().size() == 0 or model != self.model:
-                self.fop.createJacobian(1/model)
+            # if self.fop.jacobian().size() == 0 or model != self.model:
+            self.fop.createJacobian(1/model)
 
         shots = self.fop.data.id("s")
         recei = self.fop.data.id("g")
