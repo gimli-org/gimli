@@ -19,6 +19,7 @@ from . gravMagModelling import gradGZHalfPlateHoriz
 from . gravMagModelling import solveGravimetry, GravityModelling2D
 from . kernel import SolveGravMagHolstein
 from . MagneticsModelling import MagneticsModelling
+from . magneticsManager import MagManager
 from . GravityModelling import GravityModelling
 #from . MagneticsModelling import gravMagBoundaryHolstein
 

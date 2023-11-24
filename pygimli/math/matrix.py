@@ -421,7 +421,7 @@ def createCm05(A):
 class Cm05Matrix(MatrixBase):
     """Matrix implicitly representing the inverse square-root."""
 
-    def __init__(self, A, verbose=False):
+    def __init__(self, A, trsh=1e-4, verbose=False):
         """Constructor saving matrix and vector.
 
         Parameters
@@ -429,8 +429,9 @@ class Cm05Matrix(MatrixBase):
         A : ndarray
             numpy type (full) matrix
         """
-        super().__init__(verbose)  # only in Python 3
+        super().__init__(verbose)
         self._mul = None
+        self._trsh = trsh
 
         if isinstance(A, str):
             self.load(A)
@@ -445,14 +446,15 @@ class Cm05Matrix(MatrixBase):
                 pg.tic(key='init cm05')
 
             eigkw = {}
-            thrsh = 1e-6
+            trsh = self._trsh
             if version.parse(scipy.__version__) >= version.parse("1.5"):
-                eigkw["subset_by_value"] = [thrsh, np.inf]
+                eigkw["subset_by_value"] = [trsh, np.inf]
+                eigkw["driver"] = "evr"
                 self.ew, self.EV = scipy.linalg.eigh(A, **eigkw)
             else:
                 self.ew, self.EV = scipy.linalg.eigh(A)
-                self.EV = self.EV[:, self.ew > thrsh]
-                self.ew = self.ew[self.ew > thrsh]
+                self.EV = self.EV[:, self.ew > trsh]
+                self.ew = self.ew[self.ew > trsh]
 
             if verbose:
                 pg.info('(C) Time for eigenvalue decomposition {:.1f}s'.format(
@@ -649,7 +651,7 @@ class NDMatrix(pgcore.BlockMatrix):
 
 class KroneckerMatrix(pg.core.MatrixBase):
     """Memory-saving implementation of Kronecker matrix.
-    
+
     The Kronecker matrix consists of repetitions of an inner
     matrix I, multiplied with elements of an outer matrix O.
         | O_11 I  O_12 I ... ]

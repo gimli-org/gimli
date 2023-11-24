@@ -477,7 +477,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
             val = pair[1:]
         else:
             val = pair[1]
-        
+
         bc.append([b, val])
 
         # print('-'*50)
@@ -716,7 +716,18 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
     att = pg.Vector(mesh.cellCount(), default)
 
     if isinstance(attributeMap, dict):
-        raise Exception("Please implement me!")
+        for marker, value in attributeMap.items():
+            idx = pg.find(mesh.cellMarkers() == marker)
+            if len(idx) == 0:
+                pg.warn("parseMapToCellArray: cannot find marker " +
+                        str(marker) + " within mesh.")
+            else:
+                if isinstance(value, complex):
+                    if not isinstance(att, pg.CVector):
+                        att = pg.math.toComplex(att)
+                    att.setVal(val=value, ids=idx)
+                else:
+                    att.setVal(val=float(value), ids=idx)
     elif hasattr(attributeMap, '__len__'):
         if not hasattr(attributeMap[0], '__len__'):
             # assuming [marker, value]

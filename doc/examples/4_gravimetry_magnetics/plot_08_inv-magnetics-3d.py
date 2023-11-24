@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# %%
 r"""
 3D magnetics modelling and inversion
 ====================================
@@ -14,6 +15,7 @@ inversion using a depth-weighting function as outlined in the paper.
 """
 # sphinx_gallery_thumbnail_number = 2
 import numpy as np
+import matplotlib.pyplot as plt
 import pygimli as pg
 from pygimli.viewer import pv
 from pygimli.physics.gravimetry import MagneticsModelling
@@ -27,7 +29,7 @@ from pygimli.physics.gravimetry import MagneticsModelling
 dx = 50
 x = np.arange(0., 1001, dx)
 y = np.arange(0., 1001, dx)
-z = np.arange(0., 501, dx)
+z = np.arange(-500., .1, dx)
 grid = pg.createGrid(x, y, z)
 print(grid)
 
@@ -70,21 +72,25 @@ _ = pl.show()
 # ``pyIGRF`` module.
 #
 
-F, I, D = 50000e-9, 75, 25
+F, I, D = 50000, 75, 25  # total field in nT
 H = F * np.cos(np.deg2rad(I))
 X = H * np.cos(np.deg2rad(D))
 Y = H * np.sin(np.deg2rad(D))
 Z = F * np.sin(np.deg2rad(I))
 igrf = [D, I, H, X, Y, Z, F]
 
+# Alternatively one could use pyIGRF at a specific position
+# import pyIGRF
+# igrf = pyIGRF.igrf_value(lat=50.59465, lon=12.64139)
+
 py, px = np.meshgrid(x, y)
 px = px.ravel()
 py = py.ravel()
-points = np.column_stack((px, py, -np.ones_like(px)*20))
+points = np.column_stack((px, py, np.ones_like(px)*20))
 
 # The forward operator
 cmp = ["TFA"]  # ["Bx", "By", "Bz"]
-fop = MagneticsModelling(grid, points, cmp, igrf)
+fop = MagneticsModelling(mesh=grid, points=points, cmp=cmp, igrf=igrf)
 model = pg.Vector(grid.cellCount(), 1.0)
 data = fop.response(grid["synth"])
 
@@ -93,8 +99,7 @@ data = fop.response(grid["synth"])
 # consisting of relative and absolute noise of 2% and 1 nT, respectively.
 #
 
-err = 0.01
-noise_level = 1e-9
+noise_level = 5  # nT
 data += np.random.randn(len(data)) * noise_level
 
 # %%%
@@ -111,9 +116,10 @@ data += np.random.randn(len(data)) * noise_level
 #
 
 # depth weighting
-bz = np.array([b.center().z() for b in grid.boundaries() if not b.outside()])
+bz = np.array([abs(b.center().z()) for b in grid.boundaries() if not b.outside()])
 z0 = 25
-wz = 10 / (bz+z0)**1.5
+wz = 100 / (bz+z0)**1.5
+print(min(wz), max(wz))
 
 # %%%
 # Inversion
@@ -126,7 +132,7 @@ wz = 10 / (bz+z0)**1.5
 inv = pg.Inversion(fop=fop, verbose=True)  # , debug=True)
 inv.setRegularization(limits=[0, 0.07])  # to limit values
 inv.setConstraintWeights(wz)
-invmodel = inv.run(data, absoluteError=noise_level, lam=1e4, startModel=1e-3, verbose=True)
+invmodel = inv.run(data, absoluteError=noise_level, lam=100, startModel=1e-3, verbose=True)
 grid["inv"] = invmodel
 
 # %%%
@@ -158,18 +164,22 @@ _ = pl.show()
 # We compare the data and model response by means of scatter plots:
 #
 
-fig, ax = pg.plt.subplots(ncols=2, figsize=(12, 5), sharex=True, sharey=True)
-vals = data * 1e9
+fig, ax = plt.subplots(ncols=2, figsize=(12, 5), sharex=True, sharey=True)
+vals = data
 mm = np.max(np.abs(vals))
-ax[0].scatter(px, py, c=vals, cmap="bwr", vmin=-mm, vmax=mm);
-_ = ax[1].scatter(px, py, c=inv.response*1e9, cmap="bwr", vmin=-mm, vmax=mm);
+ax[0].scatter(px, py, c=vals, cmap="bwr", vmin=-mm, vmax=mm)
+im = ax[1].scatter(px, py, c=inv.response, cmap="bwr", vmin=-mm, vmax=mm)
+cb = plt.colorbar(im, ax=ax[1])
+cb.set_label("B (nT)")
 
 # %%%
 # Alternatively, we can also plot the error-weighted misfit.
 #
 
 misfit = (inv.response - data) / noise_level
-_ = pg.plt.scatter(py, px, c=misfit, cmap="bwr", vmin=-3, vmax=3);
+im = plt.scatter(py, px, c=misfit, cmap="bwr", vmin=-3, vmax=3)
+cb = plt.colorbar(im)
+cb.set_label("misfit / error")
 
 # %%%
 # References
