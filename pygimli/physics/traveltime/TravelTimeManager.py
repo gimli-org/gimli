@@ -393,6 +393,17 @@ class TravelTimeManager(MeshMethodManager):
         J = self.fop.jacobian()
         return J.transMult(np.ones(J.rows()))
 
+    def createTraveltimefield(self, v=None, startPos=None):
+        """Compute a single traveltime field."""
+        startPos = startPos or self.data.sensor(0)
+        fop = self.fop
+        mesh = fop.mesh()
+        Di = fop.dijkstra
+        slowPerCell = fop.createMappedModel(1/v, 1e16)
+        Di.setGraph(fop._core.createGraph(slowPerCell))
+        Di.setStartNode(mesh.findNearestNode(startPos))
+        return Di.distances()[:mesh.nodeCount()]
+
     def standardizedCoverage(self):
         """Standardized coverage vector (0|1) using neighbor info."""
         coverage = self.rayCoverage()
