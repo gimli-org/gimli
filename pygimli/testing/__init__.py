@@ -53,21 +53,25 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     Examples
     --------
     >>> import pygimli as pg
-    >>> # You can test everything with pg.test() or test a single function:
-    >>> pg.test("pg.utils.boxprint", verbose=False)
+    >>> # Run the whole test suite.
+    >>> pg.test() # doctest: +SKIP
+    >>> # Test a single function by a string.
+    >>> pg.test("utils.boxprint", verbose=False) # doctest: +SKIP
     >>> # The target argument can also be the function directly
     >>> from pygimli.utils import boxprint
-    >>> pg.test(boxprint, verbose=False)
+    >>> pg.test(boxprint, verbose=False) # doctest: +SKIP
+    >>> # Use some logical expressions
+    >>> pg.test("draw and not drawMesh") # doctest: +SKIP
 
     Parameters
     ----------
-    target : function or string, optional
+    target : function or string or pattern (-k flag in pytest), optional
         Function or method to test. By default everything is tested.
     show : boolean, optional
-        Show matplotlib windows during test run. They will be closed
+        Show viewer windows during test run. They will be closed
         automatically.
     onlydoctests : boolean, optional
-        Run test files in ../tests as well.
+        Run test files in testing as well.
     coverage : boolean, optional
         Create a coverage report. Requires the pytest-cov plugin.
     htmlreport : str, optional
@@ -82,6 +86,12 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     """
     setDevTests(devTests)
 
+    try:
+        import pytest
+    except ImportError:
+        raise ImportError("pytest is required to run test suite. "
+                          "Try 'pip install pytest'.")
+
     # Remove figure warnings
     np.random.seed(1337)
     plt = pg.plt
@@ -92,49 +102,11 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
 
     printopt = np.get_printoptions()
 
-    if verbose:
-        pg.boxprint("Testing pygimli %s" % pg.__version__, sym="+", width=90)
 
     # Numpy compatibility (array string representation has changed)
     if np.__version__[:4] == "1.14":
         pg.warn("Some doctests will fail due to old numpy version.",
                 "Consider upgrading to numpy >= 1.15")
-
-    if target:
-        if isinstance(target, str):
-            # If target is a string, such as "pg.solver.solve"
-            # the code below will overwrite target with the corresponding
-            # imported function, so that doctest works.
-            target = target.replace("pg.", "pygimli.")
-            import importlib
-            mod_name, func_name = target.rsplit('.', 1)
-            try:
-                mod = importlib.import_module(mod_name)
-                target = getattr(mod, func_name)
-            except Exception:
-                import pytest
-                exitcode = pytest.main([target])
-
-                if exitcode == pytest.ExitCode.OK:
-                    return
-
-                print("Exiting with exitcode", exitcode)
-                sys.exit(exitcode)
-
-        if show:  # Keep figure opened if single function is tested
-            plt.ioff()
-
-        import doctest
-        doctest.run_docstring_examples(target, globals(), verbose=verbose,
-                                       optionflags=doctest.ELLIPSIS,
-                                       name=target.__name__)
-        return
-
-    try:
-        import pytest
-    except ImportError:
-        raise ImportError("pytest is required to run test suite. "
-                          "Try 'sudo pip install pytest'.")
 
     old_backend = plt.get_backend()
     # pg._r(old_backend, show)
@@ -149,15 +121,36 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
         "gui", "physics/traveltime/example.py", "physics/em/fdemexample.py"
     ]
 
-    if onlydoctests:
+    if onlydoctests or target:
         excluded.append("testing")
 
-    cmd = ([
-        "-v", "-rsxX", "--color", "yes", "--doctest-modules", "--durations",
-        "5", cwd
-    ])
-    for directory in excluded:
-        cmd.extend(["--ignore", join(cwd, directory)])
+    cmd = (["--color", "yes", "--doctest-modules", "-p", "no:warnings"])
+
+    string = f"pygimli {pg.__version__}"
+
+    target_source = False
+    if target:
+        if not isinstance(target, str):
+            import inspect
+            target_source = inspect.getsourcefile(target)
+            target = target.__name__
+        else:
+            target = target.replace("pg.", "")
+            target = target.replace("pygimli.", "")
+
+        cmd.extend(["-k", target, "--no-header", "--doctest-report", "udiff"])
+        if not verbose:
+            cmd.extend(["-qq", "-rN"])
+
+        if show:  # Keep figure opened if single function is tested
+            plt.ioff()
+
+        string = f"'{target}' from {string}"
+
+    if verbose:
+        cmd.extend(["-v", "--durations", "5"])
+        pg.boxprint(f"Testing {string}", sym="+", width=90)
+
 
     if coverage:
         pc = pg.optImport("pytest_cov", "create a code coverage report")
@@ -170,11 +163,20 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
         if ph:
             cmd.extend(["--html", htmlreport])
 
+    for directory in excluded:
+        cmd.extend(["--ignore", join(cwd, directory)])
+
     plt.close("all")
+    if target_source:
+        cmd.extend([target_source])
+    else:
+        cmd.extend([cwd])
+
     exitcode = pytest.main(cmd)
-    if abort:
-        print("Exiting with exitcode", exitcode)
-        sys.exit(exitcode)
 
     plt.switch_backend(old_backend)
     np.set_printoptions(**printopt)
+
+    if exitcode == pytest.ExitCode.OK and verbose:
+        print("Exiting with exitcode", exitcode)
+        sys.exit(exitcode)
