@@ -290,8 +290,11 @@ def testShowPV():
 
 
 def testPVBackends():
+    """Only make sense called from notebook.
+    """
     m1 = mt.createCube()
 
+    
     # pg.rc['view3D'] = 'fallback'
     # pg.show(m1)
 
@@ -302,6 +305,8 @@ def testPVBackends():
     pg.show(m1, backend='pythreejs')
     print('ipyvtklink')
     pg.show(m1, backend='ipyvtklink')
+    print('trame')
+    pg.show(m1, backend='trame')
 
 
 def testCoverage():

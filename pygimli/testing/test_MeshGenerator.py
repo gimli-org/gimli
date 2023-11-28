@@ -17,6 +17,19 @@ class TestMeshGenerator(unittest.TestCase):
 
         mesh = pg.createGrid(x, y, z)
 
+
+    def test_meshGenRValueProblem(self):
+        """
+        """
+        dx = 100
+        x = np.arange(-1000, 1001, dx)
+        z = np.arange(-800, 1, dx)
+        grid = pg.meshtools.createGrid(x=x, y=x, z=z)
+        print(grid)
+        print(grid.bb())
+
+
+
     def test_triangle(self):
         plc = pg.meshtools.createRectangle()
         mesh = pg.meshtools.createMesh(plc)
@@ -282,7 +295,6 @@ class TestMeshGenerator(unittest.TestCase):
         np.testing.assert_array_equal(mesh2.nodeCount(), mesh.nodeCount())
         np.testing.assert_array_equal(mesh2.cellCount(), mesh.cellCount())
         
-
 
 if __name__ == '__main__':
     # pg.setDeepDebug(1)

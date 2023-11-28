@@ -1673,14 +1673,12 @@ void DCMultiElectrodeModelling::calculate(const std::vector < ElectrodeShape * >
     if (!subSolutions_) {
         subpotOwner_ = true;
         if (complex_){
-            subSolutions_ = new CMatrix();
+            subSolutions_ = new CMatrix(0, 0);
         } else {
-            subSolutions_ = new RMatrix();
+            subSolutions_ = new RMatrix(0, 0);
         }
     }
-
     uint nCurrentPattern = eA.size();
-
     subSolutions_->resize(nCurrentPattern * kValues_.size(),
                           mesh_->nodeCount());
 
@@ -1696,7 +1694,6 @@ void DCMultiElectrodeModelling::calculate(const std::vector < ElectrodeShape * >
 
     // create or find primary potentials
     preCalculate(eA, eB);
-
 
     for (Index kIdx = 0; kIdx < kValues_.size(); kIdx ++){
         //if (verbose_ && kValues_.size() > 1) std::cout << "\r" << kIdx + 1 << "/" << kValues_.size();
@@ -1866,21 +1863,22 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
 
         solver.solve(rhs, sol);
 
-        // if (i==0){
+        // if (i==4){
         //     __MS(*mesh_)
-        //     __MS(min(rhs), max(rhs))
-        //     __MS(min(sol), max(sol))
-        //     S_.save("S-gimli.matrix");
-        //     rhs.save("rhs.vec");
-        //     save(sol, "sol.vec");
+        //     __MS(min(rhs) << " " << max(rhs))
+    	//     __MS(min(sol) << " " << max(sol))
+
+	    // S_.save("S-gimlii_2.matrix");
+        //      rhs.save("rhs_2.vec");
+        //      save(sol, "sol_2.vec");
         //     __MS(eA[i])
-        //     __MS(eB[i])
-        //     mesh_->addData("sol" + str((kIdx) * nCurrentPattern + i), sol);
-        //     mesh_->addData("rhs", rhs);
-        //     mesh_->addData("soll", log(abs(sol)));
-        //     mesh_->exportVTK("sol");
-        //     exit(0);
-        // }
+        //      __MS(eB[i])
+        //      mesh_->addData("sol" + str((kIdx) * nCurrentPattern + i), sol);
+        //      mesh_->addData("rhs", rhs);
+        //      mesh_->addData("soll", log(abs(sol)));
+        //      mesh_->exportVTK("sol_2");
+        //      exit(0);
+        //  }
 //         mesh_->addData("sol" + str((kIdx) * nCurrentPattern + i), sol);
 //         S_.save("S-gimli.matrix");
 //         rhs.save("rhs.vec");

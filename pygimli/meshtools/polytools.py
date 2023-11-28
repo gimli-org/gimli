@@ -352,7 +352,7 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarkers=True,
 
         world = createCube(size=pg.Pos(end)-pg.Pos(start),
                            pos=(pg.Pos(end)+pg.Pos(start))/2.0,
-                           **kwargs)
+                           area=area, **kwargs)
 
         for i, b in enumerate(world.boundaries()):
             if worldMarkers is True:
@@ -790,28 +790,28 @@ def mergePLC(plcs, tol=1e-3):
     if plcs[0].dim() == 3:
         return mergePLC3D(plcs, tol)
 
-        tmp = pg.optImport('tempfile')
-        names = []
-        for p in plcs:
-            _, namePLC = tmp.mkstemp(suffix='.poly')
-            pg.meshtools.exportPLC(p, namePLC)
-            names.append(namePLC)
+        # tmp = pg.optImport('tempfile')
+        # names = []
+        # for p in plcs:
+        #     _, namePLC = tmp.mkstemp(suffix='.poly')
+        #     pg.meshtools.exportPLC(p, namePLC)
+        #     names.append(namePLC)
 
-        for n in names[1:]:
-            syscal = 'polyMerge {0} {1} {0}'.format(names[0], n)
-            pg.debug(syscal)
-            os.system(syscal)
+        # for n in names[1:]:
+        #     syscal = 'polyMerge {0} {1} {0}'.format(names[0], n)
+        #     pg.debug(syscal)
+        #     os.system(syscal)
 
-        plc = readPLC(names[0])
+        # plc = readPLC(names[0])
 
-        for n in names:
-            try:
-                pg.debug('Remove:', n)
-                os.remove(n)
-            except Exception:
-                print("can't remove:", n)
+        # for n in names:
+        #     try:
+        #         pg.debug('Remove:', n)
+        #         os.remove(n)
+        #     except Exception:
+        #         print("can't remove:", n)
 
-        return plc
+        # return plc
 
     # handle 2D geometries
     plc = pg.Mesh(dim=2, isGeometry=True)

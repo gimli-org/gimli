@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # coding: utf-8
 """
-Hydrogeophysical modeling
--------------------------
+Hydrogeophysical modelling
+--------------------------
 
-Coupled hydrogeophysical modeling example. This essentially represents the
-forward modeling step of the example presented in section 3.2 of the `pyGIMLi
+Coupled hydrogeophysical modelling example. This essentially represents the
+forward modelling step of the example presented in section 3.2 of the `pyGIMLi
 paper <http://www.sciencedirect.com/science/article/pii/S0098300417300584/pdfft?md5=44253eaacd5490e3fb32210671672496&pid=1-s2.0-S0098300417300584-main.pdf>`_.
 """
 # sphinx_gallery_thumbnail_number = 8
@@ -20,7 +20,7 @@ from pygimli.physics import ERTManager
 
 
 ################################################################################
-# Create geometry definition for the modeling domain
+# Create geometry definition for the modelling domain
 world = mt.createWorld(start=[-20, 0], end=[20, -16], layers=[-2, -8],
                        worldMarkers=False)
 
@@ -140,7 +140,7 @@ for ci in c[1:][::200]:
 # Create a dipole-dipole measurement scheme and a suitable mesh for ERT forward
 # simulations.
 
-ertScheme = ert.createERTData(pg.utils.grange(-20, 20, dx=1.0), schemeName='dd')
+ertScheme = ert.createData(pg.utils.grange(-20, 20, dx=1.0), schemeName='dd')
 
 meshERT = mt.createParaMesh(ertScheme, quality=33, paraMaxCellSize=0.2,
                             boundaryMaxCellSize=50, smooth=[1, 2])

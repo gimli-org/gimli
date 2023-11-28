@@ -69,7 +69,7 @@ help(){
     echo "---------------------------------------------------------------------"
     echo " add these option with out leading - at the end of the command line"
     echo " e.g.    "
-    echo " curl -Ls install.pygimli.org | bash -s py=3 path=./gimli-root j=8"
+    echo " curl -Ls install.pygimli.org | bash -s py=3 path=./gimli j=8"
     echo "---------------------------------------------------------------------"
     echo "h|help"
     echo "      This help"

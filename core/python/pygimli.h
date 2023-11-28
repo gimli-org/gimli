@@ -17,8 +17,8 @@
 
  #include <iostream>
  #include <fstream>
- #include "stopwatch.h"
- #include "vector.h"
+//  #include "stopwatch.h"
+//  #include "vector.h"
 
 #ifndef PYGIMLI_CAST
     #include "pos.h"
@@ -30,12 +30,12 @@ namespace GIMLI{
     inline void tmp(){
          std::cout << "tmp"<< std::endl;  
     }
-    class TMP {
-            public:
-            void a(){std::cout << "TMP"<< std::endl;}  
-    };
+    // class TMP {
+    //         public:
+    //         void a(){std::cout << "TMP"<< std::endl;}  
+    // };
 
-    extern template class Vector< double >;
+    // extern template class Vector< double >;
 //     template class VectorIterator< double >;
 //     template class Vector< Complex >;
 //     template class Vector< int >;
@@ -68,20 +68,20 @@ namespace GIMLI{
 
 } // namespace GIMLI
 
-    typedef std::complex< double >                  Complex;
-    typedef GIMLI::Vector< double >                 RVector;
-    // typedef GIMLI::Vector< bool >                 BVector;
-    // typedef GIMLI::Vector< long >                 IVector;
+//     typedef std::complex< double >                  Complex;
+//     typedef GIMLI::Vector< double >                 RVector;
+//     // typedef GIMLI::Vector< bool >                 BVector;
+//     // typedef GIMLI::Vector< long >                 IVector;
     
-    typedef GIMLI::VectorIterator< double >          RVectorIter;// avoid doubs
-    typedef GIMLI::VectorIterator< bool >            BVectorIter;// avoid doubs
-    typedef GIMLI::VectorIterator< long >            IVectorIter;// avoid doubs
+//     typedef GIMLI::VectorIterator< double >          RVectorIter;// avoid doubs
+//     typedef GIMLI::VectorIterator< bool >            BVectorIter;// avoid doubs
+//     typedef GIMLI::VectorIterator< long >            IVectorIter;// avoid doubs
     
-    // typedef GIMLI::VectorIterator< Complex >              CVectorIter;
-    // typedef GIMLI::BlockMatrix< double >                 RBlockMatrix;
+//     // typedef GIMLI::VectorIterator< Complex >              CVectorIter;
+//     // typedef GIMLI::BlockMatrix< double >                 RBlockMatrix;
 
-    }
-} //pyplusplus::aliases
+//     }
+// } //pyplusplus::aliases
 
 #else // if not PYTEST
 

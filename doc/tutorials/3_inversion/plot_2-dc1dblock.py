@@ -12,6 +12,7 @@ A DC 1D (VES) modelling is used to generate data, noisify and invert them.
 # %%%
 # We import numpy, matplotlib and the 1D plotting function
 import numpy as np
+import matplotlib.pyplot as plt
 import pygimli as pg
 from pygimli.physics import VESManager
 
@@ -33,16 +34,13 @@ rhoa, err = ves.simulate(synthModel, ab2=ab2, mn2=ab2/3,
                          noiseLevel=0.03, seed=1337)
 
 # %%%
-ves.invert(data=rhoa, error=err, ab2=ab2, mn2=ab2/3,
-           nLayers=4,
-           # startModel=[3]*3+[100]*4,
-           lam=1000, lambdaFactor=0.8
-           )
+ves.invert(data=rhoa, relativeError=err, ab2=ab2, mn2=ab2/3,
+           nLayers=4, lam=1000, lambdaFactor=0.8)
 
 # %%%
-# show estimated&synthetic models and data with model response in 2 subplots
-fig, ax = pg.plt.subplots(ncols=2, figsize=(8, 6))  # two-column figure
+# show estimated & synthetic models and data with model response in 2 subplots
+fig, ax = plt.subplots(ncols=2, figsize=(8, 6))  # two-column figure
 ves.showModel(synthModel, ax=ax[0], label="synth", plot="semilogy", zmax=20)
 ves.showModel(ves.model, ax=ax[0], label="model", zmax=20)
 ves.showData(rhoa, ax=ax[1], label="data", color="C0", marker="x")
-ves.showData(ves.inv.response, ax=ax[1], label="response", color="C1")
+out = ves.showData(ves.inv.response, ax=ax[1], label="response", color="C1")

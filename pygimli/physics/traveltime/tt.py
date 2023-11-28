@@ -5,6 +5,7 @@
 # general purpose
 import numpy as np
 import pygimli as pg
+from pygimli.viewer.mpl import createColorBar
 from .TravelTimeManager import TravelTimeManager
 from .utils import createCrossholeData, createRAData
 from .plotting import drawTravelTimeData, drawVA, drawFirstPicks
@@ -44,9 +45,10 @@ def show(data, **kwargs):
     va = kwargs.pop("va", None)
     if va is None:  # check if refraction
         va = len(np.unique(pg.x(data))) < data.sensorCount()
+
     if va:
-        gci = drawVA(ax, data=data, usePos=usePos, **kwargs)
-        # cBar = createColorBar(gci, **kwargs)
+        gci = drawVA(ax, data=data, **kwargs)
+        cBar = createColorBar(gci, **kwargs)
     else:
         drawFirstPicks(ax, data, tt=kwargs.pop("t", None), **kwargs)
         # drawTravelTimeData(ax, data, **kwargs)

@@ -319,7 +319,7 @@ class MethodManager(object):
     @property
     def data(self):
         return self._data
-    
+
     @data.setter
     def data(self, d):
         return self.setData(d)
@@ -847,17 +847,19 @@ class MeshMethodManager(MethodManager):
         self.fw.run(dataVals, errorVals, **kwargs)
         self.postRun(**kwargs)
         return self.paraModel(self.fw.model)
-        
+
     def showFit(self, axs=None, **kwargs):
         """Show data and the inversion result model response."""
         orientation = 'vertical'
         if axs is None:
-            _, axs = pg.plt.subplots(nrows=1, ncols=2)
+            _, axs = pg.plt.subplots(nrows=1, ncols=2, sharex=True, sharey=True)
             orientation = 'horizontal'
 
+        kwargs.setdefault("cMin", min(self.inv.dataVals))
+        kwargs.setdefault("cMax", max(self.inv.dataVals))
         self.showData(data=self.inv.dataVals,
-                      orientation=orientation,
-                      ax=axs[0], **kwargs)
+                              orientation=orientation,
+                              ax=axs[0], **kwargs)
         axs[0].text(0.0, 1.03, "Data",
                     transform=axs[0].transAxes,
                     horizontalalignment='left',

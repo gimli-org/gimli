@@ -3,12 +3,11 @@
 Import and extensions of the core Mesh class.
 """
 import numpy as np
-
 from math import ceil
-
 from .core import (cat, HexahedronShape, Line, RSparseMapMatrix,
-                        Mesh, MeshEntity, Node, Boundary, RVector, Pos,
-                        PolygonFace, TetrahedronShape, TriangleFace)
+                   Mesh, MeshEntity, Node, Boundary, RVector, Pos,
+                   PolygonFace, TetrahedronShape, TriangleFace)
+                   
 from .logger import deprecated, error, info, warn, critical, _r
 
 from .base import isScalar, isArray, isPos, isR3Array, isComplex
@@ -36,7 +35,6 @@ def __Mesh_unique_dataKeys(self):
 
         uniqueNames[uName].append(d)
     return uniqueNames
-
 Mesh.dataKeys = __Mesh_unique_dataKeys
 
 
@@ -71,8 +69,6 @@ def __Mesh_getData__(self):
         # print(k, ret[k].shape)
 
     return ret
-        
-
 Mesh.dataDict = __Mesh_getData__
 
 
@@ -215,8 +211,6 @@ def __Mesh_setVal(self, key, val):
             except:
                 pass
             error('Could not add data.')
-
-    #print('keys', self.dataMap.keys())
 Mesh.__setitem__ = __Mesh_setVal
 
 
@@ -271,6 +265,7 @@ def __MeshBoundingBox__(self):
     mi = Pos([bb.min()[i] for i in range(3)])
     ma = Pos([bb.max()[i] for i in range(3)])
     return [mi, ma]
+
 Mesh.bb = __MeshBoundingBox__
 
 
@@ -388,14 +383,14 @@ def __createSecondaryNodes__(self, n=3, verbose=False):
     if verbose:
         info("Added %d secondary nodes." % self.secondaryNodeCount())
 
+Mesh.createSecondaryNodes = __createSecondaryNodes__
 
 def __createMeshWithSecondaryNodes__(self, n=3, verbose=False):
     m = Mesh(self)
     m.createSecondaryNodes(n, verbose)
     return m
-Mesh.createSecondaryNodes = __createSecondaryNodes__
-Mesh.createMeshWithSecondaryNodes = __createMeshWithSecondaryNodes__
 
+Mesh.createMeshWithSecondaryNodes = __createMeshWithSecondaryNodes__
 
 __Mesh_deform__ = Mesh.deform
 def __deform__(self, u, magnify=1.0):
@@ -440,6 +435,7 @@ Mesh.xmax = Mesh.xMax
 Mesh.ymax = Mesh.yMax
 Mesh.zmax = Mesh.zMax
 
+
 def __Boundary_outside__(self):
     """Is the boundary is on the outside of the mesh."""
     return self.leftCell() is not None and self.rightCell() is None
@@ -466,7 +462,9 @@ def __Mesh_h__(self):
         * different name since this is not cell size for p2 cells
     """
     return np.array([c.shape().h() for c in self.cells()])
+
 Mesh.h = __Mesh_h__
+
 
 def __Mesh_findPaths__(self, bounds):
     """Find paths of connected boundaries
@@ -547,6 +545,7 @@ def __Mesh_findPaths__(self, bounds):
 
 
     return paths
+
 Mesh.findPaths = __Mesh_findPaths__
 
 
@@ -729,9 +728,10 @@ def __Mesh_cutBoundary__(self, marker, boundaryMarker=None):
 
 Mesh.cutBoundary = __Mesh_cutBoundary__
 
+
 def __Mesh__align__(self, pnts):
     """Align 2D mesh along 3D coordinates.
-        
+
     Align a xy-mesh along xyz-coordinates. x and y coordinates of the 2D mesh will be interpolated to x and y of pnts, where depth y from the mesh will become z and preserves its values.
 
     TODO
@@ -743,7 +743,7 @@ def __Mesh__align__(self, pnts):
     mesh: :gimliapi:`GIMLI::Mesh`
         2D mesh, assumed to be aligned along x-axis. Depth is y-axis.
     pnts: [[x,y],] | [[dx, x, y],]
-        * `shape[1] == 2`: Points that will be interpreted as xyz coordinates. 
+        * `shape[1] == 2`: Points that will be interpreted as xyz coordinates.
         * `shape[1] == 3`: interpreted as dx, x, y. Dx should start with <=0 max dx should be larger than `mesh.xmax() - mesh.xmin()`
     """
     if self.dim() != 2:
@@ -754,30 +754,133 @@ def __Mesh__align__(self, pnts):
     pnts = np.asarray(pnts)
     if pnts.ndim == 2:
         if pnts.shape[1] == 2:
-            
+
             A = np.zeros((pnts.shape[0], 3))
 
             from ..utils import cumDist
             A[:,0] = cumDist(pnts[:,0:2])
             A[:,1] = pnts[:,0]
             A[:,2] = pnts[:,1]
-            
+
         elif pnts.shape[1] == 3:
             A = pnts
-        
+
     if A is None:
         print(pnts)
         pg.critical("Can't, interprete ptns.")
 
     tn = [n.pos()[0] for n in self.nodes()]
     zn = [n.pos()[1] for n in self.nodes()]
-    
+
     p = interpolateAlongCurve(A[:,1:3], tn, tCurve=A[:,0])
 
     for i, n in enumerate(self.nodes()):
         n.setPos((p[i][0], p[i][1], zn[i]))
 
     self.geometryChanged()
-    
 
 Mesh.align = __Mesh__align__
+
+
+def __Mesh__swapOrientation__(self):
+    """Swap orientation from one right-hand-side type into another.
+
+    - xyz (right, up, up) with z pointing upwards
+    - NED (North, East, Down) with z pointing downwards
+    """
+    self.swapCoordinates(0, 1)  # exchange x and y
+    self.scale([1, 1, -1])  # revert z
+
+Mesh.swapOrientation = __Mesh__swapOrientation__
+
+
+def __Mesh__copy(self):
+    """Return copy of a mesh."""
+    return Mesh(self)
+
+Mesh.copy = __Mesh__copy
+
+
+def __Mesh__NED__(self):
+    """Return NED copy of mesh."""
+    newmesh = self.copy()
+    newmesh.swapOrientation()
+    return newmesh
+
+Mesh.NED = __Mesh__NED__
+
+
+def __Mesh__midpoint__(self):
+    """Return midpoint."""
+    return sum(self.bb()) / 2
+
+Mesh.midpoint = __Mesh__midpoint__
+
+
+def __Mesh__extent__(self, axis=None):
+    """Return extent of mesh.
+
+    Parameters
+    ----------
+    axis : str|int
+        axis along to measure the extent
+        0|'x' : x direction
+        1|'y' : y direction
+        2|'z' : z direction
+        None|'max' : maximum of x, y, z
+        -1|'d' : diagonal
+
+    Example
+    -------
+    >>> import numpy as np
+    >>> import pygimli.meshtools as mt
+    >>> m = mt.createGrid(3, 4, 2)
+    >>> print(m.extent())
+    3.0
+    >>> print(m.extent('x'))
+    2.0
+    >>> print(m.extent(2))
+    1.0
+    >>> print(np.round(m.extent('d'), 2))
+    3.74
+    """
+    bb = self.bb()
+    dist = bb[1]- bb[0]
+    if isinstance(axis, str):
+        sa0 = axis.lower()[0]
+        if sa0 == "m":
+            axis = None
+        else:
+            axis = "dxyz".find(sa0) - 1
+
+    if axis is None:
+        return max(np.abs(dist))
+    elif axis < 0:
+        return dist.abs()
+    else:
+        return abs(dist[axis])
+
+Mesh.extent = __Mesh__extent__
+
+
+def __Mesh__populate__(self, prop:str, value):
+    """Fill property of mesh with values from map or vector."""
+    from pygimli.solver import parseMapToCellArray
+    if isinstance(value, dict):
+        self[prop] =  parseMapToCellArray(value, self)
+    elif hasattr(value, '__iter__'):
+        if hasattr(value[0], '__iter__'):
+            self[prop] =  parseMapToCellArray(value, self)
+        elif len(value) == self.cellCount():
+            self[prop] = value
+        else:
+            raise Exception("Length mismatch!")
+
+Mesh.populate = __Mesh__populate__
+
+
+def __Mesh__innerBoundaryCenters__(self):
+    """Center of all inner boundaries (C1-constraints)."""
+    return [b.center() for b in self.boundaries() if not b.outside()]
+
+Mesh.innerBoundaryCenters = __Mesh__innerBoundaryCenters__

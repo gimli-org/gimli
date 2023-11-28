@@ -5,9 +5,7 @@ Created on Mon Feb 16 09:33:14 2015
 @author: Marcus Wennermark
 """
 import numpy as np
-# try to avoid plt impoert #
-# import matplotlib.pyplot as plt
-
+import matplotlib.pyplot as plt
 from .modelview import draw1DColumn
 
 
@@ -39,7 +37,7 @@ class BoreHole(object):
         self._fname = fname
         self._load()
 
-    def __repr__(self):
+    def __repr__1(self):
         return self.__class__.__name__ + '("{}")'.format(self._fname)
 
     def __repr__(self):
@@ -109,7 +107,7 @@ class BoreHoles(object):
         else:
             raise Warning('No filenames specified!')
 
-    def __repr__(self):
+    def __repr__1(self):
         return self.__class__.__name__ + '({})'.format(self._fnames)
 
     def __repr__(self):

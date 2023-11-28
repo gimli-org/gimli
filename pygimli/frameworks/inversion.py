@@ -552,8 +552,9 @@ class Inversion(object):
             relErr = kwargs.pop("relativeError",
                                 0.01 if np.allclose(absErr, 0) else 0)
             errorVals = pg.abs(absErr / np.asarray(dataVals)) + relErr
-            if isinstance(errorVals, (float, int)):
-                errorVals = np.ones_like(dataVals) * errorVals
+
+        if isinstance(errorVals, (float, int)):
+            errorVals = np.ones_like(dataVals) * errorVals
 
         if self.isFrameWork:
             pg.critical('in use?')
@@ -649,6 +650,9 @@ class Inversion(object):
         self.inv.setMaxIter(0)
         self.inv.start()
         self.maxIter = maxIterTmp
+        if self.verbose:
+            print("inv.iter 0 ... chi² = {:7.2f}".format(self.chi2()))
+            # print("inv.iter 0 ... chi² = {0}".format(round(self.chi2(), 2)))
 
         if self._postStep and callable(self._postStep):
             self._postStep(0, self)
@@ -704,8 +708,8 @@ class Inversion(object):
             dPhi = phi / lastPhi
 
             if self.verbose:
-                print("chi² = {0} (dPhi = {1}%) lam: {2}".format(
-                    round(chi2, 2), round((1 - dPhi) * 100, 2), lam))
+                print("chi² = {:7.2f} (dPhi = {:.2f}%) lam: {:.1f}".format(
+                    chi2, (1 - dPhi) * 100, lam))
 
             if chi2 <= 1 and self.stopAtChi1:
                 print("\n")

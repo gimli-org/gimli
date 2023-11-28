@@ -3,7 +3,7 @@
 
 r"""
 Generating SIP signatures
--------------------------
+=========================
 
 This example highlights some of the capabilities of pyGimli to generate
 spectral induced polarization (SIP) signatures."""

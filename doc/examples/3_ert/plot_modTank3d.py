@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-3D modeling in a closed geometry
-================================
+3D modelling in a closed geometry
+=================================
 
 This is a synthetic model of an experimental tank with a highly heterogeneous
 resistivity, motivated by the BAM Berlin.
@@ -145,12 +145,12 @@ het = ert.simulate(mesh, res=res, scheme=shm, sr=False,
 # homogeneous model and use it as geometric factors to find the apparent
 # resistivities for the inhomogeneous model.
 
-het.set('k', 1.0/ (hom('u') / hom('i')))
-het.set('rhoa', het('k') * het('u') / het('i'))
+het['k'] = 1.0/ (hom('u') / hom('i'))
+het['rhoa'] = het('k') * het('u') / het('i')
 
 het.save('simulated.dat', 'a b m n rhoa k u i')
 
-np.testing.assert_approx_equal(het('rhoa')[0], 9.5, 1)
+np.testing.assert_approx_equal(het['rhoa'][0], 9.5, 1)
 
 # np.testing.assert_approx_equal(het('k')[0], 0.820615269548)
 

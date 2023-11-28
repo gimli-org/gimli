@@ -73,18 +73,18 @@ fi
 # Test pygimli
 export PYTHONPATH=`pwd`/../trunk:$PYTHONPATH
 
-#OMP_THREAD_LIMIT=4 python -c "import pygimli; print(pygimli.Report()); pygimli.test(show=False, abort=True, htmlreport=\"build_tests.html\", devTests=True)"
+OMP_THREAD_LIMIT=4 python -c "import pygimli; print(pygimli.Report()); pygimli.test(show=False, abort=True, htmlreport=\"build_tests.html\", devTests=True)"
 
 # Build documentation
 
 # Setup for 3D visualizations
 # ------------------------------------------------
 export DISPLAY=:99.0
-export PYVISTA_OFF_SCREEN=True
+export PYVISTA_OFF_SCREEN=true
 # ------------------------------------------------
 
-#make clean-gallery
-#make doc # = doxygen, sphinxapi, sphinxpdf, sphinxhtml
+make clean-gallery
+make doc # = doxygen, sphinxapi, sphinxpdf, sphinxhtml
 end=$(date +"%s")
 echo "Ending automatic build #$BUILD_NUMBER".
 diff=$(($end-$start))

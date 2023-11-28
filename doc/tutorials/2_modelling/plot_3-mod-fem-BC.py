@@ -106,11 +106,10 @@ ax.set_xlim([-1.1, 1.1])
 ax.set_ylim([-1.1, 1.1])
 
 ###############################################################################
-# Its also possible to force single nodes to fixed values too:
+# Its also possible to force single nodes to fixed values too.
 # Short test: setting the value for the center node to 1.0
 u = solve(grid, f=1., bc={'Node': [grid.findNearestNode([0.0, 0.0]), 1.0]})
+np.testing.assert_approx_equal(u[grid.findNearestNode([0.0, 0.0])], 1.0, significant=10)
 
-ax, _ = pg.show(grid, u, label='Solution $u$',)
+ax, _ = pg.show(grid, u, logScale=False, label='Solution $u$',)
 show(grid, ax=ax)
-
-

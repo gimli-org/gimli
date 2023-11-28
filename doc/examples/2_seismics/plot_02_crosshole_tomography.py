@@ -21,7 +21,6 @@ import numpy as np
 import pygimli as pg
 import pygimli.meshtools as mt
 import pygimli.physics.traveltime as tt
-# from pygimli.physics.traveltime import TravelTimeManager, createCrossholeData
 
 pg.utils.units.quants['vel']['cMap'] = 'inferno_r'
 ###############################################################################
@@ -57,8 +56,8 @@ for sen in sensors:
 
 mesh_fwd = mt.createMesh(geom, quality=34, area=0.25)
 model = np.array([2000., 2300, 1700])[mesh_fwd.cellMarkers()]
-pg.show(mesh_fwd, model,
-        label=pg.unit('vel'), cMap=pg.cmap('vel'), nLevs=3, logScale=False)
+ax, cb = pg.show(mesh_fwd, model, logScale=False,
+                 label=pg.unit('vel'), cMap=pg.cmap('vel'), nLevs=3)
 
 ###############################################################################
 # Synthetic data generation
@@ -82,7 +81,7 @@ mgr = tt.TravelTimeManager()
 data = tt.simulate(mesh=mesh_fwd, scheme=scheme, slowness=1./model,
                    secNodes=4, noiseLevel=0.001, noiseAbs=1e-5, seed=1337)
 
-tt.showVA(data, usePos=False)
+ax, cb = tt.showVA(data, usePos=False)
 
 ###############################################################################
 # Inversion
@@ -108,8 +107,8 @@ fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 7), sharex=True, sharey=True)
 ax1.set_title("True model")
 ax2.set_title("Inversion result")
 
-pg.show(mesh_fwd, model, ax=ax1, showMesh=True,
-        label=pg.unit('vel'), cMap=pg.cmap('vel'), nLevs=3)
+ax, cb = pg.show(mesh_fwd, model, ax=ax1, showMesh=True,
+                 label=pg.unit('vel'), cMap=pg.cmap('vel'), nLevs=3)
 
 for ax in (ax1, ax2):
     ax.plot(sensors[:, 0], sensors[:, 1], "wo")
@@ -128,7 +127,7 @@ fig.tight_layout()
 fig, ax = plt.subplots()
 mgr.showCoverage(ax=ax, cMap="Greens")
 mgr.drawRayPaths(ax=ax, color="k", alpha=0.3)
-ax.plot(sensors[:, 0], sensors[:, 1], "ko")
+p = ax.plot(sensors[:, 0], sensors[:, 1], "ko")
 
 ###############################################################################
 # White regions indicate the model null space, i.e. cells that are not

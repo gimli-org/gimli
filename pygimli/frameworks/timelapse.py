@@ -73,9 +73,11 @@ class MultiFrameModelling(MeshModelling):
         self.jac.recalcMatrixSize()
         self.setJacobian(self.jac)
 
-    def createConstraints(self):
+    def createConstraints(self, C=None):
         """Create constraint matrix (special type for this)."""
-        if isinstance(super().createConstraints(), pg.SparseMapMatrix):
+        if C is not None:
+            self.C1 = C
+        elif isinstance(super().createConstraints(), pg.SparseMapMatrix):
             self.C1 = pg.SparseMapMatrix(self.constraintsRef())
             # make a copy because it will be overwritten
         else:

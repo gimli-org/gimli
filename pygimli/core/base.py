@@ -70,25 +70,6 @@ def isIterable(v, N=None):
     return isIterable(v) and len(v) == N
 
 
-
-def isIterable(v, N=None):
-    """Check if `v` is iterable with optional size `N`.
-
-    Examples
-    --------
-    >>> import pygimli as pg
-    >>> import numpy as np
-    >>> print(pg.isIterable([0, 1]))
-    True
-    >>> print(pg.isIterable([pg.Vector(5), pg.Vector(2)], N=2))
-    True
-    """
-    if N is None:
-        return hasattr(v, '__iter__')
-
-    return isIterable(v) and len(v) == N
-
-
 def isArray(v, N=None):
     """Check if `v` is a 1D array or a vector, with optional size `N`.
 
@@ -118,6 +99,7 @@ def isArray(v, N=None):
 
     return isArray(v) and len(v) == N
 
+
 def isComplex(vals):
     """Check numpy or pg.Vector if have complex data type"""
     if isScalar(vals):
@@ -126,6 +108,7 @@ def isComplex(vals):
     elif isArray(vals):
         return isComplex(vals[0])
     return False
+
 
 def isPos(v):
     """Check if v is an array of size(3), [x,y,z], or pg.Pos.
@@ -144,6 +127,7 @@ def isPos(v):
     """
     return isinstance(v, Pos) or \
         isArray(v, 1) or isArray(v, 2) or isArray(v, 3)
+
 
 def isR3Array(v, N=None):
     """Check if v is an array of size(N,3), a R3Vector or a list of pg.Pos.
@@ -167,9 +151,9 @@ def isR3Array(v, N=None):
         return isR3Array(v) and len(v) == N
     except:
         return False
-
 isPosList = isR3Array
 isVecField = isR3Array
+
 
 def isMatrix(v, shape=None):
     """Check is v has ndim=2 or is comparable list"""

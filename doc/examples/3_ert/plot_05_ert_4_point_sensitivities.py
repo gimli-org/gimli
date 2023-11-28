@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Four-point sensitivities
-------------------------
+========================
 
 In this example, we illustrate how to visualize the sensitivities of four-point
 arrays. You can easily loop over the plotting command to create something like:

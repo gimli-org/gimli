@@ -2,10 +2,11 @@
 # encoding: utf-8
 """
 3D surface ERT inversion
-------------------------
+========================
 
 Inversion of 3D surface ERT field data (the gallery).
 """
+# sphinx_gallery_thumbnail_number = 1
 
 # %%%
 # We import the used pygimli library and toolboxes for mesh, plot and ERT.
@@ -31,9 +32,8 @@ print(data)
 # boxes for inversion region and background and mesh it then.
 #
 
-plc = mt.createParaMeshPLC3D(data, paraDepth=12, paraMaxCellSize=1,
+plc = mt.createParaMeshPLC3D(data, paraDepth=12, paraMaxCellSize=3,
                              surfaceMeshQuality=34)
-print(plc)
 mesh = mt.createMesh(plc, quality=1.3)
 print(mesh)
 

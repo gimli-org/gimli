@@ -10,6 +10,7 @@ from pygimli.frameworks import MeshMethodManager
 
 from pygimli.utils import getSavePath
 from . modelling import TravelTimeDijkstraModelling, FatrayDijkstraModelling
+from . plotting import drawFirstPicks
 
 
 class TravelTimeManager(MeshMethodManager):
@@ -100,6 +101,7 @@ class TravelTimeManager(MeshMethodManager):
 
         return err
 
+
     def applyMesh(self, mesh, secNodes=None, ignoreRegionManager=False):
         """Apply mesh, i.e. set mesh in the forward operator class."""
         if secNodes is None:
@@ -111,8 +113,10 @@ class TravelTimeManager(MeshMethodManager):
                 mesh = self.fop.createRefinedFwdMesh(mesh)
 
         self.fop.setMesh(mesh, ignoreRegionManager=ignoreRegionManager)
+        self.fop.jacobian().clear()
 
-    def simulate(self, mesh, scheme, slowness=None, vel=None, seed=None,
+
+    def simulate(self, mesh=None, scheme=None, slowness=None, vel=None, seed=None,
                  secNodes=2, noiseLevel=0.0, noiseAbs=0.0, **kwargs):
         """Simulate traveltime measurements.
 
@@ -163,6 +167,7 @@ class TravelTimeManager(MeshMethodManager):
         verbose = kwargs.pop('verbose', self.verbose)
 
         fop = self.fop
+        scheme = scheme or self.data
         fop.data = scheme
         fop.verbose = verbose
 
@@ -259,6 +264,15 @@ class TravelTimeManager(MeshMethodManager):
         # that needs to be compatible to self.fw.mesh
         return velocity
 
+    def showFit(self, axs=None, firstPicks=True, **kwargs):
+        """Show data fit as first-break picks or apparent velocity."""
+        if firstPicks:
+            kwargs.setdefault("linestyle", "None")
+            ax, _ = self.showData(firstPicks=True, **kwargs)
+            drawFirstPicks(ax, self.fop.data, self.inv.response, marker=None)
+        else:
+            super().showFit(axs=axs, **kwargs)
+
     def getRayPaths(self, model=None):
         """Compute ray paths.
 
@@ -275,10 +289,8 @@ class TravelTimeManager(MeshMethodManager):
         list of two-column array holding x and y positions
         """
         if model is not None:
-            if self.fop.jacobian().size() == 0 or model != self.model:
-                self.fop.createJacobian(1/model)
-        else:
-            model = self.model
+            # if self.fop.jacobian().size() == 0 or model != self.model:
+            self.fop.createJacobian(1/model)
 
         shots = self.fop.data.id("s")
         recei = self.fop.data.id("g")
@@ -378,8 +390,19 @@ class TravelTimeManager(MeshMethodManager):
 
     def rayCoverage(self):
         """Ray coverage, i.e. summed raypath lengths."""
-        return self.fop.jacobian().transMult(
-            np.ones(self.fop.jacobian().rows()))
+        J = self.fop.jacobian()
+        return J.transMult(np.ones(J.rows()))
+
+    def createTraveltimefield(self, v=None, startPos=None):
+        """Compute a single traveltime field."""
+        startPos = startPos or self.data.sensor(0)
+        fop = self.fop
+        mesh = fop.mesh()
+        Di = fop.dijkstra
+        slowPerCell = fop.createMappedModel(1/v, 1e16)
+        Di.setGraph(fop._core.createGraph(slowPerCell))
+        Di.setStartNode(mesh.findNearestNode(startPos))
+        return Di.distances()[:mesh.nodeCount()]
 
     def standardizedCoverage(self):
         """Standardized coverage vector (0|1) using neighbor info."""

@@ -3,9 +3,10 @@ import numpy as np
 # from numpy import ma
 
 import pygimli as pg
+from .ert import createGeometricFactors
 
 
-def uniqueERTIndex(data, nI=0, reverse=False):
+def uniqueERTIndex(data, nI=0, reverse=False, unify=True):
     """Generate unique index from sensor indices A/B/M/N for matching
 
     Parameters
@@ -21,20 +22,51 @@ def uniqueERTIndex(data, nI=0, reverse=False):
     """
     if nI == 0:
         nI = data.sensorCount() + 1
-    normABMN = {'a': np.minimum(data('a'), data('b')) + 1,
-                'b': np.maximum(data('a'), data('b')) + 1,
-                'm': np.minimum(data('m'), data('n')) + 1,
-                'n': np.maximum(data('m'), data('n')) + 1}
-    abmn = ['a', 'b', 'm', 'n']   # 1 2 8 7
+
+    if unify:
+        normABMN = {'a': np.minimum(data('a'), data('b')) + 1,
+                    'b': np.maximum(data('a'), data('b')) + 1,
+                    'm': np.minimum(data('m'), data('n')) + 1,
+                    'n': np.maximum(data('m'), data('n')) + 1}
+    else:
+        normABMN = {tok: data[tok] + 1 for tok in "abmn"}
+
+    abmn = "abmn"
     if reverse:
-        abmn = ['m', 'n', 'a', 'b']   # 7 8 2 1
-#        abmn = ['n', 'm', 'b', 'a']   # 7 8 2 1
+        abmn = "mnab"  # nmba?
+
     ind = 0
     for el in abmn:
         ind = ind * nI + normABMN[el]  # data(el)
 
     return np.array(ind, dtype=np.int64)
 
+def generateDataFromUniqueIndex(ind, data=None, nI=None):
+    """Generate data container from unique index."""
+    scheme = pg.DataContainerERT()
+    if isinstance(data, pg.DataContainer):
+        scheme = pg.DataContainerERT(data)
+    elif isinstance(data, pg.PosVector):
+        scheme.setSensorPositions(data)
+    elif isinstance(data, int):  # check for positions
+        for i in range(data):
+            scheme.createSensor([i, 0, 0])
+
+    nI = nI or scheme.sensorCount() + 1
+    scheme.resize(0)  # make sure all data are deleted
+    scheme.resize(len(ind))
+    nmba = np.zeros([len(ind), 4], dtype=int)
+    for i in range(4):
+        col = ind % nI
+        ind -= col
+        ind = ind // nI
+        nmba[:, i] = col
+
+    for i, tok in enumerate("nmba"):
+        scheme[tok] = nmba[:, i] - 1
+
+    scheme["valid"] = 1
+    return scheme
 
 def getReciprocals(data, change=False, remove=False):
     """Compute data reciprocity from forward and backward data.
@@ -106,3 +138,34 @@ def extractReciprocals(fwd, bwd):
     back.removeInvalid()
     both.add(back)
     return rec, both
+
+def combineMultipleData(DATA):
+    """Combine multiple data containers into data/err matrices."""
+    assert hasattr(DATA, '__iter__'), "DATA should be DataContainers or str!"
+    if isinstance(DATA[0], str):  # read in if strings given
+        DATA = [pg.DataContainerERT(data) for data in DATA]
+
+    nEls = [data.sensorCount() for data in DATA]
+    assert max(np.abs(np.diff(nEls))) == 0, "Electrodes not equal"
+    uIs = [uniqueERTIndex(data) for data in DATA]
+    uI = np.unique(np.hstack(uIs))
+    scheme = generateDataFromUniqueIndex(uI, DATA[0])
+    uI = uniqueERTIndex(scheme)   #, unify=False)
+    R = np.ones([scheme.size(), len(DATA)]) * np.nan
+    ERR = np.zeros_like(R)
+    if not scheme.haveData('k'):  # just do that only once
+        scheme['k'] = createGeometricFactors(scheme)  # check numerical
+
+    for i, di in enumerate(DATA):
+        ii = np.searchsorted(uI, uIs[i])
+        if not di.haveData('r'):
+            if di.allNonZero('u') and di.allNonZero('i'):
+                di['r'] = di['u']/di['i']
+            elif di.allNonZero('rhoa'):
+                di['r'] = di['rhoa'] / scheme['k'][ii]
+
+        R[ii, i] = di['r']
+        ERR[ii, i] = di['err']
+
+    RHOA = np.abs(np.reshape(scheme['k'], [-1, 1]) * R)
+    return scheme, RHOA, ERR

@@ -12,17 +12,17 @@ from .plotting import drawVA
 
 
 class TravelTimeDijkstraModelling(MeshModelling):
-    """Forward modelling class for traveltime using Dijsktras method."""
+    """Forward modelling class for traveltime using Dijktras method."""
 
     def __init__(self, **kwargs):
         secNodes = kwargs.pop("secNodes", 3)
         super().__init__(**kwargs)
-        
+
         self._core = pg.core.TravelTimeDijkstraModelling()
         self._core.setRegionManager(self.regionManagerRef())
-        
+
         self._useGradient = None  # assumed to be [vTop, vBot] if set
-        self._refineSecNodes = secNodes  
+        self._refineSecNodes = secNodes
         # self._refineSecNodes = kwargs.pop("secNodes", 3)  # inactive!
         self.jacobian = self._core.jacobian
         self.setThreadCount = self._core.setThreadCount
@@ -58,6 +58,10 @@ class TravelTimeDijkstraModelling(MeshModelling):
     def setDataPost(self, data):
         """Set data after forward operator has been initalized."""
         self._core.setData(data)
+
+    def createGraph(self, slowness):
+        """Create Dijkstra graph."""
+        return self._core.createGraph(slowness)
 
     def createStartModel(self, dataVals):
         """Create a starting model from data values (gradient or constant)."""
@@ -142,14 +146,15 @@ class FatrayDijkstraModellingInterpolate(TravelTimeDijkstraModelling):
         super().__init__(**kwargs)
         self.frequency = frequency
         self.iMat = pg.matrix.SparseMapMatrix()
-        self.J = None
+        self.J = pg.Matrix()
+        self.setJacobian(self.J)
         self.sensorNodes = None
 
     def createJacobian(self, slowness):
         """Generate Jacobian matrix using fat-ray after Jordi et al. (2016)."""
         # mesh = self.mesh()
         mesh = self.meshNoSec  # change back with pgcore=1.5
-        self.J = pg.Matrix(self.data.size(), mesh.cellCount())
+        self.J.resize(self.data.size(), mesh.cellCount())
         self.sensorNodes = [mesh.findNearestNode(pos)
                             for pos in self.data.sensorPositions()]
         if (self.iMat.cols() != mesh.nodeCount() or
@@ -193,8 +198,9 @@ class FatrayDijkstraModellingMidpoint(TravelTimeDijkstraModelling):
         super().__init__(verbose)
         self.frequency = frequency
         self.mids = None
-        self.J = None
+        self.J = pg.Matrix()
         self.sensorNodes = None
+        self.setJacobian(self.J)
 
     def setMesh(self, mesh, **kwargs):  # secondaryNodes=3):
         """Set mesh and create additional secondary Nodes in cell centers."""
@@ -210,7 +216,7 @@ class FatrayDijkstraModellingMidpoint(TravelTimeDijkstraModelling):
 
     def createJacobian(self, slowness):
         """Generate Jacobian matrix using fat-ray after Jordi et al. (2016)."""
-        self.J = pg.Matrix(self.data.size(), self.mesh().cellCount())
+        self.J.resize(self.data.size(), self.mesh().cellCount())
         self.sensorNodes = [self.mesh.findNearestNode(pos)
                             for pos in self.data.sensorPositions()]
         Di = self.dijkstra()

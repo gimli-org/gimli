@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 r"""
 ERT field data with topography
-------------------------------
+==============================
 
 Simple example of data measured over a slagdump demonstrating:
 
@@ -10,7 +10,7 @@ Simple example of data measured over a slagdump demonstrating:
 - geometric factor generation
 - topography effect
 """
-# sphinx_gallery_thumbnail_number = 3
+# sphinx_gallery_thumbnail_number = 5
 import pygimli as pg
 from pygimli.physics import ert
 

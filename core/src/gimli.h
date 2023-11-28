@@ -45,7 +45,7 @@
 
 #ifndef PACKAGE_NAME
         #define PACKAGE_NAME "libgimli"
-        #define PACKAGE_VERSION "untagt-win"
+        #define PACKAGE_VERSION "untaged"
 
         #define PACKAGE_BUGREPORT "carsten@gimli.org"
         #define PACKAGE_AUTHORS "carsten@gimli.org, thomas@gimli.org, florian@gimli.org"

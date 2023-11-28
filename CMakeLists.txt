@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.15)
-#BOOST_MAX_VERISION: 1.65 UBUNTU:18
 
 if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(FATAL_ERROR "In-source builds not allowed.
             Please make a new directory (called a build directory)
             and run CMake from there. You may need to remove CMakeCache.txt." )
 endif()
-
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/core/cmake")
 include(GIMLImacros)
 
@@ -17,12 +16,6 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Sets the configuration to build (Release, Debug, etc...)")
 endif()
 
-
-#if (WIN32)
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -target x86_64-w64-windows-gnu")
-#    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -target x86_64-w64-windows-gnu")
-#endif()
-
 project(libgimli)
 include(CheckIncludeFileCXX)
 
@@ -31,14 +24,11 @@ message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID}")
 
 message(STATUS "UNIX:   " ${UNIX} " on all UNIX-like OS's, including Apple OS X and CygWin")
 message(STATUS "WIN32:  " ${WIN32} " on Windows. Prior to 2.8.4 this included CygWin")
-message(STATUS "APPLE:  " ${APPLE} " on Apple systems. does not imply the
-system is Mac OS X.")
+message(STATUS "APPLE:  " ${APPLE} " on Apple systems. does not imply the system is Mac OS X.")
 message(STATUS "MINGW:  " ${MINGW} " using the MinGW compiler in Windows")
 message(STATUS "MSYS:   " ${MSYS} "  using the MSYS developer environment in Windows")
 message(STATUS "CYGWIN: " ${CYGWIN} " using the CygWin version of cmake")
 message(STATUS "MSVC:   " ${MSVC} " ")
-
-
 
 if (POLICY CMP0025) # recognize appleclang
     cmake_policy(SET CMP0025 NEW)
@@ -51,6 +41,7 @@ endif()
 # Check if conda package is created
 if (DEFINED ENV{CONDA_BUILD})
     message(STATUS "Conda package is being created.")
+    message(STATUS "CMAKE_PREFIX_PATH = ${CMAKE_PREFIX_PATH}")
     set(CONDA_BUILD TRUE)
     set(Boost_INCLUDE_DIR "${CMAKE_PREFIX_PATH}/include")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-class-memaccess") # new since gcc.8 maybe need to be checked, not on apple
@@ -228,6 +219,7 @@ endif()
 #   boost
 ################################################################################
 message(STATUS "********** BOOST ***********")
+#set(Boost_USE_STATIC_LIBS ON)
 
 if (BUILD_BOOST)
     message(STATUS "Forced boost build.")
@@ -399,7 +391,7 @@ if (NOT Boost_PYTHON_LIBRARY)
                        "any libboost_python* on your system and "
                        "provide it to the authors so we can try to fix "
                        "this here.")
-        exit()
+        #exit()
     endif()
 endif()
 
@@ -435,30 +427,20 @@ message(STATUS "Triangle_LIBRARIES = ${Triangle_LIBRARIES}")
 find_or_build_package(Triangle triangle LOCAL)
 #find_package(Triangle)
 
-set(BLA_VENDOR OpenBLAS)
-#find_package(BLAS)
-#find_package(LAPACK)
-#find_package(blas)
-#find_package(lapack)
-#exit()
-find_or_build_package(BLAS lapack)
-find_or_build_package(LAPACK lapack)
-find_or_build_package(CHOLMOD suitesparse)
-find_package(UMFPACK)
-find_package(Eigen3 3.4)
-
-if (NOT USE_EIGEN3)
-    set (USE_EIGEN3 FALSE)
+if (CONDA_BUILD)
+# (231115) there is a missing symlink to libopenblas.so in ${CMAKE_PREFIX_PATH}/lib 
+# so we need to search for libblas.so
+    set(BLA_VENDOR Generic) 
 else()
-    set (USE_EIGEN3 FALSE)
-    if (EIGEN3_FOUND)
-        if (${EIGEN3_VERSION_MINOR} EQUAL 4)
-            set (USE_EIGEN3 TRUE)
-        else()
-        message(STAUS "need at least version eigen-3.4")
-        endif()
-    endif()
-endif (NOT USE_EIGEN3)
+    set(BLA_VENDOR OpenBLAS)
+endif()
+
+find_package(BLAS REQUIRED)
+
+set(CMAKE_FIND_DEBUG_MODE TRUE)
+set(CMAKE_FIND_DEBUG_MODE FALSE)
+# message(STATUS "BLAS_LINKER_FLAGS = ${BLAS_LINKER_FLAGS}")
+# message(STATUS "BLAS_LIBRARIES = ${BLAS_LIBRARIES}")
 
 ################################################################################
 # Manuall check for openblas
@@ -483,33 +465,39 @@ if (BLAS_FOUND)
     endif()
 
     if (NOT OpenBLAS_INCLUDE_DIR)
-        message(STATUS "openblas header not found")
+        message(STATUS "search for OpenBLAS cblas.h in prefered paths.")
+
         FIND_PATH(OpenBLAS_INCLUDE_DIR
             NAMES
                 cblas.h
             PATHS
+                ../../_build_env/include/ # for conda
+                ${CMAKE_PREFIX_PATH}/include
                 /usr/include/openblas/
                 /usr/include/OpenBLAS/
                 /mingw64/include/OpenBLAS/
-            HINTS ${CMAKE_C_IMPLICIT_LINK_DIRECTORIES}
-            NO_DEFAULT_PATH
-        )
+            HINTS 
+                NO_DEFAULT_PATH
+            )
+        #set(CMAKE_FIND_DEBUG_MODE TRUE)
+        #set(CMAKE_FIND_DEBUG_MODE FALSE)
+        message(STATUS "OpenBLAS cblas.h: ${OpenBLAS_INCLUDE_DIR}")
     endif()
 
     if (NOT OpenBLAS_INCLUDE_DIR)
-        message(STATUS "No OpenBLAS cblas.h in prefered paths .. searching defaults")
-
+        message(STATUS "search for OpenBLAS cblas.h in default paths.")
+        
         FIND_PATH(OpenBLAS_INCLUDE_DIR
             NAMES
                 cblas.h
         )
+        message(STATUS "OpenBLAS cblas.h: ${OpenBLAS_INCLUDE_DIR}")
     endif()
-    message(STATUS "OpenBLAS cblas.h: ${OpenBLAS_INCLUDE_DIR}")
 
     if (OpenBLAS_INCLUDE_DIR)
-    set(OPENBLAS_CBLAS_FOUND TRUE)
+        set(OPENBLAS_CBLAS_FOUND TRUE)
     else()
-    set(OPENBLAS_CBLAS_FOUND FALSE)
+        set(OPENBLAS_CBLAS_FOUND FALSE)
     endif()
 
     set(OPENBLAS_FOUND TRUE)
@@ -518,6 +506,14 @@ else()
     set(OPENBLAS_FOUND FALSE)
     set(OPENBLAS_CBLAS_FOUND FALSE)
 endif()
+
+#exit()
+#find_package(suitesparse)
+#exit()
+
+#find_or_build_package(CHOLMOD suitesparse)
+find_package(UMFPACK REQUIRED)
+find_package(CHOLMOD REQUIRED)
 
 if (NOT AVOID_CPPUNIT)
     find_package(CppUnit)
@@ -581,7 +577,6 @@ endif()
 find_or_build_package(castxml castxmlbin LOCAL)
 set(CASTER_EXECUTABLE ${CASTXML_EXECUTABLE})
 
-
 find_or_build_package(pygccxml pygccxml LOCAL)
 find_or_build_package(pyplusplus pygccxml LOCAL)
 
@@ -625,23 +620,23 @@ endif()
 message(STATUS "**********************************************************************")
 message(STATUS "************************* Dependencies found *************************")
 message(STATUS "**********************************************************************")
-
-message(STATUS "THREADS             : ${THREADS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_THREAD_LIBRARIES}")
-message(STATUS "USE_OPENBLAS        : ${OPENBLAS_FOUND} OPENBLAS_CBLAS_FOUND :${OPENBLAS_CBLAS_FOUND} OpenBLAS_INCLUDE_DIR :${OpenBLAS_INCLUDE_DIR}")
-message(STATUS "CHOLMOD_LIBRARIES   : ${CHOLMOD_LIBRARIES}")
-message(STATUS "UMFPACK_LIBRARIES   : ${UMFPACK_LIBRARIES}")
-message(STATUS "TRIANGLE_FOUND      : ${TRIANGLE_FOUND} Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
-message(STATUS "Python_EXECUTABLE   : ${Python_EXECUTABLE}" )
-message(STATUS "Python_LIBRARY_DIRS : ${Python_LIBRARY_DIRS}")
-message(STATUS "Python_LIBRARIES    : ${Python_LIBRARIES}" )
-message(STATUS "Python_INCLUDE_DIRS : ${Python_INCLUDE_DIRS}")
-message(STATUS "Boost_INCLUDE_DIR   : ${Boost_INCLUDE_DIR}")
-message(STATUS "Boost_LIBRARIES:      ${Boost_LIBRARIES}" )
-message(STATUS "Boost_PYTHON_LIBRARY: ${Boost_PYTHON_LIBRARY}" )
-message(STATUS "Python_NumPy        : ${Python_NumPy_FOUND} ${Python_NumPy_INCLUDE_DIRS} ver: ${Python_NumPy_VERSION}")
-message(STATUS "CASTER_FOUND        : ${CASTER_FOUND} Caster: ${CASTER_EXECUTABLE}")
-message(STATUS "PYGCCXML_FOUND      : ${PYGCCXML_FOUND} PYGCCXML: ${PYGCCXML_PATH}" )
-message(STATUS "PYPLUSPLUS_FOUND    : ${PYPLUSPLUS_FOUND} PYPLUSPLUS_PATH: ${PYPLUSPLUS_PATH}" )
+message(STATUS "THREADS              : ${THREADS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_THREAD_LIBRARIES}")
+message(STATUS "USE_OPENBLAS         : ${OPENBLAS_FOUND}, OPENBLAS_CBLAS_FOUND :${OPENBLAS_CBLAS_FOUND}")
+message(STATUS "BLAS_LIBRARIES       : ${BLAS_LIBRARIES}")
+message(STATUS "OpenBLAS_INCLUDE_DIR : ${OpenBLAS_INCLUDE_DIR}")
+message(STATUS "CHOLMOD_LIBRARIES    : ${CHOLMOD_LIBRARIES}")
+message(STATUS "UMFPACK_LIBRARIES    : ${UMFPACK_LIBRARIES}")
+message(STATUS "TRIANGLE_FOUND       : ${TRIANGLE_FOUND} Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
+message(STATUS "Python_EXECUTABLE    : ${Python_EXECUTABLE}" )
+message(STATUS "Python_LIBRARY_DIRS  : ${Python_LIBRARY_DIRS}")
+message(STATUS "Python_LIBRARIES     : ${Python_LIBRARIES}" )
+message(STATUS "Python_INCLUDE_DIRS  : ${Python_INCLUDE_DIRS}")
+message(STATUS "Boost_INCLUDE_DIR    : ${Boost_INCLUDE_DIR}")
+message(STATUS "Boost_PYTHON_LIBRARY : ${Boost_PYTHON_LIBRARY}" )
+message(STATUS "Python_NumPy         : ${Python_NumPy_FOUND} ${Python_NumPy_INCLUDE_DIRS} ver: ${Python_NumPy_VERSION}")
+message(STATUS "CASTER_FOUND         : ${CASTER_FOUND} Caster: ${CASTER_EXECUTABLE}")
+message(STATUS "PYGCCXML_FOUND       : ${PYGCCXML_FOUND} PYGCCXML: ${PYGCCXML_PATH}" )
+message(STATUS "PYPLUSPLUS_FOUND     : ${PYPLUSPLUS_FOUND} PYPLUSPLUS_PATH: ${PYPLUSPLUS_PATH}" )
 message(STATUS "")
 message(STATUS "**********************************************************************")
 message(STATUS "*************** Optional Dependencies found **************************")
@@ -649,7 +644,6 @@ message(STATUS "****************************************************************
 message(STATUS "CPPUNIT             : ${CPPUNIT_FOUND} ${CPPUNIT_LIBRARIES}")
 message(STATUS "Doxygen             : ${DOXYGEN_FOUND}")
 message(STATUS "Sphinx              : ${SPHINX_FOUND} ${SPHINX_EXECUTABLE} ${SPHINX_VERSION}")
-message(STATUS "Eigen3              : ${EIGEN3_FOUND} v:${EIGEN3_VERSION_STRING} ${EIGEN3_INCLUDE_DIRS} USE_EIGEN3: ${USE_EIGEN3}")
 message(STATUS "**********************************************************************")
 
 if (Python_EXECUTABLE
@@ -667,14 +661,15 @@ if (Python_EXECUTABLE
     message(STATUS "**********************************************************************")
     message(STATUS "")
 else()
+    #set (PYGIMLI 1)
+    # temporary disable
     message (FATAL_ERROR "pygimli cannot be build due to some missing packages.
-Check above for python, castxml, pygccxml, pyplusplus, boost_python, numpy")
-endif ()
+    Check above for python, castxml, pygccxml, pyplusplus, boost_python, numpy")
+endif()
 
 configure_file("${PROJECT_SOURCE_DIR}/core/config.cmake.h.in"
                "${PROJECT_BINARY_DIR}/config.cmake.h" )
 add_definitions(-DHAVE_CONFIG_CMAKE_H)
-
 
 add_custom_target(removedoc
    COMMAND

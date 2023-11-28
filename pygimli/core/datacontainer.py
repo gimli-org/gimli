@@ -165,3 +165,24 @@ def __DataContainer_show(self, *args, **kwargs):
     return pg.show(self, *args, **kwargs)
 
 DataContainer.show = __DataContainer_show
+
+
+def __DataContainer_getIndices(self, **kwargs):
+    """Return indices for all data keys equalling values."""
+    good = np.ones(self.size(), dtype=bool)
+    for k, v in kwargs.items():
+        good = np.bitwise_and(good, self[k] == v)
+
+    return np.nonzero(good)[0]
+
+DataContainer.getIndices = __DataContainer_getIndices
+
+def __DataContainer_subset(self, **kwargs):
+    """Return a subset for which all conditions hold."""
+    new = self.copy()
+    new["valid"] = 0
+    new.markValid(self.getIndices(**kwargs))
+    new.removeInvalid()
+    return new
+
+DataContainer.subset = __DataContainer_subset

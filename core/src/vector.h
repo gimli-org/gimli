@@ -53,10 +53,6 @@
 #include <iterator>
 #include <memory>
 
-#if USE_EIGEN3
-    #include <Eigen/Dense>
-#endif
-
 #ifdef USE_BOOST_BIND
     // deprecated
     #include <boost/bind.hpp>

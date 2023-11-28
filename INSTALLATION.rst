@@ -36,7 +36,7 @@ Open a terminal (Linux & Mac) or the Anaconda Prompt (Windows) and type:
 
 .. code-block:: bash
 
-    conda create -n pg -c gimli -c conda-forge pygimli=1.4.3
+    conda create -n pg -c gimli -c conda-forge pygimli=1.4.5
 
 If you are using Windows or Mac, a new environment named "pg" should be visible
 in the Anaconda Navigator. If you want to use pyGIMLi from the command line, you
@@ -84,7 +84,7 @@ again and install pygimli using conda just as mentioned above.
 
     import condacolab
     condacolab.check()
-    !conda install -c gimli pygimli=1.4.1
+    !conda install -c gimli pygimli=1.4.5
 
 Testing the installation
 ------------------------

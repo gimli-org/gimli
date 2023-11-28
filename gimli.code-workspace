@@ -1,16 +1,7 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {
-		"cSpell.enabled": false,
-		"spellright.language": [],
-		"spellright.documentTypes": [
-			"markdown",
-			"plaintext"
-		],
-		"python.pythonPath": "C:\\Users\\Carsten\\anaconda3\\python.exe"
-	}
+    "folders": [
+        {
+            "path": "."
+        }
+    ]
 }
