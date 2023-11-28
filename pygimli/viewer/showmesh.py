@@ -142,11 +142,17 @@ def show(obj=None, data=None, **kwargs):
 
     if isinstance(mesh, list):
         ax = kwargs.pop('ax', None)
-        ax, cBar = show(mesh[0], data, hold=True, ax=ax,
-                        fitView=fitView, **kwargs)
+        label = kwargs.pop('label', None)
+        if not isinstance(label, list):
+            label = [label]* len(mesh)
 
-        for m in mesh[1:]:
-            ax, cBar = show(m, data, ax=ax, hold=True, fitView=False, **kwargs)
+        ax, cBar = show(mesh[0], data, hold=True, fitView=fitView,
+                        ax=ax, label=label[0],
+                        **kwargs)
+
+        for i, m in enumerate(mesh[1:]):
+            ax, cBar = show(m, data, ax=ax, hold=True, fitView=False, 
+                            label=label[i], **kwargs)
 
         if fitView is not False:
             ax.autoscale(enable=True, axis='both', tight=True)
@@ -662,6 +668,9 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
 def show1D(mesh, obj, **kwargs):
     """Show simple plot for 1D modelling results
     """
+    kwargs.pop('hold', None)
+    kwargs.pop('fitView', None)
+
     ax = kwargs.pop('ax', None)
     newAxe = False
     if ax is None:
@@ -691,6 +700,10 @@ def show1D(mesh, obj, **kwargs):
 
     swapAxes = kwargs.pop('swapAxes', False)
     label = kwargs.pop('label', None)
+
+    if label is None and hasattr(obj, '_OP'):
+        label = obj.__str__()
+
     grid = kwargs.pop('grid', True)
     xLabel = kwargs.pop('xl', 'Depth in m')
 
@@ -715,8 +728,9 @@ def show1D(mesh, obj, **kwargs):
         curve = ax.plot(v, x, label=label, **kwargs)
     else:
         curve = ax.plot(x, v, label=label, **kwargs)
-
-    ax.legend()
+        
+    if label is not None and label != '':
+        ax.legend()
     ax.grid(grid)
 
     return ax, curve
