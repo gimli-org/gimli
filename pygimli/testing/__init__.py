@@ -121,7 +121,7 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
         "gui", "physics/traveltime/example.py", "physics/em/fdemexample.py"
     ]
 
-    if onlydoctests or target:
+    if onlydoctests:
         excluded.append("testing")
 
     cmd = (["--color", "yes", "--doctest-modules", "-p", "no:warnings"])
