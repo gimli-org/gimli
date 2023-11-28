@@ -237,8 +237,6 @@ def testShowPV():
         from pygimli.testing.test_show import testShowPV
         import pyvista as pv
         print(pv.__version__)
-        import panel as pnl
-        print(pnl.__version__)
         testShowPV()
     """
     m1 = mt.createCube()
@@ -290,7 +288,11 @@ def testShowPV():
 
 
 def testPVBackends():
-    """Only make sense called from notebook.
+    """
+        import pygimli as pg
+        from pygimli.testing.test_show import testPVBackends
+        import pyvista as pv
+        testPVBackends()
     """
     m1 = mt.createCube()
 
@@ -299,14 +301,12 @@ def testPVBackends():
     # pg.show(m1)
 
     pg.rc['view3D'] = 'pyvista'
-    print('Panel')
-    pg.show(m1, backend='panel')
-    print('Pythreejs')
-    pg.show(m1, backend='pythreejs')
-    print('ipyvtklink')
-    pg.show(m1, backend='ipyvtklink')
-    print('trame')
-    pg.show(m1, backend='trame')
+    print('Default')
+    pg.show(m1)
+    print('Trame-client')
+    pg.show(m1, backend='client')
+    # print('ipyvtklink')
+    # pg.show(m1, backend='ipyvtklink')
 
 
 def testCoverage():

@@ -5,7 +5,7 @@
 import pygimli as pg
 
 pyvista = pg.optImport("pyvista", requiredFor="properly visualize 3D data")
-panel = pg.optImport("panel", requiredFor="use interactive 3D visualizations" +
+trame = pg.optImport("trame", requiredFor="use interactive 3D visualizations" +
                      " within Jupyter notebooks")
 
 if pyvista is None:
@@ -107,7 +107,7 @@ def showMesh3DVista(mesh, data=None, **kwargs):
 
     else:
 
-        backend = kwargs.pop("backend", "panel")
+        backend = kwargs.pop("backend", "client")
 
         plotter = drawModel(kwargs.pop("ax", None), mesh, data,
                             notebook=notebook, cMap=cMap, **kwargs)
