@@ -1879,7 +1879,7 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
         //      mesh_->exportVTK("sol_2");
         //      exit(0);
         //  }
-//         mesh_->addData("sol" + str((kIdx) * nCurrentPattern + i), sol);
+        mesh_->addData("sol" + str((kIdx) * nCurrentPattern + i), sol);
 //         S_.save("S-gimli.matrix");
 //         rhs.save("rhs.vec");
 
