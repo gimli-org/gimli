@@ -316,8 +316,8 @@ def critical(*args):
 
 
 def deprecated(msg='', hint=''):
-    logger.warning("Deprecated code usage at:")
-    logger.warning(whereAmI() + "\n" + msg + " " + hint)
+    logger.warning("Deprecated code usage at:\n" + \
+                   whereAmI() + "\n" + msg + " " + hint)
 
 
 # def renamed(newFunc, removed=''):

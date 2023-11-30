@@ -23,6 +23,7 @@ pyvista[all,trame]>=0.42
 # optional, but strongly recommended
 scipy
 scooby
+tabulate
 
 # useful
 ipython

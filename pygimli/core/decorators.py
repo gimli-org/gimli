@@ -28,10 +28,10 @@ class renamed:
         return wrapper
 
 
-class deprecated:
+class deprecate:
     """Decorator to mark a function deprecated
     ```
-    @pg.deprecated(newname, 1.5)
+    @pg.deprecate(newname, 1.5)
     def test(args, kwargs):
         pass
     ```
@@ -44,10 +44,15 @@ class deprecated:
 
         def wrapper(*args, **kwargs):
             import pygimli as pg
-            pg.warning(func.__name__, args[1:], kwargs,
-                       ' had been marked as deprecated' + \
-                       ' and will be removed in: ' + self.removed + \
-                       ' Use: ', self.newFunc)
+            pg.deprecated(f'{func.__name__}({args[1:]}, {kwargs})' + \
+                           ' had been marked as deprecated' + \
+                           ' and will be removed in: ' + self.removed,
+                           hint=f'\nUse: {self.newFunc}')
+            
+            # pg.warning(func.__name__, args[1:], kwargs,
+            #            ' had been marked as deprecated' + \
+            #            ' and will be removed in: ' + self.removed + \
+            #            ' Use: ', str(self.newFunc))
             return func(*args, **kwargs)
         return wrapper
 

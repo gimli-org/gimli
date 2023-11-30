@@ -4,7 +4,7 @@ import numpy as np
 from . logger import critical, verbose
 from .core import (RVector, Pos, DataContainer, DataContainerERT)
 from .core import (yVari, zVari, swapXY, swapYZ, y, z)
-from .decorators import deprecated
+from .decorators import deprecate
 
 
 def __DataContainer_str(self):
@@ -16,7 +16,7 @@ DataContainer.__repr__ = __DataContainer_str
 DataContainer.__str__ = __DataContainer_str
 
 
-@deprecated('index access', 2.0)
+@deprecate('index access', 2.0)
 def __DataContainer_call(self, v):
     return self[v]
 DataContainer.__call__ = __DataContainer_call

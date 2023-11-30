@@ -40,9 +40,9 @@ def showMesh3DFallback(mesh, data, **kwargs):
 
     if ax is None or not isinstance(ax, Axes3D):
         fig = plt.figure()
-        ax = fig.gca(projection="3d", proj_type="persp")
-        # ax = fig.gca(projection='3d', proj_type='ortho')
-
+        ax = fig.add_subplot(projection='3d', proj_type="persp")
+        #ax = fig.add_subplot(projection='3d', proj_type="ortho")
+        
     if mesh.boundaryCount() > 0:
         x, y, tri, z, dataIndex = pg.viewer.mpl.createTriangles(mesh)
         ax.plot_trisurf(x, y, tri, z)

@@ -23,6 +23,7 @@ dependencies:
   - meshio
   - tetgen
   - scooby
+  - tabulate
   - sphinx-design
   - pydata-sphinx-theme
 
