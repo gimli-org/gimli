@@ -18,8 +18,7 @@ sphinx-gallery
 sphinx-design
 pydata-sphinx-theme
 bibtexparser
-pyvista>=0.34
-panel
+pyvista[all,trame]>=0.42
 
 # optional, but strongly recommended
 scipy
@@ -31,4 +30,6 @@ ipython
 # for testing
 pytest
 meshio
+
+# optional
 tetgen

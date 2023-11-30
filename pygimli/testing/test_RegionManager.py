@@ -7,10 +7,9 @@ import numpy as np
 import pygimli as pg
 from pygimli.frameworks import MeshModelling
 
-
-class TestMod(MeshModelling):
+class DummyMod(MeshModelling):
     def __init__(self, mesh, verbose=True):
-        super(TestMod, self).__init__()
+        super(DummyMod, self).__init__()
         self.meshlist = []
         for i in range(2):
             for cell in mesh.cells():
@@ -29,7 +28,7 @@ class TestRM(unittest.TestCase):
         """ Test FOP """
 
         grid = pg.createGrid(x=[0., 1., 2.], y=[0., 1., 2.])
-        fop = TestMod(grid)
+        fop = DummyMod(grid)
 
         fop.createConstraints()
         # pg.solver.showSparseMatrix(fop.constraints(), full=True)

@@ -64,33 +64,33 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX OR ${CMAKE_CXX_COMPILE
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-int-in-bool-context")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedefs") # pg build
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations") # loot of boost complaints about bind   
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations") # loot of boost complaints about bind
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_BIND_GLOBAL_PLACEHOLDERS")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-overloaded-virtual")
-    
+
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -ansi -pedantic -fno-omit-frame-pointer -Wall")
     #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -std=c++11 -ansi -pedantic -fno-omit-frame-pointer -Wall")
-    
+
     ### debug settings
     # run with -DCMAKE_BUILD_TYPE=Debug
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -p -g -ansi -pedantic -fno-common -fno-omit-frame-pointer -Wall")
-    
+
     if (WIN32 OR CONDA_BUILD)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-parentheses") # from boost since gcc.8 maybe need to be checked
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-attributes") # from gcc-8.2 + boost
     endif()
-    
+
     # special section for clang compiler
     if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-warning-option") # on apple clang, but not gcc13
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undefined-var-template") # on apple clang, but not gcc13
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-overloaded-virtual")
         set(CMAKE_CXX_FLAGS_RELEASE  "${CMAKE_CXX_FLAGS_RELEASE} -Qunused-arguments")
-    
+
         if (APPLE)
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-infinite-recursion")
-            # If it's libc++ and you're on <= 10.8, you need to compile with 
-            # clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later, 
+            # If it's libc++ and you're on <= 10.8, you need to compile with
+            # clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later,
             # you need to compile with clang++ -stdlib=libstdc++.
             add_compile_options(-stdlib=libstdc++)
             add_compile_options(-stdlib=libc++)
@@ -104,7 +104,7 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX OR ${CMAKE_CXX_COMPILE
     endif()
 
     if (APPLE)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-infinite-recursion") 
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-infinite-recursion")
     endif()
 elseif(MSVC)
 	# MSVC complain a lot of possible unsecure std function
@@ -319,7 +319,7 @@ if (NOT Boost_PYTHON_LIBRARY)
     message(STATUS "boost-python not found by cmake ... trying to determine boost-python manually ...")
 
     if (WIN32)
-        #set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}") # conda-forge 
+        #set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}") # conda-forge
         set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}-mt-x64") # win64, boost-1.83
         #set(bp_version "python") # win64, boost-1.83
         string(TOUPPER ${bp_version} BP_VERSION)
@@ -424,15 +424,18 @@ find_or_build_package(Triangle triangle LOCAL)
 
 
 if (CONDA_BUILD)
-# (231115) there is a missing symlink to libopenblas.so in ${CMAKE_PREFIX_PATH}/lib 
+# (231115) there is a missing symlink to libopenblas.so in ${CMAKE_PREFIX_PATH}/lib
 # so we need to search for libblas.so
-    set(BLA_VENDOR Generic) 
+    set(BLA_VENDOR Generic)
+elseif (APPLE)
+    ## check if openblas is used in runtime
+    set(BLA_VENDOR OpenBLAS)
+    #find_or_build_package(BLAS lapack)
 else()
     set(BLA_VENDOR OpenBLAS)
 endif()
-
+#set(CMAKE_FIND_DEBUG_MODE TRUE)
 find_package(BLAS REQUIRED)
-
 set(CMAKE_FIND_DEBUG_MODE TRUE)
 set(CMAKE_FIND_DEBUG_MODE FALSE)
 # message(STATUS "BLAS_LINKER_FLAGS = ${BLAS_LINKER_FLAGS}")
@@ -472,7 +475,7 @@ if (BLAS_FOUND)
                 /usr/include/openblas/
                 /usr/include/OpenBLAS/
                 /mingw64/include/OpenBLAS/
-            HINTS 
+            HINTS
                 NO_DEFAULT_PATH
             )
         #set(CMAKE_FIND_DEBUG_MODE TRUE)
@@ -482,7 +485,7 @@ if (BLAS_FOUND)
 
     if (NOT OpenBLAS_INCLUDE_DIR)
         message(STATUS "search for OpenBLAS cblas.h in default paths.")
-        
+
         FIND_PATH(OpenBLAS_INCLUDE_DIR
             NAMES
                 cblas.h
