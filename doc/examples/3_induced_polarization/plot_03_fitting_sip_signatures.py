@@ -3,7 +3,7 @@
 
 r"""
 Fitting SIP signatures
-----------------------
+======================
 
 This example highlights some of the capabilities of pyGimli to analyze spectral
 induced polarization (SIP) signatures.

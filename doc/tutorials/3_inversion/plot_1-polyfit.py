@@ -68,7 +68,7 @@ import pygimli as pg
 
 
 class FunctionModelling(pg.Modelling):
-    """Forward operator for polygonal interpolation."""
+    """Forward operator for polynomial interpolation."""
 
     def __init__(self, nc, xvec, verbose=False):
         super().__init__(verbose=verbose)

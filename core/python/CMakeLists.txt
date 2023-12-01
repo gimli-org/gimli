@@ -50,16 +50,18 @@ if(WIN32)
         TARGET
             pgcopydll
         COMMENT
-            "Updating needed dll. build/bin/*dll -> trunk/pygimli/core"
+            "Updating needed dll. build/bin/*dll -> gimli/pygimli/core"
     )
 endif(WIN32)
 
 add_python_module(pygimli "${CMAKE_CURRENT_BINARY_DIR}/generated/" "gimli" "${CMAKE_SOURCE_DIR}/pygimli/core")
+include_directories(${Python_NumPy_INCLUDE_DIRS})
 
 add_dependencies(pggen gimli)
 add_dependencies(copy_python pggen)
 add_dependencies(fixpygimlisrc pggen)
 add_dependencies(pgbuild fixpygimlisrc)
+
 if(WIN32)
     add_dependencies(pgcopydll pgbuild)
     add_dependencies(pygimli pgcopydll)
@@ -67,13 +69,9 @@ else(WIN32)
     add_dependencies(pygimli pgbuild)
 endif(WIN32)
 
-
 # for calling the build only
 ADD_CUSTOM_TARGET(pg ALL)
 add_dependencies(pg _pygimli_)
-include_directories(${Python_NumPy_INCLUDE_DIRS})
-include_directories(${Python_INCLUDE_DIRS})
-include_directories(${Boost_INCLUDE_DIR})
 
 ADD_CUSTOM_TARGET(pgtest)
 ADD_CUSTOM_COMMAND(
@@ -128,7 +126,7 @@ if (WIN32)
         file(COPY ${Boost_PYTHON_DLL} DESTINATION ${CMAKE_BINARY_DIR}/bin)
         install(PROGRAMS ${Boost_PYTHON_DLL} DESTINATION bin)
     else ()
-        file(COPY ${Boost_PYTHON_LIBRARY} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+        #file(COPY ${Boost_PYTHON_LIBRARY} DESTINATION ${CMAKE_BINARY_DIR}/bin)
         #file(COPY ${Boost_THREAD_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
         #file(COPY ${Boost_SYSTEM_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
         install(PROGRAMS ${Boost_PYTHON_LIBRARY} DESTINATION bin)

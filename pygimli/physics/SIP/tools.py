@@ -116,8 +116,8 @@ def fitCCC(f, amp, phi, eRho=0.01, ePhi=0.001, lam=1000., mstart=None,
     return model, response[:len(f)], response[len(f):], ICC.chi2()
 
 
-def fitCCCC(f, amp, phi, error=0.01, lam=10., taupar=(1e-2, 1e-5, 100),
-            cpar=(0.25, 0, 1), mpar=(0, 0, 1)):
+def fitCCCC(f, amp, phi, error=0.01, lam=10., taupar=[1e-2, 1e-5, 100],
+            cpar=[0.25, 0, 1], mpar=[0, 0, 1]):
     """Fit complex spectrum by Cole-Cole model based on sigma."""
     fCC = ColeColeComplexSigma(f)
     tLog = pg.trans.TransLog()

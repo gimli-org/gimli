@@ -303,7 +303,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         if mesh.cellCount() > 0:
             uniquemarkers, uniqueidx = np.unique(
                 np.array(mesh.cellMarkers()), return_inverse=True)
-            
+
             label = label or "Cell markers"
             cMap = pg.plt.cm.get_cmap("Set3", len(uniquemarkers))
             kwargs["logScale"] = False
@@ -495,7 +495,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         elif colorBar is not False:
             cBar = updateColorBar(colorBar, **subkwargs)
 
-        if markers:
+        if markers and cBar is not None:
             ticks = np.arange(len(uniquemarkers))
             cBar.set_ticks(ticks)
             labels = []
@@ -610,10 +610,10 @@ __Animation_Keeper__ = None
 def showAnimation(mesh, data, ax=None, **kwargs):
     """Show timelapse mesh data.
 
-    Time will be annotated if the mesh contains a valid 'times' data array. 
-    Note, there can be only one animation per time. 
+    Time will be annotated if the mesh contains a valid 'times' data array.
+    Note, there can be only one animation per time.
 
-    Best viewed in a notebook, because of caching and better animation control 
+    Best viewed in a notebook, because of caching and better animation control
     elements.
 
     TODO
@@ -642,18 +642,20 @@ def showAnimation(mesh, data, ax=None, **kwargs):
     plt.rcParams["animation.html"] = "jshtml"
     plt.rcParams['figure.dpi'] = kwargs.pop('dpi', 96)
     plt.rcParams['animation.embed_limit'] = 50
+    figsize = kwargs.pop("figsize", None)
 
     flux = kwargs.pop('flux', None)
 
     plt.ioff()
 
-    pg.show(mesh, data[0], ax=ax, **kwargs)
+    plc = kwargs.pop("plc", None)
+    pg.show(mesh, data[0], ax=ax, figsize=figsize, **kwargs)
     if flux is not None:
         pg.show(mesh, flux[0], ax=ax)
 
     try:
         times = mesh['times']
-    except Exception:
+    except Exception as e:
         times = None
 
     p = pg.utils.ProgressBar(len(data))
@@ -665,6 +667,9 @@ def showAnimation(mesh, data, ax=None, **kwargs):
 
         if flux is not None:
             pg.show(mesh, flux[t], ax=ax)
+
+        if plc is not None:
+            pg.viewer.mpl.drawMesh(ax, plc, fillRegion=False, fitView=False)
 
         if times is not None and len(times) > t:
             # ax.text(0.02, 0.02, f't={pg.pf(times[t])}',

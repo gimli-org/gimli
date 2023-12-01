@@ -526,25 +526,25 @@ class Inversion(object):
             Overwrite class settings for delta data phi aborting criteria.
             Default is 1%
         cType: int [1]
-            Temporary global contraint type for all regions.
+            Temporary global constraint type for all regions.
         startModel: array
             Temporary starting model for the current inversion run.
         lam: float
             Temporary regularization parameter lambda.
         lambdaFactor : float [1]
-            factor to change lam with every iteration
+            Factor to change lam with every iteration
         robustData : bool
-            robust (L1 norm mimicking) data reweighting
+            Robust (L1 norm mimicking) data reweighting
         blockyModel : bool
-            robust (L1 norm mimicking) model roughness reweighting
+            Robust (L1 norm mimicking) model roughness reweighting
         isReference : bool [False]
-            starting model is also a reference to constrain against
+            Starting model is also a reference to constrain against
         showProgress : bool
-            show progress in form of updating models
+            Show progress in form of updating models
         verbose : bool
-            verbose output on the console
+            Verbose output on the console
         debug : bool
-            even verboser console and file output
+            Even more verbose console and file output
         """
         self.reset()
         if errorVals is None:  # use absoluteError and/or relativeError instead
@@ -552,8 +552,9 @@ class Inversion(object):
             relErr = kwargs.pop("relativeError",
                                 0.01 if np.allclose(absErr, 0) else 0)
             errorVals = pg.abs(absErr / np.asarray(dataVals)) + relErr
-            if isinstance(errorVals, (float, int)):
-                errorVals = np.ones_like(dataVals) * errorVals
+
+        if isinstance(errorVals, (float, int)):
+            errorVals = np.ones_like(dataVals) * errorVals
 
         if self.isFrameWork:
             pg.critical('in use?')
@@ -649,6 +650,9 @@ class Inversion(object):
         self.inv.setMaxIter(0)
         self.inv.start()
         self.maxIter = maxIterTmp
+        if self.verbose:
+            print("inv.iter 0 ... chi² = {:7.2f}".format(self.chi2()))
+            # print("inv.iter 0 ... chi² = {0}".format(round(self.chi2(), 2)))
 
         if self._postStep and callable(self._postStep):
             self._postStep(0, self)
@@ -704,8 +708,8 @@ class Inversion(object):
             dPhi = phi / lastPhi
 
             if self.verbose:
-                print("chi² = {0} (dPhi = {1}%) lam: {2}".format(
-                    round(chi2, 2), round((1 - dPhi) * 100, 2), lam))
+                print("chi² = {:7.2f} (dPhi = {:.2f}%) lam: {:.1f}".format(
+                    chi2, (1 - dPhi) * 100, lam))
 
             if chi2 <= 1 and self.stopAtChi1:
                 print("\n")
@@ -718,7 +722,7 @@ class Inversion(object):
             if (dPhi > (1.0 - minDPhi / 100.0)) and i > 2:  # should be minIter
                 if self.verbose:
                     pg.boxprint(
-                        "Abort criteria reached: dPhi = {0} (< {1}%)".format(
+                        "Abort criterion reached: dPhi = {0} (< {1}%)".format(
                             round((1 - dPhi) * 100, 2), minDPhi))
                 break
 
@@ -754,7 +758,7 @@ class Inversion(object):
             self.axs = axs
         ax = self.axs
 
-        if style == 'Model':
+        if style == 'model':
             for other_ax in ax.figure.axes:
                 # pg._y(type(other_ax).mro())
                 if type(other_ax).mro()[0] == type(ax):

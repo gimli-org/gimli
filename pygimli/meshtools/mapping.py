@@ -593,7 +593,7 @@ def interpolate(*args, **kwargs):
         return pg.core.interpolate(*args, **kwargs,
                                    fillValue=fallback,
                                    verbose=verbose)
-    
+
     # end if pg.core:
 
     if len(args) == 3:
@@ -698,8 +698,8 @@ def extract2dSlice(mesh, origin=None, normal=[0, 1, 0], angle=0, dip=0):
             normal = [0, 1, 0]
         elif normal == "x" or normal == "yz":
             normal = [1, 0, 0]
- 
-    if angle:    
+
+    if angle:
         meshtmp.rotate(pg.Pos(0, 0, np.deg2rad(-angle)))
     if dip:
         meshtmp.rotate(pg.Pos(0, np.deg2rad(-dip), 0))
@@ -716,6 +716,9 @@ def extract2dSlice(mesh, origin=None, normal=[0, 1, 0], angle=0, dip=0):
 
     for face in tri:
         mesh2d.createTriangle(*[mesh2d.node(p) for p in face])
+
+    if normal == [1, 0, 0]:
+        mesh2d.swapCoordinates(0, 1)
 
     for key in mesh.dataKeys():
         mesh2d[key] = pvs[key]

@@ -71,8 +71,10 @@ def simulate(mesh, scheme, res, **kwargs):
         use secondary field (singularity removal)
     seed : int
         numpy.random seed for repeatable noise in synthetic experiments
-    phiErr : float|iterable 
+    phiErr : float|iterable
         absolute phase error, if not given, data['iperr'] or noiseLevel is used
+    contactImpedances float|iterables
+        contact impedances for being used with CEM model
 
     Returns
     -------
@@ -120,6 +122,12 @@ def simulate(mesh, scheme, res, **kwargs):
     # fop = self.createForwardOperator(useBert=True, sr=sr, verbose=verbose)
     fop.data = scheme
     fop.setMesh(mesh, ignoreRegionManager=True)
+    cI = kwargs.pop("contactImpedances", None)
+    if cI is not None:
+        if isinstance(cI, float):
+            cI = pg.Vector(scheme.sensorCount(), cI)
+
+        fop._core.setContactImpedances([1e-3, 1e-4, 1e-5, 1e-6])
 
     rhoa = None
     phia = None
@@ -224,8 +232,9 @@ def simulate(mesh, scheme, res, **kwargs):
                                          relativeError=noiseLevel,
                                          absoluteUError=noiseAbs,
                                          absoluteCurrent=1))
-            print("Data error estimate (min:max) ",
-                  min(ret('err')), ":", max(ret('err')))
+            if verbose:
+                pg.info("Data error estimate (min:max) ",
+                      min(ret('err')), ":", max(ret('err')))
 
         rhoa *= 1. + pg.randn(ret.size(), seed=seed) * ret('err')
         ret.set('rhoa', rhoa)
@@ -350,13 +359,15 @@ def createGeometricFactors(scheme, numerical=None, mesh=None, dim=3,
 
     if mesh is None:
         pg.info('Create default mesh for geometric factor calculation.')
-        mesh = createInversionMesh(scheme)
+        m = createInversionMesh(scheme)
+    else:
+        m = mesh
 
     if verbose:
-        pg.info('mesh', mesh)
+        pg.info('mesh', m)
 
     if h2 is True:
-        m = mesh.createH2()
+        m = m.createH2()
         if verbose:
             pg.info('h2 refine', m)
 
@@ -528,7 +539,7 @@ pg.DataContainerERT.createGeometricFactors.__doc__ = createGeometricFactors.__do
 def __DataContainerERT_estimateError(self, *args,**kwargs):
     if not self.haveData('k'):
         self.createGeometricFactors()
-    
+
     self['err'] = estimateError(self, *args, **kwargs)
 
 pg.DataContainerERT.estimateError = __DataContainerERT_estimateError

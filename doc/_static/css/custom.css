@@ -9,10 +9,12 @@ html {
 html[data-theme=light] {
     --pst-color-h1: #002b36;
     --pst-color-primary: #337AB7;
+    --pst-color-secondary: #4d86b8;
 }
 
 html[data-theme=dark] {
     --pst-color-h1: #fff;
+    --pst-color-secondary: #4d86b8;
 }
 
 h1, h2 {
@@ -26,10 +28,19 @@ p.title.logo__title {
 /* a {
     color: #337AB7
 } */
-
+a {
+    text-decoration: none 
+}
 a:hover {
     color: #107896;
     text-decoration: none;
+}
+.btn.btn-primary {
+    color: white;
+}
+.btn.btn-primary:hover {
+    color: white;
+    text-decoration: underline;
 }
 
 h1,
@@ -106,32 +117,15 @@ dt, b, strong {
     margin: 0 10px;
 }
 
-.navbar ul li a,
+/* .navbar ul li a,
 .navbar ul li a:after,
 .navbar ul li a:before {
     transition: all .4s;
-}
+} */
 
 /* stroke */
 .navbar ul li a {
     position: relative;
-}
-
-.navbar ul li a:after {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: auto;
-    width: 0%;
-    content: '.';
-    color: transparent;
-    background: #aaa;
-    height: 1px;
-}
-
-.navbar ul li a:hover:after {
-    width: 100%;
 }
 
 .bd-header .navbar-nav li a.nav-link:focus,

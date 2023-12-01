@@ -38,11 +38,14 @@ import pygimli as pg
 
 
 class ExpModelling(pg.Modelling):
+    """Exponential decay function modelling operator."""
     def __init__(self, xvec, verbose=False):
+        """Initialize with storing x values."""
         super().__init__()
         self.x = xvec
 
     def response(self, model):
+        """Model response, i.e. A*exp(-x/x0)."""
         return model[0] * pg.exp(-self.x / model[1])
 
     def createStartModel(self, dataVals):
@@ -69,7 +72,7 @@ data = 10.5 * np.exp(- x / 550e-3)
 # We define an (absolute) error level and add Gaussian noise to the data.
 
 error = 0.5
-data += pg.randn(*data.shape)*error
+data += pg.randn(*data.shape) * error
 
 ###############################################################################
 # Next, an instance of the forward operator is created. We could use it for
@@ -111,8 +114,8 @@ plt.plot(x, data, 'x', x, inv.response, '-')
 plt.grid(True)
 
 ###############################################################################
-# The resulting model vector has a length of 2 and consists of the inverted A 
-# and X values that are close to the synthetic values, being equivalent within 
+# The resulting model vector has a length of 2 and consists of the inverted A
+# and X values that are close to the synthetic values, being equivalent within
 # error bounds.
 
 print(coeff)
@@ -123,3 +126,5 @@ print(coeff)
 
 for model in inv.modelHistory:
     print(model)
+
+plt.show()

@@ -29,6 +29,7 @@ def generateMatrix(xvec, yvec, vals, **kwargs):
     xmap/ymap : dict {key: num}
         dictionaries for accessing matrix position (row/col number from x/y[i])
     """
+    verbose = kwargs.get("verbose", True)
     if kwargs.pop('full', False):
         xymap = {xy: ii
                  for ii, xy in enumerate(np.unique(np.hstack((xvec, yvec))))}
@@ -37,10 +38,12 @@ def generateMatrix(xvec, yvec, vals, **kwargs):
     else:
         xu, yu = np.unique(xvec), np.unique(yvec)
         if kwargs.pop('fillx', False):
-            print('filling x', len(xu))
+            if verbose:
+                pg.info('filling x', len(xu))
             dx = np.median(np.diff(xu)).round(1)
             xu = np.arange(0, xu[-1] - xu[0] + dx * 0.5, dx) + xu[0]
-            print(len(xu))
+            if verbose:
+                pg.info(len(xu))
         if kwargs.pop('filly', False):
             dy = np.median(np.diff(yu)).round(1)
             yu = np.arange(0, yu[-1] - yu[0] + dy * 0.5, dy) + yu[0]
@@ -58,9 +61,11 @@ def generateMatrix(xvec, yvec, vals, **kwargs):
         A[ymap[yi], xmap[xi]] = vals[i]
 
     if len(inot) > 0:
-        print(len(inot), "data of", nshow, "not shown")
+        if verbose:
+            pg.info(len(inot), "data of", nshow, "not shown")
         if len(inot) < 30:
-            print(inot)
+            if verbose:
+                pg.info(inot)
 
     return A, xmap, ymap
 
@@ -518,7 +523,8 @@ def showVecMatrix(xvec, yvec, vals, full=False, **kwargs):
     cb : matplotlib colorbar
         colorbar object
     """
-    A, xmap, ymap = generateMatrix(xvec, yvec, vals, full=full)
+    A, xmap, ymap = generateMatrix(xvec, yvec, vals, full=full, 
+                                   verbose=kwargs.get("verbose", True))
     return showDataMatrix(A, xmap=xmap, ymap=ymap, **kwargs)
 
 
@@ -543,10 +549,10 @@ def showDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
     yToken = ''
     mul = kwargs.pop('mul', 10**int(np.ceil(np.log10(data.sensorCount()))))
     plus = kwargs.pop('plus', 1)  # add 1 to count
-    verbose = kwargs.pop('verbose', False)
+    verbose = kwargs.get('verbose', True)
     if isinstance(x, str):
-        x = data(x)
         xToken = x
+        x = data(x)
     elif hasattr(x, '__iter__') and isinstance(x[0], str):
         num = np.zeros(data.size())
         for token in x:
@@ -559,8 +565,8 @@ def showDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
         pg.info("found " + str(len(np.unique(x))) + " x values")
 
     if isinstance(y, str):
-        y = data(y)
         yToken = y
+        y = data(y)
     elif hasattr(y, '__iter__') and isinstance(y[0], str):
         num = np.zeros(data.size())
         for token in y:

@@ -3,14 +3,17 @@
 Building on MAC OS
 ------------------
 
-These installation instructions were proposed by Claudio Jordi (ETH Zurich) in a
-`GitHub issue
-<https://github.com/gimli-org/gimli/issues/46#issuecomment-357735129>`_. Since
-we do not have access to Macs, this has not been tested thorougly. Please
-comment in the issue and let us know if it works.
-know it works in the corresponding GitHub issue.
-For installation instructions for MacOS, please refer to:
+Since we do not have native access to Macs we only can provide instructions which are gratefully provided by users.
 
+Current (23-11-14) known working solution can be found here:
+`GitHub issue 603 <https://github.com/gimli-org/gimli/discussions/603>`_
+Many thanks to robinthibaut.
+
+Older version that may work or might be outdated
+------------------------------------------------
+
+The following installation instructions were proposed by Claudio Jordi (ETH Zurich) in a
+`GitHub issue 46 <https://github.com/gimli-org/gimli/issues/46#issuecomment-357735129>`_.
 
 In most cases, the following will suffice to compile pyGIMLi in the current
 directory.
@@ -56,7 +59,10 @@ directory.
 
     # The version (here 3.6.4_2) needs to be set to the installed python3 version
 
-    cmake ../gimli -DPYTHON_EXECUTABLE=/usr/local/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/local/Cellar/python3/3.6.4_2/Frameworks/Python.framework/Versions/3.6/include/python3.6m -DPYTHON_LIBRARY=/usr/local/Cellar/python3/3.6.4_2/Frameworks/Python.framework/Versions/3.6/lib/libpython3.6.dylib -DPY_NUMPY=/usr/local/lib/python3.6/site-packages/numpy
+    cmake ../gimli -DPYTHON_EXECUTABLE=/usr/local/bin/python3 \
+        -DPYTHON_INCLUDE_DIR=/usr/local/Cellar/python3/3.6.4_2/Frameworks/Python.framework/Versions/3.6/include/python3.6m \
+        -DPYTHON_LIBRARY=/usr/local/Cellar/python3/3.6.4_2/Frameworks/Python.framework/Versions/3.6/lib/libpython3.6.dylib \
+        -DPY_NUMPY=/usr/local/lib/python3.6/site-packages/numpy
 
     # This was needed for the compilation of some c++ stuff
     export CPLUS_INCLUDE_PATH=/usr/local/Cellar/python3/3.6.4_2/Frameworks/Python.framework/Versions/3.6/Headers

@@ -13,10 +13,11 @@ and some high-velocity bedrock. The data file can be found in the `pyGIMLi
 example data repository
 <https://github.com/gimli-org/example-data/blob/master/traveltime/koenigsee.sgt>`_.
 """
-# sphinx_gallery_thumbnail_number = 5
+# sphinx_gallery_thumbnail_number = 4
 
 # We import pyGIMLi and the traveltime module.
 
+import matplotlib.pyplot as plt
 import pygimli as pg
 import pygimli.physics.traveltime as tt
 
@@ -32,8 +33,8 @@ print(data)
 ###############################################################################
 # Let's have a look at the data in the form of traveltime curves.
 
-fig, ax = pg.plt.subplots()
-tt.drawFirstPicks(ax, data)
+fig, ax = plt.subplots()
+lines = tt.drawFirstPicks(ax, data)
 
 ###############################################################################
 # We initialize the refraction manager.
@@ -53,24 +54,16 @@ mgr.invert(secNodes=3, paraMaxCellSize=5.0,
            zWeight=0.2, vTop=500, vBottom=5000, verbose=1)
 
 ###############################################################################
-# First have a look at the data fit.
-# Plot the measured (crosses) and modelled (lines) traveltimes.
+# Look at the fit between measured (crosses) and modelled (lines) traveltimes.
 
-ax, cbar = mgr.showData(firstPicks=True, linewidth=0)
-tt.drawFirstPicks(ax, data, mgr.inv.response, marker=None)
-
-###############################################################################
-# Show resulting tomogram along with fit. You may want to save your results.
-
-mgr.showResultAndFit()
-# mgr.saveResult()  # saves the results (mesh, velocity, vtk) in a folder
+mgr.showFit(firstPicks=True)
 
 ###############################################################################
 # You can plot only the model and customize with a bunch of keywords
 
 ax, cbar = mgr.showResult(logScale=False, cMin=500, cMax=3000, cMap="plasma_r",
                           coverage=mgr.standardizedCoverage())
-mgr.drawRayPaths(ax=ax, color="k", lw=0.3, alpha=0.5)
+rays = mgr.drawRayPaths(ax=ax, color="k", lw=0.3, alpha=0.5)
 
 # mgr.coverage() yields the ray coverage in m and standardizedCoverage as 0/1
 

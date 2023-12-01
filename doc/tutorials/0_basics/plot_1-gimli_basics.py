@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 r"""
 
-GIMLi Basics
+GIMLi basics
 ============
 
 This is the first tutorial where we demonstrate the general use of

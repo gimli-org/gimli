@@ -10,7 +10,8 @@
     ! function ($) {
       $(function () {
         $('#sidebar-example-gallery').carousel({
-          interval: 4000 // 4 sec
+          interval: 4000, // 4 sec
+          ride: true
         })
       })
     }(window.jQuery)
@@ -32,8 +33,8 @@
             bug</a>
         </li>
         <li class="nav-item">
-          <a target="_blank" href="https://softwareunderground.org/slack"><i class="fab fa-slack fa-fw"></i> #pyGIMLi
-            slack channel</a>
+          <a target="_blank" href="https://softwareunderground.org/mattermost"><i class="fab fa-slack fa-fw"></i> pyGIMLi
+            chat</a>
         </li>
         <li class="nav-item">
           <a href="{{ pathto('citation') }}"><i class="fas fa-quote-right fa-fw"></i> Citation</a>

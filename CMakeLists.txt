@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.15)
-#BOOST_MAX_VERISION: 1.65 UBUNTU:18
 
 if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(FATAL_ERROR "In-source builds not allowed.
             Please make a new directory (called a build directory)
             and run CMake from there. You may need to remove CMakeCache.txt." )
 endif()
-
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/core/cmake")
 include(GIMLImacros)
 
@@ -18,7 +17,6 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 project(libgimli)
-
 include(CheckIncludeFileCXX)
 
 message(STATUS "System: ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM} ${CMAKE_SYSTEM_VERSION}")
@@ -26,8 +24,7 @@ message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID}")
 
 message(STATUS "UNIX:   " ${UNIX} " on all UNIX-like OS's, including Apple OS X and CygWin")
 message(STATUS "WIN32:  " ${WIN32} " on Windows. Prior to 2.8.4 this included CygWin")
-message(STATUS "APPLE:  " ${APPLE} " on Apple systems. does not imply the
-system is Mac OS X.")
+message(STATUS "APPLE:  " ${APPLE} " on Apple systems. does not imply the system is Mac OS X.")
 message(STATUS "MINGW:  " ${MINGW} " using the MinGW compiler in Windows")
 message(STATUS "MSYS:   " ${MSYS} "  using the MSYS developer environment in Windows")
 message(STATUS "CYGWIN: " ${CYGWIN} " using the CygWin version of cmake")
@@ -44,6 +41,7 @@ endif()
 # Check if conda package is created
 if (DEFINED ENV{CONDA_BUILD})
     message(STATUS "Conda package is being created.")
+    message(STATUS "CMAKE_PREFIX_PATH = ${CMAKE_PREFIX_PATH}")
     set(CONDA_BUILD TRUE)
     set(Boost_INCLUDE_DIR "${CMAKE_PREFIX_PATH}/include")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-class-memaccess") # new since gcc.8 maybe need to be checked, not on apple
@@ -66,11 +64,9 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX OR ${CMAKE_CXX_COMPILE
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-int-in-bool-context")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedefs") # pg build
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations") # loot of boost complaints about bind   
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-warning-option") # on apple clang 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undefined-var-template") # on apple clang 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-overloaded-virtual")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations") # loot of boost complaints about bind
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_BIND_GLOBAL_PLACEHOLDERS")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-overloaded-virtual")
 
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -ansi -pedantic -fno-omit-frame-pointer -Wall")
     #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -std=c++11 -ansi -pedantic -fno-omit-frame-pointer -Wall")
@@ -80,21 +76,21 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX OR ${CMAKE_CXX_COMPILE
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -p -g -ansi -pedantic -fno-common -fno-omit-frame-pointer -Wall")
 
     if (WIN32 OR CONDA_BUILD)
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-parentheses") # from boost since gcc.8 maybe need to be checked
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-attributes") # from gcc-8.2 + boost
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-parentheses") # from boost since gcc.8 maybe need to be checked
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-attributes") # from gcc-8.2 + boost
     endif()
 
     # special section for clang compiler
     if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-        set(CMAKE_CXX_FLAGS_RELEASE
-            "${CMAKE_CXX_FLAGS_RELEASE} -Wno-overloaded-virtual")
-        set(CMAKE_CXX_FLAGS_RELEASE
-            "${CMAKE_CXX_FLAGS_RELEASE} -Qunused-arguments")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-warning-option") # on apple clang, but not gcc13
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undefined-var-template") # on apple clang, but not gcc13
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-overloaded-virtual")
+        set(CMAKE_CXX_FLAGS_RELEASE  "${CMAKE_CXX_FLAGS_RELEASE} -Qunused-arguments")
 
         if (APPLE)
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-infinite-recursion")
-            # If it's libc++ and you're on <= 10.8, you need to compile with 
-            # clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later, 
+            # If it's libc++ and you're on <= 10.8, you need to compile with
+            # clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later,
             # you need to compile with clang++ -stdlib=libstdc++.
             add_compile_options(-stdlib=libstdc++)
             add_compile_options(-stdlib=libc++)
@@ -108,7 +104,7 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX OR ${CMAKE_CXX_COMPILE
     endif()
 
     if (APPLE)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-infinite-recursion") 
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-infinite-recursion")
     endif()
 elseif(MSVC)
 	# MSVC complain a lot of possible unsecure std function
@@ -218,6 +214,12 @@ endif()
 #   boost
 ################################################################################
 message(STATUS "********** BOOST ***********")
+#set(Boost_USE_STATIC_LIBS ON)
+
+if (BUILD_BOOST)
+    message(STATUS "Forced boost build.")
+    build_package(Boost boost)
+endif()
 
 function(find_boost_from_distname_file)
     set (BOOST_DIST_NAME_FILE "${EXTERNAL_DIR}/.boost-py${Python_VERSION_MAJOR}.dist")
@@ -299,7 +301,7 @@ endif()
 message(STATUS "********** BOOST_PYTHON ***********")
 function(find_boost_python_manual bp_version)
     message(STATUS "----------- searching for libboost_python${bp_version}")
-    find_package(Boost 1.65 COMPONENTS "python${bp_version}")
+    find_package(Boost COMPONENTS "python${bp_version}")
 
     if (${Boost_PYTHON${bp_version}_FOUND})
         set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND} PARENT_SCOPE)
@@ -314,24 +316,24 @@ function(find_boost_python_manual bp_version)
 endfunction()
 
 if (NOT Boost_PYTHON_LIBRARY)
-    message(STATUS "boost-python not found by cmake ... trying to determine boost-python now manually ...")
+    message(STATUS "boost-python not found by cmake ... trying to determine boost-python manually ...")
 
     if (WIN32)
-        set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}-mt")
+        #set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}") # conda-forge
+        set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}-mt-x64") # win64, boost-1.83
+        #set(bp_version "python") # win64, boost-1.83
         string(TOUPPER ${bp_version} BP_VERSION)
 
         message(STATUS "... (win32) looking for ${bp_version} in BOOST_ROOT=${BOOST_ROOT}")
-        find_package(Boost 1.65 COMPONENTS "${bp_version}")
+        find_package(Boost COMPONENTS "${bp_version}")
 
         ## local var evaluated before cache, and cache setting does not overwrite local.
         ## so we need to set booth here for repeated cmake calls
-        set(Boost_PYTHON_FOUND ${Boost_${bp_version}_FOUND} CACHE BOOL "boost python found")
-        set(Boost_PYTHON_FOUND TRUE)
-        set(Boost_PYTHON_LIBRARY ${Boost_${BP_VERSION}_LIBRARY} CACHE FILEPATH "boost python lib")
-        set(Boost_PYTHON_LIBRARY ${Boost_${BP_VERSION}_LIBRARY})
-
-        if (NOT Boost_PYTHON_FOUND)
-            set(Boost_PYTHON_LIBRARY ${BOOST_ROOT}/lib/libboost_${bp_version}.dll)
+        if (Boost_PYTHON_FOUND)
+            set(Boost_PYTHON_FOUND ${Boost_${bp_version}_FOUND} CACHE BOOL "boost python found")
+            set(Boost_PYTHON_LIBRARY ${Boost_${BP_VERSION}_LIBRARY} CACHE FILEPATH "boost python lib")
+        else()
+            set(Boost_PYTHON_LIBRARY ${BOOST_ROOT}/lib/libboost_${bp_version}.dll.a)
             message(STATUS "... (win32) looking for ${Boost_PYTHON_LIBRARY}")
 
             if (EXISTS ${Boost_PYTHON_LIBRARY})
@@ -384,7 +386,7 @@ if (NOT Boost_PYTHON_LIBRARY)
                        "any libboost_python* on your system and "
                        "provide it to the authors so we can try to fix "
                        "this here.")
-        exit()
+        #exit()
     endif()
 endif()
 
@@ -420,16 +422,24 @@ message(STATUS "Triangle_LIBRARIES = ${Triangle_LIBRARIES}")
 find_or_build_package(Triangle triangle LOCAL)
 #find_package(Triangle)
 
-set(BLA_VENDOR OpenBLAS)
-#find_package(BLAS)
-#find_package(LAPACK)
-#find_package(blas)
-#find_package(lapack)
-#exit()
-find_or_build_package(BLAS lapack)
-find_or_build_package(LAPACK lapack)
-find_or_build_package(CHOLMOD suitesparse)
-find_package(UMFPACK)
+
+if (CONDA_BUILD)
+# (231115) there is a missing symlink to libopenblas.so in ${CMAKE_PREFIX_PATH}/lib
+# so we need to search for libblas.so
+    set(BLA_VENDOR Generic)
+elseif (APPLE)
+    ## check if openblas is used in runtime
+    set(BLA_VENDOR OpenBLAS)
+    #find_or_build_package(BLAS lapack)
+else()
+    set(BLA_VENDOR OpenBLAS)
+endif()
+#set(CMAKE_FIND_DEBUG_MODE TRUE)
+find_package(BLAS REQUIRED)
+set(CMAKE_FIND_DEBUG_MODE TRUE)
+set(CMAKE_FIND_DEBUG_MODE FALSE)
+# message(STATUS "BLAS_LINKER_FLAGS = ${BLAS_LINKER_FLAGS}")
+# message(STATUS "BLAS_LIBRARIES = ${BLAS_LIBRARIES}")
 
 ################################################################################
 # Manuall check for openblas
@@ -454,33 +464,39 @@ if (BLAS_FOUND)
     endif()
 
     if (NOT OpenBLAS_INCLUDE_DIR)
-        message(STATUS "openblas header not found")
+        message(STATUS "search for OpenBLAS cblas.h in prefered paths.")
+
         FIND_PATH(OpenBLAS_INCLUDE_DIR
             NAMES
                 cblas.h
             PATHS
+                ../../_build_env/include/ # for conda
+                ${CMAKE_PREFIX_PATH}/include
                 /usr/include/openblas/
                 /usr/include/OpenBLAS/
                 /mingw64/include/OpenBLAS/
-            HINTS ${CMAKE_C_IMPLICIT_LINK_DIRECTORIES}
-            NO_DEFAULT_PATH
-        )
+            HINTS
+                NO_DEFAULT_PATH
+            )
+        #set(CMAKE_FIND_DEBUG_MODE TRUE)
+        #set(CMAKE_FIND_DEBUG_MODE FALSE)
+        message(STATUS "OpenBLAS cblas.h: ${OpenBLAS_INCLUDE_DIR}")
     endif()
 
     if (NOT OpenBLAS_INCLUDE_DIR)
-        message(STATUS "No OpenBLAS cblas.h in prefered paths .. searching defaults")
+        message(STATUS "search for OpenBLAS cblas.h in default paths.")
 
         FIND_PATH(OpenBLAS_INCLUDE_DIR
             NAMES
                 cblas.h
         )
+        message(STATUS "OpenBLAS cblas.h: ${OpenBLAS_INCLUDE_DIR}")
     endif()
-    message(STATUS "OpenBLAS cblas.h: ${OpenBLAS_INCLUDE_DIR}")
 
     if (OpenBLAS_INCLUDE_DIR)
-    set(OPENBLAS_CBLAS_FOUND TRUE)
+        set(OPENBLAS_CBLAS_FOUND TRUE)
     else()
-    set(OPENBLAS_CBLAS_FOUND FALSE)
+        set(OPENBLAS_CBLAS_FOUND FALSE)
     endif()
 
     set(OPENBLAS_FOUND TRUE)
@@ -489,6 +505,14 @@ else()
     set(OPENBLAS_FOUND FALSE)
     set(OPENBLAS_CBLAS_FOUND FALSE)
 endif()
+
+#exit()
+#find_package(suitesparse)
+#exit()
+
+#find_or_build_package(CHOLMOD suitesparse)
+find_package(UMFPACK REQUIRED)
+find_package(CHOLMOD REQUIRED)
 
 if (NOT AVOID_CPPUNIT)
     find_package(CppUnit)
@@ -552,7 +576,6 @@ endif()
 find_or_build_package(castxml castxmlbin LOCAL)
 set(CASTER_EXECUTABLE ${CASTXML_EXECUTABLE})
 
-
 find_or_build_package(pygccxml pygccxml LOCAL)
 find_or_build_package(pyplusplus pygccxml LOCAL)
 
@@ -597,21 +620,23 @@ message(STATUS "****************************************************************
 message(STATUS "************************* Dependencies found *************************")
 message(STATUS "**********************************************************************")
 
-message(STATUS "THREADS             : ${THREADS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_THREAD_LIBRARIES}")
-message(STATUS "USE_OPENBLAS        : ${OPENBLAS_FOUND} OPENBLAS_CBLAS_FOUND :${OPENBLAS_CBLAS_FOUND} OpenBLAS_INCLUDE_DIR :${OpenBLAS_INCLUDE_DIR}")
-message(STATUS "CHOLMOD_LIBRARIES   : ${CHOLMOD_LIBRARIES}")
-message(STATUS "UMFPACK_LIBRARIES   : ${UMFPACK_LIBRARIES}")
-message(STATUS "TRIANGLE_FOUND      : ${TRIANGLE_FOUND} Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
-message(STATUS "Python_EXECUTABLE   : ${Python_EXECUTABLE}" )
-message(STATUS "Python_LIBRARY_DIRS : ${Python_LIBRARY_DIRS}")
-message(STATUS "Python_LIBRARIES    : ${Python_LIBRARIES}" )
-message(STATUS "Python_INCLUDE_DIRS : ${Python_INCLUDE_DIRS}")
-message(STATUS "Boost_INCLUDE_DIR   : ${Boost_INCLUDE_DIR}")
-message(STATUS "Boost_PYTHON_LIBRARY: ${Boost_PYTHON_LIBRARY}" )
-message(STATUS "Python_NumPy        : ${Python_NumPy_FOUND} ${Python_NumPy_INCLUDE_DIRS} ver: ${Python_NumPy_VERSION}")
-message(STATUS "CASTER_FOUND        : ${CASTER_FOUND} Caster: ${CASTER_EXECUTABLE}")
-message(STATUS "PYGCCXML_FOUND      : ${PYGCCXML_FOUND} PYGCCXML: ${PYGCCXML_PATH}" )
-message(STATUS "PYPLUSPLUS_FOUND    : ${PYPLUSPLUS_FOUND} PYPLUSPLUS_PATH: ${PYPLUSPLUS_PATH}" )
+message(STATUS "THREADS              : ${THREADS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_THREAD_LIBRARIES}")
+message(STATUS "USE_OPENBLAS         : ${OPENBLAS_FOUND}, OPENBLAS_CBLAS_FOUND :${OPENBLAS_CBLAS_FOUND}")
+message(STATUS "BLAS_LIBRARIES       : ${BLAS_LIBRARIES}")
+message(STATUS "OpenBLAS_INCLUDE_DIR : ${OpenBLAS_INCLUDE_DIR}")
+message(STATUS "CHOLMOD_LIBRARIES    : ${CHOLMOD_LIBRARIES}")
+message(STATUS "UMFPACK_LIBRARIES    : ${UMFPACK_LIBRARIES}")
+message(STATUS "TRIANGLE_FOUND       : ${TRIANGLE_FOUND} Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
+message(STATUS "Python_EXECUTABLE    : ${Python_EXECUTABLE}" )
+message(STATUS "Python_LIBRARY_DIRS  : ${Python_LIBRARY_DIRS}")
+message(STATUS "Python_LIBRARIES     : ${Python_LIBRARIES}" )
+message(STATUS "Python_INCLUDE_DIRS  : ${Python_INCLUDE_DIRS}")
+message(STATUS "Boost_INCLUDE_DIR    : ${Boost_INCLUDE_DIR}")
+message(STATUS "Boost_PYTHON_LIBRARY : ${Boost_PYTHON_LIBRARY}" )
+message(STATUS "Python_NumPy         : ${Python_NumPy_FOUND} ${Python_NumPy_INCLUDE_DIRS} ver: ${Python_NumPy_VERSION}")
+message(STATUS "CASTER_FOUND         : ${CASTER_FOUND} Caster: ${CASTER_EXECUTABLE}")
+message(STATUS "PYGCCXML_FOUND       : ${PYGCCXML_FOUND} PYGCCXML: ${PYGCCXML_PATH}" )
+message(STATUS "PYPLUSPLUS_FOUND     : ${PYPLUSPLUS_FOUND} PYPLUSPLUS_PATH: ${PYPLUSPLUS_PATH}" )
 message(STATUS "")
 message(STATUS "**********************************************************************")
 message(STATUS "*************** Optional Dependencies found **************************")
@@ -636,14 +661,15 @@ if (Python_EXECUTABLE
     message(STATUS "**********************************************************************")
     message(STATUS "")
 else()
+    #set (PYGIMLI 1)
+    # temporary disable
     message (FATAL_ERROR "pygimli cannot be build due to some missing packages.
-Check above for python, castxml, pygccxml, pyplusplus, boost_python, numpy")
-endif ()
+    Check above for python, castxml, pygccxml, pyplusplus, boost_python, numpy")
+endif()
 
 configure_file("${PROJECT_SOURCE_DIR}/core/config.cmake.h.in"
                "${PROJECT_BINARY_DIR}/config.cmake.h" )
 add_definitions(-DHAVE_CONFIG_CMAKE_H)
-
 
 add_custom_target(removedoc
    COMMAND

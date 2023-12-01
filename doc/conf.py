@@ -310,6 +310,10 @@ html_css_files = [
     'css/custom.css',
 ]
 
+html_js_files = [
+    'js/jquery-3.7.1.min.js',
+]
+
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
 html_title = "pyGIMLi - Geophysical Inversion and Modelling Library"

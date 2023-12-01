@@ -3,7 +3,7 @@
 import numpy as np
 from . logger import critical, verbose
 from .core import (RVector, RVector3, DataContainer, DataContainerERT)
-from .core import (yVari, zVari, swapYZ, y, z)
+from .core import (yVari, zVari, swapXY, swapYZ, y, z)
 
 
 def __DataContainer_str(self):
@@ -92,6 +92,15 @@ def __DataContainer_ensure2D(self):
 DataContainer.ensure2D = __DataContainer_ensure2D
 
 
+def __DataContainer_swapXY(self):
+    sen = self.sensors()
+    swapYZ(sen)
+    self.setSensorPositions(sen)
+
+
+DataContainer.swapXY = __DataContainer_swapXY
+
+
 def __DataContainerERT_addFourPointData(self, *args,
                                         indexAsSensors=False, **kwargs):
     """Add a new data point to the end of the dataContainer.
@@ -160,3 +169,24 @@ def __DataContainer_show(self, *args, **kwargs):
     return pg.show(self, *args, **kwargs)
 
 DataContainer.show = __DataContainer_show
+
+
+def __DataContainer_getIndices(self, **kwargs):
+    """Return indices for all data keys equalling values."""
+    good = np.ones(self.size(), dtype=bool)
+    for k, v in kwargs.items():
+        good = np.bitwise_and(good, self[k] == v)
+
+    return np.nonzero(good)[0]
+
+DataContainer.getIndices = __DataContainer_getIndices
+
+def __DataContainer_subset(self, **kwargs):
+    """Return a subset for which all conditions hold."""
+    new = self.copy()
+    new["valid"] = 0
+    new.markValid(self.getIndices(**kwargs))
+    new.removeInvalid()
+    return new
+
+DataContainer.subset = __DataContainer_subset

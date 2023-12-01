@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 r"""
-2D gravity synthetic modelling and inversion
-============================================
+2D gravity modelling and inversion
+===================================
 
 In the following, we will build the model, create synthetic data, and do
 inversion using a depth-weighting function as outlined in the paper.
 """
 
-# %%%
 import numpy as np
 import pygimli as pg
 import pygimli.meshtools as mt
@@ -95,7 +94,7 @@ fop = GravityModelling2D(mesh=mesh, points=pnts)
 cz = -pg.y(mesh.cellCenters())
 z0 = 5
 wz = 1 / (cz+z0)**1.5
-pg.plt.plot(cz, wz, ".")
+pg.show()[0].plot(cz, wz, ".")
 
 # %%%
 # Inversion

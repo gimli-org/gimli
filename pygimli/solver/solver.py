@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""TODO DOCUMENT ME"""
+"""Finite-element solver and utility functions."""
 from copy import deepcopy
 
 import numpy as np
-#import numpy.matlib
 import pygimli as pg
 
 
@@ -457,8 +456,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
     """
     bc = []
     bounds = []
-    if isinstance(pair[1], list):
-        #  [marker, [callable, *kwargs]]
+    if isinstance(pair[1], list):  #  [marker, [callable, *kwargs]]
         if callable(pair[1][0]):
             pair = [pair[0]] + pair[1]
 
@@ -479,6 +477,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
             val = pair[1:]
         else:
             val = pair[1]
+
         bc.append([b, val])
 
         # print('-'*50)
@@ -717,7 +716,18 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
     att = pg.Vector(mesh.cellCount(), default)
 
     if isinstance(attributeMap, dict):
-        raise Exception("Please implement me!")
+        for marker, value in attributeMap.items():
+            idx = pg.find(mesh.cellMarkers() == marker)
+            if len(idx) == 0:
+                pg.warn("parseMapToCellArray: cannot find marker " +
+                        str(marker) + " within mesh.")
+            else:
+                if isinstance(value, complex):
+                    if not isinstance(att, pg.CVector):
+                        att = pg.math.toComplex(att)
+                    att.setVal(val=value, ids=idx)
+                else:
+                    att.setVal(val=float(value), ids=idx)
     elif hasattr(attributeMap, '__len__'):
         if not hasattr(attributeMap[0], '__len__'):
             # assuming [marker, value]
@@ -2195,7 +2205,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
     The Domain :math:`\Omega` and the Boundary :math:`\Gamma` are defined
     through the mesh with appropriate boundary marker.
 
-    Note, to ensure vector solution either set vector forces or at least on
+    To ensure vector solution, either set vector forces or at least one
     vector component boundary condition.
 
     TODO
@@ -2267,7 +2277,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             Returns the system matrix A and the rhs vector.
         fixPureNeumann: bool [auto]
             If set or detected automatic, we add the additional condition:
-            :math:`\int_domain u dv = 0` making elliptic problems well-posed.
+            :math:`\int_\Omega u dv = 0` making elliptic problems well-posed.
         rhs: iterable
             Pre assembled rhs. Will preferred on any f settings.
         ws: dict
@@ -2352,7 +2362,6 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         A = S
 
     if times is None:
-
         if len(list(bc.items())) == 0 or \
            (len(list(bc.items())) == 1 and list(bc.keys())[0] == 'Neumann'):
             pn = True
@@ -2444,7 +2453,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         return u
 
     else:  # times given
-        pg.solver.checkCFL(times, mesh, max(a))
+        pg.solver.checkCFL(times, mesh, max(np.array(a).flatten()))
 
         if debug:
             print("start TL", swatch.duration())
@@ -2501,7 +2510,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             swatch.reset()
             # (A + a*B)u is fastest,
             # followed by A*u + (B*u)*a and finally A*u + a*B*u and
-            br = (M + (dt * (theta - 1.)) * S) * U[n - 1] + \
+            br = (M + S*(dt * (theta - 1.))) * U[n - 1] + \
                 dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
 
             # print ('a',swatch.duration(True))

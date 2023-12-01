@@ -7,7 +7,7 @@ Readme for Github repository only. (Gets selected before *.rst file)
 </a>
 
 [![Build Status](http://jenkins.pygimli.org/job/pyGIMLi_dev/badge/icon?style=flat-square)](http://jenkins.pygimli.org/job/pyGIMLi_dev/)
-[![license](https://img.shields.io/github/license/gimli-org/gimli.svg?style=flat-square)](https://pygimli.org/license.html)
+[![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/license.svg)](https://pygimli.org/license.html)
 [![release](https://img.shields.io/github/release/gimli-org/gimli.svg?style=flat-square)](https://github.com/gimli-org/gimli/releases/latest)
 [![Github commits (since latest release)](https://img.shields.io/github/commits-since/gimli-org/gimli/latest.svg?style=flat-square)](https://github.com/gimli-org/gimli/tree/dev)
 [![Slack](https://img.shields.io/badge/Slack-pGIMLi-yellow.svg?logo=slack&style=flat-square)](https://swung.slack.com/archives/C01US4T522X)
@@ -30,7 +30,6 @@ What is pyGIMLi **NOT** suited for?
 
 ##### Installation
 
-[![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/installer/conda.svg)](https://conda.anaconda.org/gimli)
 [![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/platforms.svg)](https://anaconda.org/gimli/pygimli)
 [![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/downloads.svg)](https://anaconda.org/gimli/pygimli)
 [![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/version.svg)](https://anaconda.org/gimli/pygimli)
@@ -45,7 +44,7 @@ separate environment. Here we call this environment pg, but you can give it any
 name. Note that this environment has to be created only once.
 
 ``` bash
-conda create -n pg -c gimli -c conda-forge pygimli=1.4.3
+conda create -n pg -c gimli -c conda-forge pygimli=1.4.5
 ```
 
 If you are using Windows or Mac, a new environment named “pg” should be visible in the Anaconda Navigator. If you want to use pygimli from the command line, you have to activate the environment. You can put this line in your ~/.bashrc file so that it is activated automatically if you open a terminal.

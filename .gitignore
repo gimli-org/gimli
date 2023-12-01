@@ -34,11 +34,15 @@ command.history
 constraint.matrix
 chi.txt
 *.data
+*.poly
 
 # Gmsh
 *.geo.*
 *.geo
 *.msh
+
+# Mac
+*.DS_Store*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

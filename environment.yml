@@ -19,8 +19,7 @@ dependencies:
   - sphinxcontrib-spelling
   - sphinxcontrib-doxylink
   - bibtexparser
-  - pyvista>=0.34
-  - panel
+  - pyvista[all,trame]>=0.42
   - meshio
   - tetgen
   - scooby

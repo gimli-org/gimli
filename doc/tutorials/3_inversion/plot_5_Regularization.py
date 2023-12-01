@@ -113,8 +113,9 @@ plotkw = dict(cMap="Spectral_r", cMin=10, cMax=25)
 inv.setRegularization(cType=1)  # the default
 result = inv.run(**invkw)
 ax, _ = pg.show(mesh, result, **plotkw)
-[ax.plot(*po, "kx") for po in pos]
-ax.set_title("Ctype=1")
+ax.plot(pg.x(pos), pg.y(pos), "kx")
+
+t = ax.set_title("Ctype=1")
 
 # %%%
 # We will have a closer look at the regularization matrix $C$.
@@ -135,8 +136,8 @@ print(nz, row[nz])
 inv.setRegularization(cType=1, zWeight=0.2)  # the default
 result = inv.run(**invkw)
 ax, _ = pg.show(mesh, result, **plotkw)
-[ax.plot(*po, "kx") for po in pos]
-ax.set_title("Ctype=1, zWeight=0.2")
+ax.plot(pg.x(pos), pg.y(pos), "kx")
+t = ax.set_title("Ctype=1, zWeight=0.2")
 
 RM = fop.regionManager()
 cw = RM.constraintWeights()
@@ -149,8 +150,8 @@ print(min(cw), max(cw))
 inv.setRegularization(cType=0)  # damping of the model
 result = inv.run(**invkw)
 ax, _ = pg.show(mesh, result, **plotkw)
-[ax.plot(*po, "kx") for po in pos]
-ax.set_title("Ctype=1")
+ax.plot(pg.x(pos), pg.y(pos), "kx")
+t = ax.set_title("Ctype=1")
 
 # %%%
 # Obviously, the damping keeps the model small ($\log 1=0$) as the
@@ -161,8 +162,8 @@ ax.set_title("Ctype=1")
 invkw["isReference"] = True
 result = inv.run(**invkw)
 ax, cb = pg.show(mesh, result, **plotkw)
-[ax.plot(*po, "kx") for po in pos]
-ax.set_title("Ctype=0 with reference")
+ax.plot(pg.x(pos), pg.y(pos), "kx")
+t = ax.set_title("Ctype=0 with reference")
 
 # %%%
 # ``cType=10`` means a mix between 1st order smoothness (1) and damping (0)
@@ -171,8 +172,8 @@ ax.set_title("Ctype=0 with reference")
 inv.setRegularization(cType=10)  # mix of 1st order smoothing and damping
 result = inv.run(**invkw)
 ax, _ = pg.show(mesh, result, **plotkw)
-[ax.plot(*po, "kx") for po in pos]
-ax.set_title("Ctype=10")
+ax.plot(pg.x(pos), pg.y(pos), "kx")
+t = ax.set_title("Ctype=10")
 
 # %%%
 # In the matrix both contributions are under each other
@@ -192,8 +193,8 @@ ax, _ = pg.show(fop.constraints(), markersize=1)
 inv.setRegularization(cType=2)  # 2nd order smoothing
 result = inv.run(**invkw)
 ax, _ = pg.show(mesh, result, **plotkw)
-[ax.plot(*po, "kx") for po in pos]
-ax.set_title("Ctype=2")
+ax.plot(pg.x(pos), pg.y(pos), "kx")
+t = ax.set_title("Ctype=2")
 
 # %%%
 # We have a closer look at the constraints matrix
@@ -230,8 +231,8 @@ ax, _ = pg.show(C, markersize=1)
 inv.setRegularization(correlationLengths=[2, 2])
 result = inv.run(**invkw)
 ax, _ = pg.show(mesh, result, **plotkw)
-[ax.plot(*po, "kx") for po in pos]
-ax.set_title("geostat I=2m")
+ax.plot(pg.x(pos), pg.y(pos), "kx")
+t = ax.set_title("geostat I=2m")
 
 # %%%
 # This look structurally similar to the second-order smoothness, but can
@@ -242,13 +243,13 @@ ax.set_title("geostat I=2m")
 inv.setRegularization(correlationLengths=[2, 0.5, 2], dip=-20)
 result = inv.run(**invkw)
 ax, _ = pg.show(mesh, result, **plotkw)
-[ax.plot(*po, "kx") for po in pos]
-ax.set_title("geostat I=(2m, 0.5m), dip=-20°")
+ax.plot(pg.x(pos), pg.y(pos), "kx")
+t = ax.set_title("geostat I=(2m, 0.5m), dip=-20°")
 
 # %%%
 # We now add many more points.
 #
-
+np.random.seed(42) # reproducabilty is our friend
 N = 30
 x = np.random.rand(N) * 10
 y = -np.random.rand(N) * 10
@@ -265,7 +266,7 @@ inv.setRegularization(correlationLengths=[4, 4])
 result = inv.run(v, relativeError=0.03, startModel=10, lam=10)
 ax, _ = pg.show(mesh, result, **plotkw)
 out = ax.plot(x, y, "kx")
-ax.set_title("geostat I=4m")
+t = ax.set_title("geostat I=4m")
 
 # %%%
 # Comparing the data with the model response is always a good idea.
@@ -298,7 +299,7 @@ fop.setConstraints(C)
 result = inv.run(v, relativeError=0.03, startModel=17, isReference=1, lam=10)
 ax, _ = pg.show(mesh, result, **plotkw)
 out = ax.plot(x, y, "kx")
-ax.set_title("geostat + reference")
+t = ax.set_title("geostat + reference")
 
 # %%%
 # If you are using a method manager, you access the inversion instance by

@@ -45,6 +45,10 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     bc = kwargs.pop('bc', '#EEEEEE')  # background color
     lw = kwargs.pop('line_width', 0.1)
     filt = kwargs.pop('filter', {})
+    log_scale = kwargs.pop("logScale", False)
+    clim = None
+    if "cMin" in kwargs and "cMax" in kwargs:
+        clim = [kwargs.pop("cMin"), kwargs.pop("cMax")]
 
     # show_edges = kwargs.pop('show_edges', True)  # not used
     # name = kwargs.pop('name', 'Mesh')  # not used
@@ -54,7 +58,11 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
 
     dataName = kwargs.pop('label', list(mesh.cell_data.keys())[0])
 
-    theme = pv.themes.DefaultTheme()
+    try:
+        theme = pv.themes.Theme()
+    except:  # older pv versions
+        theme = pv.themes.DefaultTheme()
+
     theme.background = bc
     # seems to be broken .. results on pure black screens on some machines
     # theme.antialiasing = True
@@ -93,6 +101,8 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
                          # edge_color='white',
                          show_scalar_bar=colorBar,
                          opacity=opacity,
+                         clim=clim,
+                         log_scale=log_scale
                          )
 
     if returnActor:
@@ -194,8 +204,8 @@ def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
     ax: pyvista.Plotter
         The plotter containing the mesh and drawn electrode positions.
 
-    Keyword arguments passed to pyvista
-    -----------------------------------
+    Keyword arguments passed to pyvista.slice
+    -----------------------------------------
     normal: [float, float, float] | str
         normal vector constructing the slice
     origin: [float, float, float]
@@ -205,24 +215,42 @@ def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
     contour: bool [False]
         draw contours instead
 
-    More information can be found at
-    https://docs.pyvista.org/api/core/filters.html
+    Keyword arguments passed to pyvista.add_mesh
+    --------------------------------------------
+    cmap|cMap : str [None]
+        colormap
+    log_scale|logScale : bool [False]
+        use logarithmic colormap scaling
+    clim : [float, float]
+        color limits as tuple/list
+    cMin, cMax : float
+        color limits in pg style
+
+    More information at
+    https://docs.pyvista.org/api/core/_autosummary/pyvista.CompositeFilters.slice.html
     """
     label = kwargs.pop('label', None)
     data = kwargs.pop('data', None)
-    mesh = pgMesh2pvMesh(mesh, data, label)
+    origin = kwargs.pop('origin', None)
+    generate_triangles = kwargs.pop('generate_triangles', False)
+    contour = kwargs.pop('contour', False)
+    kwargs.setdefault('cmap', kwargs.pop('cMap', None))
+    kwargs.setdefault('log_scale', kwargs.pop('logScale', False))
+    if 'cMin' in kwargs and 'cMax' in kwargs:
+        kwargs.setdefault('clim', [kwargs.pop('cMin'), kwargs.pop('cMax')])
+    pvmesh = pgMesh2pvMesh(mesh, data, label)
 
     try:
-        single_slice = mesh.slice(normal, **kwargs)
-
+        single_slice = pvmesh.slice(normal, origin=origin, contour=contour,
+                                    generate_triangles=generate_triangles)
     except AssertionError as e:
         # 'contour' kwarg only works with point data and breaks execution
         pg.error(e)
     else:
         # REVIEW: bounds and axes might be confused with the outline..?!
-        outline = mesh.outline()
+        outline = pvmesh.outline()
         ax.add_mesh(outline, color="k")
-        ax.add_mesh(single_slice)
+        ax.add_mesh(single_slice, **kwargs)
 
     return ax
 
@@ -259,7 +287,7 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
 
         # create gradient of cell data if not provided
         if np.ndim(data) == 1:
-            grad = pg.solver.grad(mesh, data)
+            grad = pg.solver.grad(mesh, data)  # should be -grad
         else:
             grad = data
 

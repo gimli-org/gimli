@@ -191,14 +191,12 @@ void dcfemDomainAssembleStiffnessMatrix(SparseMatrix < ValueType > & S, const Me
                 Stopwatch s(true);
                 Se.u2(mesh.cell(i));
                 //sCount += s.cycleCounter().toc();
-
                 Se *= k * k;
                 Se += Stmp.ux2uy2uz2(mesh.cell(i));
-
             } else {
                 Se.ux2uy2uz2(mesh.cell(i));
             }
-            S.add(Se, 1./rho);
+	S.add(Se, 1./rho);
 //             Se *= 1.0 / rho;
 //             S += Se;
         } else {
@@ -1674,14 +1672,12 @@ void DCMultiElectrodeModelling::calculate(const std::vector < ElectrodeShape * >
     if (!subSolutions_) {
         subpotOwner_ = true;
         if (complex_){
-            subSolutions_ = new CMatrix(0);
+            subSolutions_ = new CMatrix(0, 0);
         } else {
-            subSolutions_ = new RMatrix(0);
+            subSolutions_ = new RMatrix(0, 0);
         }
     }
-
     uint nCurrentPattern = eA.size();
-
     subSolutions_->resize(nCurrentPattern * kValues_.size(),
                           mesh_->nodeCount());
 
@@ -1698,21 +1694,6 @@ void DCMultiElectrodeModelling::calculate(const std::vector < ElectrodeShape * >
     // create or find primary potentials
     preCalculate(eA, eB);
 
-#ifdef HAVE_LIBBOOST_THREAD
-    uint kIdx = 0;
-    while (kIdx < kValues_.size()){
-        boost::thread_group threads;
-        for (uint thread = 0; thread < nThreads_; thread ++){
-            if (kIdx <  kValues_.size()){
-                threads.create_thread(CalculateMT(this,
-                                                  eA, eB,
-                                                  kIdx, *subSolutions_));
-                kIdx ++;
-            }
-        }
-        threads.join_all();
-    }
-#else
     for (Index kIdx = 0; kIdx < kValues_.size(); kIdx ++){
         //if (verbose_ && kValues_.size() > 1) std::cout << "\r" << kIdx + 1 << "/" << kValues_.size();
 
@@ -1722,7 +1703,7 @@ void DCMultiElectrodeModelling::calculate(const std::vector < ElectrodeShape * >
             calculateK(eA, eB, dynamic_cast< RMatrix & > (*subSolutions_), kIdx);
         }
     }
-#endif
+
     for (Index kIdx = 0; kIdx < kValues_.size(); kIdx ++){
         for (Index i = 0; i < nCurrentPattern; i ++) {
             if (kIdx == 0) {
@@ -1881,18 +1862,23 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
 
         solver.solve(rhs, sol);
 
-//         if (i==4){
-//             S_.save("S-gimli.matrix");
-//             rhs.save("rhs.vec");
-//             save(sol, "sol.vec");
-            // __MS(eA[i])
-            // __MS(eB[i])
-            // mesh_->addData("sol" + str((kIdx) * nCurrentPattern + i), sol);
-            // mesh_->addData("rhs", rhs);
-            // mesh_->addData("soll", log(abs(sol)));
-            // mesh_->exportVTK("sol");
-            // exit(0);
-//         }
+        /*if (i==4){
+            __MS(*mesh_)
+            __MS(min(rhs) << " " << max(rhs))
+    	    __MS(min(sol) << " " << max(sol))
+
+	    S_.save("S-gimlii_2.matrix");
+             rhs.save("rhs_2.vec");
+             save(sol, "sol_2.vec");
+            __MS(eA[i])
+             __MS(eB[i])
+             mesh_->addData("sol" + str((kIdx) * nCurrentPattern + i), sol);
+             mesh_->addData("rhs", rhs);
+             mesh_->addData("soll", log(abs(sol)));
+             mesh_->exportVTK("sol_2");
+             exit(0);
+         }
+	 */
 //         mesh_->addData("sol" + str((kIdx) * nCurrentPattern + i), sol);
 //         S_.save("S-gimli.matrix");
 //         rhs.save("rhs.vec");

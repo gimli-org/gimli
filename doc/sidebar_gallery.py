@@ -80,14 +80,14 @@ def make_gallery(src_path, out_path):
 
     html_bottom = """\
             </div>
-            <a class="carousel-control-prev" href="#sidebar_example_gallery" role="button"     data-slide="prev">
+            <button class="carousel-control-prev" type="button" data-bs-target="#sidebare_example_gallery" data-bs-slide="prev">
               <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span class="sr-only">Previous</span>
-            </a>
-            <a class="carousel-control-next" href="#sidebar_example_gallery" role="button"     data-slide="next">
+              <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#sidebar_example_gallery" data-bs-slide="next">
               <span class="carousel-control-next-icon" aria-hidden="true"></span>
-              <span class="sr-only">Next</span>
-            </a>
+              <span class="visually-hidden">Next</span>
+            </button>
           </div>"""
 
     html_item = """\

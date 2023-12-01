@@ -6,7 +6,7 @@ from .ipModelling import DCIPMModelling
 
 class ERTIPManager(ERTManager):
     """Method manager for ERT including induced polarization (IP).
-    
+
     This class should be use for any single IP data, which can
     be a single-frequency frequency-domain (FD) amplitude and
     phase, or a time-domain (TD) IP chargeability (one gate or an
@@ -15,7 +15,7 @@ class ERTIPManager(ERTManager):
 
     def __init__(self, *args, **kwargs):
         """Initialize DC part of it (parent class).
-        
+
         Parameters
         ----------
         fd : bool
@@ -37,7 +37,7 @@ class ERTIPManager(ERTManager):
         invIP = pg.Inversion(fop=fopIP, verbose=True)
         invIP.modelTrans = pg.trans.TransLogLU(0.0, 1.0)
         relErr = kwargs.pop("relativeError", 0.03)
-        absErr = kwargs.pop("relativeError", 0.001)
+        absErr = kwargs.pop("absoluteError", 0.001)
         errorIP = pg.Vector(self.data.size(), relErr) + absErr / pg.abs(ipdata)
         kwargs.setdefault("lam", 100)
         kwargs.setdefault("startModel", pg.median(ipdata))
@@ -62,7 +62,7 @@ class ERTIPManager(ERTManager):
 
     def showResults(self, reskw={}, ipkw={}, **kwargs):
         """Show DC and IP results.
-        
+
         Parameters
         ----------
         reskw : dict
@@ -92,7 +92,7 @@ class ERTIPManager(ERTManager):
         else:
             self.invertTDIP()
 
-    def simulate(self, mesh, res, m, scheme, **kwargs):
+    def simulate(self, mesh, res, m, scheme=None, **kwargs):
         """."""
         from pygimli.physics.ert import ERTModelling
         data = scheme or pg.DataContainerERT(self.data)
@@ -124,3 +124,6 @@ class ERTIPManager(ERTManager):
         data["ma"] = fopIP.response(mVec)  # SI
         data["ip"] = data["ma"] * 1000  # mV/V
         return data
+
+    def saveResult(self, **kwargs):
+        super().saveResult(self, **kwargs, ip=self.modelIP*1000)

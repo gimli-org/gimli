@@ -46,9 +46,7 @@ from pyplusplus.decl_wrappers.doc_extractor import doc_extractor_i
 
 import hashlib
 
-
 MAIN_NAMESPACE = 'GIMLI'
-
 
 def samefile(sourcefile, destfile):
     """
@@ -195,10 +193,8 @@ def generate(defined_symbols, extraIncludes):
     import platform
 
     defines = ['PYGIMLI_CAST', 'HAVE_BOOST_THREAD_HPP']
-    caster = 'gccxml'
+    caster = 'castxml'
     compiler_path = options.clang
-
-    cflags = '-std=c++11'
 
     if platform.system() == 'Windows':
         if platform.architecture()[0] == '64bit':
@@ -229,16 +225,13 @@ def generate(defined_symbols, extraIncludes):
             casterpath = settings.caster_path.replace('\\', '\\\\')
             casterpath = settings.caster_path.replace('/', '\\')
 
-            if 'gccxml' not in casterpath:
-                caster = 'castxml'
-
             if '.exe' not in casterpath:
                 casterpath += '\\' + caster + '.exe'
 
+            cflags = ''
         else:
             casterpath = settings.caster_path
-            if 'gccxml' not in casterpath:
-                caster = 'castxml'
+            cflags = '-std=c++11'
 
     except Exception as e:
         logger.info("caster_path=%s" % casterpath)
@@ -264,12 +257,11 @@ def generate(defined_symbols, extraIncludes):
                                         cflags=cflags,
                                         compiler_path=compiler_path)
 
-    mb = module_builder.module_builder_t(
-                                [xml_cached_fc],
-                                indexing_suite_version=2,
-                                xml_generator_config=xml_generator_config
-                                )
-
+    mb = module_builder.module_builder_t([xml_cached_fc],
+                                         indexing_suite_version=2,
+                                         xml_generator_config=xml_generator_config
+                                        )
+    
     logger.info("Reading of c++ sources done.")
 
     mb.classes().always_expose_using_scope = True
@@ -474,64 +466,67 @@ def generate(defined_symbols, extraIncludes):
                 except BaseException as _:
                     logger.debug("Fail to exclude: " + str(c))
 
-    for c in main_ns.classes():
-        for e in ex:
-            if c.decl_string.find(e) > -1:
-                try:
-                    c.exclude()
-                    logger.debug("Exclude: " + c.name)
-                except BaseException as _:
-                    logger.debug("Fail to exclude: " + c.name)
+    try:
+        for c in main_ns.classes():
+            for e in ex:
+                if c.decl_string.find(e) > -1:
+                    try:
+                        c.exclude()
+                        logger.debug("Exclude: " + c.name)
+                    except BaseException as _:
+                        logger.debug("Fail to exclude: " + c.name)
 
-        try:
-            for mem in c.variables():
-                print(mem)
-                try:
-                    pass
-                    #mem.exclude()
-                    # logger.info("Exclude: " + str(mem))
-                except BaseException as _:
-                    logger.debug("Fail to exclude: " + str(mem))
-        except BaseException as _:
-            # print(c, "has no member functions")
-            pass
+            try:
+                for mem in c.variables():
+                    print(mem)
+                    try:
+                        pass
+                        #mem.exclude()
+                        # logger.info("Exclude: " + str(mem))
+                    except BaseException as _:
+                        logger.debug("Fail to exclude: " + str(mem))
+            except BaseException as _:
+                # print(c, "has no member functions")
+                pass
 
-        try:
-            for mem in c.constructors():
-                for e in ex:
-                    if mem.decl_string.find(e) > -1:
-                        try:
-                            mem.exclude()
-                            # logger.info("Exclude: " + str(mem))
-                        except BaseException as _:
-                            logger.debug("Fail to exclude: " + str(mem))
+            try:
+                for mem in c.constructors():
+                    for e in ex:
+                        if mem.decl_string.find(e) > -1:
+                            try:
+                                mem.exclude()
+                                # logger.info("Exclude: " + str(mem))
+                            except BaseException as _:
+                                logger.debug("Fail to exclude: " + str(mem))
 
-            for mem in c.member_functions():
-                for e in ex:
-                    if mem.decl_string.find(e) > -1:
-                        try:
-                            mem.exclude()
-                            # logger.info("Exclude: " + str(mem))
-                        except BaseException as _:
-                            logger.debug("Fail to exclude: " + str(mem))
+                for mem in c.member_functions():
+                    for e in ex:
+                        if mem.decl_string.find(e) > -1:
+                            try:
+                                mem.exclude()
+                                # logger.info("Exclude: " + str(mem))
+                            except BaseException as _:
+                                logger.debug("Fail to exclude: " + str(mem))
 
 
 
-        except BaseException as _:
-            # print(c, "has no member functions")
-            pass
+            except BaseException as _:
+                # print(c, "has no member functions")
+                pass
 
-        # print('#'*100)
-        # print(c, c.name)
-        if c.name.startswith('Vector<unsigned long>'):
-            # print('         ', c.name)
-            for mem in c.constructors():
-                # print("mem", mem, mem.decl_string)
-                if mem.decl_string.find('( ::GIMLI::Index )') > -1:
-                    logger.debug("Exclude: " + str(mem))
-                    mem.exclude()
+            # print('#'*100)
+            # print(c, c.name)
+            if c.name.startswith('Vector<unsigned long>'):
+                # print('         ', c.name)
+                for mem in c.constructors():
+                    # print("mem", mem, mem.decl_string)
+                    if mem.decl_string.find('( ::GIMLI::Index )') > -1:
+                        logger.debug("Exclude: " + str(mem))
+                        mem.exclude()
 
-                # print("mem", mem)
+                    # print("mem", mem)
+    except:
+        pass
 
     try:
         mb.calldefs(access_type_matcher_t('protected')).exclude()

@@ -1,8 +1,19 @@
 # -*- coding: utf-8 -*-
-"""Direct current electromagnetics
+"""Electrical Resistivity Tomography (ERT)
+
+    Direct-Current (DC) Resistivity and Induced Polarisation (IP)
 
     This package contains tools, modelling operators, and managers for
     Electrical Resistivity Tomography (ERT) & Induced polarization (IP)
+
+    Main entry functions or classes:
+    * simulate - synthetic (real or complex-valued) modelling
+    * createData - generate data sets for synthetic modelling
+    * ERTModelling - Modelling operator
+    * ERTManager - data inversion and modelling for real resistivity
+    * ERTIPManager - extension to IP (either frequency or time domain)
+    * TimelapseERT - processing and inversion of timelapse ERT data
+    * CrossholeERT - timelapse ERT in crosshole environments
 """
 
 import pygimli as pg
@@ -12,6 +23,9 @@ from .ertManager import ERTManager
 from .ertIPManager import ERTIPManager
 from .ertModelling import ERTModelling, ERTModellingReference
 from .ertScheme import createData
+from .processing import uniqueERTIndex, generateDataFromUniqueIndex
+from .timelapse import TimelapseERT
+from .crosshole import CrossholeERT
 from pygimli.physics.ves import VESManager  # backward compatibility
 from pygimli.physics.ves.vesModelling import VESModelling
 # , VESCModelling, VESRhoModelling

@@ -98,4 +98,4 @@ ax[1].set_xlabel(r'$\rho_a$ [$\Omega$m]')
 ax[1].set_ylabel('AB/2 [m]')
 ax[1].yaxis.set_label_position('right')
 ax[1].yaxis.set_ticks_position('right')
-ax[1].legend(loc='best')
+ax[1].legend(loc='best');
