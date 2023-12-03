@@ -160,11 +160,14 @@ def createGradientModel2D(data, mesh, vTop, vBot, flat=False):
     """
     xVals = pg.x(data)
     yVals = pg.y(data)
-    if abs(min(yVals)) < 1e-8 and abs(max(yVals)) < 1e-8:
+    if mesh.dim() == 3 or abs(min(yVals)) < 1e-8 and abs(max(yVals)) < 1e-8:
         yVals = pg.z(data)
 
     x = pg.x(mesh.cellCenters())
     z = pg.y(mesh.cellCenters())
+    if mesh.dim() == 3 or abs(min(z)) < 1e-8 and abs(max(z)) < 1e-8:
+        z = pg.z(mesh.cellCenters())
+
     pos = np.column_stack((x, z))
 
     if flat:
