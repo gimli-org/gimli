@@ -432,6 +432,22 @@ class TimelapseERT():
                 if creep:
                     basemodel = model
 
+    def exportVTK(self, name=None, oneforall=False):
+        """Generate output vtk(s) for postprocessing."""
+        name = name or self.name
+        if name.endswith(".vtk"):
+            name = name[:-4]
+
+        vtk = self.pd.copy()
+        if oneforall:
+            for i, model in enumerate(self.models):
+                vtk[f"model{i}"] = model
+
+            vtk.exportVTK(name+"_results.vtk")
+        else:
+            for i, model in enumerate(self.models):
+                vtk["resistivity"] = model
+                vtk.exportVTK(name+f"_result{i}.vtk")
 
 if __name__ == "__main__":
     pass
