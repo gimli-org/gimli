@@ -130,7 +130,6 @@ def importRes2dInv(filename, verbose=False, return_header=False):
         raise Exception("Don't know how to read:" + str(typ))
 
     if typ == 11 or typ == 12 or typ == 13:  # mixed array
-
         res = pg.Vector(nData, 0.0)
         ip = pg.Vector(nData, 0.0)
         specIP = []
@@ -196,7 +195,7 @@ def importRes2dInv(filename, verbose=False, return_header=False):
         else:
             return data
 
-    # amount of values per collumn per typ
+    # amount of values per column per typ
     nntyp = [0, 3, 3, 4, 3, 3, 4, 4, 3, 0, 0, 8, 10]
 
     nn = nntyp[typ] + hasIP
@@ -235,7 +234,6 @@ def importRes2dInv(filename, verbose=False, return_header=False):
         BB = AA + EL
         MM = BB + SP * EL
         NN = MM + EL
-        pass
     elif typ == 3:  # Dipole-Dipole
         AA = XX - xLoc * EL * (SP / 2. + 1.)
         BB = AA + EL
@@ -254,7 +252,7 @@ def importRes2dInv(filename, verbose=False, return_header=False):
     elif typ == 6:  # POLE-DIPOLE
         AA = XX - xLoc * SP * EL - (SP - 1.) * (SP < 0.) * EL
         MM = AA + SP * EL
-        NN = MM + pg.sign(SP) * EL
+        NN = MM + np.sign(SP) * EL
     elif typ == 7:  # SCHLUMBERGER
         AA = XX - xLoc * EL * (SP + 0.5)
         MM = AA + SP * EL
