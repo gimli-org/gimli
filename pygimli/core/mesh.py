@@ -203,6 +203,7 @@ def __Mesh_setVal(self, key, val):
         try:
             self.addData(key, val)
         except:
+            return
             print('key:', key)
             print('val:', val)
             

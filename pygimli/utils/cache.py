@@ -75,13 +75,17 @@ def valHash(a):
     elif isinstance(a, pg.DataContainer):
         return hash(a)
     elif callable(a):
-        if hasattr(a, '_funct'):
-            ## FEAFunctions or any other wrapper containing lambda as _funct
-            # pg._g(inspect.getsource(a._funct))
-            return strHash(inspect.getsource(a._funct))    
-        # for lambdas
-        # pg._r('callable: ', inspect.getsource(a))
-        return strHash(inspect.getsource(a))
+        try:
+            if hasattr(a, '_funct'):
+                ## FEAFunctions or any other wrapper containing lambda as _funct
+                # pg._g(inspect.getsource(a._funct))
+                return strHash(inspect.getsource(a._funct))    
+            # for lambdas
+            # pg._r('callable: ', inspect.getsource(a))
+            else:
+                return strHash(inspect.getsource(a))
+        except:
+            return valHash(str(a))
 
     pg.critical('cannot find hash for:', a)
     return hash(a)

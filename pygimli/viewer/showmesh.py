@@ -778,7 +778,7 @@ def showAnimation(mesh, data, ax=None, **kwargs):
 
     plt.ioff()
 
-    interval = kwargs.pop('interval', 0)
+    interval = kwargs.pop('interval', 20)
     swapAxes = kwargs.get('swapAxes', False)
 
     if mesh.dim() == 1:
