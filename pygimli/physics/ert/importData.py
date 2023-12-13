@@ -276,6 +276,16 @@ def importRes2dInv(filename, verbose=False, return_header=False):
         if hasIP:
             data.set('ip', dataBody[nn - 1])
 
+    istopo = int(getNonEmptyRow(it, comment=';'))
+    if istopo:
+        ntopo = int(getNonEmptyRow(it, comment=';'))
+        ap = data.additionalPoints()
+        for i in range(ntopo):
+            strs = getNonEmptyRow(it, comment=';').replace(',', ' ').split()
+            ap.push_back(pg.Pos([float(s) for s in strs]))
+
+        data.setAdditionalPoints(ap)
+
     data.sortSensorsX()
     data.sortSensorsIndex()
     if return_header:
