@@ -129,7 +129,7 @@ def importRes2dInv(filename, verbose=False, return_header=False):
     if typ == 9 or typ == 10:
         raise Exception("Don't know how to read:" + str(typ))
 
-    if typ == 11 or typ == 12 or typ == 13:  # mixed array
+    if typ in [11, 12, 13]:  # mixed array
         res = pg.Vector(nData, 0.0)
         ip = pg.Vector(nData, 0.0)
         specIP = []
@@ -187,109 +187,97 @@ def importRes2dInv(filename, verbose=False, return_header=False):
                 A[A < -1000] = -999
                 for i in range(header['ipNumGates']):
                     data.set('ip'+str(i+1), A[:, i])
+    else:  # not type 11-13
+        # amount of values per column per typ
+        nntyp = [0, 3, 3, 4, 3, 3, 4, 4, 3, 0, 0, 8, 10]
+        nn = nntyp[typ] + hasIP  # number of columns
 
-        data.sortSensorsX()
-        data.sortSensorsIndex()
-        if return_header:
-            return data, header
+        dataBody = np.zeros((nn, nData))
+        for i in range(nData):
+            vals = getNonEmptyRow(it, comment=';').replace(',', ' ').split()
+            dataBody[:, i] = np.array(vals, dtype=float)
+
+        XX = dataBody[0]
+        EL = dataBody[1]
+        SP = pg.Vector(nData, 1.0)
+
+        if nn - hasIP == 4:
+            SP = dataBody[2]
+
+        AA = None
+        BB = None
+        NN = None
+        MM = None
+
+        if typ == 1:  # Wenner
+            AA = XX - xLoc * EL * 1.5
+            MM = AA + EL
+            NN = MM + EL
+            BB = NN + EL
+        elif typ == 2:  # Pole-Pole
+            AA = XX - xLoc * EL * 0.5
+            MM = AA + EL
+        elif typ == 3:  # Dipole-Dipole
+            AA = XX - xLoc * EL * (SP / 2. + 1.)
+            BB = AA + EL
+            MM = BB + SP * EL
+            NN = MM + EL
+        elif typ == 3:  # Dipole-Dipole
+            AA = XX - xLoc * EL * (SP / 2. + 1.)
+            BB = AA + EL
+            MM = BB + SP * EL
+            NN = MM + EL
+        elif typ == 4:  # WENNER-BETA
+            AA = XX - xLoc * EL * 1.5
+            BB = AA + EL
+            MM = BB + EL
+            NN = MM + EL
+        elif typ == 5:  # WENNER-GAMMA
+            AA = XX - xLoc * EL * 1.5
+            MM = AA + EL
+            BB = MM + EL
+            NN = BB + EL
+        elif typ == 6:  # POLE-DIPOLE
+            AA = XX - xLoc * SP * EL - (SP - 1.) * (SP < 0.) * EL
+            MM = AA + SP * EL
+            NN = MM + np.sign(SP) * EL
+        elif typ == 7:  # SCHLUMBERGER
+            AA = XX - xLoc * EL * (SP + 0.5)
+            MM = AA + SP * EL
+            NN = MM + EL
+            BB = NN + SP * EL
         else:
-            return data
+            raise Exception('Datatype ' + str(typ) + ' not yet suppoted')
 
-    # amount of values per column per typ
-    nntyp = [0, 3, 3, 4, 3, 3, 4, 4, 3, 0, 0, 8, 10]
+        for i in range(len(AA)):
+            if AA is not None:
+                eaID = data.createSensor(pg.Pos(AA[i], 0.0))
+            else:
+                eaID = -1
 
-    nn = nntyp[typ] + hasIP
+            if BB is not None:
+                ebID = data.createSensor(pg.Pos(BB[i], 0.0))
+            else:
+                ebID = -1
 
-    # dataBody = pg.Matrix(nn, nData)
-    dataBody = np.zeros((nn, nData))
+            if MM is not None:
+                emID = data.createSensor(pg.Pos(MM[i], 0.0))
+            else:
+                emID = -1
 
-    for i in range(nData):
-        vals = getNonEmptyRow(it, comment=';').replace(',', ' ').split()
-        dataBody[:, i] = np.array(vals, dtype=float)
-#        for j in range(nn):
-#            dataBody[j][i] = float(vals[j])
+            if NN is not None:
+                enID = data.createSensor(pg.Pos(NN[i], 0.0))
+            else:
+                enID = -1
 
-    XX = dataBody[0]
-    EL = dataBody[1]
-    SP = pg.Vector(nData, 1.0)
+            data.createFourPointData(i, eaID, ebID, emID, enID)
 
-    if nn - hasIP == 4:
-        SP = dataBody[2]
-
-    AA = None
-    BB = None
-    NN = None
-    MM = None
-
-    if typ == 1:  # Wenner
-        AA = XX - xLoc * EL * 1.5
-        MM = AA + EL
-        NN = MM + EL
-        BB = NN + EL
-    elif typ == 2:  # Pole-Pole
-        AA = XX - xLoc * EL * 0.5
-        MM = AA + EL
-    elif typ == 3:  # Dipole-Dipole
-        AA = XX - xLoc * EL * (SP / 2. + 1.)
-        BB = AA + EL
-        MM = BB + SP * EL
-        NN = MM + EL
-    elif typ == 3:  # Dipole-Dipole
-        AA = XX - xLoc * EL * (SP / 2. + 1.)
-        BB = AA + EL
-        MM = BB + SP * EL
-        NN = MM + EL
-    elif typ == 4:  # WENNER-BETA
-        AA = XX - xLoc * EL * 1.5
-        BB = AA + EL
-        MM = BB + EL
-        NN = MM + EL
-    elif typ == 5:  # WENNER-GAMMA
-        AA = XX - xLoc * EL * 1.5
-        MM = AA + EL
-        BB = MM + EL
-        NN = BB + EL
-    elif typ == 6:  # POLE-DIPOLE
-        AA = XX - xLoc * SP * EL - (SP - 1.) * (SP < 0.) * EL
-        MM = AA + SP * EL
-        NN = MM + np.sign(SP) * EL
-    elif typ == 7:  # SCHLUMBERGER
-        AA = XX - xLoc * EL * (SP + 0.5)
-        MM = AA + SP * EL
-        NN = MM + EL
-        BB = NN + SP * EL
-    else:
-        raise Exception('Datatype ' + str(typ) + ' not yet suppoted')
-
-    for i in range(len(AA)):
-
-        if AA is not None:
-            eaID = data.createSensor(pg.Pos(AA[i], 0.0))
-        else:
-            eaID = -1
-
-        if BB is not None:
-            ebID = data.createSensor(pg.Pos(BB[i], 0.0))
-        else:
-            ebID = -1
-
-        if MM is not None:
-            emID = data.createSensor(pg.Pos(MM[i], 0.0))
-        else:
-            emID = -1
-
-        if NN is not None:
-            enID = data.createSensor(pg.Pos(NN[i], 0.0))
-        else:
-            enID = -1
-
-        data.createFourPointData(i, eaID, ebID, emID, enID)
-
-    data.set('rhoa', dataBody[nn - hasIP - 1])
-    if hasIP:
-        data.set('ip', dataBody[nn - 1])
+        data.set('rhoa', dataBody[nn - hasIP - 1])
+        if hasIP:
+            data.set('ip', dataBody[nn - 1])
 
     data.sortSensorsX()
+    data.sortSensorsIndex()
     if return_header:
         return data, header
     else:
