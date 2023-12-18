@@ -47,4 +47,5 @@ geometricFactors = geometricFactor
 # Module prototypes
 DataContainer = pg.core.DataContainerERT
 Manager = ERTManager
+Modelling = ERTModelling
 coverageERT = pg.core.coverageDCtrans
