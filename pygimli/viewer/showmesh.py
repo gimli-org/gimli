@@ -215,8 +215,6 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         Useful to combine multiple plots into one figure.
     savefig: string
         Filename for a direct save to disc.
-        The matplotlib pdf-output is a little bit big so we try
-        an epstopdf if the .eps suffix is found in savefig
     showMesh: bool [False]
         Shows the mesh itself additional.
     showBoundary: bool [None]
@@ -466,7 +464,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
 
     if fitView is not False:
         ax.autoscale(enable=True, axis='both', tight=True)
-        ax.set_aspect('equal')
+        ax.set_aspect(kwargs.pop('aspect', 'equal'))
 
     cBar = None
 
@@ -532,20 +530,12 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     pg.viewer.mpl.hold(val=lastHoldStatus)
 
     if savefig:
-        print('saving: ' + savefig + ' ...')
-
+        print('saving: ' + savefig + ' ...', end="")
         if '.' not in savefig:
             savefig += '.pdf'
 
         ax.figure.savefig(savefig, bbox_inches='tight')
         # rc params savefig.format=pdf
-
-        if '.eps' in savefig:
-            try:
-                print("trying eps2pdf ... ")
-                os.system('epstopdf ' + savefig)
-            except BaseException:
-                pass
         print('.. done')
 
     return ax, cBar
