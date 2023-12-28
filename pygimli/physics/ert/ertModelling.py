@@ -148,7 +148,7 @@ class ERTModelling(ERTModellingBase):
 
             return pg.utils.squeezeComplex(sm)  # complex impedance
         else:
-            return super(ERTModelling, self).createStartModel(dataVals)
+            return super().createStartModel(dataVals)
 
     def flipImagPart(self, v):
         """Flip imaginary port (convention)."""
