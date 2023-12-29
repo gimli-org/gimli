@@ -8,6 +8,7 @@ from numpy import ma
 
 import pygimli as pg
 from pygimli.viewer.mpl.dataview import showValMapPatches
+from pygimli.viewer.mpl import showDataContainerAsMatrix
 
 
 def generateDataPDF(data, filename="data.pdf"):
@@ -46,7 +47,7 @@ def showERTData(data, vals=None, **kwargs):
         * axes : matplotlib.axes
             Axes to plot into. By default (None), a new figure with
             a single Axes is created.
-    
+
     Returns
     -------
     ax : matplotlib.axes
@@ -93,15 +94,18 @@ def showERTData(data, vals=None, **kwargs):
     kwargs.setdefault('label', pg.utils.unit('rhoa'))
     kwargs.setdefault('logScale', min(vals) > 0.0)
 
-    try:
-        ax, cbar = drawERTData(ax, data, vals=vals, **kwargs)
-    except Exception:
-        pg.warning('Something gone wrong while drawing data. '
-                   'Try fallback with equidistant electrodes.')
-        d = pg.DataContainerERT(data)
-        sc = data.sensorCount()
-        d.setSensors(list(zip(range(sc), np.zeros(sc))))
-        ax, cbar = drawERTData(ax, d, vals=vals, **kwargs)
+    if "x" in kwargs and "y" in kwargs:
+        ax, cbar = showDataContainerAsMatrix(data, v=vals, ax=ax, **kwargs)
+    else:
+        try:
+            ax, cbar = drawERTData(ax, data, vals=vals, **kwargs)
+        except Exception:
+            pg.warning('Something gone wrong while drawing data. '
+                    'Try fallback with equidistant electrodes.')
+            d = pg.DataContainerERT(data)
+            sc = data.sensorCount()
+            d.setSensors(list(zip(range(sc), np.zeros(sc))))
+            ax, cbar = drawERTData(ax, d, vals=vals, **kwargs)
 
     # TODO here cbar handling like pg.show
 
