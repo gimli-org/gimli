@@ -125,5 +125,6 @@ class ERTIPManager(ERTManager):
         data["ip"] = data["ma"] * 1000  # mV/V
         return data
 
-    def saveResult(self, **kwargs):
-        super().saveResult(self, **kwargs, ip=self.modelIP*1000)
+    def saveResult(self, folder=None, *args, **kwargs):
+        """Save all results in given or date-based folder."""
+        super().saveResult(folder=folder, **kwargs, ip=self.modelIP*1000)

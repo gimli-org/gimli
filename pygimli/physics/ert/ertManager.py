@@ -428,7 +428,6 @@ class ERTManager(MeshMethodManager):
         for k, v in kwargs.items():
             if hasattr(v, "__iter__") and len(v) == nM:
                 m[k] = v
-                kwargs.pop(k)
 
         m.exportVTK(os.path.join(path, 'resistivity'))
         m.saveBinaryV2(os.path.join(path, 'resistivity-pd'))
