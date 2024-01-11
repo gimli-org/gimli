@@ -46,7 +46,14 @@ DLLEXPORT RVector y(const R3Vector & rv);
 DLLEXPORT RVector z(const R3Vector & rv);
 
 DLLEXPORT R3Vector r3(const RVector & x, const RVector & y, const RVector & z);
-    
+/*! Vectorize vector of r3vectors. */
+DLLEXPORT void vectorizePosVectorList(const std::vector < PosVector > & v, PosVector & r);
+         
+DLLEXPORT void deVectorizeRVectorToPosVectorList(std::vector < RVector > & ret, 
+                                            const RVector & r, 
+                                            const std::vector < PosVector > & v);
+
+
 DLLEXPORT RVector absR3(const R3Vector & vPos);
 
 //DLLEXPORT std::Vector< RVector > fabs(const std::vector < R3Vector > & v);

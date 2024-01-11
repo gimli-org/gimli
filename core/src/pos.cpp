@@ -50,6 +50,41 @@ R3Vector r3(const RVector & x, const RVector & y, const RVector & z){
     return ret;
 }
 
+void vectorizePosVectorList(const std::vector < PosVector > & v, PosVector & r){
+    r.clear();
+    for (Index i = 0; i < v.size(); i ++) { 
+        for (Index j = 0; j < v[i].size(); j ++) { 
+            r.push_back(v[i][j]);
+        }
+    }
+
+    // Index count = 0;
+    // for (Index i = 0; i < v.size(); i ++) { 
+    //     count += v[i].size();
+    // }
+    // r.resize(count);
+    // Indes start = 0;
+    // for (Index i = 0; i < v.size(); i ++) { 
+    //     r.setVal(v[count += v[i].size();
+    // }
+
+}
+
+void deVectorizeRVectorToPosVectorList(std::vector < RVector > & ret, 
+                                       const RVector & r, 
+                                       const std::vector < PosVector > & v){
+    ret.clear();
+    Index start = 0;
+    Index end = 0;
+    for (Index i = 0; i < v.size(); i ++) { 
+        end = start + v[i].size();
+        ret.push_back(r.getVal(start, end));
+        //#std::copy(&data_[se.first], &data_[se.second], &v[0]);
+        start = end;
+    }
+}
+
+
 void saveRVector3(const std::vector < Pos > l, const std::string & fileName){
     std::fstream file; openOutFile(fileName, & file);
     for (uint i = 0; i < l.size(); i ++) file << l[i] << std::endl;

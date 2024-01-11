@@ -1314,6 +1314,8 @@ def __getCoords(coord, dim, ent):
         return ent
     if isPos(ent):
         return ent[dim]
+    if isinstance(ent, np.ndarray) and (ent.shape[1] >= dim and ent.shape[1] <= 3):
+        return ent[:, dim]
     if isinstance(ent, (pgcore.R3Vector)):
         return getattr(pgcore, coord)(ent)
     if isinstance(ent, list) and isinstance(ent[0], pgcore.Pos):

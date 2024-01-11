@@ -66,7 +66,8 @@ class TestPerf(unittest.TestCase):
 
 
     def test_tictoc(self):
-        
+        """badish interface .. don't use
+        """
         timing = []
 
         def bar1():
@@ -93,8 +94,10 @@ class TestPerf(unittest.TestCase):
 
         print(pg.timings('foobar'))
                     
+
     def test_tictoc_2(self):
-        tictoc = pg.tictoc('')
+        """ Use with one tictoc instance
+        """
 
         def bar1():
             with tictoc('bar1'):
@@ -111,6 +114,7 @@ class TestPerf(unittest.TestCase):
                     bar1()
                 bar2()
 
+        tictoc = pg.tictoc('')
         with tictoc('foobar'):
             for i in range(2):
                 time.sleep(0.1) # uncovered
@@ -119,6 +123,44 @@ class TestPerf(unittest.TestCase):
                 foo()    
 
         print(pg.timings('foobar'))
+
+
+    def test_tictoc_3(self):
+        """ Use without specific tictoc instance, get default (last created)
+        """
+
+        def bar1():
+            with pg.LastTicToc('bar1'):
+                time.sleep(0.1)
+
+        def bar2():
+            with pg.LastTicToc('bar2'):
+                time.sleep(0.1)
+                bar1()
+                
+        def foo():
+            with pg.LastTicToc('foo'):
+                for i in range(4):
+                    bar1()
+                bar2()
+
+        with pg.tictoc('foobar1'):
+            for i in range(2):
+                time.sleep(0.1) # uncovered
+                # with pg.tictoc('uncount', trace=timing):
+                #     time.sleep(0.1)
+                foo()    
+
+        with pg.tictoc('foobar2'):
+            for i in range(2):
+                time.sleep(0.1) # uncovered
+                # with pg.tictoc('uncount', trace=timing):
+                #     time.sleep(0.1)
+                foo()    
+
+        print(pg.timings('foobar1'))
+        print(pg.timings('foobar2'))
+
 
 if __name__ == '__main__':
     

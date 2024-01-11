@@ -7,6 +7,8 @@ import os
 
 pgcore = None
 
+__PY_MAX__ = max
+
 try:
     from . import _pygimli_  # if it works: as pgcore, replace all _pygimli_
     # from . import _pygimli_ as pgcore  # if it works: as pgcore, replace all _pygimli_
@@ -24,3 +26,11 @@ except ImportError as e:
     print(e)
     traceback.print_exc(file=sys.stdout)
     sys.stderr.write("ERROR: cannot import the library '_pygimli_'.\n")
+
+
+# keep orginal python max
+def max(a, b):
+    try:
+        return pg.core.max(a,b)
+    except:
+        return __PY_MAX__(a,b)

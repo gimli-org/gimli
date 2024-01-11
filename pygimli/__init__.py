@@ -352,10 +352,12 @@ def store(key=0, stop=True):
     return SWatches()[key].store()
     
 
+__LAST_TICK_TOCK__ = None
+
 class tictoc(object):
     """Timer class with persistant clock.
     """
-    def __init__(self, key='', trace=None, reset=False):
+    def __init__(self, key='', trace=None, reset=False, skipLast=False):
 
         if reset is True:
             SWatches().remove(key, isRoot=True)
@@ -371,6 +373,10 @@ class tictoc(object):
         
         tic(key=self._key)
 
+        if skipLast == False:
+            global __LAST_TICK_TOCK__
+            __LAST_TICK_TOCK__ = self
+
     def __call__(self, key):
         return tictoc(key, trace=self._trace)
 
@@ -381,7 +387,29 @@ class tictoc(object):
         store(key=self._key)
         self._trace.pop()
                 
-    
+
+class LastTicToc(tictoc):
+    def __init__(self, key='', reset=False):
+        global __LAST_TICK_TOCK__
+        self._skip = False
+        if __LAST_TICK_TOCK__ is None:
+            self._skip = True
+        else:
+            super().__init__(key=key, 
+                             trace=__LAST_TICK_TOCK__._trace, 
+                             reset=reset, skipLast=True)
+    def __enter__(self):
+        if not self._skip:
+            super().__enter__()
+        
+        return self
+
+    def __exit__(self, type, value, traceback):
+        if not self._skip:
+            super().__exit__(type, value, traceback)
+        pass
+        
+
 class WithSkip(object):
     """ FallBack if you need empty with clause.
     """
@@ -395,7 +423,7 @@ class WithSkip(object):
 
 __MPL_PLT__ = None
 
-def timings(name):
+def timings(name='/'):
     """ Return table of timings for a given root swatch key name.
     """
     import numpy as np
@@ -425,7 +453,11 @@ def timings(name):
 
         @property
         def fullname(self):
-            ps = self.name
+            if self.name is None:
+                ps = ''
+            else:
+                ps = self.name
+
             p = self.parent
             while 1:
                 try:
@@ -444,16 +476,22 @@ def timings(name):
             return s
 
     tree = TTree()
-    header = ['', 'single', 'count', 'sum', 'uncov.']
+    header = ['', 'single', 'count', 'sum', 'rel.(%)', 'uncov.(%)']
     table = []
+    # if len(SWatches().items()) == 0:
+    #     pg.error('')
+    #_g(SWatches().items())
+    maxTime = 0
     for k, s in SWatches().items():
+        
         if isinstance(k, str):
             if k.startswith(name):
 
                 ts = s.stored()
                 # if len(ts) > 0:
                 #     sts = sum(ts)
-                table.append([k, np.mean(ts), len(ts), sum(ts), None])
+                maxTime = max(float(maxTime), sum(ts))
+                table.append([k, np.mean(ts), len(ts), sum(ts), int(sum(ts)/maxTime*100), None])
                 
                 tree[k].data = sum(ts)
                 
@@ -461,19 +499,25 @@ def timings(name):
 
     #print(tree)
 
-    for t in table:
-        if len(list(tree[t[0]].childs.keys())) > 0:
+    for row in table:
+        if len(list(tree[row[0]].childs.keys())) > 0:
             
-            t[-1] = t[-2]
-            for n, tc in tree[t[0]].childs.items():
+            row[-1] = row[-3]
+            for n, tc in tree[row[0]].childs.items():
                 try:
-                    t[-1] -= tc.data 
+                    row[-1] -= tc.data 
                 except:
                     pass
 
-    #print(table)
+            #row[-1] = f'{pf(row[-1])} {str(int(row[-1]/maxTime*100)).rjust(2)}'
+            row[-1] = f'{pf(row[-1]/maxTime*100)}'
 
-    return Table(table, header)
+
+    if len(table) == 0:
+        error(f'No timeings for: {name}')
+        return
+
+    return Table(table, header, align='lrcrrr')
 
 
 # special shortcut pg.plt with lazy evaluation
