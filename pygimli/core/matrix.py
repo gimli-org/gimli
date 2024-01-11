@@ -78,9 +78,6 @@ def __ElementMatrix_str(self):
     maxRowID = int(np.log10(max(self.rowIDs())))+2
 
     s = '\n ' + ' ' * maxRowID
-    # print(self.mat())
-    # print(self.colIDs())
-    # print(self.rowIDs())
     for i in range(self.mat().cols()):
         s += str(self.colIDs()[i]).rjust(9)
     s += '\n'
@@ -98,6 +95,18 @@ def __ElementMatrix_str(self):
 pgcore.RMatrix.__repr__ = __RMatrix_str
 pgcore.CMatrix.__repr__ = __CMatrix_str
 pgcore.ElementMatrix.__repr__ = __ElementMatrix_str
+
+
+def __RSparseMapMatrix_str(self):
+    s = "SparseMapMatrix: " + str(self.rows()) + " x " + str(self.cols())
+    if self.rows() * self.cols() > 0:
+        pc = int(self.nVals()/self.cols()/self.rows()*1000) / 10
+        s += " (nnz=" + str(self.nVals()) + " / " + str(pc)+ "%)"
+
+    return s
+
+
+pgcore.RSparseMapMatrix.__repr__ = __RSparseMapMatrix_str
 
 
 def __RVector_format(self, f):
@@ -472,7 +481,7 @@ pgcore.RSparseMapMatrix.copy = __SparseMapMatrixCopy__
 #         """
 #         super().__init__(verbose)  # only in Python 3
 #         self._mul = None
-        
+
 #         if isinstance(A, str):
 #             self.load(A)
 #         else:
@@ -484,7 +493,7 @@ pgcore.RSparseMapMatrix.copy = __SparseMapMatrixCopy__
 #             if verbose:
 #                 t = time.perf_counter()
 #             self.ew, self.EV = eigh(A)
-            
+
 #             if verbose:
 #                 info('(C) Time for eigenvalue decomposition: {:.1f}s'.format(
 #                     time.perf_counter()-t))
@@ -506,7 +515,7 @@ pgcore.RSparseMapMatrix.copy = __SparseMapMatrixCopy__
 #         d = np.load(fileName + '.npy', allow_pickle=True).tolist()
 #         self.ew = d['ew']
 #         self.EV = d['EV']
-        
+
 #     def rows(self):
 #         """Return number of rows (using underlying matrix)."""
 #         return len(self.ew)
@@ -586,14 +595,14 @@ pgcore.RSparseMapMatrix.copy = __SparseMapMatrixCopy__
 
 #             if isinstance(CM, pgcore.Mesh):
 #                 CM = covarianceMatrix(CM, **kwargs)
-            
+
 #             if CM is None and mesh is not None:
 #                 CM = covarianceMatrix(mesh, **kwargs)
 #             else:
 #                 pg.critical('Give either CM or mesh')
 
 #             self.Cm05 = createCm05(CM)
-        
+
 #     @property
 #     def spur(self):
 #         if self._spur is None:
@@ -614,9 +623,9 @@ pgcore.RSparseMapMatrix.copy = __SparseMapMatrixCopy__
 #         """Save the content of this matrix. Used for caching until pickling is possible for this class
 #         """
 #         self.Cm05.save(fileName + '-Cm05')
-#         np.save(fileName, dict(verbose=self.verbose(), 
+#         np.save(fileName, dict(verbose=self.verbose(),
 #                                withRef=self.withRef,
-#                                Cm05=fileName +'-Cm05'), 
+#                                Cm05=fileName +'-Cm05'),
 #                         allow_pickle=True)
 
 
