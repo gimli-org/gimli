@@ -148,6 +148,7 @@ class FatrayDijkstraModellingInterpolate(TravelTimeDijkstraModelling):
         self.iMat = pg.matrix.SparseMapMatrix()
         self.J = pg.Matrix()
         self.setJacobian(self.J)
+        self._core.setJacobian(self.J)
         self.sensorNodes = None
 
     def createJacobian(self, slowness):
@@ -189,6 +190,7 @@ class FatrayDijkstraModellingInterpolate(TravelTimeDijkstraModelling):
             self.FresnelWeight[i] = wa
 
         self.setJacobian(self.J)
+        self._core.setJacobian(self.J)
 
 
 class FatrayDijkstraModellingMidpoint(TravelTimeDijkstraModelling):
@@ -201,6 +203,7 @@ class FatrayDijkstraModellingMidpoint(TravelTimeDijkstraModelling):
         self.J = pg.Matrix()
         self.sensorNodes = None
         self.setJacobian(self.J)
+        self._core.setJacobian(self.J)
 
     def setMesh(self, mesh, **kwargs):  # secondaryNodes=3):
         """Set mesh and create additional secondary Nodes in cell centers."""
@@ -250,6 +253,7 @@ class FatrayDijkstraModellingMidpoint(TravelTimeDijkstraModelling):
             self.J[i] = wa * tsr / slowness
 
         self.setJacobian(self.J)
+        self._core.setJacobian(self.J)
 
 
 FatrayDijkstraModelling = FatrayDijkstraModellingInterpolate
