@@ -378,7 +378,10 @@ class tictoc(object):
             __LAST_TICK_TOCK__ = self
 
     def __call__(self, key):
-        return tictoc(key, trace=self._trace)
+        try:
+            return tictoc(key, trace=self._trace)
+        except:
+            return WithSkip()
 
     def __enter__(self):
         return self
@@ -398,6 +401,7 @@ class LastTicToc(tictoc):
             super().__init__(key=key, 
                              trace=__LAST_TICK_TOCK__._trace, 
                              reset=reset, skipLast=True)
+        
     def __enter__(self):
         if not self._skip:
             super().__enter__()
@@ -491,7 +495,9 @@ def timings(name='/'):
                 # if len(ts) > 0:
                 #     sts = sum(ts)
                 maxTime = max(float(maxTime), sum(ts))
-                table.append([k, np.mean(ts), len(ts), sum(ts), int(sum(ts)/maxTime*100), None])
+                table.append([k, np.mean(ts), len(ts), sum(ts), 
+                              str(int(sum(ts)/maxTime*100)).rjust(3*(k.count('/')),'-'),
+                               None])
                 
                 tree[k].data = sum(ts)
                 
@@ -517,7 +523,7 @@ def timings(name='/'):
         error(f'No timeings for: {name}')
         return
 
-    return Table(table, header, align='lrcrrr')
+    return Table(table, header, align='lrcrlr')
 
 
 # special shortcut pg.plt with lazy evaluation
