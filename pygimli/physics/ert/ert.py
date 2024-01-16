@@ -160,6 +160,9 @@ def simulate(mesh, scheme, res, **kwargs):
     else:
         fop.setComplex(False)
 
+    if not isinstance(scheme, pg.DataContainerERT):
+        raise TypeError("Scheme must be DataContainerERT!")
+
     if not scheme.allNonZero('k') and not calcOnly:
         if verbose:
             pg.info('Calculate geometric factors.')
