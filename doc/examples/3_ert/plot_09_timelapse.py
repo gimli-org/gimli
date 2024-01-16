@@ -28,7 +28,7 @@ import pygimli.meshtools as mt
 from pygimli.physics import ert
 
 # %%%
-# We create a data container with a dipole-dipole array.
+# We create a data container using the dipole-dipole array on 41 electrodes.
 #
 
 scheme = ert.createData(elecs=41, spacing=1, schemeName='dd', maxSeparation=15)
@@ -62,8 +62,9 @@ ax.set_xlim(0, 40)
 ax.set_ylim(-10, 0)
 
 # %%%
-# We associate 100 Ohmm to the first layer, 50 to the second and 20 to the last
-# one. At the beginning, the anomalies have the same resistivity as the aquifer.
+# We associate 100 Ohmm to the first layer, 50 Ohmm to the second and 20 Ohmm
+# to the last. At the beginning, the anomalies have the same resistivity as
+# the aquifer (middle layer).
 #
 
 rhomap = [[1, 100.0], [2, 50.0], [3, 20.0], [4, 50.0], [5, 50.0], [6, 50.0]]
@@ -98,15 +99,15 @@ pg.viewer.mpl.colorbar.createColorBarOnly(ax=ax[2, 0], **cDict)
 ax[2, 0].set_aspect(3)
 
 # %%%
-# We initialize the `TimelapseERT` class by passing the list of data.
-# Otherways are passing
-# * a single data file that either holds all timestep or is accompagnied by
-# another file with the apparent resistivites (and optionally errors) as matrix
-# * a file name with a * in it that points to a number of data (e.g. `bla*.dat`)
-# to be read sequentially
-# Note that in the latter case or when passing a list of `DataContainerERT` the
-# data will be homogenized, i.e. brought to a single `DataContainerERT` and a
-# apparent resistivity matrix where non-existing values are masked out.
+# We initialize the `TimelapseERT` class by passing the list of data (A).
+# Other ways are passing (B) a single data file that either holds all timesteps
+# or is accompagnied by another file with the apparent resistivites (optionally
+# errors) as matrix, or (C) a file name with a * in it that points to a number
+# of data (e.g. `bla*.dat`) to be read sequentially.
+#
+# Note that in the cases (A) or (C), the data will be homogenized, i.e. brought
+# to a single `DataContainerERT` and an apparent resistivity matrix where
+# non-existing values are masked out.
 # In the initialization, one can pass a list of `datatime` objects to specify
 # measuring times. Otherwise they are retrieved from the filenames or just set
 # to equidistant intervals.

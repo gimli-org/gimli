@@ -6,11 +6,12 @@
 
 Inversion of 2D crosshole field data.
 """
+# sphinx_gallery_thumbnail_number = 3
+
 # %%%
 # We import the used libraries pygimli, meshtools the ERT module and a function
 # for displaying a data container.
 #
-# sphinx_gallery_thumbnail_number = 3
 
 import numpy as np
 import pygimli as pg
