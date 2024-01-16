@@ -86,7 +86,7 @@ class TimelapseERT():
         return "\n".join(out)
 
     def load(self, filename, **kwargs):
-        """Load or import data."""  # TL-ERT
+        """Load or import data (or data files using *)."""
         if os.path.isfile(filename):
             self.data = ert.load(filename)
             if os.path.isfile(filename[:-4]+".rhoa"):
@@ -122,7 +122,7 @@ class TimelapseERT():
 
         Parameters
         ----------
-        t : str|datetime
+        t : int|str|datetime
             datetime object or string
         """
         if isinstance(t, str):  # convert into datetime
@@ -178,7 +178,7 @@ class TimelapseERT():
                 self.ERR = self.ERR[ind, :]
 
     def mask(self, rmin=0.1, rmax=1e6, emax=None):
-        """Mask data.
+        """Mask data (i.e. remove them from inversion).
 
         Parameters
         ----------
@@ -193,9 +193,7 @@ class TimelapseERT():
             self.DATA.mask = np.bitwise_or(self.DATA.mask, self.ERR > emax)
 
     def showData(self, v="rhoa", x="a", y="m", t=None, **kwargs):
-        """Show data.
-
-        Show data as pseudosections (single-hole) or cross-plot (crosshole)
+        """Show data as pseudosections (single-hole) or cross-plot (crosshole)
 
         Parameters
         ----------
@@ -295,7 +293,19 @@ class TimelapseERT():
             pg.show(self.mesh, markers=True, showMesh=True)
 
     def invert(self, t=None, reg={}, regTL={}, **kwargs):
-        """Run inversion for a specific timestep or all subsequently."""
+        """Run inversion for a specific timestep or all subsequently.
+
+        Parameter
+        ---------
+        t : int|datetime|str|array
+            time index, string or datetime object, or array of any of these
+        reg : dict
+            regularization options (setRegularization) for all inversions
+        regTL : dict
+            regularization options for timesteps inversion only
+        **kwargs : dict
+            keyword arguments passed to ERTManager.invert
+        """
         if t is not None:
             t = self.timeIndex(t)
 
@@ -369,7 +379,15 @@ class TimelapseERT():
         return ax
 
     def showAllModels(self, ncols=2, **kwargs):
-        """Show all models as subplots."""
+        """Show all models as subplots.
+
+        Parameters
+        ----------
+        ncols : int [2]
+            number of columns
+        **kwargs : dict
+            keyword arguments passed to pg.show
+        """
         nT = self.DATA.shape[1]
         showRatio = kwargs.pop("ratio", False)
         nrows = int(np.ceil(nT/ncols))
@@ -398,7 +416,12 @@ class TimelapseERT():
         return ax
 
     def generateModelPDF(self, **kwargs):
-        """Generate a multi-page pdf with the model results."""
+        """Generate a multi-page pdf with the model results.
+
+        Parameters
+        ----------
+        **kwargs : keyword arguments passed to pg.show()
+        """
         kwargs.setdefault('label', pg.unit('res'))
         kwargs.setdefault('cMap', pg.utils.cMap('res'))
         kwargs.setdefault('logScale', True)
@@ -412,7 +435,21 @@ class TimelapseERT():
                 fig.clf()
 
     def generateRatioPDF(self, **kwargs):
-        """Generate a multi-page pdf with the model results."""
+        """Generate a multi-page pdf with the model results.
+
+        Parameters
+        ----------
+        creep : bool [False]
+            Use preceding time step as reference (default is baseline)
+        cMax : float [2]
+            maximum of color scale
+        cMax : float [1/cMax]
+            minimum of color scale
+        logScale : bool [True]
+            logarithmic color scale
+        cMap : str ['bwr']
+            colormap
+        """
         kwargs.setdefault('label', 'ratio')
         kwargs.setdefault('cMap', 'bwr')
         kwargs.setdefault('logScale', True)
