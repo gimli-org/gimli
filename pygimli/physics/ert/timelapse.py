@@ -461,7 +461,7 @@ class TimelapseERT():
             fig = plt.figure(figsize=kwargs.pop("figsize", [8, 5]))
             for i, model in enumerate(self.models[1:]):
                 ax = fig.subplots()
-                pg.show(self.pd, model[i+1]/basemodel, ax=ax, **kwargs)
+                pg.show(self.pd, model/basemodel, ax=ax, **kwargs)
                 ax.set_title(str(i)+": " + self.times[i+1].isoformat(" ", "minutes") + "/" +
                              self.times[i].isoformat(" ", "minutes"))
                 fig.savefig(pdf, format='pdf')
