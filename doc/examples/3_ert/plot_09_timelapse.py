@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
+# sphinx_gallery_thumbnail_number = 5
 """
 Timelapse ERT
 =============
@@ -12,10 +13,8 @@ Additionally, we created a github repository
 https://github.com/gimli-org/timelapseERT that holds published data and scripts
 demonstrating how to achieve the published results, according to the FAIR data
 standards.
-
 This notebook is a simplistic model for a synthetic case.
 """
-# sphinx_gallery_thumbnail_number = 5
 
 # %%%
 # We import the used libraries pygimli, meshtools the ERT module.

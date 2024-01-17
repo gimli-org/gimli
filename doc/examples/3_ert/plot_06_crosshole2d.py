@@ -3,8 +3,6 @@
 """
 2D crosshole ERT inversion
 ==========================
-
-Inversion of 2D crosshole field data.
 """
 # sphinx_gallery_thumbnail_number = 3
 
@@ -45,7 +43,7 @@ print(np.sort(data["rhoa"])[-5:])
 
 data.remove(data["rhoa"] > 200)
 m = np.sign(data["m"] - data["n"]) * data["m"]
-showDataContainerAsMatrix(data, m, data["a"], "rhoa", cMap="Spectral_r")
+ax, cb = showDataContainerAsMatrix(data, m, data["a"], "rhoa", cMap="Spectral_r")
 
 # %%%
 # We determine the x and z positions and create a regular grid with a spacing
@@ -92,7 +90,7 @@ for b in mesh.boundaries():
 data.estimateError()
 mgr = ert.Manager(data)
 mgr.invert(mesh=mesh, verbose=True)
-mgr.showResult(cMin=15, cMax=200)
+ax, cb = mgr.showResult(cMin=15, cMax=200)
 
 # %%%
 # References
