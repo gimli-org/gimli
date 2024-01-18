@@ -106,32 +106,29 @@ def __Mesh_setVal(self, key, val):
 
     Multiple arrays via matrix will be saved too.
     """
-    # print(key, len(val), isR3Array(val))
+    if isinstance(val, float):  # single value
+        val = RVector(self.cellCount(), val)
 
-    if isR3Array(val):
+    if isR3Array(val):  # vectorial property
         return self.addData(key, val)
-
+    # list of vectors
     if isinstance(val, list) and isinstance(val[0], (RVector, np.ndarray)) or \
-        val.ndim == 2 or \
-        val.ndim == 3:
+        val.ndim == 2 or val.ndim == 3:
 
-        #print(val.ndim)
         maxDigit = ceil(np.log10(len(val)))
 
         for i, v in enumerate(val):
-            #print(i, v, maxDigit, '{}#{}'.format(key, str(i).zfill(maxDigit)))
-
             self.addData('{}#{}'.format(key, str(i).zfill(maxDigit)),
                          np.asarray(v))
     else:
-
         try:
-            self.addData(key, val)
+            if key == "marker":
+                self.setCellMarkers(val)
+            else:
+                self.addData(key, val)
         except:
-            print(key)
-            print(val)
-            print(val.shape)
-            pg.error('Could not add data.')
+            ValueError('Could not add data with key ' + key +
+                     " of shape " + str(np.shape(val)))
 
 Mesh.__setitem__ = __Mesh_setVal
 
