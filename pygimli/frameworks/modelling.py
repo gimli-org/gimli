@@ -1174,7 +1174,7 @@ class PriorModelling(MeshModelling):
         for i, po in enumerate(self.pos):
             cell = mesh.findCell(po)
             if cell is None:
-                raise Exception("Could not find cell at position {pos}!")
+                raise IndexError(f"Could not find cell at position {po}!")
             else:
                 self.ind[i] = cell.id()
 
