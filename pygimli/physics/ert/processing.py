@@ -13,12 +13,14 @@ def uniqueERTIndex(data, nI=0, reverse=False, unify=True):
     ----------
     data : DataContainerERT
         data container holding a b m n field registered as indices (int)
-    I : int [0]
+    nI : int [0]
         index to generate (multiply), by default (0) sensorCount
         if two data files with different sensorCount are compared make sure
-        to use the same I for both
+        to use the same nI for both
     reverse : bool [False]
         exchange current (A, B) with potential (M, N) for reciprocal analysis
+    unify : bool [True]
+        sort A/B and M/N so that bipole orientation does not matter
     """
     if nI == 0:
         nI = data.sensorCount() + 1
@@ -68,6 +70,24 @@ def generateDataFromUniqueIndex(ind, data=None, nI=None):
     scheme["valid"] = 1
     return scheme
 
+def reciprocalIndices(data, onlyOnce=False):
+    """Return indices for reciprocal data."""
+    unF = uniqueERTIndex(data)
+    unB = uniqueERTIndex(data, reverse=True)
+    iF, iB = [], []
+    for i, u in enumerate(unF):
+        ii = np.nonzero(unB == u)[0]
+        if len(ii) > 0:
+            iF.append(i)
+            iB.append(ii[0])
+
+    iF = np.array(iF, dtype=np.int)
+    iB = np.array(iB, dtype=np.int)
+    if onlyOnce:
+        return iF[iF < iB], iB[iF < iB]
+    else:
+        return iF, iB
+
 def getReciprocals(data, change=False, remove=False):
     """Compute data reciprocity from forward and backward data.
 
@@ -84,27 +104,27 @@ def getReciprocals(data, change=False, remove=False):
         remove backward data that are present as forward data
     """
     if not data.allNonZero('r'):
-        data.set('r', data('u') / data('i'))
+        data['r'] = data['u'] / data['i']
 
     unF = uniqueERTIndex(data)
     unB = uniqueERTIndex(data, reverse=True)
     rF, rB = [], []
     rec = np.zeros(data.size())
-    data.set('rec', pg.Vector(data.size()))
+    data['rec'] = 0
     for iB in range(data.size()):
         if unB[iB] in unF:
             iF = int(np.nonzero(unF == unB[iB])[0][0])
-            rF.append(data('r')[iF])
-            rB.append(data('r')[iB])
+            rF.append(data['r'][iF])
+            rB.append(data['r'][iB])
             rec[iB] = (rF[-1]-rB[-1]) / (rF[-1]+rB[-1]) * 2
-            data('rec')[iF] = rec[iB]
-            IF, IB = data('i')[iF], data('i')[iB]  # use currents for weighting
-            if change and data('valid')[iF]:
-                data('r')[iF] = (rF[-1] * IF + rB[-1] * IB) / (IF + IB)
-                data('i')[iF] = (IF**2 + IB**2) / (IF + IB)  # according weight
-                data('u')[iF] = data('r')[iF] * data('i')[iF]
+            data['rec'][iF] = rec[iB]
+            IF, IB = data['i'][iF], data['i'][iB]  # use currents for weighting
+            if change and data['valid'][iF]:
+                data['r'][iF] = (rF[-1] * IF + rB[-1] * IB) / (IF + IB)
+                data['i'][iF] = (IF**2 + IB**2) / (IF + IB)  # according weight
+                data['u'][iF] = data['r'][iF] * data['i'][iF]
                 if remove:
-                    data('valid')[iB] = 0  # for adding all others later on
+                    data['valid'][iB] = 0  # for adding all others later on
 
     print(len(rF), "reciprocals")
     if remove:
