@@ -106,7 +106,7 @@ def __Mesh_setVal(self, key, val):
 
     Multiple arrays via matrix will be saved too.
     """
-    if isinstance(val, float):  # single value
+    if isinstance(val, (float, int)):  # single value
         val = RVector(self.cellCount(), val)
 
     if isR3Array(val):  # vectorial property
