@@ -71,7 +71,19 @@ def generateDataFromUniqueIndex(ind, data=None, nI=None):
     return scheme
 
 def reciprocalIndices(data, onlyOnce=False):
-    """Return indices for reciprocal data."""
+    """Return indices for reciprocal data.
+
+    Parameters:
+    data : DataContainerERT
+        data containing reciprocal data
+    onlyOnce : bool [False]
+        return every pair only once
+
+    Returns
+    -------
+    iN, iR : np.array(dtype=int)
+        indices into the data container for normal and reciprocals
+    """
     unF = uniqueERTIndex(data)
     unB = uniqueERTIndex(data, reverse=True)
     iF, iB = [], []
