@@ -249,6 +249,23 @@ class TimelapseERT():
         ax.set_ylabel("resistivity (Ohmm)")
         return ax
 
+    def fitReciprocalErrorModel(self, **kwargs):
+        """Fit all data by analysing normal/reciprocal data."""
+        data = self.data.copy()
+        p = np.zeros(self.DATA.shape[1])
+        a = np.zeros_like(p)
+        show = kwargs.pop("show", False)  # avoid show single fits
+        for i, rhoa in enumerate(self.DATA.T):
+            data['rhoa'] = rhoa
+            p[i], a[i] = ert.fitReciprocalErrorModel(data, **kwargs)
+
+        if show:
+            _, ax = plt.subplots(nrows=2)
+            ax[0].plot(self.times, p*100)
+            ax[1].plot(self.times, a)
+
+        return p, a
+
     def generateDataPDF(self, **kwargs):
         """Generate a pdf with all data as timesteps in individual pages.
 
