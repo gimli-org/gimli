@@ -56,6 +56,7 @@ class Inversion(object):
         self._inv = None
         self._fop = None
         self._lam = 20      # lambda regularization
+        self.chi2History = []
 
         # cache: keep startmodel if set explicitly or calculated from FOP, will
         # be recalulated for every run if not set explicitly
