@@ -8,9 +8,9 @@ form of an equation. Let us consider a simple vertical electrical sounding
 (VES) that is inverted for a four-layer case with unknown layer thicknesses.
 
 Assume we know the depth of the layer boundary, e.g. from a borehole, in this
-case between the third and fourth layer be z2. So we can formulate this with an
-equation d1+d2+d3=z2. This equation can be added to the inverse problem in the
-style of Lagrangian, i.e. by an additional regularization term.
+case between the third and fourth layer be :math:`z_2`. So we can formulate this
+by an equation :math:`d_1+d_2+d_3=z_2`. This equation can be added to the inverse
+problem in the style of Lagrangian, i.e. by an additional regularization term.
 
 We use the LSQR inversion framework as used by Wagner et al. (2019) to
 constrain the sum of water, ice, air and rock fraction to be 1.
