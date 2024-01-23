@@ -100,6 +100,43 @@ def reciprocalIndices(data, onlyOnce=False):
     else:
         return iF, iB
 
+def fitReciprocalErrorModel(data, nBins=None, show=False):
+    """Fit an error by statistical normal-reciprocal analysis."""
+    if data.allNonZero('r'):
+        R = data['r']
+    else:
+        R = data['rhoa'] / data['k']
+
+    iF, iB = reciprocalIndices(data, True)
+    n30 = len(iF) // 30
+    nBins = nBins or np.maximum(np.minimum(n30, 30), 4)
+    RR = np.abs(R[iF] + R[iB]) / 2
+    sInd = np.argsort(RR)
+    RR = RR[sInd]
+    dR = (R[iF] - R[iB])[sInd]
+    inds = np.linspace(0, len(RR), nBins+1, dtype=int)
+    stdR = np.zeros(nBins)
+    meanR = np.zeros(nBins)
+    for b in range(nBins):
+        ii = range(inds[b], inds[b+1])
+        stdR[b] = np.std(dR[ii])
+        meanR[b] = np.mean(RR[ii])
+
+    G = np.ones([len(meanR), 2])  # a*x+b
+    G[:, 0] = meanR
+    ab, *_ = np.linalg.lstsq(G, stdR, rcond=None)
+    if show:
+        x = np.linspace(min(meanR), max(meanR), 30)
+        eModel = x*ab[0]+ab[1]
+        _, ax = pg.plt.subplots()
+        ax.semilogx(RR, dR, '.')  # /RR
+        ax.plot(meanR, stdR, '*') # /meanR
+        ax.plot(x, eModel, '-') # /x
+        ax.grid(which='both')
+        return ab, ax
+    else:
+        return ab
+
 def getReciprocals(data, change=False, remove=False):
     """Compute data reciprocity from forward and backward data.
 
