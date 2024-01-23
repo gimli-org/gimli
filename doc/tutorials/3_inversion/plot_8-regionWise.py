@@ -51,7 +51,7 @@ ert.show(data);
 # %%%
 # We combined Wenner-Schlumberger (top) and Wenner-beta (bottom) data. The
 # lowest resistivities correspond with the water resistivity of 22.5
-# $\Omega$\ m.
+# :math:`\Omega`m.
 #
 # The contained errors are measured standard devitations and should not be used
 # for inversion. Instead, we estimate new errors using 2% and 100microVolts.
@@ -149,7 +149,7 @@ ax, cb = pg.show(water, resWater)
 
 
 # %%%
-# Apparently, all values are below the expected 22.5\ $\Omega$\ m
+# Apparently, all values are below the expected 22.5 :math:`\Omega`m
 # and some are implausibly low. Therefore we should try to limit them.
 # Moreover, the subsurface structures do not look very “layered”, which is
 # why we make the smoothness anisotropic.
@@ -186,7 +186,7 @@ ax, cb = mgr.showResult(**kw)
 # %%%
 # Apparently, this makes it harder to fit the data accurately. So maybe an
 # increased clay content can be responsible for resistivity below
-# 20\ $\Omega$\ m in the mud.
+# 20\ :math:`\Omega`m in the mud.
 #
 
 # %%%

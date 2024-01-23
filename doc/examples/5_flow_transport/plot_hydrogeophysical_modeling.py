@@ -52,13 +52,13 @@ pg.show(mesh)
 # We begin by defining isotropic values of hydraulic conductivity :math:`K` and
 # mapping these to each mesh cell:
 
-# Map regions to hydraulic conductivity in $m/s$
+# Map regions to hydraulic conductivity in m/s
 kMap = [[1, 1e-8], [2, 5e-3], [3, 1e-4], [4, 8e-4]]
 
 # Map conductivity value per region to each cell in the given mesh
 K = pg.solver.parseMapToCellArray(kMap, mesh)
 
-pg.show(mesh, data=K, label='Hydraulic conductivity $K$ in m$/$s', cMin=1e-5,
+pg.show(mesh, data=K, label='Hydraulic conductivity $K$ in m/s', cMin=1e-5,
         cMax=1e-2, logScale=True, grid=True)
 
 ################################################################################
@@ -84,7 +84,7 @@ p = pg.solver.solveFiniteElements(mesh, a=K, bc=pBound)
 vel = -pg.solver.grad(mesh, p) * np.asarray([K, K, K]).T
 
 ax, _ = pg.show(mesh, data=pg.abs(vel) * 1000, cMin=0.05, cMax=0.15,
-                label='Velocity $v$ in mm$/$s', cMap='YlGnBu', hold=True)
+                label='Velocity $v$ in mm/s', cMap='YlGnBu', hold=True)
 ax, _ = pg.show(mesh, data=vel, ax=ax, color='k', linewidth=0.8, dropTol=1e-5,
                 hold=True)
 
@@ -109,7 +109,7 @@ S[sourceCell.id()] = 1.0 / sourceCell.size()  # g/(l s)
 # We define a time vector and common velocity-depending dispersion coefficient
 # :math:`D = \alpha |\mathbf{v}|` with a dispersivity :math:`\alpha=1\cdot10^{-2}` m.
 # We solve the advection-diffsuion equation on the equation level with the finite
-# volume solver, which results in a particle concentration :math:`c(\mathbf{r},t)$
+# volume solver, which results in a particle concentration :math:`c(\mathbf{r},t)`
 # (in g/l) for each cell center and time step.
 
 # Choose 800 time steps for 6 days in seconds
@@ -132,7 +132,7 @@ c = np.vstack((c1, c2))
 # We can now visualize the result:
 for ci in c[1:][::200]:
     pg.show(mesh, data=ci * 0.001, cMin=0, cMax=3, cMap="magma_r",
-            label="Concentration c in $g/l$")
+            label="Concentration c in g/l")
 
 ################################################################################
 # Simulate time-lapse electrical resistivity measurements.
@@ -154,7 +154,7 @@ pg.show(meshERT)
 # Select 10 time frame to simulate ERT data
 timesERT = pg.IVector(np.floor(np.linspace(0, len(c) - 1, 10)))
 
-# Create conductivity of fluid for salt concentration $c$
+# Create conductivity of fluid for salt concentration :math:`c`
 sigmaFluid = c[timesERT] * 0.1 + 0.01
 
 # Calculate bulk resistivity based on Archie's Law
