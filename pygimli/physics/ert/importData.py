@@ -276,7 +276,11 @@ def importRes2dInv(filename, verbose=False, return_header=False):
         if hasIP:
             data.set('ip', dataBody[nn - 1])
 
-    istopo = int(getNonEmptyRow(it, comment=';'))
+    row = getNonEmptyRow(it, comment=';')
+    if row.lower().startswith('topography'):
+        row = getNonEmptyRow(it, comment=';')
+
+    istopo = int(row)
     if istopo:
         ntopo = int(getNonEmptyRow(it, comment=';'))
         ap = data.additionalPoints()
