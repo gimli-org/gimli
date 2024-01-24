@@ -108,28 +108,29 @@ def showERTData(data, vals=None, **kwargs):
     kwargs.setdefault('label', pg.utils.unit('rhoa'))
     kwargs.setdefault('logScale', min(vals) > 0.0)
 
-    if "style" in kwargs:
-        sty = kwargs.pop("style")
-        if sty == "a-m":
-            kwargs.setdefault("y", "a")
-            kwargs.setdefault("x", "m")
-        elif sty == "a-mn":
-            kwargs.setdefault("y", "a")
-            kwargs.setdefault("x", ["m", "n"])
-        elif sty == "ab-m":
-            kwargs.setdefault("y", ["a", "b"])
-            kwargs.setdefault("x", "m")
-        elif sty == "sepa-m":
-            data["ab"] = data["b"] - data["a"]
-            kwargs.setdefault("y", ["ab", "a"])
-            kwargs.setdefault("x", "m")
-        elif sty == "a-sepm":
-            data["mn"] = data["n"] - data["m"]
-            kwargs.setdefault("y", "a")
-            kwargs.setdefault("y", ["mn", "m"])
-        elif sty != 0:
-            kwargs.setdefault("y", ["a", "b"])
-            kwargs.setdefault("x", ["m", "n"])
+    sty = kwargs.pop("style", None)
+    if isinstance(sty, str):
+        sty = sty.lower()
+    if sty == "a-m":
+        kwargs.setdefault("y", "a")
+        kwargs.setdefault("x", "m")
+    elif sty == "a-mn":
+        kwargs.setdefault("y", "a")
+        kwargs.setdefault("x", ["m", "n"])
+    elif sty == "ab-m":
+        kwargs.setdefault("y", ["a", "b"])
+        kwargs.setdefault("x", "m")
+    elif sty == "sepa-m":
+        data["ab"] = data["b"] - data["a"]
+        kwargs.setdefault("y", ["ab", "a"])
+        kwargs.setdefault("x", "m")
+    elif sty == "a-sepm":
+        data["mn"] = data["n"] - data["m"]
+        kwargs.setdefault("y", "a")
+        kwargs.setdefault("y", ["mn", "m"])
+    elif sty is not None and sty != 0:
+        kwargs.setdefault("y", ["a", "b"])
+        kwargs.setdefault("x", ["m", "n"])
 
     if "x" in kwargs and "y" in kwargs:
         if kwargs["y"] == "mid":
