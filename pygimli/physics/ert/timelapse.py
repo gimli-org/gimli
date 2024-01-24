@@ -258,13 +258,20 @@ class TimelapseERT():
         a = np.zeros_like(p)
         show = kwargs.pop("show", False)  # avoid show single fits
         for i, rhoa in enumerate(self.DATA.T):
+            if isinstance(rhoa, np.ma.MaskedArray):
+                rhoa = rhoa.data
+
             data['rhoa'] = rhoa
             p[i], a[i] = ert.fitReciprocalErrorModel(data, **kwargs)
 
         if show:
-            _, ax = plt.subplots(nrows=2)
+            _, ax = plt.subplots(nrows=2, sharex=True)
             ax[0].plot(self.times, p*100)
             ax[1].plot(self.times, a)
+            ax[0].set_ylabel("relative error (%)")
+            ax[1].set_ylabel("absolute error (Ohm)")
+            ax[0].grid()
+            ax[1].grid()
 
         return p, a
 
