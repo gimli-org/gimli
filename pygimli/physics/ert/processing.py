@@ -122,9 +122,12 @@ def fitReciprocalErrorModel(data, nBins=None, show=False):
         stdR[b] = np.std(dR[ii])
         meanR[b] = np.mean(RR[ii])
 
-    G = np.ones([len(meanR), 2])  # a*x+b
+    G = np.ones([len(meanR), 2]) # a*x+b
+    w = np.reshape(np.isfinite(meanR), [-1, 1])
+    meanR[np.isnan(meanR)] = 0
+    stdR[np.isnan(stdR)] = 0
     G[:, 0] = meanR
-    ab, *_ = np.linalg.lstsq(G, stdR, rcond=None)
+    ab, *_ = np.linalg.lstsq(w*G, stdR, rcond=None)
     if show:
         x = np.linspace(min(meanR), max(meanR), 30)
         eModel = x*ab[0]+ab[1]
