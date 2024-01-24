@@ -3,6 +3,9 @@
 """
 2D crosshole ERT inversion
 ==========================
+In this example, we demonstrate 2D inversion of a crosshole ERT data set
+published by Kuras et al. (2009) in the frame of the ALERT project.
+For timelapse inversion of the whole data, see TimelapseERT project on github.
 """
 # sphinx_gallery_thumbnail_number = 3
 
@@ -18,8 +21,7 @@ from pygimli.physics import ert
 from pygimli.viewer.mpl import showDataContainerAsMatrix
 
 # %%%
-# We load the data file from the example repository. It represents a crosshole
-# data set published by Kuras et al. (2009) in the frame of the ALERT project.
+# We load the data file from the example repository.
 #
 
 data = pg.getExampleData("ert/crosshole2d.dat")
@@ -99,4 +101,4 @@ ax, cb = mgr.showResult(cMin=15, cMax=200)
 # Ogilvy, R. D.,and Wealthall, G. P. (2009). Monitoring hydraulic processes
 # with Automated time-Lapse Electrical Resistivity Tomography (ALERT).
 # Compte Rendus Geosciences - Special issue on Hydrogeophysics,
-# 341(10-11):868–885.
+# 341(10-11), 868–885.
