@@ -1,13 +1,13 @@
+"""Timelapse ERT manager class."""
 import os.path
 from glob import glob
+from datetime import datetime, timedelta
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import pygimli as pg
-import pygimli.meshtools as mt
 from pygimli.physics import ert
 from .processing import combineMultipleData
-from datetime import datetime, timedelta
 
 
 # move general timelapse stuff to method-independent class
@@ -54,9 +54,11 @@ class TimelapseERT():
         self.mesh = kwargs.pop("mesh", None)
         self.name = "new"
         self.models = []
+        self.responses = []
         self.chi2s = []
         self.model = None
         self.mgr = ert.ERTManager()
+        self.pd = None
         if filename is not None:
             if isinstance(filename, str):
                 self.load(filename, **kwargs)
@@ -85,7 +87,7 @@ class TimelapseERT():
 
         return "\n".join(out)
 
-    def load(self, filename, **kwargs):
+    def load(self, filename):
         """Load or import data (or data files using *)."""
         if os.path.isfile(filename):
             self.data = ert.load(filename)
@@ -281,7 +283,7 @@ class TimelapseERT():
                 fig.savefig(pdf, format='pdf')
                 fig.clf()
 
-    def chooseTime(self, t=None, **kwargs):
+    def chooseTime(self, t=None):
         """Return data for specific time.
 
         Parameters
@@ -309,7 +311,7 @@ class TimelapseERT():
             print(self.mesh)
             pg.show(self.mesh, markers=True, showMesh=True)
 
-    def invert(self, t=None, reg={}, regTL={}, **kwargs):
+    def invert(self, t=None, reg=None, regTL=None, **kwargs):
         """Run inversion for a specific timestep or all subsequently.
 
         Parameter
@@ -350,7 +352,7 @@ class TimelapseERT():
             models.append(self.model)
             responses.append(self.mgr.inv.response)
             self.chi2s.append(self.mgr.inv.chi2())
-            if i == 0:
+            if i == 0 and isinstance(regTL, dict):
                 kwargs.update(regTL)
                 # self.mgr.inv.setRegularization(**regTL)
 
@@ -388,11 +390,13 @@ class TimelapseERT():
     def showFit(self, **kwargs):
         """Show data, model response and misfit."""
         _, ax = plt.subplots(nrows=3, figsize=(10, 6), sharex=True, sharey=True)
-        _, cb = self.showData(ax=ax[0], verbose=False)
+        kwargs.setdefault("verbose", False)
+        _, cb = self.showData(ax=ax[0], **kwargs)
         self.showData(self.mgr.inv.response, ax=ax[1],
-                      cMin=cb.vmin, cMax=cb.vmax, verbose=False)
+                      cMin=cb.vmin, cMax=cb.vmax, **kwargs)
         misfit = self.mgr.inv.response / self.data["rhoa"] * 100 - 100
-        self.showData(misfit, ax=ax[2], cMin=-10, cMax=10, cMap="bwr", verbose=0)
+        self.showData(misfit, ax=ax[2], cMin=-10,
+                      cMax=10, cMap="bwr", **kwargs)
         return ax
 
     def showAllModels(self, ncols=2, **kwargs):
