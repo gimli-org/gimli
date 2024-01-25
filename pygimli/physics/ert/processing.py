@@ -124,7 +124,7 @@ def fitReciprocalErrorModel(data, nBins=None, show=False, rel=False):
 
     G = np.ones([len(meanR), 2]) # a*x+b
     w = np.reshape(np.isfinite(meanR), [-1, 1])
-    meanR[np.isnan(meanR)] = 0
+    meanR[np.isnan(meanR)] = 1e-16
     stdR[np.isnan(stdR)] = 0
     if rel:
         G[:, 1] = 1 / meanR
@@ -137,20 +137,23 @@ def fitReciprocalErrorModel(data, nBins=None, show=False, rel=False):
         x = np.linspace(min(meanR), max(meanR), 30)
         _, ax = pg.plt.subplots()
         if rel:
-            eModel = ab[0] + ab[1] / x
             ax.semilogx(RR, dR/RR, '.', label='data')  # /RR
-            ax.plot(meanR, stdR/meanR, '*', label='std dev') # /meanR
+            ii = meanR > 1e-12
+            x = x[x > 1e-12]
+            eModel = ab[0] + ab[1] / x
+            ax.plot(meanR[ii], stdR[ii]/meanR[ii], '*', label='std dev') # /meanR
             ax.set_title(r'$\delta$R/R={:.6f}+{:.6f}/|R|'.format(*ab))
+            ax.set_ylabel(r'$\delta$R/R')
         else:
             eModel = ab[0] + ab[1] * x
             ax.semilogx(RR, dR, '.', label='data')  # /RR
             ax.plot(meanR, stdR, '*', label='std dev') # /meanR
             ax.set_title(r'$\delta$R={:.6f}+{:.6f}*|R|'.format(*ab))
+            ax.set_ylabel(r'$\delta$R ($\Omega$)')
 
         ax.plot(x, eModel, '-', label='error model') # /x
         ax.grid(which='both')
         ax.set_xlabel(r'R ($\Omega$)')
-        ax.set_ylabel(r'$\delta$R ($\Omega$)')
         ax.legend()
         return ab, ax
     else:
