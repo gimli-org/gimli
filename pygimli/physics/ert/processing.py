@@ -100,7 +100,7 @@ def reciprocalIndices(data, onlyOnce=False):
     else:
         return iF, iB
 
-def fitReciprocalErrorModel(data, nBins=None, show=False):
+def fitReciprocalErrorModel(data, nBins=None, show=False, rel=False):
     """Fit an error by statistical normal-reciprocal analysis."""
     if data.allNonZero('r'):
         R = data['r']
@@ -126,16 +126,32 @@ def fitReciprocalErrorModel(data, nBins=None, show=False):
     w = np.reshape(np.isfinite(meanR), [-1, 1])
     meanR[np.isnan(meanR)] = 0
     stdR[np.isnan(stdR)] = 0
-    G[:, 0] = meanR
-    ab, *_ = np.linalg.lstsq(w*G, stdR, rcond=None)
+    if rel:
+        G[:, 1] = 1 / meanR
+        ab, *_ = np.linalg.lstsq(w*G, stdR/meanR, rcond=None)
+    else:
+        G[:, 1] = meanR
+        ab, *_ = np.linalg.lstsq(w*G, stdR, rcond=None)
+
     if show:
         x = np.linspace(min(meanR), max(meanR), 30)
-        eModel = x*ab[0]+ab[1]
         _, ax = pg.plt.subplots()
-        ax.semilogx(RR, dR, '.')  # /RR
-        ax.plot(meanR, stdR, '*') # /meanR
-        ax.plot(x, eModel, '-') # /x
+        if rel:
+            eModel = ab[0] + ab[1] / x
+            ax.semilogx(RR, dR/RR, '.', label='data')  # /RR
+            ax.plot(meanR, stdR/meanR, '*', label='std dev') # /meanR
+            ax.set_title(r'$\delta$R/R={:.6f}+{:.6f}/|R|'.format(*ab))
+        else:
+            eModel = ab[0] + ab[1] * x
+            ax.semilogx(RR, dR, '.', label='data')  # /RR
+            ax.plot(meanR, stdR, '*', label='std dev') # /meanR
+            ax.set_title(r'$\delta$R={:.6f}+{:.6f}*|R|'.format(*ab))
+
+        ax.plot(x, eModel, '-', label='error model') # /x
         ax.grid(which='both')
+        ax.set_xlabel(r'R ($\Omega$)')
+        ax.set_ylabel(r'$\delta$R ($\Omega$)')
+        ax.legend()
         return ab, ax
     else:
         return ab
