@@ -24,7 +24,8 @@ from .ertIPManager import ERTIPManager
 from .ertModelling import ERTModelling, ERTModellingReference
 from .ertScheme import createData
 from .processing import (uniqueERTIndex, generateDataFromUniqueIndex,
-                         reciprocalIndices, fitReciprocalErrorModel)
+                         reciprocalIndices, fitReciprocalErrorModel,
+                         reciprocalProcessing)
 from .timelapse import TimelapseERT
 from .crosshole import CrossholeERT
 from pygimli.physics.ves import VESManager  # backward compatibility

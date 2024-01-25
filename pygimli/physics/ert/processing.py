@@ -100,13 +100,45 @@ def reciprocalIndices(data, onlyOnce=False):
     else:
         return iF, iB
 
-def fitReciprocalErrorModel(data, nBins=None, show=False, rel=False):
-    """Fit an error by statistical normal-reciprocal analysis."""
+def getResistance(data):
+    """Return data resistance."""
     if data.allNonZero('r'):
         R = data['r']
-    else:
-        R = data['rhoa'] / data['k']
+    elif data.haveData('u') and data.haveData('i'):
+        R = data['u'] / data['i']
+    else:  # neither R or U/I
+        if data.allNonZero('k'):
+            data['k'] = createGeometricFactors(data)
 
+        if data.haveData('rhoa'):
+            R = data['rhoa'] / data['k']
+        else:
+            pg.error('Either R, U/I or rhoa must be defined!')
+
+    return R
+
+def fitReciprocalErrorModel(data, nBins=None, show=False, rel=False):
+    """Fit an error by statistical normal-reciprocal analysis.
+
+    Identify normal reciprocal pairs and fit error model to it
+
+    Parameters
+    ----------
+    data : pg.DataContainerERT
+        input data
+    nBins : int
+        number of bins to subdivide data (4 < data.size()//30 < 30)
+    rel : bool [False]
+        fit relative instead of absolute errors
+    show : bool [False]
+        generate plot of reciprocals, mean/std bins and error model
+
+    Returns
+    -------
+    ab : [float, float]
+        indices of a+b*R (rel=False) or a+b/R (rec=True)
+    """
+    R = getResistance(data)
     iF, iB = reciprocalIndices(data, True)
     n30 = len(iF) // 30
     nBins = nBins or np.maximum(np.minimum(n30, 30), 4)
@@ -158,6 +190,48 @@ def fitReciprocalErrorModel(data, nBins=None, show=False, rel=False):
         return ab, ax
     else:
         return ab
+
+def reciprocalProcessing(data, rel=True, maxrec=0.2, maxerr=0.2):
+    """Reciprocal data analysis and error estimation.
+
+    Parameters
+    ----------
+    out : pg.DataContainerERT
+        input data container with possible
+    maxrec : float [0.2]
+        maximum reciprocity allowed in data
+    maxerr : float [0.2]
+        maximum error estimate
+
+    Returns
+    -------
+    out : pg.DataContainerERT
+        filtered data container with pairs removed
+    """
+    iF, iB = reciprocalIndices(data, True)
+    if len(iF) == 0:
+        return data
+
+    out = data.copy()
+    out.averageDuplicateData()
+    R = getResistance(out)
+    meanR = np.abs(R[iF]+R[iB]) / 2
+    dRbyR = np.abs(R[iF]-R[iB]) / meanR
+    out['rec'] = 0
+    out['rec'][iF] = dRbyR
+    # out['rec'][iB] = dRbyR # deleted anyway
+    out.markInvalid(out['rec'] > maxrec)
+    ab = fitReciprocalErrorModel(out, rel=rel)
+    if rel:
+        out["err"] = ab[0] + ab[1] / R
+    else:
+        out["err"] = ab[0] + ab[1] * R
+
+    out['r'][iF] = meanR
+    out.markInvalid(iB)
+    out.markInvalid(out['err'] > maxerr)
+    out.removeInvalid()
+    return out
 
 def getReciprocals(data, change=False, remove=False):
     """Compute data reciprocity from forward and backward data.
