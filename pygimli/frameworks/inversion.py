@@ -667,7 +667,7 @@ class Inversion(object):
 
         for i in range(maxIter):
             if self._preStep and callable(self._preStep):
-                self._preStep(i, self)
+                self._preStep(i + 1, self)
 
             if self.verbose:
                 print("-" * 80)
@@ -697,7 +697,7 @@ class Inversion(object):
                 self.showProgress(showProgress)
 
             if self._postStep and callable(self._postStep):
-                self._postStep(i, self)
+                self._postStep(i + 1, self)
 
             if self.robustData:
                 self.inv.robustWeighting()
