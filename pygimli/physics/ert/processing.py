@@ -208,12 +208,12 @@ def reciprocalProcessing(data, rel=True, maxrec=0.2, maxerr=0.2):
     out : pg.DataContainerERT
         filtered data container with pairs removed
     """
-    iF, iB = reciprocalIndices(data, True)
+    out = data.copy()
+    out.averageDuplicateData()
+    iF, iB = reciprocalIndices(out, True)
     if len(iF) == 0:
         return data
 
-    out = data.copy()
-    out.averageDuplicateData()
     R = getResistance(out)
     meanR = np.abs(R[iF]+R[iB]) / 2
     dRbyR = np.abs(R[iF]-R[iB]) / meanR
