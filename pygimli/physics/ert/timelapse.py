@@ -147,6 +147,8 @@ class TimelapseERT():
             minimum and maximum times to keep
         t : int|str|datetime
             time to remove
+        select : list[int]
+            times to select
         kmax : float
             maximum geometric factor to allow
         """
