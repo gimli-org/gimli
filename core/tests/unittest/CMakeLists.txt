@@ -9,17 +9,13 @@ add_executable(gimliUnitTest unitTest.cpp ${unitTest_HEADERS})
 
 if (CPPUNIT_FOUND)
 
-    add_definitions(-DHAVE_UNITTEST)
+add_definitions(-DHAVE_UNITTEST)
     
     include_directories(${CPPUNIT_INCLUDE_DIR})
     
     target_link_libraries(gimliUnitTest ${CPPUNIT_LIBRARIES})
-    
     target_link_libraries(gimliUnitTest gimli)
-    
-    
-    # target_link_libraries(gimliUnitTest ../../../lib/libgimli.so)
-    
+        
     add_dependencies(check gimliUnitTest)
 
     ADD_CUSTOM_TARGET(gtest)
@@ -33,19 +29,16 @@ if (CPPUNIT_FOUND)
     add_dependencies(gimliUnitTest gimli)
     add_dependencies(gtest gimliUnitTest)
 
-
-    add_test(
-        NAME
-            gtest:gimli_unit_tests
-        COMMAND
-            #cmake "--build . --target gtest"
-            make gtest
-        )
-
+    # add_test(
+    #     NAME 
+    #         gtest:gimli_unit_tests
+    #     COMMAND
+    #         #cmake "--build . --target gtest"
+    #         make gtest
+    #     )
 
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/unittest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-    #file(COPY ${CMAKE_CURRENT_BINARY_DIR}/../../bin/gimliUnitTest DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
+   
     INSTALL_FILES(${CMAKE_CURRENT_SOURCE_DIR} unittest.sh)
 
 endif()

@@ -1,6 +1,33 @@
 ################################################################################
 # Macro definitions used by GIMLI's cmake build
 ################################################################################
+function(cprint)
+    list(GET ARGV 0 Color)
+    list(REMOVE_AT ARGV 0)
+    execute_process(COMMAND 
+    cmake -E cmake_echo_color --${Color} ${ARGV})
+
+
+#   if(MessageType STREQUAL FATAL_ERROR OR MessageType STREQUAL SEND_ERROR)
+#     list(REMOVE_AT ARGV 0)
+#     _message(${MessageType} "${BoldRed}${ARGV}${ColourReset}")
+#   elseif(MessageType STREQUAL WARNING)
+#     list(REMOVE_AT ARGV 0)
+#     _message(${MessageType} "${BoldYellow}${ARGV}${ColourReset}")
+#   elseif(MessageType STREQUAL AUTHOR_WARNING)
+#     list(REMOVE_AT ARGV 0)
+#     _message(${MessageType} "${BoldCyan}${ARGV}${ColourReset}")
+#   elseif(MessageType STREQUAL STATUS)
+#     list(REMOVE_AT ARGV 0)
+#     _message(${MessageType} "${ARGV}")
+#     _message(STATUS "${ARGV}")
+#     #_message(${MessageType} "${Green}${ARGV}${ColourReset}")
+#   else()
+#     _message("${ARGV}")
+#   endif()
+endfunction()
+
+
 macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
 
     set(PYTHON_TARGET_NAME "_${PYTHON_MODULE_NAME}_")
@@ -26,24 +53,22 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
         
     #TODO check!! (python3-config --extension-suffix)
 
+    
     if (APPLE)
-        target_link_libraries(${PYTHON_TARGET_NAME} "${CMAKE_BINARY_DIR}/${LIBRARY_INSTALL_DIR}/libgimli.dylib") 
+        # set(GIMLI_LIBRARY "${CMAKE_BINARY_DIR}/${LIBRARY_INSTALL_DIR}/libgimli.dylib")
         target_link_libraries(${PYTHON_TARGET_NAME} "-bundle -undefined dynamic_lookup")
     elseif (WIN32)
-        target_link_libraries(${PYTHON_TARGET_NAME} "${CMAKE_BINARY_DIR}/bin/libgimli.dll") 
+        # set(GIMLI_LIBRARY "${CMAKE_BINARY_DIR}/bin/libgimli.dll")
         set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES SUFFIX ".pyd")
     else()
-        target_link_libraries(${PYTHON_TARGET_NAME} "${CMAKE_BINARY_DIR}/${LIBRARY_INSTALL_DIR}/libgimli.so") 
+        # set(GIMLI_LIBRARY "${CMAKE_BINARY_DIR}/${LIBRARY_INSTALL_DIR}/libgimli.so")
     endif()
     
+    # target_link_libraries(${PYTHON_TARGET_NAME} ${GIMLI_LIBRARY}) 
+    # target_link_libraries(${PYTHON_TARGET_NAME} $<TARGET_FILE:gimli>) 
+    target_link_libraries(${PYTHON_TARGET_NAME} gimli) 
     target_link_libraries(${PYTHON_TARGET_NAME} ${Boost_PYTHON_LIBRARY})
     target_link_libraries(${PYTHON_TARGET_NAME} ${Python_LIBRARIES})
-
-    #if (NOT APPLE AND BERT_INSTALL_WITH_RPATH)
-    #    set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
-    #        INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${BERT_LIB_INSTALL_DIR}"
-    #    )
-    #endif()
 
     set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
                         LIBRARY_OUTPUT_DIRECTORY_DEBUG ${OUTDIR})
@@ -53,43 +78,47 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
                         LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL ${OUTDIR})
     set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
                         LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${OUTDIR})
-
+    
     if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_CLANGXX)
-	    set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES COMPILE_FLAGS "-fvisibility=hidden -Wno-unused-value -Wno-infinite-recursion")
+	    set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
+                            COMPILE_FLAGS "-fvisibility=hidden -Wno-unused-value -Wno-infinite-recursion"
+                                )
         
         if (WIN32 AND ADDRESSMODEL EQUAL "64")
-            set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES DEFINE_SYMBOL "MS_WIN64")
+            set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES 
+                                DEFINE_SYMBOL "MS_WIN64")
         endif()
     endif()
-
+    
     #--copy pattern files to build folder--
-    set(PYTHON_IN_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
-    set(PYTHON_OUT_PATH "${CMAKE_BINARY_DIR}/package")
+    ## needed?
+    # set(PYTHON_IN_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
+    # set(PYTHON_OUT_PATH "${CMAKE_BINARY_DIR}/package")
 
-    file(GLOB_RECURSE PYTHON_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
-                    "${PYTHON_MODULE_NAME}/*.py"
-                    "${PYTHON_MODULE_NAME}/*.png"
-                    "${PYTHON_MODULE_NAME}/*.xrc"
-                    "${PYTHON_MODULE_NAME}/*.fbp")
+    # file(GLOB_RECURSE PYTHON_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+    #                 "${PYTHON_MODULE_NAME}/*.py"
+    #                 "${PYTHON_MODULE_NAME}/*.png"
+    #                 "${PYTHON_MODULE_NAME}/*.xrc"
+    #                 "${PYTHON_MODULE_NAME}/*.fbp")
 
-    add_custom_target(copy_python ALL)
+    
 
-    foreach(file ${PYTHON_FILES})
+    # foreach(file ${PYTHON_FILES})
 
-        #message ("${PYTHON_IN_PATH}/${file} ${PYTHON_OUT_PATH}/${file}")
-        add_custom_command(
-            COMMAND
-                cmake -E copy_if_different
-                ${PYTHON_IN_PATH}/${file}
-                ${PYTHON_OUT_PATH}/${file}
-            DEPENDS "${PYTHON_IN_PATH}/${file}"
-            TARGET
-                copy_python
-            VERBATIM
-            COMMENT
-                "Updating python file: ${file}"
-        )
-    endforeach(file)
+    #     #message ("${PYTHON_IN_PATH}/${file} ${PYTHON_OUT_PATH}/${file}")
+    #     add_custom_command(
+    #         COMMAND
+    #             cmake -E copy_if_different
+    #             ${PYTHON_IN_PATH}/${file}
+    #             ${PYTHON_OUT_PATH}/${file}
+    #         DEPENDS "${PYTHON_IN_PATH}/${file}"
+    #         TARGET
+    #             copy_python
+    #         VERBATIM
+    #         COMMENT
+    #             "Updating python file: ${file}"
+    #     )
+    # endforeach(file)
 
 
 #----install-----------------------

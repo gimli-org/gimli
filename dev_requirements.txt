@@ -18,6 +18,7 @@ sphinx-gallery
 sphinx-design
 pydata-sphinx-theme
 bibtexparser
+
 pyvista[all,trame]>=0.42
 
 # optional, but strongly recommended
@@ -26,6 +27,7 @@ scooby
 
 # useful
 ipython
+jupytext
 
 # for testing
 pytest

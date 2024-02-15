@@ -54,11 +54,11 @@ if(WIN32)
     )
 endif(WIN32)
 
-add_python_module(pygimli "${CMAKE_CURRENT_BINARY_DIR}/generated/" "gimli" "${CMAKE_SOURCE_DIR}/pygimli/core")
+add_python_module(pygimli "${CMAKE_CURRENT_BINARY_DIR}/generated/" "gimli" "${CMAKE_SOURCE_DIR}/pygimli/core/libs")
 include_directories(${Python_NumPy_INCLUDE_DIRS})
 
 add_dependencies(pggen gimli)
-add_dependencies(copy_python pggen)
+#add_dependencies(copy_python pggen)
 add_dependencies(fixpygimlisrc pggen)
 add_dependencies(pgbuild fixpygimlisrc)
 
@@ -86,28 +86,6 @@ add_test(
     COMMAND
         make pgtest
     )
-
-#add_dependencies(pgtest pygimli)
-
-#ADD_CUSTOM_TARGET(pgrebuild ALL)
-#add_dependencies(pgrebuild pggen _pygimli_)
-
-#ADD_CUSTOM_TARGET(pygimli_check_sources ALL)
-
-# foreach(file ${PYGIMLI_FILES})
-#     add_custom_command(
-#             COMMAND
-#                 #echo ${PYGIMLI_SOURCE_DIR}/${file} ${PYGIMLI_BUILD_DIR}/${file}
-#                 cmake -E copy_if_different ${PYGIMLI_SOURCE_DIR}/${file} ${PYGIMLI_BUILD_DIR}/${file}
-#             TARGET
-#                 pygimli_check_sources
-#             VERBATIM
-#             COMMENT
-#                 "Updating python file: ${file}"
-#     )
-# endforeach()
-
-## prepare installation
 
 set(SCRIPTS pytripatch.py; meshmerge.py; meshconvert.py; pygi; datamerge.py)
 

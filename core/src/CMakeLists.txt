@@ -112,7 +112,3 @@ endif(WIN32)
 install(FILES ${HEADER_FILES} ${PROJECT_BINARY_DIR}/${libgimli_TARGET_NAME}_export.h
         DESTINATION ${INCLUDE_INSTALL_DIR})
 
-# install(DIRECTORY include/${PROJECT_NAME}/
-#         DESTINATION include
-#         PATTERN ".cpp" EXCLUDE)
-

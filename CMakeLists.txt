@@ -127,8 +127,21 @@ if (GIT_FOUND)
         )
     message(STATUS, "setting version from git description: ${GIMLI_GITVERSION}")
     set(LIBGIMLI_VERSION ${GIMLI_GITVERSION})
+    execute_process(
+        COMMAND
+            ${GIT_EXECUTABLE} describe --tags --abbrev=0
+        WORKING_DIRECTORY
+            ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE
+            GIMLI_GITVERSION_WHL
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_STRIP_TRAILING_WHITESPACE
+        )
+    message(STATUS, "setting whl version from git description: ${GIMLI_GITVERSION_WHL}")
+    set(LIBGIMLI_VERSION_WHL ${GIMLI_GITVERSION_WHL})
 else()
     set(LIBGIMLI_VERSION "untagged")
+    set(LIBGIMLI_VERSION_WHL "untagged")
 endif()
 
 set(PACKAGE_NAME  \"${PROJECT_NAME}\" )
@@ -756,6 +769,5 @@ endif(LIBGIMLI_BUILD_TESTS)
 add_subdirectory(core/src)
 add_subdirectory(core/tests EXCLUDE_FROM_ALL)
 
-if (PYGIMLI)
-    add_subdirectory(core/python EXCLUDE_FROM_ALL)
-endif (PYGIMLI)
+add_subdirectory(core/python EXCLUDE_FROM_ALL)
+add_subdirectory(pygimli)

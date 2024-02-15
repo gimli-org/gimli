@@ -304,6 +304,7 @@ class RegionManager;
 class Shape;
 class Stopwatch;
 class Pos;
+class SolverWrapper;
 
 typedef Pos RVector3;
 typedef std::complex < double > Complex;
