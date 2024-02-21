@@ -183,7 +183,7 @@ find_package(Threads REQUIRED)
 ################################################################################
 #   python
 ################################################################################
-message(STATUS "********** PYTHON ***********")
+cprint(green "********** PYTHON settings ***********")
 if (NOT PYVERSION)
     set(PYVERSION 3)
 endif()
@@ -226,7 +226,7 @@ endif()
 ################################################################################
 #   boost
 ################################################################################
-message(STATUS "********** BOOST ***********")
+cprint(green "********** Boost settings ***********")
 #set(Boost_USE_STATIC_LIBS ON)
 
 if (BUILD_BOOST)
@@ -406,7 +406,7 @@ endif()
 ################################################################################
 #   misc third party stuff
 ################################################################################
-message(STATUS "********** Misc ***********")
+cprint(green "********** Misc settings ***********")
 # Find packages that CHOLMOD depends on
 set(CMAKE_LIBRARY_PATH ${EXTERNAL_DIR}/lib $ENV{EXTERNAL_DIR}/lib ${CMAKE_LIBRARY_PATH})
 

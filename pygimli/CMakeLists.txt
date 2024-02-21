@@ -81,10 +81,10 @@ add_dependencies(whldeploy PyPackageWhlUpload)
 # add package test
 set(PYTHON_VIRTUAL_ENV "${CMAKE_CURRENT_BINARY_DIR}/pytest_venv")
 if (NOT EXISTS "${PYTHON_VIRTUAL_ENV}")
-message(STATUS "Creating virtual python environment for testing [${PYTHON_VIRTUAL_ENV}]")
-execute_process(COMMAND "${Python_EXECUTABLE}" -m venv "${PYTHON_VIRTUAL_ENV}")
+    message(STATUS "Creating virtual python environment for testing [${PYTHON_VIRTUAL_ENV}]")
+    execute_process(COMMAND "${Python_EXECUTABLE}" -m venv "${PYTHON_VIRTUAL_ENV}")
 else ()
-message(STATUS "Using virtual python environment for testing [${PYTHON_VIRTUAL_ENV}]")
+    message(STATUS "Using virtual python environment for testing [${PYTHON_VIRTUAL_ENV}]")
 endif ()
 
 # update the environment with VIRTUAL_ENV variable (mimic the activate script) and search again
