@@ -184,14 +184,20 @@ find_package(Threads REQUIRED)
 #   python
 ################################################################################
 cprint(green "********** PYTHON settings ***********")
-if (NOT PYVERSION)
-    set(PYVERSION 3)
-endif()
-
 if (NOT PYTHON_EXECUTABLE AND NOT ${CMAKE_VERSION} VERSION_LESS "3.15.0")
-    message(STATUS "Searching for python:" ${PYVERSION})
-    set (Python_FIND_STRATEGY LOCATION) # from cmake 3.15
-    find_package(Python ${PYVERSION} EXACT COMPONENTS Interpreter NumPy Development REQUIRED)
+    message(STATUS "Searching for python (${PYVERSION})" )
+    #set(Python_FIND_STRATEGY LOCATION) # from cmake 3.15
+    #set(Python3_FIND_VIRTUALENV ONLY)
+    if (PYVERSION)
+        find_package(Python ${PYVERSION} EXACT COMPONENTS Interpreter)
+    else ()
+        find_package(Python 3 COMPONENTS Interpreter)
+    endif()
+
+    message(STATUS "Found python executable for building: ${Python_EXECUTABLE}")
+    message(STATUS "Found python executable for testing (venv): ${Python3_EXECUTABLE}")
+
+    find_package(Python COMPONENTS Interpreter NumPy Development REQUIRED)
 
     message(STATUS "Python_Interpreter_ID: ${Python_Interpreter_ID}")
     message(STATUS "Python_Interpreter_FOUND: ${Python_Interpreter_FOUND} ${Python_EXECUTABLE} version: ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}.${Python_VERSION_PATCH}")
@@ -199,6 +205,8 @@ if (NOT PYTHON_EXECUTABLE AND NOT ${CMAKE_VERSION} VERSION_LESS "3.15.0")
     message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES} ${Python_LIBRARY_DIRS}")
     message(STATUS "Python_NumPy: ${Python_NumPy_FOUND}, ${Python_NumPy_INCLUDE_DIRS}, ${Python_NumPy_VERSION}")
     set (PYTHON_FOUND TRUE CACHE BOOL "Is python available")
+
+
 else()
 
     message(STATUS "Manually searching for python (pre cmake 3.14): ${PYVERSION}")
