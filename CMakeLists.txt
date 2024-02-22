@@ -197,7 +197,8 @@ if (NOT PYTHON_EXECUTABLE AND NOT ${CMAKE_VERSION} VERSION_LESS "3.15.0")
     message(STATUS "Found python executable for building: ${Python_EXECUTABLE}")
     message(STATUS "Found python executable for testing (venv): ${Python3_EXECUTABLE}")
 
-    find_package(Python COMPONENTS Interpreter NumPy Development REQUIRED)
+    find_package(Python COMPONENTS Development REQUIRED)
+    find_package(Python COMPONENTS NumPy REQUIRED)
 
     message(STATUS "Python_Interpreter_ID: ${Python_Interpreter_ID}")
     message(STATUS "Python_Interpreter_FOUND: ${Python_Interpreter_FOUND} ${Python_EXECUTABLE} version: ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}.${Python_VERSION_PATCH}")
