@@ -68,7 +68,15 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
     # target_link_libraries(${PYTHON_TARGET_NAME} $<TARGET_FILE:gimli>) 
     target_link_libraries(${PYTHON_TARGET_NAME} gimli) 
     target_link_libraries(${PYTHON_TARGET_NAME} ${Boost_PYTHON_LIBRARY})
-    target_link_libraries(${PYTHON_TARGET_NAME} ${Python_LIBRARIES})
+    #target_link_libraries(${PYTHON_TARGET_NAME} ${Python_LIBRARIES})
+
+    if (Python_Development.Module_FOUND)
+        #target_link_libraries(${PYTHON_TARGET_NAME} PRIVATE Python::Module)
+        target_link_libraries(${PYTHON_TARGET_NAME} Python::Module)
+    else()
+        target_link_libraries(${PYTHON_TARGET_NAME} ${Python_LIBRARIES})
+    endif()
+
 
     set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
                         LIBRARY_OUTPUT_DIRECTORY_DEBUG ${OUTDIR})

@@ -50,6 +50,7 @@ PYPLUSPLUS_REV=1.8.5
 
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
 
+
 checkTOOLSET(){
     if [ "$TOOLSET" == "none" ]; then
         echo "No TOOLSET set .. using default gcc"
@@ -384,7 +385,6 @@ needPYTHON(){
         fi
     fi
 }
-
 cmakeBuild(){
     _SRC_=$1
     _BUILD_=$2
@@ -428,8 +428,7 @@ prepBOOST(){
     BOOST_DIST_NAME=$BOOST_VER-$TOOLSET-$ADDRESSMODEL-'py'$PYTHONMAJOR$PYTHONMINOR
     BOOST_DIST=$DIST_DIR/$BOOST_DIST_NAME
     BOOST_BUILD=$BUILD_DIR/$BOOST_VER-'py'$PYTHONMAJOR$PYTHONMINOR
-    export BOOST_ROOT=$BOOST_DIST
-
+    
     BOOST_ROOT_WIN=${BOOST_ROOT/\/c\//C:\/}
     BOOST_ROOT_WIN=${BOOST_ROOT_WIN/\/d\//D:\/}
     BOOST_ROOT_WIN=${BOOST_ROOT_WIN/\/e\//E:\/}
@@ -462,8 +461,13 @@ buildBOOST(){
             fi
             B2="./b2.exe"
         elif [ "$SYSTEM" == "UNIX" ]; then
-            sh bootstrap.sh
             B2="./b2"
+            
+            if [ -f "b2" ]; then
+                echo "*** using existing $B2"
+            else
+                sh bootstrap.sh
+            fi
         fi
 
         [ $HAVEPYTHON -eq 1 ] && WITHPYTHON='--with-python'
@@ -475,28 +479,41 @@ buildBOOST(){
             EXTRADEFINES='define=BOOST_USE_WINDOWS_H define=MS_WIN64'
             echo "+++++++++++++++++++ :$EXTRADEFINES"
         fi
-        echo "Build with python: $WITHPYTHON"
+        echo "*** Building boost in $PWD"
 
-        "$B2" toolset=$COMPILER variant=release link=static,shared threading=multi address-model=$ADDRESSMODEL $EXTRADEFINES install \
-        -j $PARALLEL_BUILD \
-        -d 0 \
-        -a \
-        --prefix=$BOOST_DIST \
-        --platform=msys \
-        --layout=tagged \
-        --debug-configuration \
-        $WITHPYTHON
+        MLPLTFM=cp$PYTHONMAJOR$PYTHONMINOR
+        PYCONFIG=/opt/python/$MLPLTFM-$MLPLTFM/include/python3.$PYTHONMAJOR
+        if [ -f $PYCONFIG/pyconfig.h ]; then
+            # special includes for manylinux, since venv does not copy python config on alamlinux docker container
+            echo "Setting extra include to pyconfig for manylinux_$MLPLTFM-$MLPLTFM"
+            export CPLUS_INCLUDE_PATH=$PYCONFIG
+        fi
 
-    	#--with-system \
-        #--with-thread
-
-        # --with-date_time \
-        # --with-chrono \
-        # --with-regex \
-        # --with-filesystem \
-        # --with-atomic
+        "$B2" \
+            toolset=$COMPILER \
+            variant=release \
+            link=static,shared \
+            threading=multi \
+            address-model=$ADDRESSMODEL $EXTRADEFINES install \
+            --platform=msys \
+            -j $PARALLEL_BUILD \
+            -d 0 \
+            -a \
+            --prefix=$BOOST_DIST \
+            --layout=tagged \
+            --debug-configuration \
+            $WITHPYTHON
     popd
-    echo $BOOST_DIST_NAME > $DIST_DIR/.boost-py$PYTHONMAJOR.dist
+
+    if [ -n "$(find $BOOST_DIST/lib -maxdepth 1 -type f -name "libboost_python*" -print -quit)" ]; then
+        echo "Writing boost python distribution hint file: $DIST_DIR/.boost-py$PYTHONMAJOR$PYTHONMINOR.dist"
+        echo $BOOST_DIST_NAME > $DIST_DIR/.boost-py$PYTHONMAJOR$PYTHONMINOR.dist
+        export BOOST_ROOT=$BOOST_DIST
+    else
+        echo "libboost_python* not found in: $BOOST_DIST/lib"
+        echo "Something went wrong."
+    fi
+
 }
 
 prepCASTXMLBIN(){
@@ -817,6 +834,7 @@ fi
 echo "Installing at " $GIMLI_PREFIX
 
 CMAKE_BUILD_TYPE=Release
+
 
 for arg in $@
 do

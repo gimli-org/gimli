@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 3.15)
 
+if (POLICY CMP0025) # recognize appleclang
+    cmake_policy(SET CMP0025 NEW)
+endif()
+if (POLICY CMP0094) 
+    cmake_policy(SET CMP0094 NEW) #Python_FIND_STRATEGY LOCATION
+endif()
+
 if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(FATAL_ERROR "In-source builds not allowed.
             Please make a new directory (called a build directory)
@@ -19,8 +26,27 @@ endif()
 project(libgimli)
 include(CheckIncludeFileCXX)
 
-message(STATUS "System: ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM} ${CMAKE_SYSTEM_VERSION}")
-message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID}")
+message(STATUS "CMAKE_SYSTEM:           ${CMAKE_SYSTEM}")
+message(STATUS "CMAKE_SYSTEM_NAME:      ${CMAKE_SYSTEM_NAME}")
+message(STATUS "CMAKE_SYSTEM_VERSION:   ${CMAKE_SYSTEM_VERSION}")
+message(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "CMAKE_SYSTEM_INFO_FILE: ${CMAKE_SYSTEM_INFO_FILE}")
+
+if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+    execute_process (
+        COMMAND bash -c "awk -F= '/^ID=/{print $2}' /etc/os-release |tr -d '\n' | tr -d '\"'"
+            OUTPUT_VARIABLE OS_VAR
+    )
+    message(STATUS "Linux OS: ${OS_VAR}")
+elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
+    set(OS_VAR "Windows")
+    message(STATUS "Linux OS: ${OS_VAR}")
+elseif(CMAKE_SYSTEM_NAME MATCHES "MacOS")
+    set(OS_VAR "MacOS")
+    message(STATUS "MAC OS: ${OS_VAR}")
+else()
+    message(FATAL "No OS detected!")
+endif()
 
 message(STATUS "UNIX:   " ${UNIX} " on all UNIX-like OS's, including Apple OS X and CygWin")
 message(STATUS "WIN32:  " ${WIN32} " on Windows. Prior to 2.8.4 this included CygWin")
@@ -30,9 +56,8 @@ message(STATUS "MSYS:   " ${MSYS} "  using the MSYS developer environment in Win
 message(STATUS "CYGWIN: " ${CYGWIN} " using the CygWin version of cmake")
 message(STATUS "MSVC:   " ${MSVC} " ")
 
-if (POLICY CMP0025) # recognize appleclang
-    cmake_policy(SET CMP0025 NEW)
-endif()
+message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID}")
+
 #if (APPLE) // check if needed!
 #    set(CMAKE_MACOSX_RPATH 1)
 #    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -138,7 +163,7 @@ if (GIT_FOUND)
         ERROR_STRIP_TRAILING_WHITESPACE
         )
     message(STATUS, "setting whl version from git description: ${GIMLI_GITVERSION_WHL}")
-    set(LIBGIMLI_VERSION_WHL ${GIMLI_GITVERSION_WHL})
+    set(LIBGIMLI_VERSION_WHL "${GIMLI_GITVERSION_WHL}.dev1")
 else()
     set(LIBGIMLI_VERSION "untagged")
     set(LIBGIMLI_VERSION_WHL "untagged")
@@ -183,59 +208,60 @@ find_package(Threads REQUIRED)
 ################################################################################
 #   python
 ################################################################################
+if (NOT PYVERSION)
+    execute_process(COMMAND python3 --version
+        OUTPUT_VARIABLE
+            PYVERSION_GUESS
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_STRIP_TRAILING_WHITESPACE
+    )
+    STRING(REPLACE "Python " "" PYVERSION_GUESS "${PYVERSION_GUESS}")
+    message(STATUS "No PYVERSION set, guessing from current python executable: ${PYVERSION_GUESS}")
+
+    set(PYVERSION ${PYVERSION_GUESS})
+endif ()
+
 cprint(green "********** PYTHON settings ***********")
-if (NOT PYTHON_EXECUTABLE AND NOT ${CMAKE_VERSION} VERSION_LESS "3.15.0")
-    message(STATUS "Searching for python (${PYVERSION})" )
-    #set(Python_FIND_STRATEGY LOCATION) # from cmake 3.15
-    #set(Python3_FIND_VIRTUALENV ONLY)
-    if (PYVERSION)
-        find_package(Python ${PYVERSION} EXACT COMPONENTS Interpreter)
-    else ()
-        find_package(Python 3 COMPONENTS Interpreter)
-    endif()
+message(STATUS "Searching for python (${PYVERSION})" )
+set(Python_FIND_STRATEGY LOCATION) # from cmake 3.15
+set(Python_ADDITIONAL_VERSIONS=${PYVERSION})
+set(Python_FIND_VIRTUALENV FIRST)
 
-    message(STATUS "Found python executable for building: ${Python_EXECUTABLE}")
-    message(STATUS "Found python executable for testing (venv): ${Python3_EXECUTABLE}")
-
-    find_package(Python COMPONENTS Development REQUIRED)
-    find_package(Python COMPONENTS NumPy REQUIRED)
-
-    message(STATUS "Python_Interpreter_ID: ${Python_Interpreter_ID}")
-    message(STATUS "Python_Interpreter_FOUND: ${Python_Interpreter_FOUND} ${Python_EXECUTABLE} version: ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}.${Python_VERSION_PATCH}")
-    message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
-    message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES} ${Python_LIBRARY_DIRS}")
-    message(STATUS "Python_NumPy: ${Python_NumPy_FOUND}, ${Python_NumPy_INCLUDE_DIRS}, ${Python_NumPy_VERSION}")
-    set (PYTHON_FOUND TRUE CACHE BOOL "Is python available")
-
-
+if (OS_VAR STREQUAL "almalinux")
+    ## almalinux used for manylinux builds, 
+    ## EXACT fails since Python_Includes are not part of 
+    ## build virtual enviroment but on /opt
+    find_package(Python ${PYVERSION} COMPONENTS Interpreter REQUIRED)
+    find_package(Python ${PYVERSION} COMPONENTS Development.Module REQUIRED)
+    find_package(Python ${PYVERSION} COMPONENTS NumPy REQUIRED)
 else()
-
-    message(STATUS "Manually searching for python (pre cmake 3.14): ${PYVERSION}")
-    find_package(PythonInterp ${PYVERSION} REQUIRED)
-    find_package(PythonLibs)
-
-    set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "Python interpreter")
-    find_python_module(numpy)
-    #set(Python_Libraries ${PYTHON_LIBRARY})
-
-    message(STATUS "Python_INCLUDE_DIRS: ${PYTHON_INCLUDE_DIR}")
-    message(STATUS "Python_LIBRARIES: ${PYTHON_LIBRARY}")
-    message(STATUS "Python_NumPy: ${numpy_FOUND}, ${PY_NUMPY}")
-
-    set(Python_VERSION_MAJOR ${PYTHON_VERSION_MAJOR})
-    set(Python_VERSION_MINOR ${PYTHON_VERSION_MINOR})
-    set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE FILEPATH "python library")
-    set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE FILEPATH "python includes")
-    set(Python_NumPy_FOUND ${numpy_FOUND} CACHE BOOL "is numpy installed")
-    set(Python_NumPy_INCLUDE_DIRS  ${PY_NUMPY}/core/include CACHE FILEPATH "Numpy includes")
-
-    set (PYTHON_FOUND TRUE CACHE BOOL "Is python available")
+    find_package(Python ${PYVERSION} EXACT COMPONENTS Interpreter REQUIRED)
+    find_package(Python ${PYVERSION} EXACT COMPONENTS Development.Module REQUIRED)
+    find_package(Python ${PYVERSION} EXACT COMPONENTS NumPy REQUIRED)
 endif()
+
+set (PYTHON_FOUND TRUE CACHE BOOL "Is python available")
+    
+message(STATUS "Python_FOUND: ${Python_FOUND}")
+message(STATUS "Python_Interpreter_FOUND: ${Python_Interpreter_FOUND}")
+message(STATUS "Python_EXECUTABLE: ${Python_EXECUTABLE}")
+message(STATUS "Python_INTERPRETER_ID: ${Python_INTERPRETER_ID}")
+message(STATUS "Python_STDLIB: ${Python_STDLIB}")
+message(STATUS "Python_STDARCH: ${Python_STDARCH}")
+message(STATUS "Python_SITELIB: ${Python_SITELIB}")
+message(STATUS "Python_SITEARCH: ${Python_SITEARCH}")
+message(STATUS "Python_SOABI: ${Python_SOABI}")
+message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
+message(STATUS "Python_Development.Module_FOUND: ${Python_Development.Module_FOUND}")
+message(STATUS "Python_LINK_OPTIONS: ${Python_LINK_OPTIONS}")
+message(STATUS "Python_VERSION: ${Python_VERSION}")
+message(STATUS "Python_NumPy: ${Python_NumPy_FOUND}, ${Python_NumPy_INCLUDE_DIRS}, ${Python_NumPy_VERSION}")
+        
 
 ################################################################################
 #   boost
 ################################################################################
-cprint(green "********** Boost settings ***********")
+cprint(green "********** Boost.Python settings ***********")
 #set(Boost_USE_STATIC_LIBS ON)
 
 if (BUILD_BOOST)
@@ -243,110 +269,104 @@ if (BUILD_BOOST)
     build_package(Boost boost)
 endif()
 
-function(find_boost_from_distname_file)
-    set (BOOST_DIST_NAME_FILE "${EXTERNAL_DIR}/.boost-py${Python_VERSION_MAJOR}.dist")
-    message(STATUS "locking for ${BOOST_DIST_NAME_FILE}")
+# weirdly: cannot run prior or some internal cache setting prevent manual search later on almalinux??
+# if (NOT Boost_PYTHON_LIBRARY)
+#     find_package(Boost COMPONENTS "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
+    
+#     if (NOT Boost_FOUND)
+#         unset(Boost_INCLUDE_DIR CACHE)
+#     endif()
+# endif()
+# message(STATUS "Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
 
-    if (EXISTS ${BOOST_DIST_NAME_FILE})
-        message(STATUS "Found: ${BOOST_DIST_NAME_FILE}")
-        FILE(READ "${EXTERNAL_DIR}/.boost-py${Python_VERSION_MAJOR}.dist" BOOST_DIST_NAME)
+function(find_boost_root_from_distname_file)
+    set (BOOST_DIST_HINT_FILE "${EXTERNAL_DIR}/.boost-py${Python_VERSION_MAJOR}${Python_VERSION_MINOR}.dist")
+    message(STATUS "locking for ${BOOST_DIST_HINT_FILE}")
+
+    if (EXISTS ${BOOST_DIST_HINT_FILE})
+        message(STATUS "Found: ${BOOST_DIST_HINT_FILE}")
+        FILE(READ "${BOOST_DIST_HINT_FILE}" BOOST_DIST_NAME)
         STRING(REGEX REPLACE "\n" "" BOOST_DIST_NAME "${BOOST_DIST_NAME}")
-        get_filename_component(BOOST_ROOT "${EXTERNAL_DIR}/${BOOST_DIST_NAME}" ABSOLUTE)
+        get_filename_component(Boost_ROOT "${EXTERNAL_DIR}/${BOOST_DIST_NAME}" ABSOLUTE)
     else()
-        message(STATUS "there is no ${BOOST_DIST_NAME_FILE}")
+        message(STATUS "there is no ${BOOST_DIST_HINT_FILE}")
     endif()
 
-    if (EXISTS ${BOOST_ROOT})
-        message(STATUS "BOOST_ROOT from ${EXTERNAL_DIR}/.boost-py${Python_VERSION_MAJOR}.dist: ${BOOST_ROOT}")
-
-        set(BOOST_ROOT ${BOOST_ROOT}  CACHE FILEPATH "Boost root distribution")
-        set(Boost_INCLUDE_DIR ${BOOST_ROOT}/include CACHE FILEPATH "Boost inlude path")
+    if (EXISTS ${Boost_ROOT})
+        set(Boost_ROOT ${Boost_ROOT} CACHE FILEPATH "Boost root distribution")
+        set(Boost_INCLUDE_DIR ${Boost_ROOT}/include CACHE FILEPATH "Boost inlude path")
         get_filename_component(Boost_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ABSOLUTE)
-        message(STATUS "found Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
+        message(STATUS "Boost_ROOT from hint file: ${Boost_ROOT}")
+        message(STATUS "Boost_INCLUDE_DIR from hint file: ${Boost_INCLUDE_DIR}")
     else()
-        message(STATUS "BOOST_ROOT does not exist: ${BOOST_ROOT}")
+        message(STATUS "Boost_ROOT does not exist: ${Boost_ROOT}")
     endif()
-endfunction(find_boost_from_distname_file)
+endfunction(find_boost_root_from_distname_file)
 
 message(STATUS "Trying to guess boost installation:")
 
-if (NOT Boost_INCLUDE_DIR)
-    message(STATUS "no Boost_INCLUDE_DIR")
+if (NOT Boost_INCLUDE_DIR OR NOT Boost_ROOT)
+    message(STATUS "Boost_INCLUDE_DIR not set")
 
-    if (BOOST_ROOT)
-        message(STATUS "Found boost root: ${BOOST_ROOT}")
-        get_filename_component(BOOST_ROOT "${BOOST_ROOT}" ABSOLUTE)
-        set(Boost_INCLUDE_DIR ${BOOST_ROOT}/include CACHE FILEPATH "Boost inlude path")
+    if (Boost_ROOT)
+        message(STATUS "Found Boost_ROOT: ${Boost_ROOT}")
+        get_filename_component(Boost_ROOT "${Boost_ROOT}" ABSOLUTE)
+        set(Boost_INCLUDE_DIR ${Boost_ROOT}/include CACHE FILEPATH "Boost inlude path")
         message(STATUS "set Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
     else()
-        message(STATUS "no boost root .. building local")
+        message(STATUS "Boost_ROOT not set: building local")
         if (NOT Boost_INCLUDE_DIR)
-            find_boost_from_distname_file()
+            find_boost_root_from_distname_file()
             find_or_build_package(Boost boost)
-            find_boost_from_distname_file()
+            if (NOT Boost_ROOT)
+                find_boost_root_from_distname_file()
+            endif()
         else()
-            find_boost_from_distname_file()
+            find_boost_root_from_distname_file()
             find_or_build_package_check(Boost boost Boost_INCLUDE_DIR False)
-            find_boost_from_distname_file()
+            find_boost_root_from_distname_file()
         endif()
-    endif(BOOST_ROOT)
-endif(NOT Boost_INCLUDE_DIR)
+    endif(Boost_ROOT)
+endif(NOT Boost_INCLUDE_DIR OR NOT Boost_ROOT)
 
-message(STATUS "BOOST_ROOT: ${BOOST_ROOT}")
-message(STATUS "Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
-
-if (NOT USE_BOOST_THREAD)
-    set (USE_BOOST_THREAD FALSE)
-endif()
-
-if (USE_BOOST_THREAD)
-    find_package(Boost 1.46.0 COMPONENTS system thread REQUIRED)
-    link_directories(${BOOST_LIBRARYDIR})
-endif()
-
-mark_as_advanced(Boost_INCLUDE_DIR BOOST_ROOT)
-
-if (NOT USE_BOOST_THREAD)
-    set(Boost_THREAD_FOUND OFF)
-    set(BOOST_BIND_FOUND OFF)
-    set(USE_IPC OFF)
-    set(THREADS "std")
-else()
-    set(Boost_THREAD_FOUND ON)
-    set(BOOST_BIND_FOUND ON)
-    set(THREADS "boost")
-endif()
-
-################################################################################
-# Manuall check for boost python
-################################################################################
-message(STATUS "********** BOOST_PYTHON ***********")
-function(find_boost_python_manual bp_version)
-    message(STATUS "----------- searching for libboost_python${bp_version}")
-    find_package(Boost COMPONENTS "python${bp_version}")
-
-    if (${Boost_PYTHON${bp_version}_FOUND})
-        set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND} PARENT_SCOPE)
-        set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY} PARENT_SCOPE)
-        # set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND} CACHE BOOL "boost python lib found")
-        # set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE} CACHE FILEPATH "boost python lib(find_boost_python_manual)")
-
-        message(STATUS "----------- found: ${Boost_PYTHON_LIBRARY}")
-    else()
-        message(STATUS "----------- not found.")
-    endif()
-endfunction()
+message(STATUS "Found Boost_ROOT: ${Boost_ROOT}")
+message(STATUS "Found Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
 
 if (NOT Boost_PYTHON_LIBRARY)
-    message(STATUS "boost-python not found by cmake ... trying to determine boost-python manually ...")
+    find_package(Boost COMPONENTS "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
+    #find_or_build_package(Boost boost)
+endif()
 
+mark_as_advanced(Boost_INCLUDE_DIR Boost_ROOT)
+
+if (NOT Boost_PYTHON_LIBRARY)
+    ################################################################################
+    # Manuall check for boost python
+    ################################################################################
+    function(find_boost_python_manual bp_version)
+        message(STATUS "----------- searching for libboost_python${bp_version}")
+        find_package(Boost COMPONENTS "python${bp_version}")
+
+        if (${Boost_PYTHON${bp_version}_FOUND})
+            set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND} PARENT_SCOPE)
+            set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY} PARENT_SCOPE)
+            # set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND} CACHE BOOL "boost python lib found")
+            # set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE} CACHE FILEPATH "boost python lib(find_boost_python_manual)")
+
+            message(STATUS "----------- found: ${Boost_PYTHON_LIBRARY}")
+        else()
+            message(STATUS "----------- not found.")
+        endif()
+    endfunction()
+
+    message(STATUS "boost-python not found by cmake ... trying to determine boost-python manually ...")
     if (WIN32)
         #set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}") # conda-forge
         set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}-mt-x64") # win64, boost-1.83
         #set(bp_version "python") # win64, boost-1.83
         string(TOUPPER ${bp_version} BP_VERSION)
 
-        message(STATUS "... (win32) looking for ${bp_version} in BOOST_ROOT=${BOOST_ROOT}")
+        message(STATUS "... (win32) looking for ${bp_version} in Boost_ROOT=${Boost_ROOT}")
         find_package(Boost COMPONENTS "${bp_version}")
 
         ## local var evaluated before cache, and cache setting does not overwrite local.
@@ -355,7 +375,7 @@ if (NOT Boost_PYTHON_LIBRARY)
             set(Boost_PYTHON_FOUND ${Boost_${bp_version}_FOUND} CACHE BOOL "boost python found")
             set(Boost_PYTHON_LIBRARY ${Boost_${BP_VERSION}_LIBRARY} CACHE FILEPATH "boost python lib")
         else()
-            set(Boost_PYTHON_LIBRARY ${BOOST_ROOT}/lib/libboost_${bp_version}.dll.a)
+            set(Boost_PYTHON_LIBRARY ${Boost_ROOT}/lib/libboost_${bp_version}.dll.a)
             message(STATUS "... (win32) looking for ${Boost_PYTHON_LIBRARY}")
 
             if (EXISTS ${Boost_PYTHON_LIBRARY})
@@ -411,6 +431,16 @@ if (NOT Boost_PYTHON_LIBRARY)
         #exit()
     endif()
 endif()
+
+if (NOT USE_BOOST_THREAD)
+    set(Boost_THREAD_FOUND OFF)
+    set(BOOST_BIND_FOUND OFF)
+    set(USE_IPC OFF)
+    set(THREADS "std")
+else()
+    status(ERROR "boost threads are not longer supported")
+endif()
+
 
 ################################################################################
 #   misc third party stuff
@@ -544,13 +574,13 @@ if (NOT AVOID_CPPUNIT)
 endif()
 
 if (NOT AVOID_READPROC)
-if(WIN32)
-    set(READPROC_FOUND FALSE)
-else(WIN32)
-    find_package(readproc)
-endif(WIN32)
+    if(WIN32)
+        set(Readproc_FOUND FALSE)
+    else(WIN32)
+        find_package(readproc)
+    endif(WIN32)
 else()
-    set(READPROC_FOUND FALSE)
+    set(Readproc_FOUND FALSE)
 endif()
 
 if (NOT CASTER)
@@ -650,8 +680,8 @@ message(STATUS "CHOLMOD_LIBRARIES    : ${CHOLMOD_LIBRARIES}")
 message(STATUS "UMFPACK_LIBRARIES    : ${UMFPACK_LIBRARIES}")
 message(STATUS "TRIANGLE_FOUND       : ${TRIANGLE_FOUND} Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
 message(STATUS "Python_EXECUTABLE    : ${Python_EXECUTABLE}" )
-message(STATUS "Python_LIBRARY_DIRS  : ${Python_LIBRARY_DIRS}")
-message(STATUS "Python_LIBRARIES     : ${Python_LIBRARIES}" )
+message(STATUS "Python_Dev.Mod_FOUND : ${Python_Development.Module_FOUND}" )
+message(STATUS "Python_Dev_FOUND     : ${Python_Development_FOUND}" )
 message(STATUS "Python_INCLUDE_DIRS  : ${Python_INCLUDE_DIRS}")
 message(STATUS "Boost_INCLUDE_DIR    : ${Boost_INCLUDE_DIR}")
 message(STATUS "Boost_PYTHON_LIBRARY : ${Boost_PYTHON_LIBRARY}" )
@@ -670,7 +700,7 @@ message(STATUS "****************************************************************
 
 if (Python_EXECUTABLE
     AND TRIANGLE_FOUND
-    AND Python_LIBRARIES
+    AND (Python_Development.Module_FOUND OR Python_Development_FOUND)
     AND Boost_PYTHON_LIBRARY
     AND Python_NumPy_FOUND
     AND CASTER_FOUND

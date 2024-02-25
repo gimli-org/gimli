@@ -1,7 +1,8 @@
-
-cprint(green "** START prepare whl build")
+## PRE Build
+cprint(green "********** Prepare wheel build ***********")
 
 set(TARGET_NAME pygimli)
+
 file(GLOB_RECURSE PYGIMLI_FILES 
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} 
     ${CMAKE_CURRENT_SOURCE_DIR}/*.py)
@@ -18,8 +19,7 @@ CONFIGURE_FILE(setup.py.in
 CONFIGURE_FILE(getwheelname.py.in
                ${CMAKE_CURRENT_BINARY_DIR}/getwheelname.py @ONLY
                )
-execute_process(COMMAND 
-                    "${Python_EXECUTABLE}" getwheelname.py 
+execute_process(COMMAND "${Python_EXECUTABLE}" getwheelname.py 
                 RESULT_VARIABLE STATUS
                 OUTPUT_VARIABLE PY_WHEELFILE
                 WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
@@ -30,56 +30,11 @@ if (STATUS EQUAL 1)
 endif()
 
 message(STATUS "Detected Python wheel filename: ${PY_WHEELFILE}")
+string(REPLACE "linux" "manylinux_2_28" PY_WHEELFILE_OUTPLATFORM ${PY_WHEELFILE})
+message(STATUS "Desired Python wheel filename after audtitwheel repair: ${PY_WHEELFILE_OUTPLATFORM}")
 
-add_custom_target(PyPackageCopyLibs)
-
-add_dependencies(PyPackageCopyLibs copy_libs)
-
-add_custom_target(copy_libs)
-    foreach(file 
-            $<TARGET_FILE:${Boost_PYTHON_LIBRARY}>
-            $<TARGET_FILE:gimli>
-            $<TARGET_FILE:_pygimli_>
-            )
-    add_custom_command(
-            COMMAND
-                cmake -E copy_if_different
-                ${file}
-                ${CMAKE_BINARY_DIR}/${PYTHON_MODULE_NAME}/${TARGET_NAME}/${TARGET_NAME}/core/libs
-            DEPENDS ${file}
-            TARGET copy_libs
-            VERBATIM
-            COMMENT
-                "Copy libraries: ${file} ${CMAKE_BINARY_DIR}/${TARGET_NAME}/${TARGET_NAME}/core/libs"
-    )
-    endforeach(file)
-
-add_custom_target(PyPackageBuild
-                COMMAND 
-                    "${Python_EXECUTABLE}" -m pip wheel .
-                WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-                COMMENT 
-                    "Building python wheel package"
-)
-
-add_custom_target(whl)
-add_dependencies(PyPackageBuild PyPackageCopyLibs)
-add_dependencies(whl PyPackageBuild)
-
-add_custom_target(PyPackageWhlUpload
-                COMMAND 
-                    "${Python_EXECUTABLE}" -m twine upload --repository testpypi ${PY_WHEELFILE}
-                WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${TARGET_NAME}"
-                COMMENT 
-                    "Upload python wheel package to 'testpypi' repository"
-)
-add_custom_target(whldeploy)
-add_dependencies(PyPackageWhlUpload PyPackageBuild)
-add_dependencies(whldeploy PyPackageWhlUpload)
-
-
-# add package test
-set(PYTHON_VIRTUAL_ENV "${CMAKE_CURRENT_BINARY_DIR}/pytest_venv")
+# add virtual env for whl package test
+set(PYTHON_VIRTUAL_ENV "${CMAKE_CURRENT_BINARY_DIR}/wheeltest_venv")
 if (NOT EXISTS "${PYTHON_VIRTUAL_ENV}")
     message(STATUS "Creating virtual python environment for testing [${PYTHON_VIRTUAL_ENV}]")
     execute_process(COMMAND "${Python_EXECUTABLE}" -m venv "${PYTHON_VIRTUAL_ENV}")
@@ -96,32 +51,58 @@ find_package(Python3 COMPONENTS Interpreter)
 message(STATUS "Found python executable for building: ${Python_EXECUTABLE}")
 message(STATUS "Found python executable for testing (venv): ${Python3_EXECUTABLE}")
 
-add_custom_target(PyPackageTestInstall
-        #DEPENDS PyPackageBuild
-        COMMAND "${Python3_EXECUTABLE}" -m pip install "${CMAKE_BINARY_DIR}/${TARGET_NAME}/${PYPACKAGE_NAME}"
-        COMMENT "Installing python package in virtual test environment"
-        )
-add_custom_target(PyPackageTestRun
-        #DEPENDS PyPackageBuild
-        COMMAND "${Python3_EXECUTABLE}" -c "import pygimli as pg; pg.version()"
-        VERBATIM
-        COMMENT "Running pygimli installation in virtual test environment."
-        )
 
-add_custom_target(whltest)
-add_dependencies(PyPackageTestInstall whl)
-add_dependencies(PyPackageTestRun PyPackageTestInstall)
-add_dependencies(whltest PyPackageTestRun)
+## POST Build
+
+## create the wheel: make whl
+add_custom_target(whlCopyLibs)
+set(WHEEL_LIBRARIES_DIR ${CMAKE_BINARY_DIR}/${PYTHON_MODULE_NAME}/${TARGET_NAME}/${TARGET_NAME}/core/libs/ )
+
+add_custom_command(TARGET whlCopyLibs
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${WHEEL_LIBRARIES_DIR}
+    COMMENT "Create target dir to copy libraries: ${WHEEL_LIBRARIES_DIR}"
+)
+foreach(file 
+        #$<TARGET_FILE:${Boost_PYTHON_LIBRARY}>
+        $<TARGET_FILE:gimli>
+        $<TARGET_FILE:_pygimli_>
+    )
+    add_custom_command(TARGET whlCopyLibs
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${file} ${WHEEL_LIBRARIES_DIR}
+            DEPENDS ${file}
+            COMMENT "Copy libraries: ${file} ${CMAKE_BINARY_DIR}/${TARGET_NAME}/${TARGET_NAME}/core/libs"
+    )
+endforeach(file)
+add_custom_target(whlPackageBuild DEPENDS whlCopyLibs
+    COMMAND "${Python_EXECUTABLE}" -m pip wheel --wheel-dir=${CMAKE_CURRENT_BINARY_DIR}/wheelhouse .
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+    COMMENT "Building python wheel package"
+)
+add_custom_target(whlPackageRepair DEPENDS whlPackageBuild
+    COMMAND "auditwheel" repair ./wheelhouse/${PY_WHEELFILE}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+    COMMENT "Building python wheel package at: ${CMAKE_CURRENT_BINARY_DIR}"
+)
+add_custom_target(whl DEPENDS whlPackageRepair)
 
 
-#get_target_property(PYPACKAGE_NAME PyPackageBuild Package_Name)
+## test the wheel: make whlTest
+add_custom_target(whlTestInstall DEPENDS whl
+    COMMAND "${Python3_EXECUTABLE}" -m pip uninstall -y ${TARGET_NAME}
+    COMMAND "${Python3_EXECUTABLE}" -m pip install ${TARGET_NAME} --find-links=${CMAKE_CURRENT_BINARY_DIR}/wheelhouse
+    COMMENT "Installing ${TARGET_NAME} in virtual test environment"
+)
+add_custom_target(whlTestRun DEPENDS whlTestInstall
+    COMMAND ${Python3_EXECUTABLE} -c "import pygimli as pg; pg.version()"
+    VERBATIM
+    COMMENT "Running pygimli installation in virtual test environment. ${Python3_EXECUTABLE} -c \'import pygimli as pg; pg.version()\'"
+)
+add_custom_target(whlTest DEPENDS whlTestRun)
 
-# add_custom_target(PyTests ALL
-#         DEPENDS PyPackageBuild
-#         COMMAND "${Python3_EXECUTABLE}" -m pip install "${CMAKE_BINARY_DIR}/${TARGET_NAME}/${PYPACKAGE_NAME}"
-#         COMMENT "Installing python package in virtual test environment"
-#         )
 
-# add_test(NAME package:wheel
-#         COMMAND "${Python3_EXECUTABLE}" ${CMAKE_CURRENT_SOURCE_DIR}/test_sample.py
-#         )
+## deploy the wheel: make whlDeploy
+add_custom_target(whlDeploy DEPENDS whlTest
+    COMMAND "${Python_EXECUTABLE}" -m twine upload --repository testpypi ${CMAKE_CURRENT_BINARY_DIR}/wheelhouse/${PY_WHEELFILE_OUTPLATFORM}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+    COMMENT "Upload python wheel package ${PY_WHEELFILE_OUTPLATFORM} to 'testpypi' repository"
+)

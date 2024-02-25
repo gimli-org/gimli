@@ -505,6 +505,7 @@ def get_versions():
         for i in cfg.versionfile_source.split('/'):
             root = os.path.dirname(root)
     except NameError:
+
         return {"version": "0+unknown", "full-revisionid": None,
                 "dirty": None,
                 "error": "unable to find root of source tree",
@@ -519,6 +520,16 @@ def get_versions():
     try:
         if cfg.parentdir_prefix:
             return versions_from_parentdir(cfg.parentdir_prefix, root, verbose)
+    except NotThisMethod:
+        pass
+
+    try:
+        from importlib import metadata
+        md = metadata.metadata('pygimli')
+        return {"version": md['version'], "full-revisionid": None,
+            "dirty": None,
+            "error": None, "date": None}
+
     except NotThisMethod:
         pass
 
