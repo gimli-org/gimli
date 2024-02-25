@@ -481,12 +481,13 @@ buildBOOST(){
         fi
         echo "*** Building boost in $PWD"
 
-        MLPLTFM=cp$PYTHONMAJOR$PYTHONMINOR
-        PYCONFIG=/opt/python/$MLPLTFM-$MLPLTFM/include/python3.$PYTHONMAJOR
-        if [ -f $PYCONFIG/pyconfig.h ]; then
-            # special includes for manylinux, since venv does not copy python config on alamlinux docker container
-            echo "Setting extra include to pyconfig for manylinux_$MLPLTFM-$MLPLTFM"
-            export CPLUS_INCLUDE_PATH=$PYCONFIG
+        PY_PLATFORM=cp$PYTHONMAJOR$PYTHONMINOR
+        PY_CONFIG_DIR=/opt/python/$PY_PLATFORM-$PY_PLATFORM/include/python3.$PYTHONMINOR
+        if [ -f $PY_CONFIG_DIR/pyconfig.h ]; then
+            # special includes for manylinux, since venv does not copy python 
+            # config on alamlinux docker container
+            echo "Setting extra include to pyconfig for manylinux_$PY_PLATFORM-$PY_PLATFORM"
+            export CPLUS_INCLUDE_PATH=$PY_CONFIG_DIR
         fi
 
         "$B2" \
@@ -515,14 +516,12 @@ buildBOOST(){
     fi
 
 }
-
 prepCASTXMLBIN(){
     CASTXML_VER=castxml
     CASTXML_SRC=$SRC_DIR/$CASTXML_VER
     CASTXML_BUILD=$BUILD_DIR/$CASTXML_VER
     CASTXML_DIST=$DIST_DIR
 }
-
 buildCASTXMLBIN(){
     checkTOOLSET
     prepCASTXMLBIN
@@ -558,14 +557,12 @@ buildCASTXMLBIN(){
         rm -rf $CASTXML_DIST/share/castxml
     fi
 }
-
 prepCASTXML(){
     CASTXML_VER=castxmlSRC
     CASTXML_SRC=$SRC_DIR/$CASTXML_VER
     CASTXML_BUILD=$BUILD_DIR/$CASTXML_VER
     CASTXML_DIST=$DIST_DIR
 }
-
 buildCASTXML(){
     echo "Better use castxmlbin"
     return
@@ -611,9 +608,7 @@ buildCASTXML(){
         cmakeBuild $CASTXML_SRC $CASTXML_BUILD $CASTXML_DIST
 
     fi
-
 }
-
 prepPYGCCXML(){
     PYGCCXML_VER=pygccxml
     PYGCCXML_SRC=$SRC_DIR/$PYGCCXML_VER
@@ -629,7 +624,6 @@ prepPYGCCXML(){
     PYGCCXML_DIST_WIN=${PYGCCXML_DIST_WIN/\/d\//D:\\/}
     PYGCCXML_DIST_WIN=${PYGCCXML_DIST_WIN/\/e\//E:\\/}
 }
-
 buildPYGCCXML(){
     checkTOOLSET
     prepPYGCCXML
@@ -673,7 +667,6 @@ buildPYGCCXML(){
         #python setup.py install --prefix=$PYGCCXML_DIST_WIN
     popd
 }
-
 prepLAPACK(){
     LAPACK_VER=lapack-$LAPACK_VERSION
     LAPACK_SRC=$SRC_DIR/$LAPACK_VER
@@ -771,7 +764,6 @@ buildSUITESPARSE(){
         popd
     popd
 }
-
 prepCPPUNIT(){
     CPPUNIT_VER=cppunit
     CPPUNIT_SRC=$SRC_DIR/$CPPUNIT_VER
@@ -795,7 +787,6 @@ buildCPPUNIT(){
     popd
 
 }
-
 slotAll(){
     buildBOOST
     buildLAPACK
