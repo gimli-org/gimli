@@ -497,7 +497,7 @@ buildBOOST(){
             threading=multi \
             address-model=$ADDRESSMODEL $EXTRADEFINES install \
             --platform=msys \
-            -j $PARALLEL_BUILD \
+            -j 8 \
             -d 0 \
             -a \
             --prefix=$BOOST_DIST \

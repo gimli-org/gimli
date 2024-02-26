@@ -272,13 +272,15 @@ endif()
 # weirdly: cannot run prior or some internal cache setting prevent manual search later on almalinux??
 # if (NOT Boost_PYTHON_LIBRARY)
 #     find_package(Boost COMPONENTS "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
-    
+
 #     if (NOT Boost_FOUND)
 #         unset(Boost_INCLUDE_DIR CACHE)
+#         unset(Boost_INCLUDE_DIR)
 #     endif()
 # endif()
-# message(STATUS "Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
+message(STATUS "Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
 
+#exit()
 function(find_boost_root_from_distname_file)
     set (BOOST_DIST_HINT_FILE "${EXTERNAL_DIR}/.boost-py${Python_VERSION_MAJOR}${Python_VERSION_MINOR}.dist")
     message(STATUS "locking for ${BOOST_DIST_HINT_FILE}")
@@ -331,12 +333,14 @@ endif(NOT Boost_INCLUDE_DIR OR NOT Boost_ROOT)
 
 message(STATUS "Found Boost_ROOT: ${Boost_ROOT}")
 message(STATUS "Found Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
-
 if (NOT Boost_PYTHON_LIBRARY)
+    # Who sets this? It prevents successfull search directly after build
+    unset(Boost_USE_DEBUG_RUNTIME) 
     find_package(Boost COMPONENTS "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
     #find_or_build_package(Boost boost)
 endif()
 
+#exit()
 mark_as_advanced(Boost_INCLUDE_DIR Boost_ROOT)
 
 if (NOT Boost_PYTHON_LIBRARY)
@@ -440,7 +444,6 @@ if (NOT USE_BOOST_THREAD)
 else()
     status(ERROR "boost threads are not longer supported")
 endif()
-
 
 ################################################################################
 #   misc third party stuff
