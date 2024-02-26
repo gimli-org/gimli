@@ -64,7 +64,7 @@ add_custom_command(TARGET whlCopyLibs
 )
 foreach(file 
         #$<TARGET_FILE:${Boost_PYTHON_LIBRARY}>
-        $<TARGET_FILE:gimli>
+        #$<TARGET_FILE:gimli>
         $<TARGET_FILE:_pygimli_>
     )
     add_custom_command(TARGET whlCopyLibs
