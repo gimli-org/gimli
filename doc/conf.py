@@ -153,19 +153,20 @@ try:
 
     pyvista = pg.optImport("pyvista", "build the gallery with 3D visualizations")
     if pyvista:
+        from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
         # necessary when building the sphinx gallery
         os.environ['PYVISTA_BUILDING_GALLERY'] = "true"
         pyvista.BUILDING_GALLERY = True
         os.environ["PYVISTA_OFF_SCREEN"] = "true"
         pyvista.OFF_SCREEN = True
         pyvista.set_plot_theme("document")
-        pyvista.global_theme.window_size = [1024, 768]
+        pyvista.global_theme.window_size = np.array([1024, 768]) * 2
         pyvista.global_theme.font.size = 22
         pyvista.global_theme.font.label_size = 22
         pyvista.global_theme.font.title_size = 22
         pyvista.global_theme.return_cpos = False
-        pyvista.set_jupyter_backend(None)
-        sphinx_gallery_conf["image_scrapers"] = ("pyvista", "matplotlib")
+        extensions += ["pyvista.ext.viewer_directive"]
+        sphinx_gallery_conf["image_scrapers"] = (DynamicScraper(), "matplotlib")
 
 except ImportError:
     err = """
