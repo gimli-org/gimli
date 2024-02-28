@@ -394,7 +394,9 @@ class Inversion(object):
         self.inv.echoStatus()
 
     def setPostStep(self, p):
-        """Set a function to be called after each iteration."""
+        """Set a function to be called after each iteration. 
+        
+        The function is called with p(IterationNumber, self)."""
         self._postStep = p
 
     def setPreStep(self, p):
@@ -486,9 +488,9 @@ class Inversion(object):
             args = ('*',)
 
         if "operator" in kwargs:
-            self.fop.setConstraints(kwargs.pop("operator"))
+            self.fop.setCustomConstraints(kwargs.pop("operator"))
         if "C" in kwargs:
-            self.fop.setConstraints(kwargs.pop("C"))
+            self.fop.setCustomConstraints(kwargs.pop("C"))
 
         if len(kwargs) > 0:
             self.fop.setRegionProperties(*args, **kwargs)
@@ -665,13 +667,13 @@ class Inversion(object):
         self.chi2History = [self.chi2()]
         self.modelHistory = [startModel]
 
-        for i in range(maxIter):
+        for i in range(1, maxIter+1):
             if self._preStep and callable(self._preStep):
                 self._preStep(i + 1, self)
 
             if self.verbose:
                 print("-" * 80)
-                print("inv.iter", i + 1, "... ", end='')
+                print("inv.iter", i, "... ", end='')
 
             try:
                 if hasattr(self, "oneStep"):
