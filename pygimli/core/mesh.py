@@ -382,8 +382,6 @@ def __Mesh_findPaths__(self, bounds):
 
     S = scipy.sparse.dok_matrix(pg.utils.toCOO(S))
 
-    # print(S.shape)
-    # print(S)
     paths = []
 
     def followPath(path, S, rID):
@@ -394,9 +392,10 @@ def __Mesh_findPaths__(self, bounds):
             # print('row', rID, 'col', cID)
             # print('add', cID)
             path.append(cID)
+            #try:
+            #print('pop-r', (rID, cID))
             S.pop((rID, cID))
             S.pop((cID, rID))
-            # print('pop-r', (rID, cID))
 
             col = S[:, cID]
 
@@ -407,6 +406,8 @@ def __Mesh_findPaths__(self, bounds):
                 # print('pop-c', (rID, cID))
                 S.pop((rID, cID))
                 S.pop((cID, rID))
+                # print('pop-s', (rID, cID))
+
                 row = S[rID]
                 if len(row) != 1:
                     break
