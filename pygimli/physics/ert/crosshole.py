@@ -63,6 +63,9 @@ class CrossholeERT(TimelapseERT):
         if self.bhmap is None:
             self.determineBHmap()
 
+        for tok in "abmn":
+            self.data["n"+tok] = self.bhmap[self.data[tok]]
+
     def showData(self, v="rhoa", x="a", y="m", t=None, **kwargs):
         """Show data.
 
@@ -95,7 +98,7 @@ class CrossholeERT(TimelapseERT):
         else:
             return self.data.show(v, **kwargs)
 
-    def extractSubset(self, nbh, slice=None, name=None):
+    def extractSubset(self, nbh, plane=None, name=None):
         """Extract a subset (slice) by borehole number.
 
         Returns a CrossholeERT instance with reduced boreholes
@@ -106,7 +109,7 @@ class CrossholeERT(TimelapseERT):
             borehole(s) to extract data from
         name : str
             name to give the new instance
-        slice : bool [None]
+        plane : bool [None]
             reduce to 2D (automatic if max. 2 boreholes are used)
         """
         xh2 = pg.DataContainerERT(self.data)
@@ -125,9 +128,9 @@ class CrossholeERT(TimelapseERT):
         xh2.markValid(np.nonzero(good)[0])
         xh2.removeInvalid()
         xh2.removeUnusedSensors()
-        if slice is None:  # decide upon number
-            slice = len(nbh) < 3
-        if slice:
+        if plane is None:  # decide upon number
+            plane = len(nbh) < 3
+        if plane:
             p0 = self.data.sensor(np.nonzero(self.bhmap==nbh[0]-1)[0][0])
             dists = [p0.dist(self.data.sensor(np.nonzero(
                 self.bhmap==nn-1)[0][0])) for nn in nbh]

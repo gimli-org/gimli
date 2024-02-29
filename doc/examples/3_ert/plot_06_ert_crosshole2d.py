@@ -89,7 +89,7 @@ for b in mesh.boundaries():
 # Inversion is run with half as much weight into the vertical direction.
 #
 
-data.estimateError()
+data.estimateError(relativeError=0.03, absoluteUError=1e-4)
 mgr = ert.Manager(data)
 mgr.invert(mesh=mesh, verbose=True)
 ax, cb = mgr.showResult(cMin=15, cMax=200)

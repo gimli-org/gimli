@@ -32,7 +32,7 @@ from sidebar_gallery import make_gallery
 try:
     # from _build.doc.conf_environment import *
     from conf_environment import *
-    pygimli.boxprint("Building documentation out-of-source. Good.")
+    pg.boxprint("Building documentation out-of-source. Good.")
     in_source = False
     print("DOXY_BUILD_DIR", DOXY_BUILD_DIR)
 except ImportError:
@@ -41,7 +41,7 @@ except ImportError:
     DOC_BUILD_DIR = ""
     DOXY_BUILD_DIR = ""
     in_source = True
-    pygimli.boxprint("Building documentation in-source. Don't forget to make clean.")
+    pg.boxprint("Building documentation in-source. Don't forget to make clean.")
 
 sys.path.append(os.path.abspath(SPHINXDOC_PATH))
 sys.path.append(os.path.abspath(join(SPHINXDOC_PATH, "_sphinx-ext")))
@@ -151,7 +151,7 @@ try:
         "ignore_repr_types": r"matplotlib[text, axes, collections]",
         }
 
-    pyvista = pygimli.optImport("pyvista", "build the gallery with 3D visualizations")
+    pyvista = pg.optImport("pyvista", "build the gallery with 3D visualizations")
     if pyvista:
         # necessary when building the sphinx gallery
         os.environ['PYVISTA_BUILDING_GALLERY'] = "true"
@@ -164,7 +164,7 @@ try:
         pyvista.global_theme.font.label_size = 22
         pyvista.global_theme.font.title_size = 22
         pyvista.global_theme.return_cpos = False
-        pyvista.set_jupyter_backend(None) 
+        pyvista.set_jupyter_backend(None)
         sphinx_gallery_conf["image_scrapers"] = ("pyvista", "matplotlib")
 
 except ImportError:
@@ -177,7 +177,7 @@ except ImportError:
 
         sudo pip3 install sphinx-gallery
     """
-    pygimli.warn(err)
+    pg.warn(err)
 
 
 intersphinx_mapping = {
@@ -240,15 +240,15 @@ copyright = f"{year} - pyGIMLi Development Team"
 # built documents.
 #
 # The short X.Y version.
-version = pygimli.__version__
-install_version = pygimli.__version__.split("+")[0]
+version = pg.__version__
+install_version = pg.__version__.split("+")[0]
 
 rst_epilog = """
 .. |version| replace:: pyGIMLi {versionnum}
 """.format(versionnum = version)
 
 # The full version, including alpha/beta/rc tags.
-release = pygimli.__version__
+release = pg.__version__
 
 release = release.replace("_", "\\_")
 

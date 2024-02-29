@@ -69,7 +69,7 @@ ax, cb = ert.show(data, "rhoa", circular=True)
 # with lower values for shallow penetrations and higher ones for larger
 # current-voltage distances.
 #
-# We estimate a measuring error using default values (3% plus 100µV) and feed it
+# We estimate a measuring error using default values (3%) and feed it
 # into the ERT Manager.
 data.estimateError()
 mgr = ert.Manager(data)

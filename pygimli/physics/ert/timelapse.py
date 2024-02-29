@@ -147,6 +147,8 @@ class TimelapseERT():
             minimum and maximum times to keep
         t : int|str|datetime
             time to remove
+        select : list[int]
+            times to select
         kmax : float
             maximum geometric factor to allow
         """
@@ -252,7 +254,23 @@ class TimelapseERT():
         return ax
 
     def fitReciprocalErrorModel(self, **kwargs):
-        """Fit all data by analysing normal/reciprocal data."""
+        """Fit all data by analysing normal/reciprocal data.
+
+        Parameters
+        ----------
+        show : bool
+            show temporal behaviour of absolute & relative errors
+        kwargs passed on to ert.fitReciprocalErrorModel)
+            nBins : int
+                number of bins to subdivide data (4 < data.size()//30 < 30)
+            rel : bool [False]
+                fit relative instead of absolute errors
+
+        Returns
+        -------
+        p, a : array
+            relative (p) and absolute (a) errors for every time step
+        """
         data = self.data.copy()
         p = np.zeros(self.DATA.shape[1])
         a = np.zeros_like(p)

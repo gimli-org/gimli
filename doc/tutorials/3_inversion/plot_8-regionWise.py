@@ -14,6 +14,7 @@ of course influencing the fields and needs to be treated accordingly.
 # %%%
 # We first import pygimli and the modules for ERT and mesh building.
 
+import matplotlib.pyplot as plt
 import pygimli as pg
 from pygimli.physics import ert
 import pygimli.meshtools as mt
@@ -36,8 +37,8 @@ print(data)
 # We first have a look at the electrode positions measured by a stick.
 #
 
-pg.plt.plot(pg.x(data), pg.z(data), "o-")
-pg.plt.grid();
+plt.plot(pg.x(data), pg.z(data), "o-")
+plt.grid()
 
 # %%%
 # On both sides, two electrodes are on shore, but the others are on the bottom
@@ -46,7 +47,7 @@ pg.plt.grid();
 
 data["k"] = ert.geometricFactors(data)
 data["rhoa"] = data["u"] / data["i"] * data["k"]
-ert.show(data);
+ax, cb = data.show()
 
 # %%%
 # We combined Wenner-Schlumberger (top) and Wenner-beta (bottom) data. The
