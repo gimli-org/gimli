@@ -3,11 +3,7 @@
 Useful utility functions.
 """
 from .base import (rms, rmsWithErr, nanrms, createDateTimeString,
-                   createfolders, # renamed 20200515
-                   createFolders,
-                   createResultFolder, # renamed 20200515
-                   createResultPath,
-                   createPath,
+                   createResultPath, createPath, createPathTimePath,
                    getSavePath, gmat2numpy, interperc, interpExtrap, inthist,
                    nanrms, num2str, numpy2gmat, rrms, rms, rndig, saveResult,
                    chi2)

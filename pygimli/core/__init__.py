@@ -883,6 +883,7 @@ def __stdVectorRVector_IOP__(self, a, OP):
     return self
 
 def __stdVectorRVector_BIOP__(self, b, OP):
+    
     ret = pgcore.stdVectorRVector()
     if isScalar(b):
         for i, ai in enumerate(self):
@@ -1399,6 +1400,8 @@ def y(instance):
     ## test atoms first (perfomance)
     if isPos(instance):
         return instance[1]
+    if isinstance(instance, (int,float)):
+        return 0
     return __getCoords('y', 1, instance)
 
 
@@ -1416,6 +1419,8 @@ def z(instance):
     ## test atoms first (perfomance)
     if isPos(instance):
         return instance[2]
+    if isinstance(instance, (int,float)):
+        return 0
     return __getCoords('z', 2, instance)
 
 

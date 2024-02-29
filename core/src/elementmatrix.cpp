@@ -2742,10 +2742,12 @@ ElementMatrix < double >::integrate(const Pos & f,
 template < > void 
 ElementMatrix < double >::integrate(const RVector & f,
                                     RVector & R, double scale) const {
-    ASSERT_VEC_SIZE(f, this->_w->size())
-    INTEGRATE_LINFORM(*f[q])
-    rt *= this->_ent->size() * scale;
-    R.addVal(rt, this->rowIDs());
+    // only integrate if f fits size
+    if (f.size() == this->_w->size()){
+        INTEGRATE_LINFORM(*f[q])
+        rt *= this->_ent->size() * scale;
+        R.addVal(rt, this->rowIDs());
+    }
 }
 //******************************************************************************
 // LINEAR-FORM -- integration -- vector per QUADRATURE -- f in R^n evalOnQuads

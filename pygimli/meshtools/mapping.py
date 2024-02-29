@@ -535,6 +535,8 @@ def interpolate(*args, **kwargs):
                                    verbose=verbose)
 
     elif len(args) > 0:
+        # pg._b([type(a) for a in args])
+
         if isinstance(args[0], pg.Mesh):
             if len(args) == 2 and isinstance(args[1], pg.Mesh):
                 return pg.core.interpolate(args[0], args[1],
@@ -601,8 +603,8 @@ def interpolate(*args, **kwargs):
                 return outMat
             else:
                 return pg.core.interpolate(args[0], args[1], destPos=args[2],
-                                       fillValue=fallback,
-                                       verbose=verbose)
+                                           fillValue=fallback,
+                                           verbose=verbose)
 
         try:
             # check for Boost.Python.ArgumentError

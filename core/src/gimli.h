@@ -374,6 +374,8 @@ typedef PolynomialFunction< double > RPolynomialFunction;
 template < class ValueType > class ElementMatrix;
 typedef ElementMatrix < double > RElementMatrix;
 
+class ElementMatrixMap;
+
 template < class Vec > class Trans;
 
 /*! */

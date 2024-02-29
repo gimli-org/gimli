@@ -48,12 +48,8 @@ class deprecate:
                            ' had been marked as deprecated' + \
                            ' and will be removed in: ' + self.removed,
                            hint=f'\nUse: {self.newFunc}')
-            
-            # pg.warning(func.__name__, args[1:], kwargs,
-            #            ' had been marked as deprecated' + \
-            #            ' and will be removed in: ' + self.removed + \
-            #            ' Use: ', str(self.newFunc))
-            return func(*args, **kwargs)
+
+            return self.newFunc(*args, **kwargs)
         return wrapper
 
 

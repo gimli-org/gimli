@@ -142,8 +142,9 @@ def createDateTimeString(now=None):
         now = time.localtime()
     return str(now.tm_year) + str(now.tm_mon).zfill(2) + \
         str(now.tm_mday).zfill(2) + '-' + \
-        str(now.tm_hour).zfill(2) + '.' + \
-        str(now.tm_min).zfill(2)
+        str(now.tm_hour).zfill(2) + ':' + \
+        str(now.tm_min).zfill(2) + ':' + \
+        str(now.tm_sec).zfill(2)
 
 
 def getSavePath(folder=None, subfolder='', now=None):
@@ -159,6 +160,34 @@ def createResultPath(subfolder, now=None):
     """Create a result Folder."""
     result = createDateTimeString(now)
     return createPath(['.', result, subfolder])
+
+
+def createPathTimePath(path, now=None, sub=None, symlink=None):
+    """Create a result Folder. e.g. ./path/$str(now)/[sub]
+
+    Parameters
+    ----------
+    path: str
+        Local path
+    now: time | None
+        optional time
+    sub: list | []
+        List of additional paths
+    symlink: str | []
+        At a symlink: ./path/$str(now) -> symlink
+    """
+    timeStr = createDateTimeString(now)
+    ret = createPath(['.', path, timeStr, *sub])
+    
+    if symlink is not None:
+        
+        target = os.path.join(path, symlink)
+        if os.path.exists(target):
+            os.remove(target)
+        
+        os.symlink(timeStr, os.path.join(path, symlink))
+
+    return ret
 
 
 def createPath(pathList):
@@ -184,18 +213,3 @@ def createPath(pathList):
     return path
 
 mkdir = createPath
-
-
-@pg.renamed(createResultPath, '1.2')  # 20200515
-def createResultFolder(subfolder, now=None):
-    pass
-
-
-@pg.renamed(createPath, '1.2')  # 20200515
-def createfolders(foldername_list):
-    pass
-
-
-@pg.renamed(createPath, '1.2')  # 20200515
-def createFolders(pathList):
-    pass

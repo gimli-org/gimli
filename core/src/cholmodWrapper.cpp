@@ -183,16 +183,16 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
 //                     __MS(i << " " << j << " " << S.vecColPtr()[i] << " " << S.vecColPtr()[i + 1] << " " << S.vecRowIdx()[j])
                     if (S.vecVals()[j] != 0.0){
 //                 __MS(S.vecVals()[j] << " "  << S.getVal(S.vecRowIdx()[j], i))
-                        if (::fabs(S.vecVals()[j] - S.getVal(S.vecRowIdx()[j], i, false)) > 1e-12){
+                        double atol = ::fabs(S.vecVals()[j] - S.getVal(S.vecRowIdx()[j], i, false));
+                        double rtol = atol/::fabs(S.vecVals()[j]);
+                        if (atol > 1e-9 and rtol > 1e-9){
                             // non-symmetric
-                            if (verbose_) {
+                            if (1 || verbose_) {
                                 log(Info,
-                                    "non-symmetric matrix found (", i,
-                                    S.vecRowIdx()[j],
-                                    S.vecVals()[j] , " ",
-                                    S.getVal(S.vecRowIdx()[j], i), "tol:",
-                                    ::fabs(S.vecVals()[j] - S.getVal(S.vecRowIdx()[j], i, false)),
-                                    ").. switching to umfpack." );
+                        "non-symmetric matrix found (", i, S.vecRowIdx()[j],
+                        S.vecVals()[j] , " ", S.getVal(S.vecRowIdx()[j], i), 
+                                    "atol:", atol,
+                                    "rtol:", rtol, ").. switching to umfpack." );
                             }
                             useUmfpack_ = true;
                             i = S.size();
@@ -204,9 +204,7 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
                 }
             }
         }
-        
         if (forceUmfpack_ || getEnvironment("BERTUSEUMFPACK", 0) == 1) useUmfpack_ = true;
-
         if (useUmfpack_){
 #if USE_UMFPACK
 

@@ -95,7 +95,7 @@ def isArray(v, N=None):
             return isScalar(v[0])
 
         return (hasattr(v, '__iter__') and \
-            not isinstance(v, (str))) and v.ndim == 1
+            not isinstance(v, (str, dict))) and v.ndim == 1
 
     return isArray(v) and len(v) == N
 

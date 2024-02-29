@@ -18,6 +18,8 @@
 
 #include "pos.h"
 #include "matrix.h"
+#include "elementmatrixmap.h"
+#include "meshentities.h"
 //#include "vectortemplates.h"
 
 namespace GIMLI{
@@ -67,8 +69,8 @@ void vectorizePosVectorList(const std::vector < PosVector > & v, PosVector & r){
     // for (Index i = 0; i < v.size(); i ++) { 
     //     r.setVal(v[count += v[i].size();
     // }
-
 }
+
 
 void deVectorizeRVectorToPosVectorList(std::vector < RVector > & ret, 
                                        const RVector & r, 
@@ -81,6 +83,42 @@ void deVectorizeRVectorToPosVectorList(std::vector < RVector > & ret,
         ret.push_back(r.getVal(start, end));
         //#std::copy(&data_[se.first], &data_[se.second], &v[0]);
         start = end;
+    }
+}
+
+
+void vectorizePosVectorList(const std::vector < PosVector > & v, PosVector & r,
+                            int marker, const ElementMatrixMap & eMap){
+    ASSERT_EQUAL_SIZE(v, eMap)
+    r.clear();
+    for (Index i = 0; i < v.size(); i ++) { 
+        if (eMap.mats()[i].entity()->marker() == marker){
+            for (Index j = 0; j < v[i].size(); j ++) { 
+                r.push_back(v[i][j]);
+            }
+        }
+    }                           
+}
+
+
+void deVectorizeRVectorToPosVectorList(std::vector < RVector > & ret, 
+                                       const RVector & r, 
+                                       const std::vector < PosVector > & v,
+                                       int marker, 
+                                       const ElementMatrixMap & eMap){
+    if (ret.size() != eMap.size()){
+        ret.resize(eMap.size(), RVector(0));
+    }
+
+    Index start = 0;
+    Index end = 0;
+    for (Index i = 0; i < v.size(); i ++) { 
+        if (eMap.mats()[i].entity()->marker() == marker){
+            end = start + v[i].size();
+            ret[i] = r.getVal(start, end);
+            //#std::copy(&data_[se.first], &data_[se.second], &v[0]);
+            start = end;
+        }
     }
 }
 

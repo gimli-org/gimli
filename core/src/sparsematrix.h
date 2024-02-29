@@ -325,6 +325,8 @@ public:
     inline Vector < ValueType > & values() { return vals_; }
     inline const Vector < ValueType > & values() const { return vals_; }
 
+    void update(const Vector < ValueType > & v) { vals_ = v; }
+    
     // inline Index size() const { return rows(); }
     inline Index nVals() const { return vals_.size(); }
     // inline Index cols() const { return _cols; }
