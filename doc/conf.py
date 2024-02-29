@@ -24,7 +24,7 @@ matplotlib.use("Agg")
 import pkg_resources
 import sphinx
 
-import pygimli
+import pygimli as pg
 
 
 from sidebar_gallery import make_gallery
@@ -67,6 +67,7 @@ deps = ["sphinxcontrib-programoutput",
 # check for p.version too
 modules = [p.project_name for p in pkg_resources.working_set]
 
+pg._b(modules)
 req = []
 for dep in deps:
     if dep not in modules:

@@ -25,20 +25,21 @@ namespace GIMLI{
 
 class DLLEXPORT SolverWrapper{
 public:
-    SolverWrapper();
-
-    SolverWrapper(const RSparseMatrix & S, bool verbose=false);
-
-    SolverWrapper(const CSparseMatrix & S, bool verbose=false);
+    
+    SolverWrapper(bool verbose=false);
 
     virtual ~SolverWrapper();
 
-    virtual int solve(const RVector & rhs, RVector & solution) = 0;
+    virtual void setMatrix(const RSparseMatrix & S){THROW_TO_IMPL;};
 
-    virtual int solve(const CVector & rhs, CVector & solution){ THROW_TO_IMPL return 0;}
+    virtual void setMatrix(const CSparseMatrix & S){THROW_TO_IMPL;};
 
-    const std::string name() const { return name_; }
+    virtual void solve(const RVector & rhs, RVector & solution) = 0;
 
+    virtual void solve(const CVector & rhs, CVector & solution){ THROW_TO_IMPL;}
+
+    std::string name() const { return name_; }
+    
 protected:
 
     std::string name_;

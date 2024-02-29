@@ -561,6 +561,7 @@ class MeshModelling(Modelling):
         self._refineP2 = False
         self._refineH2 = True
         self._pd = None
+        self._C = None # custom Constraints matrix
 
     def __hash__(self):
         """Unique hash for caching."""
@@ -586,6 +587,13 @@ class MeshModelling(Modelling):
 
         self._pd = pg.Mesh(self.regionManager().paraDomain())
         return self._pd
+
+    def setCustomConstraints(self, C):
+        """ Set custom constraints matrix for lazy evaluation. 
+
+        To remove them set it to 'None' again.
+        """
+        self._C = C
 
     def createConstraints(self):
         """Create constraint matrix."""
@@ -688,6 +696,10 @@ class MeshModelling(Modelling):
 
         self._regionChanged = False
         super().setMesh(m, ignoreRegionManager=True)
+
+        if self._C is not None:
+            pg.info('Set custom constraints matrix.')
+            self.setConstraints(self._C)
 
     def mesh(self):
         """Returns the currently used mesh."""

@@ -26,22 +26,25 @@ namespace GIMLI{
 
 class DLLEXPORT CHOLMODWrapper : public SolverWrapper {
 public:
-    CHOLMODWrapper(RSparseMatrix & S, bool verbose=false, int stype=-2,
-                   bool forceUmfpack=false);
-
-    CHOLMODWrapper(CSparseMatrix & S, bool verbose=false, int stype=-2,
-                   bool forceUmfpack=false);
+    CHOLMODWrapper(RSparseMatrix & S, bool verbose=false, int stype=-2, bool forceUmfpack=false);
+    CHOLMODWrapper(CSparseMatrix & S, bool verbose=false, int stype=-2, bool forceUmfpack=false);
 
     virtual ~CHOLMODWrapper();
 
     static bool valid();
 
-    virtual int solve(const RVector & rhs, RVector & solution);
+    virtual void setMatrix(RSparseMatrix & S);
 
-    virtual int solve(const CVector & rhs, CVector & solution);
+    virtual void setMatrix(CSparseMatrix & S);
+
+    virtual void solve(const RVector & rhs, RVector & solution);
+
+    virtual void solve(const CVector & rhs, CVector & solution);
 
 protected:
     void init();
+
+    void free();
 
     int initializeMatrix_(RSparseMatrix & S);
 
@@ -54,10 +57,10 @@ protected:
     int initMatrixChol_(SparseMatrix < ValueType > & S, int xType);
 
     template < class ValueType >
-    int solveCHOL_(const Vector < ValueType > & rhs, Vector < ValueType > & solution);
+    void solveCHOL_(const Vector < ValueType > & rhs, Vector < ValueType > & solution);
 
     template < class ValueType >
-    int solveUmf_(const Vector < ValueType > & rhs, Vector < ValueType > & solution);
+    void solveUmf_(const Vector < ValueType > & rhs, Vector < ValueType > & solution);
 
     int factorise_();
 
