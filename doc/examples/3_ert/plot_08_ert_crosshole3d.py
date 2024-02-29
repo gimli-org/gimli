@@ -115,7 +115,8 @@ _ = ax.plot(pg.x(data), pg.z(data), "mo", markersize=1)
 # Inversion is run with less weight into the vertical direction.
 #
 
-data["err"] = ert.estimateError(data)
+data.estimateError(relativeError=0.03, absoluteUError=1e-4)
+# data["err"] = ert.estimateError(data)  # the same
 mgr = ert.Manager(data)
 mgr.invert(mesh=mesh, zWeight=0.3, verbose=True)
 

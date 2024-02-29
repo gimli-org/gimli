@@ -58,8 +58,9 @@ ax, cb = ert.show(data)
 # estimate an error model using rather low values for both error parts.
 #
 
-data["k"] = ert.geometricFactors(data)
-data["err"] = ert.estimateError(data, relativeError=0.025, absoluteUError=100e-6)
+data.estimateError(relativeError=0.025, absoluteUError=100e-6)
+# data["k"] = ert.geometricFactors(data)
+# data["err"] = ert.estimateError(data, relativeError=0.025, absoluteUError=100e-6)
 
 # %%%
 # We create an ERT manager and invert the data, already using a rather low value for
