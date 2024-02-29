@@ -394,8 +394,8 @@ def __Mesh_findPaths__(self, bounds):
             path.append(cID)
             #try:
             #print('pop-r', (rID, cID))
-            S.pop((rID, cID))
-            S.pop((cID, rID))
+            del S[(rID, cID)]
+            del S[(cID, rID)]
 
             col = S[:, cID]
 
@@ -404,8 +404,8 @@ def __Mesh_findPaths__(self, bounds):
                 path.append(rID)
                 # print('add', rID)
                 # print('pop-c', (rID, cID))
-                S.pop((rID, cID))
-                S.pop((cID, rID))
+                del S[(rID, cID)]
+                del S[(cID, rID)]
                 # print('pop-s', (rID, cID))
 
                 row = S[rID]
