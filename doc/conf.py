@@ -324,7 +324,8 @@ html_theme_options = {
         "text": "py<b>GIMLi</b>",
     },
     "secondary_sidebar_items": ["page-toc", "improve-this-page"],
-    "footer_items": ["footer"],
+    "footer_start": ["footer_start"],
+    "footer_end": ["footer_end"],
     "pygment_light_style": "friendly",
     "pygment_dark_style": "native",
 }
