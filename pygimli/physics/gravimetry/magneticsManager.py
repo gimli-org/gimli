@@ -200,7 +200,7 @@ class MagManager(MeshMethodManager):
         kwargs.setdefault("logScale", False)
         flt = None
         pl, _ = pg.show(self.mesh_, style="wireframe", hold=True,
-                        alpha=0.1, backend="trame")
+                        alpha=0.1)
         # mm = [min(self.mesh_[label]), min(self.mesh_[label])]
         if trsh > 0:
             flt = {"threshold": dict(value=trsh, scalars=label, invert=invert)}

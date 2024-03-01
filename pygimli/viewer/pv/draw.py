@@ -3,6 +3,7 @@
 
 import os
 import numpy as np
+import matplotlib
 import pygimli as pg
 from .utils import pgMesh2pvMesh
 
@@ -43,7 +44,7 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     showMesh = kwargs.pop('showMesh', False)
     grid = kwargs.pop('grid', False)
     colorBar = kwargs.pop('colorBar', style != 'wireframe')
-    if os.environ['PYVISTA_BUILDING_GALLERY'] == "true":
+    if pv.BUILDING_GALLERY:
         bc = "#ffffff"
     else:
         bc = kwargs.pop('bc', '#EEEEEE')  # background color

@@ -25,6 +25,10 @@ p.title.logo__title {
     font-size: 1.7rem;
 }
 
+.sidebar-header-items__title {
+  visibility: hidden;
+}
+
 /* a {
     color: #337AB7
 } */

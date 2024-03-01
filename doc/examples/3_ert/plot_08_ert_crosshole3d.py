@@ -129,7 +129,7 @@ mgr.invert(mesh=mesh, zWeight=0.3, verbose=True)
 
 pd = mgr.paraDomain
 pd["res"] = mgr.model
-pl, _ = pg.show(pd, label="res", style="surface", cMap="Spectral_r", hold=1,
+pl, _ = pg.show(pd, label="res", style="surface", cMap="Spectral_r", hold=True,
                 filter={"clip": dict(normal=[1, 1, 0], origin=[2, 2, -6])})
 pl.add_points(data.sensors().array(), color="magenta")
 pl.camera_position = "yz"
