@@ -166,7 +166,7 @@ def fitReciprocalErrorModel(data, nBins=None, show=False, rel=False):
         ab, *_ = np.linalg.lstsq(w*G, stdR, rcond=None)
 
     if show:
-        x = np.linspace(min(meanR), max(meanR), 30)
+        x = np.logspace(np.log10(min(meanR)), np.log10(max(meanR)), 30)
         _, ax = pg.plt.subplots()
         if rel:
             ax.semilogx(RR, dR/RR, '.', label='data')  # /RR
