@@ -102,13 +102,16 @@ if (WIN32)
 
 elseif (UNIX AND NOT APPLE)
 	if (READPROC_FOUND)
+        #message(STATUS " add:" ${READPROC_LIBRARIES})
         target_link_libraries(${libgimli_TARGET_NAME} ${CMAKE_DL_LIBS})
 		include_directories(${READPROC_INCLUDE_DIR})
 		target_link_libraries(${libgimli_TARGET_NAME} ${READPROC_LIBRARIES})
 	endif (READPROC_FOUND)
+
 	install(TARGETS ${libgimli_TARGET_NAME} LIBRARY DESTINATION ${LIBRARY_INSTALL_DIR})
+
 endif(WIN32)
 
-install(FILES ${HEADER_FILES} ${PROJECT_BINARY_DIR}/${libgimli_TARGET_NAME}_export.h
-        DESTINATION ${INCLUDE_INSTALL_DIR})
+# install(FILES ${HEADER_FILES} ${PROJECT_BINARY_DIR}/${libgimli_TARGET_NAME}_export.h
+#         DESTINATION ${INCLUDE_INSTALL_DIR})
 
