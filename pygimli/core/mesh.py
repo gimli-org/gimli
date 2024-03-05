@@ -771,6 +771,34 @@ def __Mesh__populate__(self, prop:str, value):
 Mesh.populate = __Mesh__populate__
 
 
+def __Mesh__submesh__(self, relation="=", **kwargs):
+    """Select submesh according to keywords.
+
+    Parameters
+    ----------
+    relation : str
+        logical operation ["=", ">", "<"]
+    kwargs
+        key:val pairs satisfying self[key] OP val
+    """
+    istrue = np.ones(self.cellCount(), dtype=bool)
+    for key, val in kwargs.items():
+        if key not in self.dataKeys():
+            raise IndexError("Property not in mesh: ", key)
+        if relation == ">":
+            isk = self[key] > val
+        elif relation == "<":
+            isk = self[key] < val
+        else:
+            isk = self[key] == val
+
+        istrue = np.bitwise_and(istrue, isk)
+
+    return self.createSubMesh(self.cells(np.nonzero(istrue)[0]))
+
+Mesh.submesh = __Mesh__submesh__
+
+
 def __Mesh__innerBoundaryCenters__(self):
     """Center of all inner boundaries (C1-constraints)."""
     return [b.center() for b in self.boundaries() if not b.outside()]
