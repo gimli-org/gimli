@@ -382,8 +382,6 @@ def __Mesh_findPaths__(self, bounds):
 
     S = scipy.sparse.dok_matrix(pg.utils.toCOO(S))
 
-    # print(S.shape)
-    # print(S)
     paths = []
 
     def followPath(path, S, rID):
@@ -394,9 +392,10 @@ def __Mesh_findPaths__(self, bounds):
             # print('row', rID, 'col', cID)
             # print('add', cID)
             path.append(cID)
-            S.pop((rID, cID))
-            S.pop((cID, rID))
-            # print('pop-r', (rID, cID))
+            #try:
+            #print('pop-r', (rID, cID))
+            del S[(rID, cID)]
+            del S[(cID, rID)]
 
             col = S[:, cID]
 
@@ -405,8 +404,10 @@ def __Mesh_findPaths__(self, bounds):
                 path.append(rID)
                 # print('add', rID)
                 # print('pop-c', (rID, cID))
-                S.pop((rID, cID))
-                S.pop((cID, rID))
+                del S[(rID, cID)]
+                del S[(cID, rID)]
+                # print('pop-s', (rID, cID))
+
                 row = S[rID]
                 if len(row) != 1:
                     break
@@ -738,7 +739,22 @@ Mesh.extent = __Mesh__extent__
 
 
 def __Mesh__populate__(self, prop:str, value):
-    """Fill property of mesh with values from map or vector."""
+    """Fill property of mesh with values from map or vector.
+
+    Parameters
+    ==========
+    prop : str
+        property to be filled, i.e. mesh[prop]
+    value : array|dict|map
+        values to be sorted into field
+        * full length (cellCount) array
+        * array indexing into cell markers
+        * map like [[1, 100], [2, 1000]]
+        * dict like {1: 100, 2: 1000}
+    Return
+    ======
+    field : array (length cellCount)
+    """
     from pygimli.solver import parseMapToCellArray
     if isinstance(value, dict):
         self[prop] =  parseMapToCellArray(value, self)
@@ -749,6 +765,8 @@ def __Mesh__populate__(self, prop:str, value):
             self[prop] = value
         else:
             raise Exception("Length mismatch!")
+
+    return self[prop]
 
 Mesh.populate = __Mesh__populate__
 

@@ -176,7 +176,7 @@ np.testing.assert_array_less(inv.chi2(), 1.2)
 res = inv.run(vals, relativeError=relError, lam=15, C=Cdip)
 print(('Cg-9/2m: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[1, 1], **kw)
-ax[1, 1].set_title("I=[10/2], dip=25")
+ax[1, 1].set_title("I=[9/2], dip=25")
 np.testing.assert_array_less(inv.chi2(), 1.2)
 
 # plot the position of the priors

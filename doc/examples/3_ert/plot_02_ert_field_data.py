@@ -47,7 +47,7 @@ print(data)
 # The data container does not necessarily contain data errors data errors
 # (token field 'err'), requiring us to enter data errors. We can let the
 # manager guess some defaults for us automaticly or set them manually
-data['err'] = ert.estimateError(data, absoluteUError=5e-5, relativeError=0.03)
+data['err'] = ert.estimateError(data, relativeError=0.03, absoluteUError=5e-5)
 # or manually:
 # data['err'] = data_errors  # somehow
 ert.show(data, data['err']*100)

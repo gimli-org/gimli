@@ -488,9 +488,9 @@ class Inversion(object):
             args = ('*',)
 
         if "operator" in kwargs:
-            self.fop.setConstraints(kwargs.pop("operator"))
+            self.fop.setCustomConstraints(kwargs.pop("operator"))
         if "C" in kwargs:
-            self.fop.setConstraints(kwargs.pop("C"))
+            self.fop.setCustomConstraints(kwargs.pop("C"))
 
         if len(kwargs) > 0:
             self.fop.setRegionProperties(*args, **kwargs)

@@ -318,7 +318,7 @@ if gmsh:
 # .. figure:: ../../_static/cad_tutorial/gmsh_fig.png
 #     :align: center
 #
-#     Gmsh visualizatin of the modelling mesh of the dike, with visibility dialog.
+#     Gmsh visualization of the modelling mesh of the dike, with visibility dialog.
 #
 # Additional very useful material
 # -------------------------------

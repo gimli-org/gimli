@@ -107,7 +107,7 @@ def getResistance(data):
     elif data.haveData('u') and data.haveData('i'):
         R = data['u'] / data['i']
     else:  # neither R or U/I
-        if data.allNonZero('k'):
+        if not data.allNonZero('k'):
             data['k'] = createGeometricFactors(data)
 
         if data.haveData('rhoa'):
@@ -166,7 +166,7 @@ def fitReciprocalErrorModel(data, nBins=None, show=False, rel=False):
         ab, *_ = np.linalg.lstsq(w*G, stdR, rcond=None)
 
     if show:
-        x = np.linspace(min(meanR), max(meanR), 30)
+        x = np.logspace(np.log10(min(meanR)), np.log10(max(meanR)), 30)
         _, ax = pg.plt.subplots()
         if rel:
             ax.semilogx(RR, dR/RR, '.', label='data')  # /RR
@@ -194,10 +194,19 @@ def fitReciprocalErrorModel(data, nBins=None, show=False, rel=False):
 def reciprocalProcessing(data, rel=True, maxrec=0.2, maxerr=0.2):
     """Reciprocal data analysis and error estimation.
 
+    Carry out workflow for reciprocal
+    * identify normal reciprocal pairs
+    * fit error model to it
+    * estimate error for all measurements
+    * remove one of the pairs (and duplicates) by averaging
+    * filter the data for maximum reciprocity and error
+
     Parameters
     ----------
     out : pg.DataContainerERT
         input data container with possible
+    rel : bool
+        base analysis on relative instead of absolute errors
     maxrec : float [0.2]
         maximum reciprocity allowed in data
     maxerr : float [0.2]
@@ -206,7 +215,7 @@ def reciprocalProcessing(data, rel=True, maxrec=0.2, maxerr=0.2):
     Returns
     -------
     out : pg.DataContainerERT
-        filtered data container with pairs removed
+        filtered data container with pairs removed/averaged
     """
     out = data.copy()
     out.averageDuplicateData()
@@ -219,7 +228,6 @@ def reciprocalProcessing(data, rel=True, maxrec=0.2, maxerr=0.2):
     dRbyR = np.abs(R[iF]-R[iB]) / meanR
     out['rec'] = 0
     out['rec'][iF] = dRbyR
-    # out['rec'][iB] = dRbyR # deleted anyway
     out.markInvalid(out['rec'] > maxrec)
     ab = fitReciprocalErrorModel(out, rel=rel)
     if rel:

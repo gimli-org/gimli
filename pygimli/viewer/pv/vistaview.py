@@ -5,8 +5,10 @@
 import pygimli as pg
 
 pyvista = pg.optImport("pyvista", requiredFor="properly visualize 3D data")
-trame = pg.optImport("trame", requiredFor="use interactive 3D visualizations" +
-                     " within Jupyter notebooks")
+trame = pg.optImport(
+    "trame",
+    requiredFor="use interactive 3D visualizations within Jupyter notebooks",
+)
 
 if pyvista is None:
     view3Dcallback = "showMesh3DFallback"
@@ -18,8 +20,7 @@ else:
     vers_needf = 0.340
 
     if vers_userf < vers_needf:
-        pg.warn("Please consider updating PyVista to at least {}".format(
-            vers_needs))
+        pg.warn("Please consider updating PyVista to at least {}".format(vers_needs))
 
     from .draw import drawModel
 
@@ -79,7 +80,7 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     Not having PyQt5 installed results in displaying the first key
     (and values) from the dictionary.
     """
-    # for compatibiliy remove show kwargs that are not needed
+    # for compatibility remove show kwargs that are not needed
     kwargs.pop("figsize", False)
 
     hold = kwargs.pop("hold", False)
@@ -93,42 +94,38 @@ def showMesh3DVista(mesh, data=None, **kwargs):
 
     gui = kwargs.pop("gui", False)
 
-    # add given data from argument
     # GUI tmp deactivated
     if gui:
-        pg.error('pyqt show gui currently not maintained')
+        pg.error("pyqt show gui currently not maintained")
         return None
-        # app = Qt.QApplication(sys.argv)
-        # s3d = Show3D(app)
-        # s3d.addMesh(mesh, data, cMap=cMap, **kwargs)
-        # if not hold:
-        #     s3d.wait()
-        # return s3d.plotter, s3d  # plotter, gui
 
-    else:
+    backend = kwargs.pop("backend", "client")
 
-        backend = kwargs.pop("backend", "client")
+    plotter = drawModel(
+        kwargs.pop("ax", None), mesh, data, notebook=notebook, cMap=cMap, **kwargs
+    )
 
-        plotter = drawModel(kwargs.pop("ax", None), mesh, data,
-                            notebook=notebook, cMap=cMap, **kwargs)
+    # seems top be broken on some machines
+    if kwargs.get("aa", False):
+        plotter.enable_anti_aliasing()
 
-        # seems top be broken on some machines
-        if kwargs.get('aa', False):
-            plotter.enable_anti_aliasing()
+    if notebook is True:
+        # monkeypatch show of this plotter instance so we can use multiple
+        # backends and only plotter.show() .. whoever this needs.
+        plotter.__show = plotter.show
+        plotter.show = lambda *args, **kwargs: plotter.__show(
+            *args, jupyter_backend=backend, **kwargs
+        )
+    elif pg.viewer.mpl.isInteractive():
+        plotter.__show = plotter.show
+        plotter.show = (
+            lambda *args, **kwargs: plotter.__show(*args, **kwargs)
+            if pg.viewer.mpl.isInteractive() or pyvista.BUILDING_GALLERY
+            else False
+        )
 
-        if notebook is True:
-            # monkeypatch show of this plotter instance so we can use multiple
-            # backends and only plotter.show() .. whoever this needs.
-            plotter.__show = plotter.show
-            plotter.show = lambda *args, **kwargs: plotter.__show(
-                *args, jupyter_backend=backend, **kwargs)
-        else:
-            plotter.__show = plotter.show
-            plotter.show = lambda *args, **kwargs: plotter.__show(
-                *args, **kwargs) if pg.viewer.mpl.isInteractive() else False
+    if hold is False:
+        plotter.show()
 
-        if hold is False:
-            plotter.show()
-
-        # , None to keep compatability
-        return plotter, None
+    # , None to keep compatibility
+    return plotter, None
