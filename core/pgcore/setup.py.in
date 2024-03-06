@@ -11,17 +11,15 @@ class BinaryDistribution(Distribution):
     def has_ext_modules(foo):
         return True
 
-# libraries=["gfortran"],
-
 HERE = path.abspath(path.dirname(__file__))
 
 CLASSIFIERS = [
     "License :: OSI Approved :: Apache Software License",
     "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python :: Implementation :: CPython",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: C++",
     "Intended Audience :: Education", 
     "Intended Audience :: Science/Research",
@@ -45,18 +43,13 @@ setup(
     #    ).read(),
     #long_description_content_type="text/markdown",
     include_package_data=True,
-    #package_data={
-    #    '': ['core/libs/*']
-    #},
+    package_data={
+        '': ['libs/*']
+    },
     license="Apache 2.0",
     keywords=["inversion", "modelling", "geophysics"],
-    install_requires=['pgcore>=@PGCORE_VERSION_WHL@',
-                      'numpy>=1.25',
-                      'matplotlib>=3.7.0',
-                      'scipy>=1.11.0',
-                      'scooby',
-                      #'pyvista[all,trame]>=0.42',
+    install_requires=['numpy>=1.25',
                       ],
-    #distclass=BinaryDistribution,
+    distclass=BinaryDistribution,
     classifiers=CLASSIFIERS,
 )

@@ -163,7 +163,7 @@ if (GIT_FOUND)
         ERROR_STRIP_TRAILING_WHITESPACE
         )
     message(STATUS, "setting whl version from git description: ${GIMLI_GITVERSION_WHL}")
-    set(LIBGIMLI_VERSION_WHL "${GIMLI_GITVERSION_WHL}.dev1")
+    set(LIBGIMLI_VERSION_WHL "${GIMLI_GITVERSION_WHL}.post0")
 else()
     set(LIBGIMLI_VERSION "untagged")
     set(LIBGIMLI_VERSION_WHL "untagged")
@@ -602,7 +602,6 @@ if (NOT CASTER)
     endif()
 endif()
 
-
 find_program(CLANG_EXECUTABLE clang)
 find_or_build_package(castxml castxml LOCAL)
 set(CASTER_EXECUTABLE ${CASTXML_EXECUTABLE})
@@ -801,6 +800,26 @@ include_directories(${libgimli_SOURCE_DIR}/core/src)
 include_directories("${PROJECT_BINARY_DIR}")
 
 ################################################################################
+# add virtual env for whl package test
+################################################################################
+set(PYTHON_VIRTUAL_ENV "${CMAKE_BINARY_DIR}/wheeltest_venv")
+if (NOT EXISTS "${PYTHON_VIRTUAL_ENV}")
+    message(STATUS "Creating virtual python environment for testing [${PYTHON_VIRTUAL_ENV}]")
+    execute_process(COMMAND "${Python_EXECUTABLE}" -m venv "${PYTHON_VIRTUAL_ENV}")
+else ()
+    message(STATUS "Using virtual python environment for testing [${PYTHON_VIRTUAL_ENV}]")
+endif ()
+
+# update the environment with VIRTUAL_ENV variable (mimic the activate script) and search again
+set(ENV{VIRTUAL_ENV} "${PYTHON_VIRTUAL_ENV}")
+set(Python3_FIND_VIRTUALENV ONLY)
+unset(Python3_EXECUTABLE)
+find_package(Python3 COMPONENTS Interpreter)
+
+message(STATUS "Found python executable for building: ${Python_EXECUTABLE}")
+message(STATUS "Found python executable for testing (venv): ${Python3_EXECUTABLE}")
+
+################################################################################
 # descend into subdirs
 ################################################################################
 
@@ -812,4 +831,5 @@ add_subdirectory(core/src)
 add_subdirectory(core/tests EXCLUDE_FROM_ALL)
 
 add_subdirectory(core/python EXCLUDE_FROM_ALL)
+add_subdirectory(core/pgcore)
 add_subdirectory(pygimli)

@@ -3,7 +3,8 @@ from setuptools.dist import Distribution
 
 class BinaryDistribution(Distribution):
     def has_ext_modules(foo):
-        return False
+        return True
+
 
 def wheel_name(**kwargs):
     # create a fake distribution from arguments
