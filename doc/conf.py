@@ -334,7 +334,7 @@ import datetime
 today = datetime.datetime.now()
 webinar = datetime.datetime(2024, 3, 19) 
 if today < webinar:
-    html_theme_options["announcement"] = "There will be a webinar on pyGIMLi hosted by SEG on March 19, 2024 at 5 pm CET. Watch this space!"
+    html_theme_options["announcement"] = "There will be a webinar on pyGIMLi hosted by SEG on March 19, 2024 at 4 pm CET. Watch this space!"
 
 html_css_files = [
     "css/custom.css",
