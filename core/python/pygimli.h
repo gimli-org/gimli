@@ -199,6 +199,9 @@ namespace GIMLI{
     inline RDenseMatrix operator OP (const RDenseMatrix & a, const RDenseMatrix & b){ \
          RDenseMatrix ret(a);   ret OP##=b; return ret; } \
         /*!*/ \
+    inline R3Vector operator OP (const R3Vector & a, const R3Vector & b){ \
+        ASSERT_EQUAL_SIZE(a, b) \
+        R3Vector ret(a); for (Index i = 0; i < a.size(); i ++) ret[i] = a[i] OP b[i]; return ret; } \
     inline R3Vector operator OP (const R3Vector & a, const RVector & b){ \
         ASSERT_EQUAL_SIZE(a, b) \
         R3Vector ret(a); for (Index i = 0; i < a.size(); i ++) ret[i] = a[i] OP b[i]; return ret; } \

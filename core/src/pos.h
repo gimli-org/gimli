@@ -62,7 +62,6 @@ DLLEXPORT void deVectorizeRVectorToPosVectorList(std::vector < RVector > & ret,
                                             int marker, 
                                             const ElementMatrixMap & eMap);
 
-
 DLLEXPORT RVector absR3(const R3Vector & vPos);
 
 //DLLEXPORT std::Vector< RVector > fabs(const std::vector < R3Vector > & v);

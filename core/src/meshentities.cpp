@@ -380,6 +380,34 @@ RVector3 MeshEntity::grad(const RVector3 & xyz, const RVector & u) const {
     return gr;
 }
 
+RMatrix MeshEntity::grad(const RVector3 & xyz, const R3Vector & u) const {
+
+    RVector3 rst(shape_->rst(xyz));
+
+    RMatrix MdNdL;
+    MdNdL.push_back(dNdL(rst, 0));
+    MdNdL.push_back(dNdL(rst, 1));
+    MdNdL.push_back(dNdL(rst, 2));
+
+    RMatrix gr(3,3);
+    
+    RVector up0(x(u(this->ids())));
+    RVector up1(y(u(this->ids())));
+    RVector up2(z(u(this->ids())));
+    gr[0][0] = sum(up0 * MdNdL.transMult(shape_->invJacobian().col(0)));
+    gr[0][1] = sum(up0 * MdNdL.transMult(shape_->invJacobian().col(1)));
+    gr[0][2] = sum(up0 * MdNdL.transMult(shape_->invJacobian().col(2)));
+    
+    gr[1][0] = sum(up1 * MdNdL.transMult(shape_->invJacobian().col(0)));
+    gr[1][1] = sum(up1 * MdNdL.transMult(shape_->invJacobian().col(1)));
+    gr[1][2] = sum(up1 * MdNdL.transMult(shape_->invJacobian().col(2)));
+    
+    gr[2][0] = sum(up2 * MdNdL.transMult(shape_->invJacobian().col(0)));
+    gr[2][1] = sum(up2 * MdNdL.transMult(shape_->invJacobian().col(1)));
+    gr[2][2] = sum(up2 * MdNdL.transMult(shape_->invJacobian().col(2)));
+    return gr;
+}
+
 void MeshEntity::changed(){
     this->shape_->changed();
 }
