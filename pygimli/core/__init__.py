@@ -939,7 +939,8 @@ pgcore.stdVectorRVector.__array_ufunc__ = __stdVectorRVector__array_ufunc__
 # stdVectorR3Vector operators
 ##################################
 
-def __stdVectorR3Vector_BIOP__(self, b, OP):
+def __stdVectorR3Vector_BINARY_OP__(self, b, OP):
+    
     ret = pgcore.stdVectorR3Vector()
     
     if isScalar(b):
@@ -970,7 +971,7 @@ pgcore.stdVectorR3Vector.__abs__ = __stdVectorR3Vector_ABS__
 
 for _OP in __BINOP__:
     def _closure(OP):
-        return lambda a, b: __stdVectorR3Vector_BIOP__(a, b, OP)
+        return lambda a, b: __stdVectorR3Vector_BINARY_OP__(a, b, OP)
     setattr(pgcore.stdVectorR3Vector, _OP, _closure(_OP))
 
 

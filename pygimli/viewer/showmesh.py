@@ -503,11 +503,11 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             gci.set_antialiased(True)
             gci.set_linewidth(0.3)
             gci.set_edgecolor(kwargs.pop('color', "0.1"))
+            drawMesh(ax, mesh, **kwargs)
         else:
             pg.viewer.mpl.drawSelectedMeshBoundaries(
                 ax, mesh.boundaries(), color=kwargs.pop('color', "0.1"),
                 linewidth=0.3)
-            # drawMesh(ax, mesh, **kwargs)
 
     if bool(showBoundary) is True:
         b = mesh.boundaries(mesh.boundaryMarkers() != 0)
