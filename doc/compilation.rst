@@ -6,7 +6,7 @@ Building from source
 ====================
 
 Choose your operating system for more information, in particular on
-alternative ways of installation or compilation from source:<br><br>
+alternative ways of installation or compilation from source:
 
 .. tab-set::
 

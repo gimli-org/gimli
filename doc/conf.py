@@ -257,7 +257,6 @@ copyright = f"{year} - pyGIMLi Development Team"
 #
 # The short X.Y version.
 version = pg.__version__
-install_version = pg.__version__.split("+")[0]
 
 rst_epilog = """
 .. |version| replace:: pyGIMLi {versionnum}
@@ -329,6 +328,13 @@ html_theme_options = {
     "pygment_light_style": "friendly",
     "pygment_dark_style": "native",
 }
+
+# Temp: SEG announcement
+import datetime
+today = datetime.datetime.now()
+webinar = datetime.datetime(2024, 3, 19) 
+if today < webinar:
+    html_theme_options["announcement"] = "There will be a webinar on pyGIMLi hosted by SEG on March 19, 2024 at 5 pm CET. Watch this space!"
 
 html_css_files = [
     "css/custom.css",

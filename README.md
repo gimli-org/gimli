@@ -16,11 +16,11 @@ Readme for Github repository only. (Gets selected before *.rst file)
 
 What is pyGIMLi suited for?
 
--   analyze, visualize and invert geophysical data in a reproducible manner
--   forward modelling of (geo)physical problems on complex 2D and 3D geometries
--   inversion with flexible controls on a-priori information and regularization
--   combination of different methods in constrained, joint and fully-coupled inversions
--   teaching applied geophysics (e.g. in combination with [Jupyter notebooks])
+- analyze, visualize and invert geophysical data in a reproducible manner
+- forward modelling of (geo)physical problems on complex 2D and 3D geometries
+- inversion with flexible controls on a-priori information and regularization
+- combination of different methods in constrained, joint and fully-coupled inversions
+- teaching applied geophysics (e.g. in combination with [Jupyter notebooks])
 
 What is pyGIMLi **NOT** suited for?
 
@@ -39,7 +39,11 @@ On all platforms, we recommend to install pyGIMLi via the conda package manager
 contained in the Anaconda distribution. For details on how to install Anaconda,
 we refer to: https://docs.anaconda.com/anaconda/install/
 
-To avoid conflicts with other packages, we recommend to install pygimli in a
+Note that Anaconda comes with many (great) packages, many of which you likely
+will not use. If you want to save space, you can install the [light-weight
+version Miniconda](https://docs.anaconda.com/free/miniconda/miniconda-install/).
+
+To avoid conflicts with other packages, we recommend to install pyGIMLi in a
 separate environment. Here we call this environment pg, but you can give it any
 name. Note that this environment has to be created only once.
 
