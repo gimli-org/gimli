@@ -25,4 +25,6 @@ dependencies:
   - scooby
   - sphinx-design
   - pydata-sphinx-theme
+  - trame-vtk
+  - conda-build
 
