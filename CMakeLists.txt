@@ -812,6 +812,8 @@ find_package(Python3 COMPONENTS Interpreter)
 message(STATUS "Found python executable for building: ${Python_EXECUTABLE}")
 message(STATUS "Found python executable for testing (venv): ${Python3_EXECUTABLE}")
 
+set(WHEELHOUSE ${CMAKE_BINARY_DIR}/wheelhouse)
+
 ################################################################################
 # define test and checks
 ################################################################################

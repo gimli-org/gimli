@@ -44,8 +44,8 @@ else()
         configure_file("${filename}" "${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}/${filename}" COPYONLY)
     endforeach (filename)
     
-    add_custom_target(whl${TARGET_NAME}PackageBuild #DEPENDS whlCopyLibs
-        COMMAND "${Python_EXECUTABLE}" -m pip wheel . --wheel-dir=${CMAKE_BINARY_DIR}/wheelhouse --find-links ${CMAKE_BINARY_DIR}/wheelhouse/
+    add_custom_target(whl${TARGET_NAME}PackageBuild DEPENDS whlpgcore
+        COMMAND "${Python_EXECUTABLE}" -m pip wheel . --wheel-dir=${WHEELHOUSE} --find-links ${WHEELHOUSE}
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
         COMMENT "Building python wheel package for ${TARGET_NAME}"
     )
@@ -54,9 +54,9 @@ else()
     
     ## test the wheel: make whlTest
     # update the environment with VIRTUAL_ENV variable (mimic the activate script) and search again
-    add_custom_target(whl${TARGET_NAME}TestInstall DEPENDS whl${TARGET_NAME} whlpgcoreTestRun
+    add_custom_target(whl${TARGET_NAME}TestInstall DEPENDS whl${TARGET_NAME} DEPENDS whlpgcoreTestRun
         COMMAND "${Python3_EXECUTABLE}" -m pip uninstall -y ${TARGET_NAME}
-        COMMAND "${Python3_EXECUTABLE}" -m pip install ${TARGET_NAME} --find-links=${CMAKE_BINARY_DIR}/wheelhouse
+        COMMAND "${Python3_EXECUTABLE}" -m pip install ${TARGET_NAME} --find-links=${WHEELHOUSE}
         COMMENT "Installing ${TARGET_NAME} in virtual test environment"
     )
     add_custom_target(whl${TARGET_NAME}TestRun DEPENDS whl${TARGET_NAME}TestInstall
@@ -70,7 +70,7 @@ else()
     
     ## deploy the wheel: make whlDeploy
     add_custom_target(whl${TARGET_NAME}Deploy DEPENDS whl${TARGET_NAME}Test
-        COMMAND "${Python_EXECUTABLE}" -m twine upload --repository testpypi ${CMAKE_BINARY_DIR}/wheelhouse/${PY_WHEELFILE}
+        COMMAND "${Python_EXECUTABLE}" -m twine upload --repository testpypi ${WHEELHOUSE}/${PY_WHEELFILE}
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
         COMMENT "Upload python wheel package ${PY_WHEELFILE_OUTPLATFORM} to 'testpypi' repository"
     )

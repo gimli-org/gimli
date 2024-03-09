@@ -47,7 +47,7 @@ else()
     )
     if (OS_VAR STREQUAL "almalinux")
         ## all other libs ar copied by auditwheel
-        set(BINDEPS_LIBS <TARGET_FILE:_pygimli_>)
+        set(BINDEPS_LIBS $<TARGET_FILE:_pygimli_>)
     else()
         ## copy important libs
         set(BINDEPS_LIBS 
@@ -64,13 +64,13 @@ else()
     endforeach(file)
 
     add_custom_target(whl${TARGET_NAME}PackageBuild DEPENDS whl${TARGET_NAME}CopyLibs
-        COMMAND "${Python_EXECUTABLE}" -m pip wheel --wheel-dir=${CMAKE_BINARY_DIR}/wheelhouse .
+        COMMAND "${Python_EXECUTABLE}" -m pip wheel --wheel-dir=${WHEELHOUSE} .
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
         COMMENT "Building python wheel package for ${TARGET_NAME}"
     )
     if (OS_VAR STREQUAL "almalinux")
         add_custom_target(whl${TARGET_NAME}PackageRepair DEPENDS whl${TARGET_NAME}PackageBuild
-            COMMAND "auditwheel" repair ./wheelhouse/${PY_WHEELFILE}
+            COMMAND "auditwheel" repair ${WHEELHOUSE}/${PY_WHEELFILE}
             WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
             COMMENT "Building python wheel package at: ${CMAKE_CURRENT_BINARY_DIR}"
         )
@@ -84,7 +84,7 @@ else()
     ## test the wheel: make whlTest
     add_custom_target(whl${TARGET_NAME}TestInstall DEPENDS whl${TARGET_NAME}
         COMMAND "${Python3_EXECUTABLE}" -m pip uninstall -y ${TARGET_NAME}
-        COMMAND "${Python3_EXECUTABLE}" -m pip install ${TARGET_NAME} --find-links=${CMAKE_BINARY_DIR}/wheelhouse
+        COMMAND "${Python3_EXECUTABLE}" -m pip install ${TARGET_NAME} --find-links=${WHEELHOUSE}
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMENT "Installing ${TARGET_NAME} in virtual test environment"
     )
