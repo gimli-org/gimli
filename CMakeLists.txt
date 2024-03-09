@@ -16,7 +16,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/core/cmake")
 include(GIMLImacros)
 
-add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
+
 add_custom_target(pygimli)
 
 if (NOT CMAKE_BUILD_TYPE)
@@ -236,7 +236,7 @@ if (OS_VAR STREQUAL "almalinux")
     find_package(Python ${PYVERSION} COMPONENTS NumPy REQUIRED)
 else()
     find_package(Python ${PYVERSION} EXACT COMPONENTS Interpreter REQUIRED)
-    find_package(Python ${PYVERSION} EXACT COMPONENTS Development.Module REQUIRED)
+    find_package(Python ${PYVERSION} EXACT COMPONENTS Development REQUIRED)
     find_package(Python ${PYVERSION} EXACT COMPONENTS NumPy REQUIRED)
 endif()
 
@@ -252,7 +252,12 @@ message(STATUS "Python_SITELIB: ${Python_SITELIB}")
 message(STATUS "Python_SITEARCH: ${Python_SITEARCH}")
 message(STATUS "Python_SOABI: ${Python_SOABI}")
 message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
+message(STATUS "Python_Development_FOUND: ${Python_Development_FOUND}")
+message(STATUS "Python_Development.Embed_FOUND: ${Python_Development.Embed_FOUND}")
+message(STATUS "Python_Development.Embed: $<TARGET_FILE:Python::Python>")
 message(STATUS "Python_Development.Module_FOUND: ${Python_Development.Module_FOUND}")
+message(STATUS "Python_Development.Module: $<TARGET_FILE:Python::Module>")
+message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES}")
 message(STATUS "Python_LINK_OPTIONS: ${Python_LINK_OPTIONS}")
 message(STATUS "Python_VERSION: ${Python_VERSION}")
 message(STATUS "Python_NumPy: ${Python_NumPy_FOUND}, ${Python_NumPy_INCLUDE_DIRS}, ${Python_NumPy_VERSION}")
@@ -668,6 +673,12 @@ if (SPHINX_FOUND AND NOT SKIP_SPHINX)
         COMMAND ${SPHINX_EXECUTABLE} --version
         OUTPUT_VARIABLE SPHINX_VERSION
     )
+
+    add_custom_target(removedoc
+       COMMAND
+       ${CMAKE_MAKE_PROGRAM} clean -f ${CMAKE_CURRENT_BINARY_DIR}/doc/
+    )
+
 endif()
 
 message(STATUS "**********************************************************************")
@@ -724,24 +735,6 @@ endif()
 configure_file("${PROJECT_SOURCE_DIR}/core/config.cmake.h.in"
                "${PROJECT_BINARY_DIR}/config.cmake.h" )
 add_definitions(-DHAVE_CONFIG_CMAKE_H)
-
-add_custom_target(removedoc
-   COMMAND
-       ${CMAKE_MAKE_PROGRAM} clean -f ${CMAKE_CURRENT_BINARY_DIR}/doc/
-)
-add_custom_target(checkall
-    DEPENDS
-      doc
-      #linkcheck
-)
-#add_dependencies(doc removedoc)
-
-# Add if pytest found?
-add_dependencies(checkall pgtest)
-if (CPPUNIT_FOUND)
-    add_dependencies(checkall gtest)
-endif (CPPUNIT_FOUND)
-
 
 ################################################################################
 # Define the configurable options
@@ -820,16 +813,29 @@ message(STATUS "Found python executable for building: ${Python_EXECUTABLE}")
 message(STATUS "Found python executable for testing (venv): ${Python3_EXECUTABLE}")
 
 ################################################################################
+# define test and checks
+################################################################################
+# if (LIBGIMLI_BUILD_TESTS)
+#      enable_testing()
+# endif(LIBGIMLI_BUILD_TESTS)
+
+
+
+
+################################################################################
 # descend into subdirs
 ################################################################################
-
-if (LIBGIMLI_BUILD_TESTS)
-     enable_testing()
-endif(LIBGIMLI_BUILD_TESTS)
-
 add_subdirectory(core/src)
 add_subdirectory(core/tests EXCLUDE_FROM_ALL)
 
 add_subdirectory(core/python EXCLUDE_FROM_ALL)
 add_subdirectory(core/pgcore)
 add_subdirectory(pygimli)
+
+add_custom_target(check)
+if (CPPUNIT_FOUND)
+    add_dependencies(check gtest)
+endif (CPPUNIT_FOUND)
+add_dependencies(check pgtest)
+
+add_custom_target(checkall DEPENDS doc)

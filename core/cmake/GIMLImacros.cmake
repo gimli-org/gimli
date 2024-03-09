@@ -53,7 +53,6 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
         
     #TODO check!! (python3-config --extension-suffix)
 
-    
     if (APPLE)
         # set(GIMLI_LIBRARY "${CMAKE_BINARY_DIR}/${LIBRARY_INSTALL_DIR}/libgimli.dylib")
         target_link_libraries(${PYTHON_TARGET_NAME} "-bundle -undefined dynamic_lookup")
@@ -97,6 +96,7 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
                                 DEFINE_SYMBOL "MS_WIN64")
         endif()
     endif()
+    
     
     #--copy pattern files to build folder--
     ## needed?

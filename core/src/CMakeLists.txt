@@ -40,7 +40,15 @@ endif (UMFPACK_FOUND)
 
 if (PYTHON_FOUND)
     include_directories(${Python_INCLUDE_DIRS})
+
+    # needed since the later doesnt seems to work
     target_link_libraries(${libgimli_TARGET_NAME} ${Python_LIBRARIES})
+    
+    if (Python_Development.Module_FOUND)
+        target_link_libraries(${libgimli_TARGET_NAME} Python::Module)
+    else()
+        target_link_libraries(${libgimli_TARGET_NAME} ${Python_LIBRARIES})
+    endif()
 endif (PYTHON_FOUND)
 
 if (Boost_INCLUDE_DIR)
@@ -73,6 +81,21 @@ if (USE_BOOST_THREAD)
         target_link_libraries(${libgimli_TARGET_NAME} ${Boost_SYSTEM_LIBRARIES})
     endif (Boost_SYSTEM_FOUND)
 endif(USE_BOOST_THREAD)
+
+## copy libgimli.so INSOURCE so we can use and develop there directly
+set(INSOURCE_LIBRARIES_DIR ${CMAKE_SOURCE_DIR}/pygimli/core/libs/ )
+add_custom_command(TARGET ${libgimli_TARGET_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${INSOURCE_LIBRARIES_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${libgimli_TARGET_NAME}> ${INSOURCE_LIBRARIES_DIR}
+    COMMENT "copy $<TARGET_FILE:gimli> to ${INSOURCE_LIBRARIES_DIR}"
+)
+
+# add_custom_target(copyLibGIMLi_INSOURCE DEPENDS gimli
+# COMMAND
+#     cmake -E copy_if_different $<TARGET_FILE:gimli> ${OUTDIR}
+# COMMENT "copy $<TARGET_FILE:gimli> to ${OUTDIR}"
+# )
+
 
 
 if (APPLE)

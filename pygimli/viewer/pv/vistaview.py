@@ -123,6 +123,13 @@ def showMesh3DVista(mesh, data=None, **kwargs):
             if pg.viewer.mpl.isInteractive() or pyvista.BUILDING_GALLERY
             else False
         )
+    else:
+        ## on default skipp showing if forced, e.g., by test with show=False
+        plotter.__show = plotter.show
+        plotter.show = (
+            lambda *args, **kwargs: plotter.__show(*args, **kwargs)
+            if pg.rc['pyvista.backend'] is not None else False
+        )
 
     if hold is False:
         plotter.show()

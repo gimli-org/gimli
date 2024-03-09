@@ -2,10 +2,15 @@
 """
 Basic import of gimli core extension.
 """
-import sys
+import sys, os
 
-# if sys.platform == 'win32':
-#     os.environ['PATH'] = os.path.abspath(__file__) + ';' + os.environ['PATH']
+if sys.platform == 'win32':
+    os.environ['PATH'] = os.path.join(os.path.dirname(__file__), 'libs') + ':' + os.environ['PATH']
+    #print(os.environ['LD_LIBRARY_PATH'])
+elif sys.platform == 'linux':
+    if os.getenv('LD_LIBRARY_PATH'):
+        os.environ['LD_LIBRARY_PATH'] = os.path.join(os.path.dirname(__file__), 'libs') + ':' + os.environ['LD_LIBRARY_PATH']
+    #print(os.environ['LD_LIBRARY_PATH'])
 
 _pygimli_ = None
 

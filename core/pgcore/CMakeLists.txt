@@ -66,7 +66,7 @@ else()
     add_custom_target(whl${TARGET_NAME}PackageBuild DEPENDS whl${TARGET_NAME}CopyLibs
         COMMAND "${Python_EXECUTABLE}" -m pip wheel --wheel-dir=${CMAKE_BINARY_DIR}/wheelhouse .
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-        COMMENT "Building python wheel package"
+        COMMENT "Building python wheel package for ${TARGET_NAME}"
     )
     if (OS_VAR STREQUAL "almalinux")
         add_custom_target(whl${TARGET_NAME}PackageRepair DEPENDS whl${TARGET_NAME}PackageBuild
@@ -85,12 +85,13 @@ else()
     add_custom_target(whl${TARGET_NAME}TestInstall DEPENDS whl${TARGET_NAME}
         COMMAND "${Python3_EXECUTABLE}" -m pip uninstall -y ${TARGET_NAME}
         COMMAND "${Python3_EXECUTABLE}" -m pip install ${TARGET_NAME} --find-links=${CMAKE_BINARY_DIR}/wheelhouse
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMENT "Installing ${TARGET_NAME} in virtual test environment"
     )
     add_custom_target(whl${TARGET_NAME}TestRun DEPENDS whl${TARGET_NAME}TestInstall
         COMMAND ${Python3_EXECUTABLE} -c "import pgcore; print(pgcore.versionStr())"
         VERBATIM
-        COMMENT "Running pygimli installation in virtual test environment. ${Python3_EXECUTABLE} -c \'import pgcore; pgcore.versionStr()\'"
+        COMMENT "Testing ${TARGET_NAME} installation in virtual test environment. ${Python3_EXECUTABLE} -c \'import pgcore; pgcore.versionStr()\'"
     )
     add_custom_target(whl${TARGET_NAME}Test DEPENDS whl${TARGET_NAME}TestRun)
 

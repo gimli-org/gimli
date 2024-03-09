@@ -5,7 +5,9 @@ file (GLOB unitTest_HEADERS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" *.h)
 #set(WITH_MEMCHECK TRUE)
 #set(WITH_COVERAGE TRUE)
 
-add_executable(gimliUnitTest unitTest.cpp ${unitTest_HEADERS})
+set(TARGET_NAME gimliUnitTest)
+
+add_executable(${TARGET_NAME} unitTest.cpp ${unitTest_HEADERS})
 
 if (CPPUNIT_FOUND)
 
@@ -13,21 +15,24 @@ add_definitions(-DHAVE_UNITTEST)
     
     include_directories(${CPPUNIT_INCLUDE_DIR})
     
-    target_link_libraries(gimliUnitTest ${CPPUNIT_LIBRARIES})
-    target_link_libraries(gimliUnitTest gimli)
+    target_link_libraries(${TARGET_NAME} gimli)
+    target_link_libraries(${TARGET_NAME} ${CPPUNIT_LIBRARIES})
+    
+    # target_link_libraries(${TARGET_NAME} ${Python_LIBRARIES})
         
-    add_dependencies(check gimliUnitTest)
+    # if (Python_Development.Module_FOUND)
+    #     target_link_libraries(${TARGET_NAME} Python::Module)
+    # else()
+    #     target_link_libraries(${TARGET_NAME} ${Python_LIBRARIES})
+    # endif()
 
-    ADD_CUSTOM_TARGET(gtest)
-    ADD_CUSTOM_COMMAND(
-        COMMAND
-            ${CMAKE_BINARY_DIR}/bin/gimliUnitTest
-        TARGET
-            gtest
+    add_dependencies(${TARGET_NAME} gimli)
+    
+    ADD_CUSTOM_TARGET(gtest DEPENDS ${TARGET_NAME}
+        COMMAND ${CMAKE_BINARY_DIR}/bin/${TARGET_NAME}
     )
-
-    add_dependencies(gimliUnitTest gimli)
-    add_dependencies(gtest gimliUnitTest)
+    
+    #add_dependencies(check gtest)
 
     # add_test(
     #     NAME 
