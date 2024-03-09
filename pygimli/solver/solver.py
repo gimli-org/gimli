@@ -2193,7 +2193,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         c \frac{\partial u}{\partial t} & = \nabla\cdot(a \nabla u)
         + b u + f(\mathbf{r},t)~~|~~\Omega_{\text{Mesh}}\\
         u & = h~~|~~\Gamma_{\text{Dirichlet}}\\
-        \frac{\partial u}{\partial \mathbf{n}} & =
+        a\frac{\partial u}{\partial \mathbf{n}} & =
         g~~|~~\Gamma_{\text{Neumann}}\\
         \alpha u + \beta\frac{\partial u}{\partial \mathbf{n}} & =
         \gamma~~|~~\Gamma_{\text{Robin}}\\
@@ -2248,6 +2248,10 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         indices can by be given. e.g., bc={'Node': [nodeID, value]}.
         Note this is only a shortcut for
         bc={'Dirichlet': [mesh.node(nodeID), value]}.
+
+        The parameter $a$ for Neumann boundary condition is choosen 
+        automatically from the diffusivity parameter $a$ of the associated cell. 
+
     times: array [None]
         Solve as time dependent problem for the given times.
 

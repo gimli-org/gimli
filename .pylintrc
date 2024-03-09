@@ -36,7 +36,7 @@ extension-pkg-whitelist=
 # operator. Joining a lot of strings can lead to a maximum recursion error in
 # Pylint and this flag can prevent that. It has one side effect, the resulting
 # AST will be different than the one from reality.
-optimize-ast=no
+# optimize-ast=no
 
 
 [MESSAGES CONTROL]
@@ -74,7 +74,7 @@ output-format=text
 # Put messages in a separate file for each module / package specified on the
 # command line instead of printing them on stdout. Reports (if any) will be
 # written in a file name "pylint_global.[txt|html]".
-files-output=no
+# files-output=no
 
 # Tells whether to display a full report or only the messages
 reports=yes
@@ -104,7 +104,13 @@ ignore-long-lines=^\s*(# )?<?https?://\S+>?$
 single-line-if-stmt=no
 
 # List of optional constructs for which whitespace checking is disabled
-no-space-check=trailing-comma,dict-separator
+# no-space-check=trailing-comma,dict-separator
+
+# Unrecognized option found: optimize-ast, files-output, no-space-check, 
+# bad-functions, function-name-hint, method-name-hint, const-name-hint, 
+# argument-name-hint, class-attribute-name-hint, attr-name-hint, module-name-hint, 
+# class-name-hint, inlinevar-name-hint, variable-name-hint
+# PylintE0015:unrecognized-option
 
 # Maximum number of lines in a module
 max-module-lines=2000
@@ -168,7 +174,7 @@ callbacks=cb_,_cb
 [BASIC]
 
 # List of builtins function names that should not be used, separated by a comma
-bad-functions=map,filter
+# bad-functions=map,filter
 
 # Good variable names which should always be accepted, separated by a comma
 good-names=i,j,k,ex,Run,_

@@ -18,17 +18,28 @@ Installation
     <a href="https://anaconda.org/gimli/pygimli" >
        <img src="https://anaconda.org/gimli/pygimli/badges/platforms.svg?style=flat-square"/>
     </a>
-   </p>
+   </p><br>
+
 
 On all platforms, we recommend to install pyGIMLi via the conda package manager
-contained in the Anaconda distribution. For details on how to install Anaconda,
-we refer to: https://docs.anaconda.com/anaconda/install/
+contained in the Anaconda Python distribution. For details on how to install
+Anaconda, see `this page <https://docs.anaconda.com/anaconda/install/>`_.
+
+Note that Anaconda comes with many (great) packages, many of which you likely
+will not use. If you want to save space, you can install the `light-weight
+version Miniconda
+<https://docs.anaconda.com/free/miniconda/miniconda-install/>`_.
+
+.. note::
+
+    After installing Anaconda or Miniconda, make sure that you have at least
+    version 23.10.0 of conda (`conda --version`).
 
 .. TODO: Temporarily disabled. PDF needs to update version automatically.
 .. A **step-by-step guide for Windows users** can be found `here
 .. <https://www.pygimli.org/_downloads/pygimli_win_install_guide.pdf>`_.
 
-To avoid conflicts with other packages, we recommend to install pygimli in a
+To avoid conflicts with other packages, we recommend to install pyGIMLi in a
 separate environment. Here we call this environment `pg`, but you can give
 it any name. Note that this environment has to be created only once.
 
@@ -36,12 +47,11 @@ Open a terminal (Linux & Mac) or the Anaconda Prompt (Windows) and type:
 
 .. code-block:: bash
 
-    conda create -n pg -c gimli -c conda-forge pygimli=1.4.5
+    conda create -n pg -c gimli -c conda-forge "pygimli>=1.5.0"
 
-If you are using Windows or Mac, a new environment named "pg" should be visible
-in the Anaconda Navigator. If you want to use pyGIMLi from the command line, you
-have to activate the environment. You can put this line in your `~/.bashrc` file
-so that it is activated automatically if you open a terminal.
+If you want to use pyGIMLi from the command line, you have to activate the
+environment. You can put this line in your `~/.bashrc` file so that it is
+activated automatically if you open a terminal.
 
 .. code-block:: bash
 
@@ -65,35 +75,29 @@ Or alternatively, the web-based IDE JupyterLab (https://jupyterlab.readthedocs.i
 
     conda install -c conda-forge jupyterlab
 
-pyGIMLi on Google Colab
------------------------
-Even though still experimental, pyGIMLi can be run on Google Colab without any
-installation on the own computer. Just create a new Notebook and install the
-condacolab package by
-
-.. code:: Python
-
-    !pip install -q condacolab
-    import condacolab
-    condacolab.install()
-
-After doing so, the kernel is automatically restarted, so  import condacolab
-again and install pygimli using conda just as mentioned above.
-
-.. code:: Python
-
-    import condacolab
-    condacolab.check()
-    !conda install -c gimli pygimli=1.4.5
-
-Testing the installation
-------------------------
-
-To test if everything works correctly you can do the following:
+If you do one of the above steps in the `pg` environment, then it will
+automatically find pyGIMLi. But you may not want to install JupyterLab or
+Spyder for every different environment. To use your existing JupyterLab
+installation in the `base` environment with pyGIMLi in the `pg` environment,
+follow these steps:
 
 .. code-block:: bash
 
-    python -c "import pygimli; pygimli.test(show=False, onlydoctests=True)"
+    conda activate pg
+    conda install ipykernel
+    conda activate base
+    conda install -c conda-forge nb_conda_kernels
+    jupyter lab
+
+pyGIMLi on Google Colab
+-----------------------
+Even though still experimental, pyGIMLi can be run on Google Colab without any
+installation on your own computer. Just create a new Notebook and install the
+pyGIMLi package via pip:
+
+.. code:: python
+
+    !pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple pygimli
 
 Staying up-to-date
 ------------------

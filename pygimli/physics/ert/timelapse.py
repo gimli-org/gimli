@@ -1,13 +1,13 @@
+"""Timelapse ERT manager class."""
 import os.path
 from glob import glob
+from datetime import datetime, timedelta
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import pygimli as pg
-import pygimli.meshtools as mt
 from pygimli.physics import ert
 from .processing import combineMultipleData
-from datetime import datetime, timedelta
 
 
 # move general timelapse stuff to method-independent class
@@ -54,9 +54,11 @@ class TimelapseERT():
         self.mesh = kwargs.pop("mesh", None)
         self.name = "new"
         self.models = []
+        self.responses = []
         self.chi2s = []
         self.model = None
         self.mgr = ert.ERTManager()
+        self.pd = None
         if filename is not None:
             if isinstance(filename, str):
                 self.load(filename, **kwargs)
@@ -85,8 +87,8 @@ class TimelapseERT():
 
         return "\n".join(out)
 
-    def load(self, filename, **kwargs):
-        """Load or import data."""  # TL-ERT
+    def load(self, filename):
+        """Load or import data (or data files using *)."""
         if os.path.isfile(filename):
             self.data = ert.load(filename)
             if os.path.isfile(filename[:-4]+".rhoa"):
@@ -122,7 +124,7 @@ class TimelapseERT():
 
         Parameters
         ----------
-        t : str|datetime
+        t : int|str|datetime
             datetime object or string
         """
         if isinstance(t, str):  # convert into datetime
@@ -145,6 +147,8 @@ class TimelapseERT():
             minimum and maximum times to keep
         t : int|str|datetime
             time to remove
+        select : list[int]
+            times to select
         kmax : float
             maximum geometric factor to allow
         """
@@ -178,7 +182,7 @@ class TimelapseERT():
                 self.ERR = self.ERR[ind, :]
 
     def mask(self, rmin=0.1, rmax=1e6, emax=None):
-        """Mask data.
+        """Mask data (i.e. remove them from inversion).
 
         Parameters
         ----------
@@ -193,9 +197,7 @@ class TimelapseERT():
             self.DATA.mask = np.bitwise_or(self.DATA.mask, self.ERR > emax)
 
     def showData(self, v="rhoa", x="a", y="m", t=None, **kwargs):
-        """Show data.
-
-        Show data as pseudosections (single-hole) or cross-plot (crosshole)
+        """Show data as pseudosections (single-hole) or cross-plot (crosshole)
 
         Parameters
         ----------
@@ -251,6 +253,46 @@ class TimelapseERT():
         ax.set_ylabel("resistivity (Ohmm)")
         return ax
 
+    def fitReciprocalErrorModel(self, **kwargs):
+        """Fit all data by analysing normal/reciprocal data.
+
+        Parameters
+        ----------
+        show : bool
+            show temporal behaviour of absolute & relative errors
+        kwargs passed on to ert.fitReciprocalErrorModel)
+            nBins : int
+                number of bins to subdivide data (4 < data.size()//30 < 30)
+            rel : bool [False]
+                fit relative instead of absolute errors
+
+        Returns
+        -------
+        p, a : array
+            relative (p) and absolute (a) errors for every time step
+        """
+        data = self.data.copy()
+        p = np.zeros(self.DATA.shape[1])
+        a = np.zeros_like(p)
+        show = kwargs.pop("show", False)  # avoid show single fits
+        for i, rhoa in enumerate(self.DATA.T):
+            if isinstance(rhoa, np.ma.MaskedArray):
+                rhoa = rhoa.data
+
+            data['rhoa'] = rhoa
+            p[i], a[i] = ert.fitReciprocalErrorModel(data, **kwargs)
+
+        if show:
+            _, ax = plt.subplots(nrows=2, sharex=True)
+            ax[0].plot(self.times, p*100)
+            ax[1].plot(self.times, a)
+            ax[0].set_ylabel("relative error (%)")
+            ax[1].set_ylabel("absolute error (Ohm)")
+            ax[0].grid()
+            ax[1].grid()
+
+        return p, a
+
     def generateDataPDF(self, **kwargs):
         """Generate a pdf with all data as timesteps in individual pages.
 
@@ -266,7 +308,7 @@ class TimelapseERT():
                 fig.savefig(pdf, format='pdf')
                 fig.clf()
 
-    def chooseTime(self, t=None, **kwargs):
+    def chooseTime(self, t=None):
         """Return data for specific time.
 
         Parameters
@@ -294,8 +336,20 @@ class TimelapseERT():
             print(self.mesh)
             pg.show(self.mesh, markers=True, showMesh=True)
 
-    def invert(self, t=None, reg={}, regTL={}, **kwargs):
-        """Run inversion for a specific timestep or all subsequently."""
+    def invert(self, t=None, reg=None, regTL=None, **kwargs):
+        """Run inversion for a specific timestep or all subsequently.
+
+        Parameter
+        ---------
+        t : int|datetime|str|array
+            time index, string or datetime object, or array of any of these
+        reg : dict
+            regularization options (setRegularization) for all inversions
+        regTL : dict
+            regularization options for timesteps inversion only
+        **kwargs : dict
+            keyword arguments passed to ERTManager.invert
+        """
         if t is not None:
             t = self.timeIndex(t)
 
@@ -323,7 +377,7 @@ class TimelapseERT():
             models.append(self.model)
             responses.append(self.mgr.inv.response)
             self.chi2s.append(self.mgr.inv.chi2())
-            if i == 0:
+            if i == 0 and isinstance(regTL, dict):
                 kwargs.update(regTL)
                 # self.mgr.inv.setRegularization(**regTL)
 
@@ -361,15 +415,25 @@ class TimelapseERT():
     def showFit(self, **kwargs):
         """Show data, model response and misfit."""
         _, ax = plt.subplots(nrows=3, figsize=(10, 6), sharex=True, sharey=True)
-        _, cb = self.showData(ax=ax[0], verbose=False)
+        kwargs.setdefault("verbose", False)
+        _, cb = self.showData(ax=ax[0], **kwargs)
         self.showData(self.mgr.inv.response, ax=ax[1],
-                      cMin=cb.vmin, cMax=cb.vmax, verbose=False)
+                      cMin=cb.vmin, cMax=cb.vmax, **kwargs)
         misfit = self.mgr.inv.response / self.data["rhoa"] * 100 - 100
-        self.showData(misfit, ax=ax[2], cMin=-10, cMax=10, cMap="bwr", verbose=0)
+        self.showData(misfit, ax=ax[2], cMin=-10,
+                      cMax=10, cMap="bwr", **kwargs)
         return ax
 
     def showAllModels(self, ncols=2, **kwargs):
-        """Show all models as subplots."""
+        """Show all models as subplots.
+
+        Parameters
+        ----------
+        ncols : int [2]
+            number of columns
+        **kwargs : dict
+            keyword arguments passed to pg.show
+        """
         nT = self.DATA.shape[1]
         showRatio = kwargs.pop("ratio", False)
         nrows = int(np.ceil(nT/ncols))
@@ -398,7 +462,12 @@ class TimelapseERT():
         return ax
 
     def generateModelPDF(self, **kwargs):
-        """Generate a multi-page pdf with the model results."""
+        """Generate a multi-page pdf with the model results.
+
+        Parameters
+        ----------
+        **kwargs : keyword arguments passed to pg.show()
+        """
         kwargs.setdefault('label', pg.unit('res'))
         kwargs.setdefault('cMap', pg.utils.cMap('res'))
         kwargs.setdefault('logScale', True)
@@ -412,7 +481,21 @@ class TimelapseERT():
                 fig.clf()
 
     def generateRatioPDF(self, **kwargs):
-        """Generate a multi-page pdf with the model results."""
+        """Generate a multi-page pdf with the model results.
+
+        Parameters
+        ----------
+        creep : bool [False]
+            Use preceding time step as reference (default is baseline)
+        cMax : float [2]
+            maximum of color scale
+        cMax : float [1/cMax]
+            minimum of color scale
+        logScale : bool [True]
+            logarithmic color scale
+        cMap : str ['bwr']
+            colormap
+        """
         kwargs.setdefault('label', 'ratio')
         kwargs.setdefault('cMap', 'bwr')
         kwargs.setdefault('logScale', True)
@@ -424,7 +507,7 @@ class TimelapseERT():
             fig = plt.figure(figsize=kwargs.pop("figsize", [8, 5]))
             for i, model in enumerate(self.models[1:]):
                 ax = fig.subplots()
-                pg.show(self.pd, model[i+1]/basemodel, ax=ax, **kwargs)
+                pg.show(self.pd, model/basemodel, ax=ax, **kwargs)
                 ax.set_title(str(i)+": " + self.times[i+1].isoformat(" ", "minutes") + "/" +
                              self.times[i].isoformat(" ", "minutes"))
                 fig.savefig(pdf, format='pdf')
@@ -432,6 +515,22 @@ class TimelapseERT():
                 if creep:
                     basemodel = model
 
+    def exportVTK(self, name=None, oneforall=False):
+        """Generate output vtk(s) for postprocessing."""
+        name = name or self.name
+        if name.endswith(".vtk"):
+            name = name[:-4]
+
+        vtk = self.pd.copy()
+        if oneforall:
+            for i, model in enumerate(self.models):
+                vtk[f"model{i}"] = model
+
+            vtk.exportVTK(name+"_results.vtk")
+        else:
+            for i, model in enumerate(self.models):
+                vtk["resistivity"] = model
+                vtk.exportVTK(name+f"_result{i}.vtk")
 
 if __name__ == "__main__":
     pass

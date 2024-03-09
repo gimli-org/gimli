@@ -3,7 +3,7 @@
 import numpy as np
 from . logger import critical, verbose
 from .core import (RVector, RVector3, DataContainer, DataContainerERT)
-from .core import (yVari, zVari, swapXY, swapYZ, y, z)
+from .core import (yVari, zVari, swapXY, swapYZ, x, y, z)
 
 
 def __DataContainer_str(self):
@@ -182,11 +182,39 @@ def __DataContainer_getIndices(self, **kwargs):
 DataContainer.getIndices = __DataContainer_getIndices
 
 def __DataContainer_subset(self, **kwargs):
-    """Return a subset for which all conditions hold."""
+    """Return a subset for which all kwarg conditions hold.
+
+    Parameters
+    ----------
+    data : DataContainer
+        pyGIMLi data container or derived class
+    kwargs : dict
+        dictionary forwarded to getIndices marking validity
+    x/y/z : float
+        positions are extended to all sensor indices
+    Returns
+    -------
+    out : DataContainer
+        filtered data container (of the same class)
+    """
     new = self.copy()
     new["valid"] = 0
-    new.markValid(self.getIndices(**kwargs))
+    remSen = False
+    for xyz in "xyz":
+        xx = kwargs.pop(xyz, None)
+        if xx is not None:
+            remSen = True
+            ex = eval(xyz)(new.sensorPositions())
+            for key in new.dataMap().keys():
+                if new.isSensorIndex(key):
+                    new[xyz+key] = ex[new[key]]
+                    kwargs[xyz+key] = xx
+
+    new.markValid(new.getIndices(**kwargs))
     new.removeInvalid()
+    if remSen:
+        new.removeUnusedSensors()
+
     return new
 
 DataContainer.subset = __DataContainer_subset

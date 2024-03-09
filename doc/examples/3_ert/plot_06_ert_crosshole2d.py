@@ -3,14 +3,16 @@
 """
 2D crosshole ERT inversion
 ==========================
-
-Inversion of 2D crosshole field data.
+In this example, we demonstrate 2D inversion of a crosshole ERT data set
+published by Kuras et al. (2009) in the frame of the ALERT project.
+For timelapse inversion of the whole data, see TimelapseERT project on github.
 """
+# sphinx_gallery_thumbnail_number = 3
+
 # %%%
 # We import the used libraries pygimli, meshtools the ERT module and a function
 # for displaying a data container.
 #
-# sphinx_gallery_thumbnail_number = 3
 
 import numpy as np
 import pygimli as pg
@@ -19,8 +21,7 @@ from pygimli.physics import ert
 from pygimli.viewer.mpl import showDataContainerAsMatrix
 
 # %%%
-# We load the data file from the example repository. It represents a crosshole
-# data set published by Kuras et al. (2009) in the frame of the ALERT project.
+# We load the data file from the example repository.
 #
 
 data = pg.getExampleData("ert/crosshole2d.dat")
@@ -44,7 +45,7 @@ print(np.sort(data["rhoa"])[-5:])
 
 data.remove(data["rhoa"] > 200)
 m = np.sign(data["m"] - data["n"]) * data["m"]
-showDataContainerAsMatrix(data, m, data["a"], "rhoa", cMap="Spectral_r")
+ax, cb = showDataContainerAsMatrix(data, m, data["a"], "rhoa", cMap="Spectral_r")
 
 # %%%
 # We determine the x and z positions and create a regular grid with a spacing
@@ -88,10 +89,10 @@ for b in mesh.boundaries():
 # Inversion is run with half as much weight into the vertical direction.
 #
 
-data.estimateError()
+data.estimateError(relativeError=0.03, absoluteUError=1e-4)
 mgr = ert.Manager(data)
 mgr.invert(mesh=mesh, verbose=True)
-mgr.showResult(cMin=15, cMax=200)
+ax, cb = mgr.showResult(cMin=15, cMax=200)
 
 # %%%
 # References
@@ -100,4 +101,4 @@ mgr.showResult(cMin=15, cMax=200)
 # Ogilvy, R. D.,and Wealthall, G. P. (2009). Monitoring hydraulic processes
 # with Automated time-Lapse Electrical Resistivity Tomography (ALERT).
 # Compte Rendus Geosciences - Special issue on Hydrogeophysics,
-# 341(10-11):868–885.
+# 341(10-11), 868–885.

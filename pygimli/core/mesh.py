@@ -106,32 +106,29 @@ def __Mesh_setVal(self, key, val):
 
     Multiple arrays via matrix will be saved too.
     """
-    # print(key, len(val), isR3Array(val))
+    if isinstance(val, (float, int)):  # single value
+        val = RVector(self.cellCount(), val)
 
-    if isR3Array(val):
+    if isR3Array(val):  # vectorial property
         return self.addData(key, val)
-
+    # list of vectors
     if isinstance(val, list) and isinstance(val[0], (RVector, np.ndarray)) or \
-        val.ndim == 2 or \
-        val.ndim == 3:
+        val.ndim == 2 or val.ndim == 3:
 
-        #print(val.ndim)
         maxDigit = ceil(np.log10(len(val)))
 
         for i, v in enumerate(val):
-            #print(i, v, maxDigit, '{}#{}'.format(key, str(i).zfill(maxDigit)))
-
             self.addData('{}#{}'.format(key, str(i).zfill(maxDigit)),
                          np.asarray(v))
     else:
-
         try:
-            self.addData(key, val)
+            if key == "marker":
+                self.setCellMarkers(val)
+            else:
+                self.addData(key, val)
         except:
-            print(key)
-            print(val)
-            print(val.shape)
-            pg.error('Could not add data.')
+            ValueError('Could not add data with key ' + key +
+                     " of shape " + str(np.shape(val)))
 
 Mesh.__setitem__ = __Mesh_setVal
 
@@ -385,8 +382,6 @@ def __Mesh_findPaths__(self, bounds):
 
     S = scipy.sparse.dok_matrix(pg.utils.toCOO(S))
 
-    # print(S.shape)
-    # print(S)
     paths = []
 
     def followPath(path, S, rID):
@@ -397,9 +392,10 @@ def __Mesh_findPaths__(self, bounds):
             # print('row', rID, 'col', cID)
             # print('add', cID)
             path.append(cID)
-            S.pop((rID, cID))
-            S.pop((cID, rID))
-            # print('pop-r', (rID, cID))
+            #try:
+            #print('pop-r', (rID, cID))
+            del S[(rID, cID)]
+            del S[(cID, rID)]
 
             col = S[:, cID]
 
@@ -408,8 +404,10 @@ def __Mesh_findPaths__(self, bounds):
                 path.append(rID)
                 # print('add', rID)
                 # print('pop-c', (rID, cID))
-                S.pop((rID, cID))
-                S.pop((cID, rID))
+                del S[(rID, cID)]
+                del S[(cID, rID)]
+                # print('pop-s', (rID, cID))
+
                 row = S[rID]
                 if len(row) != 1:
                     break
@@ -741,7 +739,22 @@ Mesh.extent = __Mesh__extent__
 
 
 def __Mesh__populate__(self, prop:str, value):
-    """Fill property of mesh with values from map or vector."""
+    """Fill property of mesh with values from map or vector.
+
+    Parameters
+    ==========
+    prop : str
+        property to be filled, i.e. mesh[prop]
+    value : array|dict|map
+        values to be sorted into field
+        * full length (cellCount) array
+        * array indexing into cell markers
+        * map like [[1, 100], [2, 1000]]
+        * dict like {1: 100, 2: 1000}
+    Return
+    ======
+    field : array (length cellCount)
+    """
     from pygimli.solver import parseMapToCellArray
     if isinstance(value, dict):
         self[prop] =  parseMapToCellArray(value, self)
@@ -752,6 +765,8 @@ def __Mesh__populate__(self, prop:str, value):
             self[prop] = value
         else:
             raise Exception("Length mismatch!")
+
+    return self[prop]
 
 Mesh.populate = __Mesh__populate__
 

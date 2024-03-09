@@ -99,8 +99,8 @@ data = fop.response(grid["synth"])
 # consisting of relative and absolute noise of 2% and 1 nT, respectively.
 #
 
-noise_level = 5  # nT
-data += np.random.randn(len(data)) * noise_level
+absError = np.abs(data) * 0.02 + 1
+data += np.random.randn(len(data)) * absError
 
 # %%%
 # Depth weighting
@@ -132,7 +132,7 @@ print(min(wz), max(wz))
 inv = pg.Inversion(fop=fop, verbose=True)  # , debug=True)
 inv.setRegularization(limits=[0, 0.07])  # to limit values
 inv.setConstraintWeights(wz)
-invmodel = inv.run(data, absoluteError=noise_level, lam=100, startModel=1e-3, verbose=True)
+invmodel = inv.run(data, absoluteError=absError, lam=200, startModel=1e-3, verbose=True)
 grid["inv"] = invmodel
 
 # %%%
@@ -176,7 +176,7 @@ cb.set_label("B (nT)")
 # Alternatively, we can also plot the error-weighted misfit.
 #
 
-misfit = (inv.response - data) / noise_level
+misfit = (inv.response - data) / absError
 im = plt.scatter(py, px, c=misfit, cmap="bwr", vmin=-3, vmax=3)
 cb = plt.colorbar(im)
 cb.set_label("misfit / error")

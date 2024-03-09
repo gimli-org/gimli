@@ -1,78 +1,59 @@
 .. _sec:install_mac:
 
-Building on MAC OS
-------------------
+Building on MAC OSX
+-------------------
 
-Since we do not have native access to Macs we only can provide instructions which are gratefully provided by users.
+The current working solution is based on `this discussion on GitHub
+<https://github.com/gimli-org/gimli/discussions/603>`_.  Many thanks to Robin
+Thibaut!
 
-Current (23-11-14) known working solution can be found here:
-`GitHub issue 603 <https://github.com/gimli-org/gimli/discussions/603>`_
-Many thanks to robinthibaut.
+.. code-block:: bash
 
-Older version that may work or might be outdated
-------------------------------------------------
+    # Install Homebrew
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 
-The following installation instructions were proposed by Claudio Jordi (ETH Zurich) in a
-`GitHub issue 46 <https://github.com/gimli-org/gimli/issues/46#issuecomment-357735129>`_.
-
-In most cases, the following will suffice to compile pyGIMLi in the current
-directory.
-
-.. code:: bash
-
-    #========================================
-    # First install:
-    # - Xcode (AppStore)
-    # - XQuartz (https://www.xquartz.org)
-    # - homebrew (https://brew.sh)
-    #========================================
-
-    # Install python3
-
-    brew install python3
-
-    brew install boost --with-python3
-
-    brew install boost-python --with-python3
-
-    # install some prerequisites that are not yet installed (might be more than what is here…)
-
-    brew install mercurial
+    # Install dependencies via brew
+    brew install cmake 
     brew install wget
+    brew install mercurial
 
-    # install matplotlib, … using pip3 (for python3)
+    # Install Miniforge
+    curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
+    bash Miniforge3-$(uname)-$(uname -m).sh
 
-    pip3 install scipy
-    pip3 install numpy
-    pip3 install matplotlib
+    conda create -n pygimli_env python
+    conda activate pygimli_env
+    conda install -c conda-forge boost numpy scipy matplotlib openblas suitesparse
 
-    # follow installation instructions from pygimli.org
-
-    mkdir -p ~/src
-    cd src
-    mkdir -p gimli
-    cd gimli
-    git clone https://github.com/gimli-org/gimli.git
-    mkdir -p build
-
+    # Clone the pygimli repository
+    git clone https://github.com/gimli-org/gimli.git source
+    mkdir build
     cd build
 
-    # The version (here 3.6.4_2) needs to be set to the installed python3 version
+    PYTHON_EXEC=$(which python3)
+    PYTHON_INC=$(python3 -c 'import sysconfig; print(sysconfig.get_path("include"))')
+    PYTHON_LIB=$(python3-config --configdir)
 
-    cmake ../gimli -DPYTHON_EXECUTABLE=/usr/local/bin/python3 \
-        -DPYTHON_INCLUDE_DIR=/usr/local/Cellar/python3/3.6.4_2/Frameworks/Python.framework/Versions/3.6/include/python3.6m \
-        -DPYTHON_LIBRARY=/usr/local/Cellar/python3/3.6.4_2/Frameworks/Python.framework/Versions/3.6/lib/libpython3.6.dylib \
-        -DPY_NUMPY=/usr/local/lib/python3.6/site-packages/numpy
+    export CPLUS_INCLUDE_PATH=$PYTHON_INC
 
-    # This was needed for the compilation of some c++ stuff
-    export CPLUS_INCLUDE_PATH=/usr/local/Cellar/python3/3.6.4_2/Frameworks/Python.framework/Versions/3.6/Headers
-
+    cmake -DPYTHON_EXECUTABLE=$PYTHON_EXEC -DPYTHON_LIBRARY=$PYTHON_LIB -DPYTHON_INCLUDE_DIR=$PYTHON_INC ../source
     make -j 8
+    make pygimli J=8
 
-    make pygimli
+Troubleshooting
++++++++++++++++
 
-    curl -Ls install.pygimli.org | bash
+If you encounter problems, you may have to specify some paths manually, e.g.:
 
-.. note::
+.. code-block:: bash
 
-    Conda packages for Mac OS will follow soon.
+    cmake -DPYTHON_EXECUTABLE=$PYTHON_EXEC -DPYTHON_LIBRARY=$PYTHON_LIB
+          -DPYTHON_INCLUDE_DIR=$PYTHON_INC \
+          -DUMFPACK_LIBRARIES=~/minforge3/base/lib/libumfpack.dylib \
+          -DUMFPACK_INCLUDES=~/minforge3/base/include \
+          -DCHOLMOD_LIBRARIES=~/minforge3/base/lib/libcholmod.dylib \
+          -DCHOLMOD_INCLUDE_DIRS=~/minforge3/base/include \
+          -DBLAS_openblas_LIBRARY=~/minforge3/base/lib/libopenblas.dylib \
+          -DOpenBLAS_INCLUDE_DIR=~/minforge3/base/include \
+          -DBoost_PYTHON_LIBRARY=~/minforge3/base/lib/libboost_python310.dylib \
+          ../source

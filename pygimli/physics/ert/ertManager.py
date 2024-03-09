@@ -368,11 +368,15 @@ class ERTManager(MeshMethodManager):
 
         Parameters
         ----------
+        model : iterable [None]
+            Model vector to be drawn. Default is self.model from the last run
         ax : mpl axes
             Axes object to draw into. Create a new if its not given.
+        elecs : bool
+            Draw electrodes
 
-        model : iterable [None]
-            Model values to be draw. Default is self.model from the last run
+        **kwargs : dict
+            arguments passed to pg.show (cMin, cMax, cMap, logScale)
 
         Returns
         -------
@@ -386,7 +390,7 @@ class ERTManager(MeshMethodManager):
 
         kwargs.setdefault("coverage", self.coverage())
         ax, cBar = self.fop.drawModel(ax, model, **kwargs)
-        if elecs is True:
+        if elecs:
             pg.viewer.mpl.drawSensors(ax, self.fop.data.sensors())
 
         return ax, cBar
@@ -424,7 +428,6 @@ class ERTManager(MeshMethodManager):
         for k, v in kwargs.items():
             if hasattr(v, "__iter__") and len(v) == nM:
                 m[k] = v
-                kwargs.pop(k)
 
         m.exportVTK(os.path.join(path, 'resistivity'))
         m.saveBinaryV2(os.path.join(path, 'resistivity-pd'))
