@@ -28,7 +28,7 @@ What is pyGIMLi **NOT** suited for?
 
 ##### Installation
 
-Before you start considering its not a bad idea to use virtual environment so maybe give this a try:
+Before you start, considering its not a bad idea to use virtual environments, so give this a try:
 
 ``` bash
 python -m venv pygimli
@@ -41,7 +41,13 @@ To install pygimli from the test repository:
 python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple pygimli
 ```
 
-You might test if the installation was successfull:
+You might add the 'all' option to install also optional dependencies.
+
+``` bash
+python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple pygimli['all']
+```
+
+You can see if the installation was successful:
 
 ``` bash
 python -c 'import pygimli as pg; pg.version()'
