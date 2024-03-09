@@ -67,7 +67,8 @@ else()
     add_custom_target(whl${TARGET_NAME}Test DEPENDS whl${TARGET_NAME}TestRun)
 
     add_custom_target(whlTest DEPENDS whl${TARGET_NAME}TestRun)
-    
+    add_custom_target(whl DEPENDS whl${TARGET_NAME})
+
     ## deploy the wheel: make whlDeploy
     add_custom_target(whl${TARGET_NAME}Deploy DEPENDS whl${TARGET_NAME}Test
         COMMAND "${Python_EXECUTABLE}" -m twine upload --repository testpypi ${WHEELHOUSE}/${PY_WHEELFILE}
