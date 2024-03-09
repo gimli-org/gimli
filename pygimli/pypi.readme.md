@@ -9,7 +9,7 @@
 [![Slack](https://img.shields.io/badge/pyGIMLi%20chat%20-%20mattermost?style=flat&logo=mattermost&label=mattermost&link=https%3A%2F%2Fmattermost.softwareunderground.org%2Fswung%2Fchannels%2Fpygimli
 )](https://mattermost.softwareunderground.org/swung/channels/pygimli)
 
-[pyGIMLi](www.pygimli.org) is an open-source library for modelling and inversion and in geophysics. The object-oriented library provides management for structured and unstructured meshes in 2D and 3D, finite-element and finite-volume solvers, various geophysical forward operators, as well as Gauss-Newton based frameworks for constrained, joint and fully-coupled inversions with flexible regularization.
+[pyGIMLi](https://www.pygimli.org) is an open-source library for modelling and inversion and in geophysics. The object-oriented library provides management for structured and unstructured meshes in 2D and 3D, finite-element and finite-volume solvers, various geophysical forward operators, as well as Gauss-Newton based frameworks for constrained, joint and fully-coupled inversions with flexible regularization.
 
 What is pyGIMLi suited for?
 
@@ -25,4 +25,26 @@ What is pyGIMLi **NOT** suited for?
 
 [jupyter notebooks]: https://jupyter.org
 
-For more information visit [pyGIMLi](www.pygimli.org).
+
+##### Installation
+
+Before you start considering its not a bad idea to use virtual environment so maybe give this a try:
+
+``` bash
+python -m venv pygimli
+source pygimli/bin/activate
+```
+
+To install pygimli from the test repository:
+
+``` bash
+python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple pygimli
+```
+
+You might test if the installation was successfull:
+
+``` bash
+python -c 'import pygimli as pg; pg.version()'
+```
+
+For more information visit [pyGIMLi](https://www.pygimli.org).

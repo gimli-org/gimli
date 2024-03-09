@@ -11,6 +11,8 @@ execute_process(COMMAND "${Python_EXECUTABLE}" getwheelname.py
     ERROR_QUIET
 )
 
+set(WHEELFILE ${PY_WHEELFILE})
+
 if (STATUS EQUAL 1)
     cprint(yellow "Can't determine wheel filenname. Skipping wheel build. "
                   "If you want to build wheels? python -m pip install wheel")
@@ -30,7 +32,7 @@ else()
     get_versions(${GIMLI_GITVERSION_WHL} major minor patch)
     set(PGCORE_VERSION_WHL ${major}.${minor})
     
-    message(STATUS "Detected Python wheel filename: ${PY_WHEELFILE}")
+    message(STATUS "Detected Python wheel filename: ${WHEELFILE}")
     CONFIGURE_FILE(setup.py.in
         ${CMAKE_CURRENT_BINARY_DIR}/setup.py @ONLY
     )
@@ -71,8 +73,9 @@ else()
 
     ## deploy the wheel: make whlDeploy
     add_custom_target(whl${TARGET_NAME}Deploy DEPENDS whl${TARGET_NAME}Test
-        COMMAND "${Python_EXECUTABLE}" -m twine upload --repository testpypi ${WHEELHOUSE}/${PY_WHEELFILE}
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-        COMMENT "Upload python wheel package ${PY_WHEELFILE_OUTPLATFORM} to 'testpypi' repository"
+        COMMAND "${Python_EXECUTABLE}" -m twine check --repository testpypi ${WHEELHOUSE}/${WHEELFILE}
+        #COMMAND "${Python_EXECUTABLE}" -m twine upload --repository testpypi ${WHEELHOUSE}/${WHEELFILE}
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+        COMMENT "Upload python wheel package ${WHEELFILE} to 'testpypi' repository"
     )
 endif()

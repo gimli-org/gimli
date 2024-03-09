@@ -1,4 +1,4 @@
-[pyGIMLi](www.pygimli.org) core extension. 
+Core extension for [pyGIMLi](www.pygimli.org)
 
 This package is supposed to be the platform dependent part of the 'any-platform' `pygimli` package.
 If you install `pygimli` via pip or conda, a suitable `pgcore` package will be installed as dependency. 
