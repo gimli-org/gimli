@@ -11,7 +11,7 @@ class BinaryDistribution(Distribution):
     def has_ext_modules(foo):
         return True
 
-HERE = path.abspath(path.dirname(__file__))
+HERE = path.abspath('@CMAKE_CURRENT_SOURCE_DIR@')
 
 CLASSIFIERS = [
     "License :: OSI Approved :: Apache Software License",
@@ -38,10 +38,10 @@ setup(
     url="http://www.pygimli.org",
     packages=find_packages(),
     description="Geophysical modelling and inversion library",
-    #long_description=open(
-    #        path.join(HERE, "README.md"), encoding="utf-8"
-    #    ).read(),
-    #long_description_content_type="text/markdown",
+    long_description=open(
+        path.join(HERE, "readme.md"), encoding="utf-8"
+    ).read(),
+    long_description_content_type="text/markdown",
     include_package_data=True,
     package_data={
         '': ['libs/*']
