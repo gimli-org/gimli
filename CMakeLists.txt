@@ -327,12 +327,14 @@ if (NOT Boost_INCLUDE_DIR OR NOT Boost_ROOT)
     else()
         message(STATUS "Boost_ROOT not set: building local")
         if (NOT Boost_INCLUDE_DIR)
+            message(STATUS " .. building local without Boost_INCLUDE_DIR")
             find_boost_root_from_distname_file()
             find_or_build_package(Boost boost)
             if (NOT Boost_ROOT)
                 find_boost_root_from_distname_file()
             endif()
         else()
+            message(STATUS " .. building local with Boost_INCLUDE_DIR=${Boost_INCLUDE_DIR}")
             find_boost_root_from_distname_file()
             find_or_build_package_check(Boost boost Boost_INCLUDE_DIR False)
             find_boost_root_from_distname_file()
@@ -437,11 +439,10 @@ if (NOT Boost_PYTHON_LIBRARY)
         message(STATUS "Boost_PYTHON_FOUND:" ${Boost_PYTHON_FOUND})
         message(STATUS "Boost_PYTHON_LIBRARY:" ${Boost_PYTHON_LIBRARY})
     else()
-        message(STATUS "Sorry but no boost-python found. Please search for "
+        message(FATAL_ERROR "Sorry but no boost-python found. Please search for "
                        "any libboost_python* on your system and "
                        "provide it to the authors so we can try to fix "
                        "this here.")
-        #exit()
     endif()
 endif()
 

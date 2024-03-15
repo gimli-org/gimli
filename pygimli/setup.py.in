@@ -45,9 +45,11 @@ setup(
                       'matplotlib>=3.7.0',
                       'scipy>=1.11.0',
                       'scooby',
+                      'pyvista[all]>=0.42',
+                      'tetgen',
                       ],
-    extras_require = {
-        'all':  ['pyvista[all]>=0.42'],
-    },
+    #extras_require = {
+    #    'all':  ['pyvista[all]>=0.42'],
+    #},
     classifiers=CLASSIFIERS,
 )

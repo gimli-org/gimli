@@ -232,7 +232,12 @@ macro(build_package package get_package)
     )
 endmacro()
 
-macro(find_or_build_package_check package get_package checkVar forceLocal)
+macro(find_or_build_package_check 
+        package 
+        get_package 
+        checkVar 
+        forceLocal
+        )
 
     message(STATUS "** Find or build ${package} at: ${checkVar} force: ${forceLocal}")
     find_package(${package})
