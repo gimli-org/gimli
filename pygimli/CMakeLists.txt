@@ -74,8 +74,8 @@ else()
     ## deploy the wheel: make whlDeploy
     add_custom_target(whl${TARGET_NAME}Deploy DEPENDS whl${TARGET_NAME}Test
         COMMAND "${Python_EXECUTABLE}" -m twine check ${WHEELHOUSE}/${WHEELFILE}
-        COMMAND "${Python_EXECUTABLE}" -m twine upload --repository testpypi ${WHEELHOUSE}/${WHEELFILE}
+        COMMAND "${Python_EXECUTABLE}" -m twine upload --repository pypi ${WHEELHOUSE}/${WHEELFILE}
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-        COMMENT "Upload python wheel package ${WHEELFILE} to 'testpypi' repository"
+        COMMENT "Upload python wheel package ${WHEELFILE} to 'pypi' repository"
     )
 endif()

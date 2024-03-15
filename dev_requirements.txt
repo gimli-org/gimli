@@ -20,7 +20,7 @@ jupytext
 # optional, but strongly recommended
 scipy>=1.11 
 scooby
-pyvista[all,trame]>=0.42
+pyvista[all]>=0.42
 pyqt5
 
 # needed to build docu
@@ -39,7 +39,9 @@ meshio
 
 # needed for wheel build
 wheel
-auditwheel
+auditwheel; sys_platform == 'linux'
+delvewheel; sys_platform == 'win32'
+delocate; sys_platform == 'darwin'
 twine
 
 # optional

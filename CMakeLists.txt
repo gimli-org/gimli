@@ -37,10 +37,10 @@ if (CMAKE_SYSTEM_NAME MATCHES "Linux")
         COMMAND bash -c "awk -F= '/^ID=/{print $2}' /etc/os-release |tr -d '\n' | tr -d '\"'"
             OUTPUT_VARIABLE OS_VAR
     )
-    message(STATUS "Linux OS: ${OS_VAR}")
+    message(STATUS "OS: ${OS_VAR}")
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
     set(OS_VAR "Windows")
-    message(STATUS "Linux OS: ${OS_VAR}")
+    message(STATUS "OS: ${OS_VAR}")
 elseif(CMAKE_SYSTEM_NAME MATCHES "MacOS")
     set(OS_VAR "MacOS")
     message(STATUS "MAC OS: ${OS_VAR}")
@@ -213,15 +213,15 @@ find_package(Threads REQUIRED)
 #   python
 ################################################################################
 if (NOT PYVERSION)
-    execute_process(COMMAND python3 --version
+    # Q&D python version guess .. while Python_FIND_STRATEGY LOCATION does not work in every case
+    execute_process(COMMAND python --version
         OUTPUT_VARIABLE
             PYVERSION_GUESS
         OUTPUT_STRIP_TRAILING_WHITESPACE
             ERROR_STRIP_TRAILING_WHITESPACE
-    )
+    )    
     STRING(REPLACE "Python " "" PYVERSION_GUESS "${PYVERSION_GUESS}")
     message(STATUS "No PYVERSION set, guessing from current python executable: ${PYVERSION_GUESS}")
-
     set(PYVERSION ${PYVERSION_GUESS})
 endif ()
 

@@ -45,13 +45,13 @@ else()
         COMMAND ${CMAKE_COMMAND} -E make_directory ${WHEEL_LIBRARIES_DIR}
         COMMENT "Create target dir to copy libraries: ${WHEEL_LIBRARIES_DIR}"
     )
-    if (OS_VAR STREQUAL "almalinux")
-        ## all other libs ar copied by auditwheel
+    if (OS_VAR STREQUAL "almalinux" OR OS_VAR STREQUAL "Windows" OR OS_VAR STREQUAL "MAC")
+        ## all other libs ar copied by auditwheel, delvewheel or delocate
         set(BINDEPS_LIBS $<TARGET_FILE:_pygimli_>)
     else()
-        ## copy important libs
+        ## copy important libs only for in source dev
         set(BINDEPS_LIBS 
-                $<TARGET_FILE:${Boost_PYTHON_LIBRARY}>
+                #$<TARGET_FILE:${Boost_PYTHON_LIBRARY}>
                 $<TARGET_FILE:gimli>
                 $<TARGET_FILE:_pygimli_>)
     endif()
@@ -75,6 +75,20 @@ else()
             COMMENT "Building python wheel package at: ${CMAKE_BINARY_DIR}"
         )
         add_custom_target(whl${TARGET_NAME} DEPENDS whl${TARGET_NAME}PackageRepair)
+    elseif (OS_VAR STREQUAL "Windows")
+        add_custom_target(whl${TARGET_NAME}PackageRepair DEPENDS whl${TARGET_NAME}PackageBuild
+            COMMAND "delvewheel" repair ${WHEELHOUSE}/${PY_WHEELFILE} --add-path ${CMAKE_BINARY_DIR}/bin/
+            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+            COMMENT "Building python wheel package at: ${CMAKE_BINARY_DIR}"
+        )
+        add_custom_target(whl${TARGET_NAME} DEPENDS whl${TARGET_NAME}PackageRepair)
+    elseif (OS_VAR STREQUAL "MAC")
+        add_custom_target(whl${TARGET_NAME}PackageRepair DEPENDS whl${TARGET_NAME}PackageBuild
+            COMMAND "delocate" repair ${WHEELHOUSE}/${PY_WHEELFILE} 
+            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+            COMMENT "Building python wheel package at: ${CMAKE_BINARY_DIR}"
+        )
+        add_custom_target(whl${TARGET_NAME} DEPENDS whl${TARGET_NAME}PackageRepair)
     else()
         cprint(yellow "Warning! Skipping auditwheel because of wrong linux toolchain (${OS_VAR})."
                     "For manylinux target, build on Almalinux 8 (docker image).")
@@ -90,9 +104,17 @@ else()
     )
     add_custom_target(whl${TARGET_NAME}TestRun DEPENDS whl${TARGET_NAME}TestInstall
         COMMAND ${Python3_EXECUTABLE} -c "import pgcore; print(pgcore.versionStr())"
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         VERBATIM
-        COMMENT "Testing ${TARGET_NAME} installation in virtual test environment. ${Python3_EXECUTABLE} -c \'import pgcore; pgcore.versionStr()\'"
+        COMMENT "Testing ${TARGET_NAME} installation in virtual test environment. ${Python3_EXECUTABLE} -c \'import pgcore; print(pgcore.versionStr())\'"
     )
     add_custom_target(whl${TARGET_NAME}Test DEPENDS whl${TARGET_NAME}TestRun)
+
+    add_custom_target(whl${TARGET_NAME}Deploy DEPENDS whl${TARGET_NAME}Test
+        COMMAND "${Python_EXECUTABLE}" -m twine check ${WHEELHOUSE}/${PY_WHEELFILE}
+        COMMAND "${Python_EXECUTABLE}" -m twine upload --repository pypi ${WHEELHOUSE}/${PY_WHEELFILE}
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+        COMMENT "Upload python wheel package ${PY_WHEELFILE} to 'pypi' repository"
+    )
 
 endif()
