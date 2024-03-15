@@ -13,7 +13,7 @@ Readme for Github repository only. (Gets selected before *.rst file)
 [![Slack](https://img.shields.io/badge/pyGIMLi%20chat%20-%20mattermost?style=flat&logo=mattermost&label=mattermost&link=https%3A%2F%2Fmattermost.softwareunderground.org%2Fswung%2Fchannels%2Fpygimli
 )](https://mattermost.softwareunderground.org/swung/channels/pygimli)
 
-[pyGIMLi](www.pygimli.org) is an open-source library for modelling and inversion and in geophysics. The object-oriented library provides management for structured and unstructured meshes in 2D and 3D, finite-element and finite-volume solvers, various geophysical forward operators, as well as Gauss-Newton based frameworks for constrained, joint and fully-coupled inversions with flexible regularization.
+[pyGIMLi](https://www.pygimli.org) is an open-source library for modelling and inversion and in geophysics. The object-oriented library provides management for structured and unstructured meshes in 2D and 3D, finite-element and finite-volume solvers, various geophysical forward operators, as well as Gauss-Newton based frameworks for constrained, joint and fully-coupled inversions with flexible regularization.
 
 What is pyGIMLi suited for?
 
