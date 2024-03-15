@@ -181,6 +181,7 @@ def __DataContainer_getIndices(self, **kwargs):
 
 DataContainer.getIndices = __DataContainer_getIndices
 
+
 def __DataContainer_subset(self, **kwargs):
     """Return a subset for which all kwarg conditions hold.
 

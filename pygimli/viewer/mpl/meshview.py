@@ -736,9 +736,11 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True,
                 areas = {}
                 for reg in mesh.regionMarkers():
                     areas[reg.marker()] = reg.area()
-                    ax.plot(reg.x(), reg.y(), "mx", alpha=0.5)
-                    ax.text(reg.x(), reg.y(), str(reg.marker()), color="m",
-                            ha="center", va="center")
+                    # if kwargs.get("regionMarkers", True):
+                    if regionMarker:
+                        ax.plot(reg.x(), reg.y(), "mx", alpha=0.5)
+                        ax.text(reg.x(), reg.y(), str(reg.marker()),
+                                color="m", ha="center", va="center")
 
                 labels = []
                 for marker in uniquemarkers:
@@ -787,8 +789,8 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True,
         ax.set_aspect('equal')
 
     updateAxes_(ax)
-    if cbar is None:
-        return gci
+    # if cbar is None:
+    #     return gci
     return gci, cbar
 
 
