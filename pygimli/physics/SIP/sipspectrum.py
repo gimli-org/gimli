@@ -434,6 +434,7 @@ class SIPSpectrum(object):
             self.fig['phase'] = fig
 
         drawPhaseSpectrum(ax, self.f, self.phi*1000, **kwargs)
+        return ax
 
     def showData(self, reim=False, znorm=False, cond=False, nrows=2, ax=None,
                  **kwargs):
