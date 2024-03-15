@@ -179,3 +179,11 @@ dt, b, strong {
 table.doc-index td, table th {
   border: 0px;
 }
+
+[data-theme=light] .bd-header-announcement {
+    background: #DBDF61;
+  }
+
+[data-theme=dark] .bd-header-announcement {
+    background: #7a7d16;
+  }
