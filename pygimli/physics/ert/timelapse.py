@@ -280,7 +280,10 @@ class TimelapseERT():
                 rhoa = rhoa.data
 
             data['rhoa'] = rhoa
-            p[i], a[i] = ert.fitReciprocalErrorModel(data, **kwargs)
+            try:
+                p[i], a[i] = ert.fitReciprocalErrorModel(data, **kwargs)
+            except:
+                print("Could not get reciprocal model for timestep", i)
 
         if show:
             _, ax = plt.subplots(nrows=2, sharex=True)
