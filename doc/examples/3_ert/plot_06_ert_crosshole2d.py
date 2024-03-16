@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # encoding: utf-8
-# sphinx_gallery_thumbnail_number = 3
 """
 2D crosshole ERT inversion
 ==========================
@@ -11,6 +10,7 @@ We import the used libraries pygimli, meshtools the ERT module and a function
 for displaying a data container.
 """
 
+# sphinx_gallery_thumbnail_number = 3
 import numpy as np
 import pygimli as pg
 import pygimli.meshtools as mt

@@ -6,8 +6,8 @@
 
 Inversion of 3D surface ERT field data (the gallery).
 """
-# sphinx_gallery_thumbnail_number = 1
 
+# sphinx_gallery_thumbnail_number = 1
 # %%%
 # We import the used pygimli library and toolboxes for mesh, plot and ERT.
 #

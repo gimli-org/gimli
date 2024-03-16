@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# sphinx_gallery_thumbnail_number = 5
 r"""
 Reciprocal data analysis of field ERT data
 ==========================================
@@ -45,6 +44,8 @@ to determine the weighting in inversion as described by Günther et al. (2006).
 This procedure could also be made based on the voltage as this is the critical
 measure of signal strength.
 """
+
+# sphinx_gallery_thumbnail_number = 5
 import numpy as np
 import matplotlib.pyplot as plt
 import pygimli as pg

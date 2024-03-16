@@ -9,7 +9,6 @@ of a three-layered sloping model and to invert the synthetic noisified data."""
 
 # sphinx_gallery_thumbnail_number = 2
 import numpy as np
-
 import pygimli as pg
 import pygimli.meshtools as mt
 import pygimli.physics.traveltime as tt
