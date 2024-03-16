@@ -1,6 +1,6 @@
 
 /******************************************************************************
- *   Copyright (C) 2006-2022 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2024 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -312,6 +312,7 @@ class RegionManager;
 class Shape;
 class Stopwatch;
 class Pos;
+class SolverWrapper;
 
 typedef Pos RVector3;
 typedef std::complex < double > Complex;

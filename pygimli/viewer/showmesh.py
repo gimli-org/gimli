@@ -245,8 +245,6 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         Useful to combine multiple plots into one figure.
     savefig: string
         Filename for a direct save to disc.
-        The matplotlib pdf-output is a little bit big so we try
-        an epstopdf if the .eps suffix is found in savefig
     showMesh: bool [False]
         Shows the mesh itself additional.
     showBoundary: bool [None]
@@ -503,11 +501,13 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             gci.set_antialiased(True)
             gci.set_linewidth(0.3)
             gci.set_edgecolor(kwargs.pop('color', "0.1"))
-            drawMesh(ax, mesh, **kwargs)
-        else:
-            pg.viewer.mpl.drawSelectedMeshBoundaries(
-                ax, mesh.boundaries(), color=kwargs.pop('color', "0.1"),
-                linewidth=0.3)
+            #drawMesh(ax, mesh, lw=0.3, **kwargs)
+        #else:
+        drawMesh(ax, mesh, lw=0.3, **kwargs)
+        # pg.viewer.mpl.drawSelectedMeshBoundaries(ax, 
+        #         mesh.boundaries(), 
+        #         color=kwargs.pop('color', "0.1"),
+        #         linewidth=kwargs.pop('lw', 0.3))
 
     if bool(showBoundary) is True:
         b = mesh.boundaries(mesh.boundaryMarkers() != 0)
@@ -525,7 +525,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
 
     if fitView is not False:
         ax.autoscale(enable=True, axis='both', tight=True)
-        ax.set_aspect('equal')
+        ax.set_aspect(kwargs.pop('aspect', 'equal'))
 
     cBar = None
 
@@ -554,7 +554,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         elif colorBar is not False:
             cBar = updateColorBar(colorBar, **subkwargs)
 
-        if markers:
+        if markers and cBar is not None:
             ticks = np.arange(len(uniquemarkers))
             cBar.set_ticks(ticks)
             labels = []
@@ -593,20 +593,12 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         pg.viewer.mpl.adjustWorldAxes(ax)
 
     if savefig:
-        print('saving: ' + savefig + ' ...')
-
+        print('saving: ' + savefig + ' ...', end="")
         if '.' not in savefig:
             savefig += '.pdf'
 
         ax.figure.savefig(savefig, bbox_inches='tight')
         # rc params savefig.format=pdf
-
-        if '.eps' in savefig:
-            try:
-                print("trying eps2pdf ... ")
-                os.system('epstopdf ' + savefig)
-            except BaseException:
-                pass
         print('.. done')
 
     return ax, cBar
@@ -741,10 +733,10 @@ __Animation_Keeper__ = None
 def showAnimation(mesh, data, ax=None, **kwargs):
     """Show timelapse mesh data.
 
-    Time will be annotated if the mesh contains a valid 'times' data array. 
-    Note, there can be only one animation per time. 
+    Time will be annotated if the mesh contains a valid 'times' data array.
+    Note, there can be only one animation per time.
 
-    Best viewed in a notebook, because of caching and better animation control 
+    Best viewed in a notebook, because of caching and better animation control
     elements.
 
     TODO
@@ -773,6 +765,7 @@ def showAnimation(mesh, data, ax=None, **kwargs):
     plt.rcParams["animation.html"] = "jshtml"
     plt.rcParams['figure.dpi'] = kwargs.pop('dpi', 96)
     plt.rcParams['animation.embed_limit'] = 50
+    figsize = kwargs.pop("figsize", None)
 
     flux = kwargs.pop('flux', None)
 
@@ -818,6 +811,9 @@ def showAnimation(mesh, data, ax=None, **kwargs):
                     pg.show(mesh, flux[t], ax=ax)
                 except:
                     pass
+
+        if plc is not None:
+            pg.viewer.mpl.drawMesh(ax, plc, fillRegion=False, fitView=False)
 
         if times is not None and len(times) > t:
             # ax.text(0.02, 0.02, f't={pg.pf(times[t])}',

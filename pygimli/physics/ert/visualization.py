@@ -8,6 +8,7 @@ from numpy import ma
 
 import pygimli as pg
 from pygimli.viewer.mpl.dataview import showValMapPatches
+from pygimli.viewer.mpl import showDataContainerAsMatrix
 
 
 def generateDataPDF(data, filename="data.pdf"):
@@ -40,13 +41,27 @@ def showERTData(data, vals=None, **kwargs):
 
     **kwargs :
 
-        * vals : Array[nData] | str
+        * vals : array[nData] | str
             Values to be plotted. Default is data['rhoa'].
-            Can be a string whose data field is extracted.
+            Can be array or string whose data field is extracted.
         * axes : matplotlib.axes
             Axes to plot into. By default (None), a new figure with
             a single Axes is created.
-    
+        * x and y : str | list(str)
+            forces using matrix plot (drawDataContainerAsMatrix)
+            x, y define the electrode number on x and y axis
+            can be strings ("a", "m", "mid", "sep") or lists of them ["a", "m"]
+        * style : str
+            predefined styles for choosing x and y arguments (x/y overrides)
+            "ab-mn" (default):  any combination of current/potential electrodes
+            "a-m" : only a and m electrode (for unique dipole spacings like DD)
+            "a-mn" : a and combination of mn electrode (PD with different MN)
+            "ab-m" : a and combination of mn electrode
+            "sepa-m" : current dipole length with a and m (multi-gradient)
+            "a-sepm" : a and potential dipole length with m
+        * switchxy : bool
+            exchange x and y axes before plotting
+
     Returns
     -------
     ax : matplotlib.axes
@@ -93,15 +108,55 @@ def showERTData(data, vals=None, **kwargs):
     kwargs.setdefault('label', pg.utils.unit('rhoa'))
     kwargs.setdefault('logScale', min(vals) > 0.0)
 
-    try:
-        ax, cbar = drawERTData(ax, data, vals=vals, **kwargs)
-    except Exception:
-        pg.warning('Something gone wrong while drawing data. '
-                   'Try fallback with equidistant electrodes.')
-        d = pg.DataContainerERT(data)
-        sc = data.sensorCount()
-        d.setSensors(list(zip(range(sc), np.zeros(sc))))
-        ax, cbar = drawERTData(ax, d, vals=vals, **kwargs)
+    sty = kwargs.pop("style", None)
+    if isinstance(sty, str):
+        sty = sty.lower()
+    if sty == "a-m":
+        kwargs.setdefault("y", "a")
+        kwargs.setdefault("x", "m")
+    elif sty == "a-mn":
+        kwargs.setdefault("y", "a")
+        kwargs.setdefault("x", ["m", "n"])
+    elif sty == "ab-m":
+        kwargs.setdefault("y", ["a", "b"])
+        kwargs.setdefault("x", "m")
+    elif sty == "sepa-m":
+        data["ab"] = data["b"] - data["a"]
+        kwargs.setdefault("y", ["ab", "a"])
+        kwargs.setdefault("x", "m")
+    elif sty == "a-sepm":
+        data["mn"] = data["n"] - data["m"]
+        kwargs.setdefault("y", "a")
+        kwargs.setdefault("y", ["mn", "m"])
+    elif sty is not None and sty != 0:
+        kwargs.setdefault("y", ["a", "b"])
+        kwargs.setdefault("x", ["m", "n"])
+
+    if "x" in kwargs and "y" in kwargs:
+        if kwargs["y"] == "mid":
+            kwargs["y"] = (data["a"] + data["b"]) / 2
+        elif kwargs["y"] == "sep":
+            kwargs["y"] = np.abs(data["a"] - data["b"])
+
+        if kwargs["x"] == "mid":
+            kwargs["x"] = (data["m"] + data["n"]) / 2
+        elif kwargs["x"] == "sep":
+            kwargs["x"] = np.abs(data["m"] - data["n"])
+
+        if kwargs.pop("switchxy", False):
+            kwargs["x"], kwargs["y"] = kwargs["y"], kwargs["x"]
+
+        ax, cbar = showDataContainerAsMatrix(data, v=vals, ax=ax, **kwargs)
+    else:
+        try:
+            ax, cbar = drawERTData(ax, data, vals=vals, **kwargs)
+        except Exception:
+            pg.warning('Something gone wrong while drawing data. '
+                    'Try fallback with equidistant electrodes.')
+            d = pg.DataContainerERT(data)
+            sc = data.sensorCount()
+            d.setSensors(list(zip(range(sc), np.zeros(sc))))
+            ax, cbar = drawERTData(ax, d, vals=vals, **kwargs)
 
     # TODO here cbar handling like pg.show
 

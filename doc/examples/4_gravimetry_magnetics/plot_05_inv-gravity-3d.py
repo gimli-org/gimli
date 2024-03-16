@@ -128,7 +128,7 @@ grid["inv"] = invmodel
 
 ftr = dict(value=0.5, scalars="synth")
 pl, _ = pg.show(grid, label="synth", style="wireframe",
-                filter={"threshold": ftr}, hold=True, backend="trame")
+                filter={"threshold": ftr}, hold=True)
 ftr = dict(value=0.3, scalars="inv")
 pv.drawMesh(pl, grid, label="inv", style="surface", filter={"threshold": ftr})
 pl.camera_position = "yz"

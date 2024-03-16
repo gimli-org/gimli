@@ -43,7 +43,7 @@ class VESManager(MethodManager1d):
         """
         self._complex = kwargs.pop('complex', False)
 
-        super(VESManager, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         self.inv.setDeltaPhiStop(1)
 
@@ -76,7 +76,7 @@ class VESManager(MethodManager1d):
         if ab2 is not None and mn2 is not None:
             self._fw.fop.setDataSpace(ab2=ab2, mn2=mn2)
 
-        return super(VESManager, self).simulate(model, **kwargs)
+        return super().simulate(model, **kwargs)
 
     def preErrorCheck(self, err, dataVals=None):
         """Fct to be called before the validity check of the error values."""
@@ -139,7 +139,7 @@ class VESManager(MethodManager1d):
             pL = kwargs['paraLimits'][1]
             kwargs['paraLimits'][1] = [pL[0]/1000, pL[1]/1000]
 
-        return super(VESManager, self).invert(data=data, err=err, **kwargs)
+        return super().invert(data=data, err=err, **kwargs)
 
     def loadData(self, fileName, **kwargs):
         """Load simple data matrix."""

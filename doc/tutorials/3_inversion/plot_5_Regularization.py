@@ -5,36 +5,34 @@ Regularization - concepts explained
 ===================================
 
 In geophysical inversion, we minimize the data objective functional as
-the L2 norm of the misfit between data $d$ and the forward
-response $f$ of the model $m$, weighted by the data error
-$\epsilon$:
+the L2 norm of the misfit between data :math:`d` and the forward
+response :math:`f(m)` of the model :math:`m`, weighted by the data error
+:math:`\epsilon`:
 
 .. math:: \Phi_d = \sum\limits_i^N \left(\frac{d_i-f_i(m)}{\epsilon_i}\right)^2=\|W_d(d-f(m))\|^2
 
 As this minimization problem is non-unique and ill-posed, we introduce a
-regularization term $\Phi$, weighted by a regularization parameter
-$\lambda$:
+regularization term :math:`\Phi`, weighted by a regularization parameter
+:math:`\lambda`:
 
 .. math:: \Phi = \Phi_d + \lambda \Phi_m
 
-The regularization strength $\lambda$ should be chosen so that the
-data are fitted within noise, i.e. $\chi^2=\Phi_d/N=1$.
+The regularization strength :math:`\lambda` should be chosen so that the
+data are fitted within noise, i.e. :math:`\chi^2=\Phi_d/N=1`.
 
-In the term $\Phi-m$ we put our expectations to the model, e.g. to
+In the term :math:`\Phi-m` we put our expectations to the model, e.g. to
 be close to any prior model. In many cases we do not have much
 information and aim for the smoothest model that is able to fit our
-data. We decribe it by the operator $W_m$:
+data. We decribe it by the operator :math:`W_m`:
 
 .. math:: \Phi_m=\|W_m (m-m_{ref})\|^2
 
 The regularization operator is defined by some constraint operator
-$C$ weighted by some weighting function $w$ so that
-$W_m=\mbox{diag}(w) C$. The operator $C$ can be a discrete
+:math:`C` weighted by some weighting function :math:`w` so that
+:math:`W_m=\mbox{diag}(w) C`. The operator :math:`C` can be a discrete
 smoothness operator, or the identity to keep the model close to the
-reference model $m_{ref}$.
-
+reference model :math:`m_{ref}`.
 """
-# sphinx_gallery_thumbnail_number = 8
 # %%%
 # We start with importing the numpy, matplotlib and pygimli libraries
 #
@@ -43,6 +41,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pygimli as pg
 import pygimli.meshtools as mt
+# sphinx_gallery_thumbnail_number = 8
 
 # %%%
 # Regularization drives the model where the data are too weak to constrain
@@ -118,7 +117,7 @@ ax.plot(pg.x(pos), pg.y(pos), "kx")
 t = ax.set_title("Ctype=1")
 
 # %%%
-# We will have a closer look at the regularization matrix $C$.
+# We will have a closer look at the regularization matrix :math:`C``.
 #
 
 C = fop.constraints()
@@ -130,7 +129,7 @@ nz = np.nonzero(row)[0]
 print(nz, row[nz])
 
 # %%%
-# How does that change the regularization matrix $C$?
+# How does that change the regularization matrix :math:`C`?
 #
 
 inv.setRegularization(cType=1, zWeight=0.2)  # the default
@@ -151,12 +150,12 @@ inv.setRegularization(cType=0)  # damping of the model
 result = inv.run(**invkw)
 ax, _ = pg.show(mesh, result, **plotkw)
 ax.plot(pg.x(pos), pg.y(pos), "kx")
-t = ax.set_title("Ctype=1")
+t = ax.set_title("Ctype=0")
 
 # %%%
-# Obviously, the damping keeps the model small ($\log 1=0$) as the
-# starting model is NOT a reference model by default. We will enable this
-# by specifying the ``isReference`` switch.
+# Obviously, the damping keeps the model small (log 1=0) as the
+# starting model is NOT a reference model by default.
+# We enable this by specifying the `isReference` switch.
 #
 
 invkw["isReference"] = True

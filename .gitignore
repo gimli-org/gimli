@@ -10,6 +10,7 @@ _generated/
 # sidebar gallery is created on the fly
 doc/_templates/gallery.html
 doc/_static/usecases/original/
+*sg_execution_times.rst
 *.ipynb
 *.ipynb_checkpoints*
 
@@ -34,6 +35,7 @@ command.history
 constraint.matrix
 chi.txt
 *.data
+*.poly
 
 # Gmsh
 *.geo.*

@@ -220,7 +220,7 @@ def version(cache=True):  # imported cach will be overwritten
 
 
 def isNotebook():
-    """Determine if run inside jupyther notebook or spyder"""
+    """Determine if run inside Jupyter notebook or Spyder."""
     import sys
     return 'ipykernel_launcher.py' in sys.argv[0]
 

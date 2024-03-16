@@ -21,6 +21,7 @@ I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  api        to build API documentation"
+	@echo "  auto       to re-build documentation live upon changes using sphinx-autobuild"
 	@echo "  html       to make standalone HTML files"
 	@echo "  pdf        to make LaTeX files and run them through pdflatex"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"

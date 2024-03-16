@@ -393,7 +393,7 @@ class TravelTimeManager(MeshMethodManager):
         J = self.fop.jacobian()
         return J.transMult(np.ones(J.rows()))
 
-    def createTraveltimefield(self, v=None, startPos=None):
+    def createTraveltimefield(self, v=None, startPos=None, withSec=False):
         """Compute a single traveltime field."""
         startPos = startPos or self.data.sensor(0)
         fop = self.fop
@@ -402,7 +402,11 @@ class TravelTimeManager(MeshMethodManager):
         slowPerCell = fop.createMappedModel(1/v, 1e16)
         Di.setGraph(fop._core.createGraph(slowPerCell))
         Di.setStartNode(mesh.findNearestNode(startPos))
-        return Di.distances()[:mesh.nodeCount()]
+        dist = Di.distances()
+        if withSec:
+            return dist
+        else:
+            return dist[:mesh.nodeCount()]
 
     def standardizedCoverage(self):
         """Standardized coverage vector (0|1) using neighbor info."""
