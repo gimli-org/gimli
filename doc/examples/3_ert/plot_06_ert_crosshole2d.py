@@ -1,18 +1,15 @@
 #!/usr/bin/env python
 # encoding: utf-8
+# sphinx_gallery_thumbnail_number = 3
 """
 2D crosshole ERT inversion
 ==========================
 In this example, we demonstrate 2D inversion of a crosshole ERT data set
 published by Kuras et al. (2009) in the frame of the ALERT project.
 For timelapse inversion of the whole data, see TimelapseERT project on github.
+We import the used libraries pygimli, meshtools the ERT module and a function
+for displaying a data container.
 """
-# sphinx_gallery_thumbnail_number = 3
-
-# %%%
-# We import the used libraries pygimli, meshtools the ERT module and a function
-# for displaying a data container.
-#
 
 import numpy as np
 import pygimli as pg
