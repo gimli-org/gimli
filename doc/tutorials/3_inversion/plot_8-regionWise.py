@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# sphinx_gallery_thumbnail_number = 12
 r"""
 Region-wise regularization
 ==========================
@@ -13,6 +12,7 @@ of course influencing the fields and needs to be treated accordingly.
 We first import pygimli and the modules for ERT and mesh building.
 """
 
+# sphinx_gallery_thumbnail_number = 12
 import matplotlib.pyplot as plt
 import pygimli as pg
 from pygimli.physics import ert
