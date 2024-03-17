@@ -275,13 +275,18 @@ class TimelapseERT():
         p = np.zeros(self.DATA.shape[1])
         a = np.zeros_like(p)
         show = kwargs.pop("show", False)  # avoid show single fits
+        rel = kwargs.get("rel", True)
         for i, rhoa in enumerate(self.DATA.T):
             if isinstance(rhoa, np.ma.MaskedArray):
                 rhoa = rhoa.data
 
             data['rhoa'] = rhoa
             try:
-                p[i], a[i] = ert.fitReciprocalErrorModel(data, **kwargs)
+                pp, aa = ert.fitReciprocalErrorModel(data, **kwargs)
+                if not rel:
+                    pp, aa = aa, pp
+
+                p[i], a[i] = pp, aa
             except:
                 print("Could not get reciprocal model for timestep", i)
 
