@@ -55,7 +55,7 @@ from pygimli.physics import ert
 # After importing the necessary libraries, we load the RCP data from the paper
 # of Udphuay et al. (2011).
 #
-data = pg.getExampleData('ert/reciprocal.ohm', verbose=True)
+data = pg.getExampleData('ert/reciprocal.ohm')
 print(data)
 
 ###############################################################################

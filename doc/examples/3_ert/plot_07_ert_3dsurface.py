@@ -4,14 +4,15 @@
 3D surface ERT inversion
 ========================
 
-Inversion of 3D surface ERT field data (the gallery).
+Inversion of 3D surface ERT field data (the gallery) The data was
+measured by T. Günther and F. Donner in 2000 with the ERT instrument
+of the TU Bergakademie Freiberg and used for the PhD thesis of
+Günther (2004).
+
+We import the pygimli library and toolboxes for mesh, plot and ERT.
 """
 
 # sphinx_gallery_thumbnail_number = 1
-# %%%
-# We import the used pygimli library and toolboxes for mesh, plot and ERT.
-#
-
 import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.physics import ert

@@ -15,17 +15,16 @@ in chapter 3.3 (closed geometries).
 - circular data representation
 - inversion
 """
-# sphinx_gallery_thumbnail_number = 5
 
+# sphinx_gallery_thumbnail_number = 5
 import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.physics import ert
 
 ###############################################################################
-# Get some example data with topography, typically by a call like
+# Get some example data with, typically by a call like
 # data = ert.load("filename.dat")
-# that supports various file formats
-data = pg.getExampleFile('ert/hollow_limetree.ohm', load=True, verbose=True)
+data = pg.getExampleData('ert/hollow_limetree.ohm', verbose=True)
 print(data)
 
 ###############################################################################
