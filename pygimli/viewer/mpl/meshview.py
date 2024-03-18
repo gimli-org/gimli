@@ -1364,7 +1364,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
         diam = eSpacing / 2.5
 
     eSensors = []
-    sm = kwargs.pop('sm', kwargs.pop('sensorMarker', 'v'))
+    sm = kwargs.pop('sm', kwargs.pop('sensorMarker', 'o'))
     for e in sensors:
         x = e[coords[0]]
         y = e[coords[1]]
