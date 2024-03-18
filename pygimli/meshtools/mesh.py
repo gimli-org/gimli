@@ -2021,8 +2021,7 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
 
     # print(xMin, xMax, dx)
     x = pg.utils.grange(xMin, xMax, dx=dx)
-
-    y = -pg.utils.grange(dz, paraDepth, n=nLayers, log=True)
+    y = -pg.cat([0], pg.utils.grange(dz, paraDepth, n=nLayers, log=True))
 
     mesh.createGrid(x, y[::-1])
     mesh.setCellMarkers([2] * mesh.cellCount())
@@ -2034,7 +2033,8 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
         boundary = abs((paraXLimits[1] - paraXLimits[0]) * 4.0)
 
     mesh = pg.meshtools.appendTriangleBoundary(  # circular import?
-        mesh, xbound=boundary, ybound=boundary, marker=1, addNodes=5, **kwargs)
+        mesh, xbound=boundary, ybound=boundary, 
+        marker=1, addNodes=5, **kwargs)
 
     return mesh
 
