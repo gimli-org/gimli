@@ -394,8 +394,8 @@ class Inversion(object):
         self.inv.echoStatus()
 
     def setPostStep(self, p):
-        """Set a function to be called after each iteration. 
-        
+        """Set a function to be called after each iteration.
+
         The function is called with p(IterationNumber, self)."""
         self._postStep = p
 
@@ -494,6 +494,19 @@ class Inversion(object):
 
         if len(kwargs) > 0:
             self.fop.setRegionProperties(*args, **kwargs)
+
+    def setInterRegionConstraint(self, region1, region2, strength):
+        """Set constraints between neighboring regions.
+
+        Parameters
+        ----------
+        region1, region2 : int|'*'
+            Region IDs
+        strength : float
+            weighting factor for roughness across regions
+        """
+        self.fop.regionManager().setInterRegionConstraint(
+            region1, region2, strength)
 
     def setConstraintWeights(self, cWeight):
         """Set weighting factors for the invidual rows of the C matrix."""
