@@ -508,6 +508,19 @@ class Inversion(object):
         self.fop.regionManager().setInterRegionConstraint(
             region1, region2, strength)
 
+    def setInterfaceConstraint(self, marker, strength):
+        """Set regularization strength on specific interface.
+
+        Parameters
+        ----------
+        marker : int
+            Boundary marker of the interface
+        strength : float
+            weighting factor for roughness across boundary
+        """
+        self.fop.regionManager().setInterfaceConstraint(
+            marker, strength)
+
     def setConstraintWeights(self, cWeight):
         """Set weighting factors for the invidual rows of the C matrix."""
         self.inv.setCWeight(cWeight)
