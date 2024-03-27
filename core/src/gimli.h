@@ -672,6 +672,10 @@ public:
         return *pInstance();
     }
 
+    // static Classname & operator()() {
+    //     return *pInstance();
+    // }
+
 protected:
     /*! Protected so it can only be called from derived classes */
     Singleton(){ }

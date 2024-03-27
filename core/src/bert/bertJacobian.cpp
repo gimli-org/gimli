@@ -273,7 +273,7 @@ void createSensitivityCol_(Matrix < ValueType > & S,
                           const RVector & k,
                           std::vector < std::pair < Index, Index > > & matrixClusterIds,
                           uint nThreads, bool verbose){
-
+WITH_TICTOC("createSensitivity");
 MEMINFO
 
     Index nData  = data.size();

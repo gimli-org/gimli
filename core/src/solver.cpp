@@ -21,6 +21,7 @@
 #include "vectortemplates.h"
 #include "solver.h"
 #include "sparsematrix.h"
+#include "stopwatch.h"
 
 namespace GIMLI{
 
@@ -34,7 +35,8 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
                         double lambda, const Vec & roughness,
                         int maxIter, double tol,
                         bool verbose){ //ALLOW_PYTHON_THREADS
-    
+    WITH_TICTOC("CGLSCDWWhtrans");
+    //Swatches::instance()["all/run/iter/onestep/CGLSCD"].start();
     uint nData = b.size();
     uint nModel = x.size();
     uint nConst = C.rows();
@@ -121,6 +123,7 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
     Vec Cpwm(nConst, 0.0);
 
     while (count < maxIter && normR2 > accuracy){
+        WITH_TICTOC("iter");
         count ++;
         p_tm.assign(p / tm);
         q = (S * p_tm) * (dW * td);
@@ -219,6 +222,7 @@ __MS("##################################################################")
     if (verbose) std::cout << "[ " << count << "/" << normR2 << "]\t" << std::endl;
 #endif
 
+    //Swatches::instance()["all/run/iter/onestep/CGLSCD"].store();
     // if (z.size() > 100 )exit(1);
     return 1;
 }
@@ -229,65 +233,66 @@ int solveCGLSCDWWtrans(const MatrixBase & S, const MatrixBase & C,
                        const Vec & td, double lambda, const Vec & deltaX,
                        int maxIter, bool verbose){ //ALLOW_PYTHON_THREADS
 // __M
-  uint nData = b.size();
-  uint nModel = x.size();
-  uint nConst = C.rows();
+    WITH_TICTOC("CGLSCDWWtrans");
+    uint nData = b.size();
+    uint nModel = x.size();
+    uint nConst = C.rows();
 
-  if (S.rows() != nData)  std::cerr << "J.rows != nData " << S.rows() << " / " << nData << std::endl;
-  // not needed
-  // if (S.cols() != nModel) std::cerr << "J.cols != nModel " << S.cols() << " / " << nModel << std::endl;
-  if (C.rows() != nConst) std::cerr << "C.rows != nConst " << C.rows() << " / " << nConst << std::endl;
-  if (C.cols() != nModel) std::cerr << "C.cols != nModel " << C.cols() << " / " << nModel << std::endl;
-  if (dWeight.size() != nData) std::cerr << "dWeight.size() != nData" << dWeight.size() << " != " << nData << std::endl;
-  if (wc.size() != nConst) std::cerr << "wc.size() != nConst " << wc.size() << " / " << nConst << std::endl;
-  if (mc.size() != nModel) std::cerr << "mc.size() != nModel" << mc.size() << " / " << nModel << std::endl;
-  if (tm.size() != nModel) std::cerr << "tm.size() != nModel " << tm.size() << " / " << nModel << std::endl;
-  if (td.size() != nData) std::cerr << "td.size() != nData " << td.size() << " / " << nData << std::endl;
+    if (S.rows() != nData)  std::cerr << "J.rows != nData " << S.rows() << " / " << nData << std::endl;
+    // not needed
+    // if (S.cols() != nModel) std::cerr << "J.cols != nModel " << S.cols() << " / " << nModel << std::endl;
+    if (C.rows() != nConst) std::cerr << "C.rows != nConst " << C.rows() << " / " << nConst << std::endl;
+    if (C.cols() != nModel) std::cerr << "C.cols != nModel " << C.cols() << " / " << nModel << std::endl;
+    if (dWeight.size() != nData) std::cerr << "dWeight.size() != nData" << dWeight.size() << " != " << nData << std::endl;
+    if (wc.size() != nConst) std::cerr << "wc.size() != nConst " << wc.size() << " / " << nConst << std::endl;
+    if (mc.size() != nModel) std::cerr << "mc.size() != nModel" << mc.size() << " / " << nModel << std::endl;
+    if (tm.size() != nModel) std::cerr << "tm.size() != nModel " << tm.size() << " / " << nModel << std::endl;
+    if (td.size() != nData) std::cerr << "td.size() != nData " << td.size() << " / " << nData << std::endl;
 
-  Vec cdx(transMult(C, Vec(wc * wc * (C * Vec(mc * deltaX)))) * mc * lambda); // nModel
-  Vec z((b - S * Vec(x / tm) * td) * dWeight); // nData
-  Vec p(transMult(S, Vec(z * dWeight * td)) / tm - cdx - transMult(C, Vec(wc * wc * (C * Vec(mc * x)))) * mc * lambda);// nModel
-  Vec r(transMult(S, Vec(b * dWeight * dWeight * td)) / tm - cdx); // nModel
+    Vec cdx(transMult(C, Vec(wc * wc * (C * Vec(mc * deltaX)))) * mc * lambda); // nModel
+    Vec z((b - S * Vec(x / tm) * td) * dWeight); // nData
+    Vec p(transMult(S, Vec(z * dWeight * td)) / tm - cdx - transMult(C, Vec(wc * wc * (C * Vec(mc * x)))) * mc * lambda);// nModel
+    Vec r(transMult(S, Vec(b * dWeight * dWeight * td)) / tm - cdx); // nModel
 
-  double accuracy = max(TOLERANCE, 1e-08 * dot(r, r));
-  r = p;
+    double accuracy = max(TOLERANCE, 1e-08 * dot(r, r));
+    r = p;
 
-  double normR2 = dot(r, r), normR2old = 0.0;
-  double alpha = 0.0, beta = 0.0;
+    double normR2 = dot(r, r), normR2old = 0.0;
+    double alpha = 0.0, beta = 0.0;
 
-  int count = 0;
+    int count = 0;
 
-  Vec q(nData);
-  Vec wcp(nConst); // nBounds
+    Vec q(nData);
+    Vec wcp(nConst); // nBounds
 
-  while (count < maxIter && normR2 > accuracy){
+    while (count < maxIter && normR2 > accuracy){
 
-    count ++;
-    q = S * Vec(p / tm) * dWeight * td;
-    wcp = wc * (C * Vec(p * mc));
+        count ++;
+        q = S * Vec(p / tm) * dWeight * td;
+        wcp = wc * (C * Vec(p * mc));
 
-    alpha = normR2 / (dot(q, q) + lambda * dot(wcp, wcp));
-    x += p * alpha;
-    if((count % 10) == -1) { // TOM
-      z = b - S * Vec(x / tm) * td; // z exakt durch extra Mult.
-      z *= dWeight;
-    } else {
-      z -= q * alpha;
+        alpha = normR2 / (dot(q, q) + lambda * dot(wcp, wcp));
+        x += p * alpha;
+        if((count % 10) == -1) { // TOM
+        z = b - S * Vec(x / tm) * td; // z exakt durch extra Mult.
+        z *= dWeight;
+        } else {
+        z -= q * alpha;
+        }
+        r = transMult(S, Vec(z * dWeight * td)) / tm - transMult(C, Vec(wc * wc * (C * Vec(mc * x)))) * mc * lambda - cdx;
+
+        normR2old = normR2;
+        normR2 = dot(r, r);
+        beta = normR2 / normR2old;
+        p = r + p * beta;
+        #ifndef _WIN32
+        if (verbose) std::cout << "\r[ " << count << "/" << normR2 << "]\t";
+        #endif
     }
-    r = transMult(S, Vec(z * dWeight * td)) / tm - transMult(C, Vec(wc * wc * (C * Vec(mc * x)))) * mc * lambda - cdx;
-
-    normR2old = normR2;
-    normR2 = dot(r, r);
-    beta = normR2 / normR2old;
-    p = r + p * beta;
-    #ifndef _WIN32
-    if (verbose) std::cout << "\r[ " << count << "/" << normR2 << "]\t";
+    #ifdef _WIN32
+    if (verbose) std::cout << "[ " << count << "/" << normR2 << "]\t" << std::endl;
     #endif
-  }
-  #ifdef _WIN32
-  if (verbose) std::cout << "[ " << count << "/" << normR2 << "]\t" << std::endl;
-  #endif
-  return 1;
+    return 1;
 }
 
 } //namespace GIMLI

@@ -599,6 +599,7 @@ public:
     }
 
     inline Vector< ValueType > & push_back(const ValueType & v) {
+        __DDS("vec.push_back", this, v);
         resize(size_ + 1);
         return setVal(v, size_ -1);
     }

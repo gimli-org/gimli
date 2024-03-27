@@ -39,7 +39,6 @@ class Inversion(object):
         Stop iteration when chi² is one. If set to False the iteration stops
         after maxIter or convergence reached (self.inv.deltaPhiAbortPercent())
     """
-
     def __init__(self, fop=None, inv=None, **kwargs):
         self._debug = kwargs.pop('debug', False)
         self._verbose = kwargs.pop('verbose', False)
@@ -57,7 +56,7 @@ class Inversion(object):
         self._fop = None
         self._lam = 20      # lambda regularization
         self.chi2History = []
-
+        
         # cache: keep startmodel if set explicitly or calculated from FOP, will
         # be recalulated for every run if not set explicitly
         self._startModel = None
@@ -549,198 +548,211 @@ class Inversion(object):
         debug : bool
             Even more verbose console and file output
         """
-        self.reset()
-        if errorVals is None:  # use absoluteError and/or relativeError instead
-            absErr = kwargs.pop("absoluteError", 0)
-            relErr = kwargs.pop("relativeError",
-                                0.01 if np.allclose(absErr, 0) else 0)
-            errorVals = pg.abs(absErr / np.asarray(dataVals)) + relErr
+        with pg.tictoc('run'):
+            with pg.tictoc('prep'):
+                with pg.tictoc('reset'):
+                    self.reset()
 
-        if isinstance(errorVals, (float, int)):
-            errorVals = np.ones_like(dataVals) * errorVals
+                if errorVals is None:  # use absoluteError and/or relativeError instead
+                    absErr = kwargs.pop("absoluteError", 0)
+                    relErr = kwargs.pop("relativeError",
+                                        0.01 if np.allclose(absErr, 0) else 0)
+                    errorVals = pg.abs(absErr / np.asarray(dataVals)) + relErr
 
-        if self.isFrameWork:
-            pg.critical('in use?')
-            return self._inv.run(dataVals, errorVals, **kwargs)
+                if isinstance(errorVals, (float, int)):
+                    errorVals = np.ones_like(dataVals) * errorVals
 
-        if self.fop is None:
-            pg.critical("Need a valid forward operator for the inversion run.")
+                # if self.isFrameWork: # removed 240317
+                #     pg.critical('in use?')
+                #     return self._inv.run(dataVals, errorVals, **kwargs)
 
-        self.fop.setVerbose(False)  # gets rid of CHOLMOD messages
-        maxIter = kwargs.pop('maxIter', self.maxIter)
-        minDPhi = kwargs.pop('dPhi', self.minDPhi)
-        showProgress = kwargs.pop('showProgress', False)
-        if 'blockyModel' in kwargs:
-            self.blockyModel = kwargs['blockyModel']
+                if self.fop is None:
+                    pg.critical("Need a valid forward operator for the inversion run.")
 
-        self.verbose = kwargs.pop('verbose', self.verbose)
-        self.debug = kwargs.pop('debug', self.debug)
-        self.robustData = kwargs.pop('robustData', False)
-        if "stopAtChi1" in kwargs:
-            self._stopAtChi1 = kwargs["stopAtChi1"]
+                self.fop.setVerbose(False)  # gets rid of CHOLMOD messages
+                maxIter = kwargs.pop('maxIter', self.maxIter)
+                minDPhi = kwargs.pop('dPhi', self.minDPhi)
+                showProgress = kwargs.pop('showProgress', False)
 
-        lam = kwargs.pop('lam', self.lam)
-        self.inv.setLambda(lam)
+                if 'blockyModel' in kwargs:
+                    self.blockyModel = kwargs['blockyModel']
 
-        self.inv.setLambdaFactor(kwargs.pop('lambdaFactor', 1.0))
+                self.verbose = kwargs.pop('verbose', self.verbose)
+                self.debug = kwargs.pop('debug', self.debug)
+                self.robustData = kwargs.pop('robustData', False)
+                
+                if "stopAtChi1" in kwargs:
+                    self._stopAtChi1 = kwargs["stopAtChi1"]
 
-        # catch a few regularization options that don't go into run
-        for opt in ["cType", "limits", "correlationLengths", "C"]:
-            if opt in kwargs:
-                di = {opt: kwargs.pop(opt)}
-                pg.verbose("Set regularization", di)
-                self.setRegularization(**di)
+                lam = kwargs.pop('lam', self.lam)
+                self.inv.setLambda(lam)
+                self.inv.setLambdaFactor(kwargs.pop('lambdaFactor', 1.0))
 
-        # Triggers update of fop properties, any property to be set before.
-        self.inv.setTransModel(self.fop.modelTrans)  # why from fop??
-        self.dataVals = dataVals
-        self.errorVals = errorVals
+                # catch a few regularization options that don't go into run
+                for opt in ["cType", "limits", "correlationLengths", "C"]:
+                    if opt in kwargs:
+                        di = {opt: kwargs.pop(opt)}
+                        pg.verbose("Set regularization", di)
+                        self.setRegularization(**di)
 
-        self.inv.setData(self._dataVals)
-        self.inv.setRelativeError(self._errorVals)
+                # Triggers update of fop properties, any property to be set before.
+                self.inv.setTransModel(self.fop.modelTrans)  # why from fop??
+                self.dataVals = dataVals
+                self.errorVals = errorVals
 
-        # temporary set max iter to one for the initial run call
-        maxIterTmp = self.maxIter
-        self.maxIter = 1
+                self.inv.setData(self._dataVals)
+                self.inv.setRelativeError(self._errorVals)
 
-        startModel = self.convertStartModel(kwargs.pop('startModel', None))
-        # we cannot add the following into kwargs.pop, since someone may call
-        # with explicit startModel=None
-        if startModel is None:
-            startModel = self.startModel
+                # temporary set max iter to one for the initial run call
+                maxIterTmp = self.maxIter
+                self.maxIter = 1
 
-        if self.verbose:
-            pg.info('Starting inversion.')
-            print("fop:", self.inv.fop())
-            if isinstance(self.inv.transData(), pg.trans.TransCumulative):
-                print("Data transformation (cumulative):")
-                for i in range(self.inv.transData().size()):
-                    print("\t", i, self.inv.transData().at(i))
-            else:
-                print("Data transformation:", self.inv.transData())
+                startModel = self.convertStartModel(kwargs.pop('startModel', None))
+                # we cannot add the following into kwargs.pop, since someone may call
+                # with explicit startModel=None
+                if startModel is None:
+                    startModel = self.startModel
 
-            if isinstance(self.inv.transModel(), pg.trans.TransCumulative):
-                print("Model transformation (cumulative):")
-                for i in range(self.inv.transModel().size()):
-                    if i < 10:
-                        print("\t", i, self.inv.transModel().at(i))
+                if self.verbose:
+                    pg.info('Starting inversion.')
+                    print("fop:", self.inv.fop())
+                    if isinstance(self.inv.transData(), pg.trans.TransCumulative):
+                        print("Data transformation (cumulative):")
+                        for i in range(self.inv.transData().size()):
+                            print("\t", i, self.inv.transData().at(i))
                     else:
-                        print(".", end='')
-            else:
-                print("Model transformation:", self.inv.transModel())
+                        print("Data transformation:", self.inv.transData())
 
-            print("min/max (data): {0}/{1}".format(pf(min(self._dataVals)),
-                                                   pf(max(self._dataVals))))
-            print("min/max (error): {0}%/{1}%".format(
-                pf(100 * min(self._errorVals)),
-                pf(100 * max(self._errorVals))))
-            print("min/max (start model): {0}/{1}".format(
-                pf(min(startModel)), pf(max(startModel))))
+                    if isinstance(self.inv.transModel(), pg.trans.TransCumulative):
+                        print("Model transformation (cumulative):")
+                        for i in range(self.inv.transModel().size()):
+                            if i < 10:
+                                print("\t", i, self.inv.transModel().at(i))
+                            else:
+                                print(".", end='')
+                    else:
+                        print("Model transformation:", self.inv.transModel())
 
-        # To ensure reproduceability of the run() call, inv.start() will
-        # reset self.inv.model() to fop.startModel().
-        self.fop.setStartModel(startModel)
-        if kwargs.pop("isReference", False):
-            self.inv.setReferenceModel(startModel)
-            pg.info("Setting starting model as reference!")
+                    print("min/max (data): {0}/{1}".format(pf(min(self._dataVals)),
+                                                        pf(max(self._dataVals))))
+                    print("min/max (error): {0}%/{1}%".format(
+                        pf(100 * min(self._errorVals)),
+                        pf(100 * max(self._errorVals))))
+                    print("min/max (start model): {0}/{1}".format(
+                        pf(min(startModel)), pf(max(startModel))))
 
-        if self.verbose:
-            print("-" * 80)
-        if self._preStep and callable(self._preStep):
-            self._preStep(0, self)
+                # To ensure reproduceability of the run() call, inv.start() will
+                # reset self.inv.model() to fop.startModel().
+                self.fop.setStartModel(startModel)
+                if kwargs.pop("isReference", False):
+                    self.inv.setReferenceModel(startModel)
+                    pg.info("Setting starting model as reference!")
 
-        # self.inv.start()  # start is reset() and run() so better run?
-        self.inv.setMaxIter(0)
-        self.inv.start()
-        self.maxIter = maxIterTmp
-        if self.verbose:
-            print("inv.iter 0 ... chi² = {:7.2f}".format(self.chi2()))
-            # print("inv.iter 0 ... chi² = {0}".format(round(self.chi2(), 2)))
+                if self.verbose:
+                    print("-" * 80)
+                if self._preStep and callable(self._preStep):
+                    self._preStep(0, self)
 
-        if self._postStep and callable(self._postStep):
-            self._postStep(0, self)
+                self.inv.setMaxIter(0)
+                
+            with pg.tictoc('start'):
+                self.inv.start()
 
-        if showProgress:
-            self.showProgress(showProgress)
-
-        lastPhi = self.phi()
-        self.chi2History = [self.chi2()]
-        self.modelHistory = [startModel]
-
-        for i in range(1, maxIter+1):
-            if self._preStep and callable(self._preStep):
-                self._preStep(i + 1, self)
-
+            self.maxIter = maxIterTmp
             if self.verbose:
-                print("-" * 80)
-                print("inv.iter", i, "... ", end='')
+                print("inv.iter 0 ... chi² = {:7.2f}".format(self.chi2()))
+                # print("inv.iter 0 ... chi² = {0}".format(round(self.chi2(), 2)))
 
-            try:
-                if hasattr(self, "oneStep"):
-                    self.oneStep()
-                else:
-                    self.inv.oneStep()
-            except RuntimeError as e:
-                print(e)
-                pg.error('One step failed. '
-                         'Aborting and going back to last model')
-
-            if np.isnan(self.model).any():
-                print(self.model)
-                pg.critical('invalid model')
-
-            # resp = self.inv.response()  # NOT USED
-            chi2 = self.inv.chi2()
-
-            self.chi2History.append(chi2)
-            self.modelHistory.append(self.model)
+            if self._postStep and callable(self._postStep):
+                self._postStep(0, self)
 
             if showProgress:
                 self.showProgress(showProgress)
 
-            if self._postStep and callable(self._postStep):
-                self._postStep(i + 1, self)
+            lastPhi = self.phi()
+            self.chi2History = [self.chi2()]
+            self.modelHistory = [startModel]
 
-            if self.robustData:
-                self.inv.robustWeighting()
+            for i in range(1, maxIter+1):
+                with pg.tictoc('iter'):
+                    if self._preStep and callable(self._preStep):
+                        self._preStep(i + 1, self)
 
-            if self.blockyModel:
-                self.inv.constrainBlocky()
+                    if self.verbose:
+                        print("-" * 80)
+                        print("inv.iter", i, "... ", end='')
 
-            phi = self.phi()
-            dPhi = phi / lastPhi
+                    self.oneStep()
 
-            if self.verbose:
-                print("chi² = {:7.2f} (dPhi = {:.2f}%) lam: {:.1f}".format(
-                    chi2, (1 - dPhi) * 100, lam))
+                    if np.isnan(self.model).any():
+                        print(self.model)
+                        pg.critical('invalid model')
 
-            if chi2 <= 1 and self.stopAtChi1:
-                print("\n")
-                if self.verbose:
-                    pg.boxprint(
-                        "Abort criterion reached: chi² <= 1 (%.2f)" % chi2)
-                break
+                    # resp = self.inv.response()  # NOT USED
+                    chi2 = self.inv.chi2()
 
-            # if dPhi < -minDPhi:
-            if (dPhi > (1.0 - minDPhi / 100.0)) and i > 2:  # should be minIter
-                if self.verbose:
-                    pg.boxprint(
-                        "Abort criterion reached: dPhi = {0} (< {1}%)".format(
-                            round((1 - dPhi) * 100, 2), minDPhi))
-                break
+                    self.chi2History.append(chi2)
+                    self.modelHistory.append(self.model)
 
-            lastPhi = phi
+                    if showProgress:
+                        self.showProgress(showProgress)
 
-            lam *= self.inv.lambdaFactor()
-            self.inv.setLambda(lam)
+                    if self._postStep and callable(self._postStep):
+                        self._postStep(i + 1, self)
 
-        # will never work as expected until we unpack kwargs .. any idea for
-        # better strategy?
-        # if len(kwargs.keys()) > 0:
-        #     print("Warning! unused keyword arguments", kwargs)
+                    if self.robustData:
+                        self.inv.robustWeighting()
 
-        self.model = self.inv.model()
-        return self.model
+                    if self.blockyModel:
+                        self.inv.constrainBlocky()
+
+                    phi = self.phi()
+                    dPhi = phi / lastPhi
+
+                    if self.verbose:
+                        print("chi² = {:7.2f} (dPhi = {:.2f}%) lam: {:.1f}".format(
+                            chi2, (1 - dPhi) * 100, lam))
+
+                    if chi2 <= 1 and self.stopAtChi1:
+                        print("\n")
+                        if self.verbose:
+                            pg.boxprint(
+                                "Abort criterion reached: chi² <= 1 (%.2f)" % chi2)
+                        break
+
+                    # if dPhi < -minDPhi:
+                    if (dPhi > (1.0 - minDPhi / 100.0)) and i > 2:  # should be minIter
+                        if self.verbose:
+                            pg.boxprint(
+                                "Abort criterion reached: dPhi = {0} (< {1}%)".format(
+                                    round((1 - dPhi) * 100, 2), minDPhi))
+                        break
+
+                    lastPhi = phi
+
+                    lam *= self.inv.lambdaFactor()
+                    self.inv.setLambda(lam)
+
+            # will never work as expected until we unpack kwargs .. any idea for
+            # better strategy?
+            # if len(kwargs.keys()) > 0:
+            #     print("Warning! unused keyword arguments", kwargs)
+
+            self.model = self.inv.model()
+            return self.model
+
+
+    def oneStep(self):
+        r"""Run one single iteration step.
+        """
+        with pg.tictoc('onestep'):
+            try:
+                self.inv.oneStep()
+            except RuntimeError as e:
+                print(e)
+                pg.error('One step failed. '
+                        'Aborting and going back to last model')
+
 
     def showProgress(self, style='all'):
         r"""Show inversion progress after every iteration.

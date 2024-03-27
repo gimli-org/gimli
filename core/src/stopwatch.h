@@ -112,6 +112,57 @@ Also there seems to be an offset of 0.05 ms. */
 DLLEXPORT void waitus(Index us, Index count=1);
 DLLEXPORT void waitusOMP(Index us, Index count=1);
 
+
+class DLLEXPORT Swatches: public Singleton< Swatches >{
+public:
+    friend class Singleton< Swatches >;
+
+    Stopwatch & operator[](const std::string & key);
+
+    std::vector < std::string > keys();
+    
+    std::vector < const Stopwatch * > vals();
+    
+    std::vector < std::pair< std::string, Stopwatch * > > items();
+    
+    void remove(const std::string & key, bool isRoot=false);
+
+    void setTrace(const std::string & trace) { _trace = trace; }
+
+    const std::string & trace() const { return _trace; }
+
+protected:
+    std::map < std::string, Stopwatch * > _sw;
+
+private:
+    /*! Private so it can not be called */
+    Swatches();
+    /*! Private so it can not be called */
+    virtual ~Swatches();
+    /*! Copy constructor is private, so don't use it */
+    Swatches(const Swatches &){};
+    /*! Assignment operator is private, so don't use it */
+    void operator = (const Swatches &){ };
+
+    std::string _trace;
+};
+
+class TicToc{
+public:
+    TicToc(const std::string & name, bool reset=false);
+    
+    ~TicToc();
+    
+protected:
+
+    Stopwatch *_sw;
+    std::string _parentTrace;
+
+};
+
+#define WITH_TICTOC(name) TicToc tictoc_name(name);
+
+
 } // namespace GIMLI
 
 #endif // _GIMLI_STOPWATCH__H

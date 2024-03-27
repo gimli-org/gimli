@@ -1085,6 +1085,7 @@ RVector DCMultiElectrodeModelling::createDefaultStartModel(){
 
 RVector DCMultiElectrodeModelling::response(const RVector & model,
                                             double background){
+    WITH_TICTOC("response");
 
     if (min(abs(dataContainer_->get("k"))) < TOLERANCE){
         if (!(this->topography() || buildCompleteElectrodeModel_)){
