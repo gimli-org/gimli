@@ -14,6 +14,7 @@ of course influencing the fields and needs to be treated accordingly.
 # %%%
 # We first import pygimli and the modules for ERT and mesh building.
 
+import matplotlib.pyplot as plt
 import pygimli as pg
 from pygimli.physics import ert
 import pygimli.meshtools as mt
@@ -36,8 +37,8 @@ print(data)
 # We first have a look at the electrode positions measured by a stick.
 #
 
-pg.plt.plot(pg.x(data), pg.z(data), "o-")
-pg.plt.grid();
+plt.plot(pg.x(data), pg.z(data), "o-")
+plt.grid()
 
 # %%%
 # On both sides, two electrodes are on shore, but the others are on the bottom
@@ -46,12 +47,12 @@ pg.plt.grid();
 
 data["k"] = ert.geometricFactors(data)
 data["rhoa"] = data["u"] / data["i"] * data["k"]
-ert.show(data);
+ax, cb = data.show()
 
 # %%%
 # We combined Wenner-Schlumberger (top) and Wenner-beta (bottom) data. The
 # lowest resistivities correspond with the water resistivity of 22.5
-# $\Omega$\ m.
+# :math:`\Omega`m.
 #
 # The contained errors are measured standard devitations and should not be used
 # for inversion. Instead, we estimate new errors using 2% and 100microVolts.
@@ -149,7 +150,7 @@ ax, cb = pg.show(water, resWater)
 
 
 # %%%
-# Apparently, all values are below the expected 22.5\ $\Omega$\ m
+# Apparently, all values are below the expected 22.5 :math:`\Omega`m
 # and some are implausibly low. Therefore we should try to limit them.
 # Moreover, the subsurface structures do not look very “layered”, which is
 # why we make the smoothness anisotropic.
@@ -186,7 +187,7 @@ ax, cb = mgr.showResult(**kw)
 # %%%
 # Apparently, this makes it harder to fit the data accurately. So maybe an
 # increased clay content can be responsible for resistivity below
-# 20\ $\Omega$\ m in the mud.
+# 20\ :math:`\Omega`m in the mud.
 #
 
 # %%%

@@ -180,6 +180,8 @@ def __Mesh_setVal(self, key, val):
         val = _matchSize(val)
         #.eval(mesh.positions())
 
+    if isinstance(val, (float, int)):  # single value
+        val = RVector(self.cellCount(), val)
     # print(key, len(val), isR3Array(val))
 
 
@@ -190,18 +192,17 @@ def __Mesh_setVal(self, key, val):
        isinstance(val[0], (RVector, np.ndarray)) or \
         (isinstance(val, np.ndarray) and (val.ndim == 2 or val.ndim == 3)):
 
-        #print(val.ndim)
         maxDigit = ceil(np.log10(len(val)))
 
         for i, v in enumerate(val):
-            #print(i, v, maxDigit, '{}#{}'.format(key, str(i).zfill(maxDigit)))
-
             self.addData('{}#{}'.format(key, str(i).zfill(maxDigit)),
                          np.asarray(v))
     else:
-
         try:
-            self.addData(key, val)
+            if key == "marker":
+                self.setCellMarkers(val)
+            else:
+                self.addData(key, val)
         except:
             return
             print('key:', key)
@@ -488,8 +489,6 @@ def __Mesh_findPaths__(self, bounds):
 
     S = scipy.sparse.dok_matrix(pg.utils.toCOO(S))
 
-    # print(S.shape)
-    # print(S)
     paths = []
 
     def followPath(path, S, rID):
@@ -500,9 +499,10 @@ def __Mesh_findPaths__(self, bounds):
             # print('row', rID, 'col', cID)
             # print('add', cID)
             path.append(cID)
-            S.pop((rID, cID))
-            S.pop((cID, rID))
-            # print('pop-r', (rID, cID))
+            #try:
+            #print('pop-r', (rID, cID))
+            del S[(rID, cID)]
+            del S[(cID, rID)]
 
             col = S[:, cID]
 
@@ -511,8 +511,10 @@ def __Mesh_findPaths__(self, bounds):
                 path.append(rID)
                 # print('add', rID)
                 # print('pop-c', (rID, cID))
-                S.pop((rID, cID))
-                S.pop((cID, rID))
+                del S[(rID, cID)]
+                del S[(cID, rID)]
+                # print('pop-s', (rID, cID))
+
                 row = S[rID]
                 if len(row) != 1:
                     break
@@ -865,7 +867,22 @@ Mesh.extent = __Mesh__extent__
 
 
 def __Mesh__populate__(self, prop:str, value):
-    """Fill property of mesh with values from map or vector."""
+    """Fill property of mesh with values from map or vector.
+
+    Parameters
+    ==========
+    prop : str
+        property to be filled, i.e. mesh[prop]
+    value : array|dict|map
+        values to be sorted into field
+        * full length (cellCount) array
+        * array indexing into cell markers
+        * map like [[1, 100], [2, 1000]]
+        * dict like {1: 100, 2: 1000}
+    Return
+    ======
+    field : array (length cellCount)
+    """
     from pygimli.solver import parseMapToCellArray
     if isinstance(value, dict):
         self[prop] =  parseMapToCellArray(value, self)
@@ -877,7 +894,37 @@ def __Mesh__populate__(self, prop:str, value):
         else:
             raise Exception("Length mismatch!")
 
+    return self[prop]
+
 Mesh.populate = __Mesh__populate__
+
+
+def __Mesh__submesh__(self, relation="=", **kwargs):
+    """Select submesh according to keywords.
+
+    Parameters
+    ----------
+    relation : str
+        logical operation ["=", ">", "<"]
+    kwargs
+        key:val pairs satisfying self[key] OP val
+    """
+    istrue = np.ones(self.cellCount(), dtype=bool)
+    for key, val in kwargs.items():
+        if key not in self.dataKeys():
+            raise IndexError("Property not in mesh: ", key)
+        if relation == ">":
+            isk = self[key] > val
+        elif relation == "<":
+            isk = self[key] < val
+        else:
+            isk = self[key] == val
+
+        istrue = np.bitwise_and(istrue, isk)
+
+    return self.createSubMesh(self.cells(np.nonzero(istrue)[0]))
+
+Mesh.submesh = __Mesh__submesh__
 
 
 def __Mesh__innerBoundaryCenters__(self):

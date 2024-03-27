@@ -23,7 +23,9 @@ from .ertManager import ERTManager
 from .ertIPManager import ERTIPManager
 from .ertModelling import ERTModelling, ERTModellingReference
 from .ertScheme import createData
-from .processing import uniqueERTIndex, generateDataFromUniqueIndex
+from .processing import (uniqueERTIndex, generateDataFromUniqueIndex,
+                         reciprocalIndices, fitReciprocalErrorModel,
+                         reciprocalProcessing)
 from .timelapse import TimelapseERT
 from .crosshole import CrossholeERT
 from pygimli.physics.ves import VESManager  # backward compatibility
@@ -47,4 +49,5 @@ geometricFactors = geometricFactor
 # Module prototypes
 DataContainer = pg.core.DataContainerERT
 Manager = ERTManager
+Modelling = ERTModelling
 coverageERT = pg.core.coverageDCtrans

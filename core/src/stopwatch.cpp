@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2022 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2024 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -23,6 +23,8 @@
 #include <thread>
 
 #include <iostream>
+
+#include <ranges>
 
 namespace GIMLI{
 
@@ -128,5 +130,102 @@ void waitusOMP(Index ms, Index count){
     }
     return;
 }
+
+
+template < > DLLEXPORT Swatches * Singleton < Swatches >::pInstance_ = NULL;
+
+Swatches::Swatches(){
+// __MS("Swatches()")
+}
+
+Swatches::~Swatches(){
+// __MS("~Swatches()")
+}
+
+Stopwatch & Swatches::operator[](const std::string & key) {
+    // __MS("[]", this, key)
+    if (this->_sw.count(key) == 0){
+        this->_sw[key] = new Stopwatch(true);
+    }
+    _trace = key;
+    return *this->_sw[key];
+}
+
+std::vector < std::string > Swatches::keys(){
+    // __MS(this)
+    std::vector< std::string > keys; 
+    keys.reserve(this->_sw.size()); 
+    for (auto &kv: this->_sw){ 
+        keys.push_back(kv.first); 
+    } 
+
+    // auto kv = std::views::keys(this->_sw); ## since c++20
+    // std::vector<std::string> keys{ kv.begin(), kv.end() };
+    // __M
+    return keys;
+}
+
+std::vector < const Stopwatch * > Swatches::vals(){
+    std::vector< const Stopwatch * > vals; 
+    vals.reserve(this->_sw.size()); 
+    for (auto &kv: this->_sw){ 
+        vals.push_back(kv.second); 
+    } 
+
+    // auto kv = std::views::keys(this->_sw); ## since c++20
+    // std::vector<std::string> keys{ kv.begin(), kv.end() };
+    return vals;
+}
+
+std::vector < std::pair< std::string, Stopwatch * > > Swatches::items(){
+    std::vector< std::pair< std::string, Stopwatch * > > items; 
+    items.reserve(this->_sw.size()); 
+    for (auto &kv: this->_sw){ 
+        items.push_back(std::pair< std::string, Stopwatch * >(kv.first, kv.second)); 
+    } 
+    return items;
+}
+    
+void Swatches::remove(const std::string & key, bool isRoot){
+    if (isRoot == false){
+        Stopwatch * s = this->_sw[key];
+        this->_sw.erase(key);
+        delete s;
+    } else {
+        //     for k in list(self._sw.keys()):
+        //         if k.startswith(key):
+        //             self._sw.pop(k, None)
+        THROW_TO_IMPL
+    }
+}
+
+TicToc::TicToc(const std::string & name, bool reset){
+    
+    this->_parentTrace = Swatches::instance().trace();
+    std::string curTrace;
+
+    if (this->_parentTrace.size() > 0){
+        curTrace = this->_parentTrace + '/' + name;
+    } else{
+        curTrace = name;
+    }
+
+    if (reset == true){
+        THROW_TO_IMPL
+        Swatches::instance().remove(this->_parentTrace, true);
+    }
+    // __MS(this->_parentTrace, "start")
+    
+    this->_sw = & Swatches::instance()[curTrace];
+    Swatches::instance().setTrace(curTrace);
+    this->_sw->start();
+}
+
+TicToc::~TicToc(){
+    // __MS(this->_parentTrace, "store", this->_sw->duration())
+    this->_sw->store();
+    Swatches::instance().setTrace(this->_parentTrace);
+}
+
 
 } // namespace GIMLI

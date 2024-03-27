@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 import numpy as np
+import matplotlib
 import pygimli as pg
 from .utils import pgMesh2pvMesh
 
@@ -24,9 +26,9 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     bc: pyvista color ['#EEEEEE']
         Background color.
     style: str['surface']
-        Possible options:"surface","wireframe","points"
+        Possible options: "surface", "wireframe", "points"
     label: str
-        Data to be plottet. If None the first is taken.
+        Data to be plotted. If None the first is taken.
 
     Returns
     -------
@@ -42,7 +44,10 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     showMesh = kwargs.pop('showMesh', False)
     grid = kwargs.pop('grid', False)
     colorBar = kwargs.pop('colorBar', style != 'wireframe')
-    bc = kwargs.pop('bc', '#EEEEEE')  # background color
+    if pv.BUILDING_GALLERY:
+        bc = "#ffffff"
+    else:
+        bc = kwargs.pop('bc', '#EEEEEE')  # background color
     lw = kwargs.pop('line_width', 0.1)
     filt = kwargs.pop('filter', {})
     log_scale = kwargs.pop("logScale", False)

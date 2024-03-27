@@ -160,6 +160,9 @@ def simulate(mesh, scheme, res, **kwargs):
     else:
         fop.setComplex(False)
 
+    if not isinstance(scheme, pg.DataContainerERT):
+        raise TypeError("Scheme must be DataContainerERT!")
+
     if not scheme.allNonZero('k') and not calcOnly:
         if verbose:
             pg.info('Calculate geometric factors.')
@@ -469,22 +472,21 @@ def createERTDataNotUsedAnymore(elecs, schemeName='none', **kwargs):
     return data
 
 
-def estimateError(data, absoluteError=0.001, relativeError=0.03,
-                  absoluteUError=None, absoluteCurrent=0.1):
-    """Estimate error composed of an absolute and a relative part.
+def estimateError(data, relativeError=0.03, absoluteUError=None,
+                  absoluteError=0, absoluteCurrent=0.1):
+    """Estimate relative error based on relative and absolute parts.
 
     Parameters
     ----------
-    absoluteError : float [0.001]
-        Absolute data error in Ohm m. Need 'rhoa' values in data.
-
     relativeError : float [0.03]
-        relative error level in %/100
+        relative error level in %/100 for u, R or rhoa
 
-    absoluteUError : float [0.001]
-        Absolute potential error in V. Need 'u' values in data. Or
-        calculate them from 'rhoa', 'k' and absoluteCurrent if no 'i'
-        is given
+    absoluteUError : float [None]
+        Absolute potential error in V. Needs 'u' values in data. Otherwise
+        calculate them from 'rhoa', 'k' and absoluteCurrent if no 'i' given.
+
+    absoluteError : float [0.0]
+        Absolute data error in Ohm m. Needs 'R' or 'rhoa' values.
 
     absoluteCurrent : float [0.1]
         Current level in A for reconstruction for absolute potential V
@@ -546,7 +548,8 @@ def __DataContainerERT_estimateError(self, *args,**kwargs):
     self['err'] = estimateError(self, *args, **kwargs)
 
 pg.DataContainerERT.estimateError = __DataContainerERT_estimateError
-pg.DataContainerERT.estimateError.__doc__ = estimateError.__doc__
+pg.DataContainerERT.estimateError.__doc__ = estimateError.__doc__.replace(
+    "Estimate ", "Set ")[:-4]
 
 
 if __name__ == "__main__":

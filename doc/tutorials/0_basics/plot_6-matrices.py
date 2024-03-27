@@ -7,7 +7,7 @@ There is a large number of Matrix types that are all derived from the
 base class ``MatrixBase``. They do not have to store elements but can be
 logical or wrappers. They just have to provide the functions
 ``A.cols()``, ``A.rows()`` (column and row numbers),
-``A.mult(x)``\ $=A\cdot x$ and ``A.transMult(y)``\ $=A^T\cdot y$.
+``A.mult(x)``\ :math:`=A\cdot x` and ``A.transMult(y)``\ :math:`=A^T\cdot y`.
 """
 # sphinx_gallery_thumbnail_number = 3
 
@@ -184,8 +184,8 @@ print(F)
 # For geostatistical constraints, a correlation matrix is computed using
 # correlation lengths and angles to define their directions. To access its
 # inverse root in a way that avoids matrix inversion, an eigenvalue
-# decomposition is done and the eigenvalues $D$ and -vectors
-# $Q$ are stored so that the operator
+# decomposition is done and the eigenvalues :math:`D`` and -vectors
+# :math:`Q` are stored so that the operator
 #
 # .. math:: C^{-0.5}\cdot x=Q\cdot D^{-0.5}\cdot Q^T \cdot x
 #

@@ -80,7 +80,7 @@ def make_gallery(src_path, out_path):
 
     html_bottom = """\
             </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#sidebare_example_gallery" data-bs-slide="prev">
+            <button class="carousel-control-prev" type="button" data-bs-target="#sidebar_example_gallery" data-bs-slide="prev">
               <span class="carousel-control-prev-icon" aria-hidden="true"></span>
               <span class="visually-hidden">Previous</span>
             </button>

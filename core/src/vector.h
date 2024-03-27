@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2007-2022 by the GIMLi development team                    *
+ *   Copyright (C) 2007-2024 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -599,6 +599,7 @@ public:
     }
 
     inline Vector< ValueType > & push_back(const ValueType & v) {
+        __DDS("vec.push_back", this, v);
         resize(size_ + 1);
         return setVal(v, size_ -1);
     }

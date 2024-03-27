@@ -15,7 +15,8 @@ from .core import (BVector, CVector, DataContainer, DataContainerERT,
                    Vector, PosList, abs, cat, center, exp, find,
                    interpolate, log, log10, logDropTol, max,
                    mean, median, min, search, setThreadCount, sort,
-                   Stopwatch, sum, trans, unique, versionStr, x, y, z, zero)
+                   Stopwatch, Swatches, 
+                   sum, trans, unique, versionStr, x, y, z, zero)
 
 from .core import (isInt, isScalar, isIterable, isArray, isPos, 
                   isR3Array, isPosList, isVecField, isComplex, isMatrix)
@@ -29,7 +30,7 @@ from .core.logger import (_, _d, _g, _r, _y, _b, critical, d, debug,
                           error, info, debug, setDebug, setLogLevel, setVerbose, v,
                           verbose, warn)
 
-warning = warn  # convenience
+warning = warn  # conveniance
 
 from .core.config import getConfigPath, rc, getCPUCount
 
@@ -220,35 +221,49 @@ def version(cache=True):  # imported cach will be overwritten
 
 
 def isNotebook():
-    """Determine if run inside jupyther notebook or spyder"""
+    """Determine if run inside Jupyter notebook or Spyder."""
     import sys
     return 'ipykernel_launcher.py' in sys.argv[0]
 
 
-@singleton
+# @singleton
+# class SWatches(object):
+#     def __init__(self):
+#         self._sw = dict()
+        
+#     def __getitem__(self, id):
+#         if not id in self._sw:
+#             self._sw[id] = Stopwatch(start=True)    
+        
+#         return self._sw[id]
+
+#     def keys(self):
+#         return list(self._sw.keys())
+
+#     def items(self):
+#         return self._sw.items()
+
+#     def remove(self, key, isRoot=False):
+#         if isRoot is False:
+#             self._sw.pop(key, None)
+#         else:
+#             for k in list(self._sw.keys()):
+#                 if k.startswith(key):
+#                     self._sw.pop(k, None)
+
 class SWatches(object):
-    def __init__(self):
-        self._sw = dict()
+    @staticmethod
+    def __getitem__(id):
+        return Swatches.instance()[str(id)]
+    @staticmethod
+    def keys():
+        return Swatches.instance().keys()
         
-    def __getitem__(self, id):
-        if not id in self._sw:
-            self._sw[id] = Stopwatch(start=True)    
-        
-        return self._sw[id]
 
-    def keys(self):
-        return list(self._sw.keys())
-
-    def items(self):
-        return self._sw.items()
-
-    def remove(self, key, isRoot=False):
-        if isRoot is False:
-            self._sw.pop(key, None)
-        else:
-            for k in list(self._sw.keys()):
-                if k.startswith(key):
-                    self._sw.pop(k, None)
+# SWatches = Swatches
+# def __swatches_call(self):
+#     return self.pInstance()
+# SWatches.__call__ = __swatches_call
 
 
 def tic(msg=None, key=0):
@@ -355,40 +370,50 @@ def store(key=0, stop=True):
 __LAST_TICK_TOCK__ = None
 
 class tictoc(object):
-    """Timer class with persistant clock.
-    """
-    def __init__(self, key='', trace=None, reset=False, skipLast=False):
-
-        if reset is True:
-            SWatches().remove(key, isRoot=True)
-
-        if trace is not None:
-            self._trace = trace
-        else:
-            self._trace = []
-
-        if len(key) > 0:
-            self._trace.append(key)
-        self._key = '/'.join(self._trace)
-        
-        tic(key=self._key)
-
-        if skipLast == False:
-            global __LAST_TICK_TOCK__
-            __LAST_TICK_TOCK__ = self
-
-    def __call__(self, key):
-        try:
-            return tictoc(key, trace=self._trace)
-        except:
-            return WithSkip()
+    def __init__(self, key):
+        self._tt = core.TicToc(key)
 
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, traceback):
-        store(key=self._key)
-        self._trace.pop()
+        pass
+            
+# class tictoc(object):
+#     """Timer class with persistant clock.
+#     """
+#     def __init__(self, key='', trace=None, reset=False, skipLast=False):
+
+#         if reset is True:
+#             SWatches().remove(key, isRoot=True)
+
+#         if trace is not None:
+#             self._trace = trace
+#         else:
+#             self._trace = []
+
+#         if len(key) > 0:
+#             self._trace.append(key)
+#         self._key = '/'.join(self._trace)
+        
+#         tic(key=self._key)
+
+#         if skipLast == False:
+#             global __LAST_TICK_TOCK__
+#             __LAST_TICK_TOCK__ = self
+
+#     def __call__(self, key):
+#         try:
+#             return tictoc(key, trace=self._trace)
+#         except:
+#             return WithSkip()
+
+#     def __enter__(self):
+#         return self
+
+#     def __exit__(self, type, value, traceback):
+#         store(key=self._key)
+#         self._trace.pop()
                 
 
 class LastTicToc(tictoc):
@@ -486,8 +511,8 @@ def timings(name='/'):
     #     pg.error('')
     #_g(SWatches().items())
     maxTime = 0
-    for k, s in SWatches().items():
-        
+    for k in SWatches().keys():
+        s = SWatches()[k]
         if isinstance(k, str):
             if k.startswith(name):
 

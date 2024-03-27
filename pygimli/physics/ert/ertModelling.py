@@ -85,7 +85,7 @@ class ERTModelling(ERTModellingBase):
     """
 
     def __init__(self, sr=True, verbose=False):
-        super(ERTModelling, self).__init__()
+        super().__init__()
 
         # don't use DC*fop or its regionmanager directly
         #
@@ -148,7 +148,7 @@ class ERTModelling(ERTModellingBase):
 
             return pg.utils.squeezeComplex(sm)  # complex impedance
         else:
-            return super(ERTModelling, self).createStartModel(dataVals)
+            return super().createStartModel(dataVals)
 
     def flipImagPart(self, v):
         """Flip imaginary port (convention)."""
@@ -176,7 +176,7 @@ class ERTModelling(ERTModellingBase):
             mod = self.flipImagPart(mod)
 
         resp = self._core.response(mod)
-        
+
         if self.complex() and self._conjImag:
             pg.warn('backflip imaginary part after response calc')
             resp = self.flipImagPart(resp)

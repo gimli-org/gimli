@@ -1336,6 +1336,12 @@ def linSolve(mat, b, solver=None, verbose=False, **kwargs):
 def applyDirichlet(mat, rhs, uDirIndex, uDirichlet):
     """This should be moved directly into the core"""
 
+    # idx = np.argsort(uDirIndex)
+    # print(idx)
+    # print(np.asarray(uDirIndex)[idx])
+    # print(np.asarray(uDirichlet[idx]))
+
+
     if mat is not None:
         if rhs is not None:
             uDir = pg.Vector(mat.rows(), 0.0)
@@ -2317,6 +2323,10 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         indices can by be given. e.g., bc={'Node': [nodeID, value]}.
         Note this is only a shortcut for
         bc={'Dirichlet': [mesh.node(nodeID), value]}.
+
+        The parameter $a$ for Neumann boundary condition is choosen 
+        automatically from the diffusivity parameter $a$ of the associated cell. 
+
     times: array [None]
         Solve as time dependent problem for the given times.
 

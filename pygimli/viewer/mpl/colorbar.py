@@ -261,7 +261,7 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
                 cbar.set_label(label)
         else:
             setCbarLevels(mappable, cMin, cMax, nLevs, levels)
-    
+
 
     return cbar
 
@@ -301,7 +301,6 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
 
     ax = kwargs.pop('ax', None)
     if ax is None:
-
         try:
             # if hasattr(gci, 'ax'): # deprecated since MPL 3.3
             #     ax = gci.ax
@@ -315,12 +314,6 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
             pass
 
     cbar = None
-    # if hasattr(ax, '__cBar__'):
-    #     # update colorbar is broken and will not work as supposed so we need
-    #     # to remove them for now
-    #     #ax.__cBar__.remove()
-    #     # delattr(ax, '__cBar__')
-    #     pass
 
     if hasattr(ax, '__cBar__'):
         cbar = ax.__cBar__
@@ -351,7 +344,7 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
             updateColorBar(cbar, **kwargs)
         else:
             updateColorBar(None, gci=gci, **kwargs)
-            
+
 
     return cbar
 
@@ -437,10 +430,10 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
 
     if cMin is None:
         cMin = mappable.get_clim()[0]
-        
+
     if cMax is None:
         cMax = mappable.get_clim()[1]
-        
+
     if cMin == cMax:
         cMin *= 0.999
         cMax *= 1.001
@@ -484,7 +477,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
         try:
             cbar.ax.figure.draw_without_rendering()
             #cbar._draw_all() # work but dunno how long this will exists
-        except: 
+        except:
             cbar.draw_all() # removed by mpl-3.8
 
         # necessary since mpl 3.0

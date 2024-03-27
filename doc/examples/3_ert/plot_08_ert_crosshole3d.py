@@ -115,7 +115,8 @@ _ = ax.plot(pg.x(data), pg.z(data), "mo", markersize=1)
 # Inversion is run with less weight into the vertical direction.
 #
 
-data["err"] = ert.estimateError(data)
+data.estimateError(relativeError=0.03, absoluteUError=1e-4)
+# data["err"] = ert.estimateError(data)  # the same
 mgr = ert.Manager(data)
 mgr.invert(mesh=mesh, zWeight=0.3, verbose=True)
 
@@ -128,7 +129,7 @@ mgr.invert(mesh=mesh, zWeight=0.3, verbose=True)
 
 pd = mgr.paraDomain
 pd["res"] = mgr.model
-pl, _ = pg.show(pd, label="res", style="surface", cMap="Spectral_r", hold=1,
+pl, _ = pg.show(pd, label="res", style="surface", cMap="Spectral_r", hold=True,
                 filter={"clip": dict(normal=[1, 1, 0], origin=[2, 2, -6])})
 pl.add_points(data.sensors().array(), color="magenta")
 pl.camera_position = "yz"

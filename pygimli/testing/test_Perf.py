@@ -64,103 +64,41 @@ class TestPerf(unittest.TestCase):
         print((sum(np1 * pg1)))
         print((sum(pg1 * np1)))
 
-
     def test_tictoc(self):
-        """badish interface .. don't use
+        """ with core Tictoc with global trace
         """
-        timing = []
 
         def bar1():
-            with pg.tictoc('bar1', trace=timing):
-                time.sleep(0.1)
+            with pg.tictoc('bar1'):
+                time.sleep(0.01)
 
         def bar2():
-            with pg.tictoc('bar2', trace=timing):
-                time.sleep(0.1)
+            with pg.tictoc('bar2'):
+                time.sleep(0.01)
                 bar1()
                 
         def foo():
-            with pg.tictoc('foo', trace=timing):
+            with pg.tictoc('foo'):
                 for i in range(4):
                     bar1()
                 bar2()
 
-        with pg.tictoc('foobar', trace=timing):
-            for i in range(2):
-                time.sleep(0.1) # uncovered
-                # with pg.tictoc('uncount', trace=timing):
-                #     time.sleep(0.1)
-                foo()    
+        with pg.tictoc('foo'):
+            with pg.tictoc('foobar1'):
+                for i in range(2):
+                    time.sleep(0.01) # uncovered
+                    foo()    
 
-        print(pg.timings('foobar'))
-                    
+            with pg.tictoc('foobar2'):
+                for i in range(2):
+                    time.sleep(0.01) # uncovered
+                    foo()    
 
-    def test_tictoc_2(self):
-        """ Use with one tictoc instance
-        """
-
-        def bar1():
-            with tictoc('bar1'):
-                time.sleep(0.1)
-
-        def bar2():
-            with tictoc('bar2'):
-                time.sleep(0.1)
-                bar1()
-                
-        def foo():
-            with tictoc('foo'):
-                for i in range(4):
-                    bar1()
-                bar2()
-
-        tictoc = pg.tictoc('')
-        with tictoc('foobar'):
-            for i in range(2):
-                time.sleep(0.1) # uncovered
-                # with pg.tictoc('uncount', trace=timing):
-                #     time.sleep(0.1)
-                foo()    
-
-        print(pg.timings('foobar'))
-
-
-    def test_tictoc_3(self):
-        """ Use without specific tictoc instance, get default (last created)
-        """
-
-        def bar1():
-            with pg.LastTicToc('bar1'):
-                time.sleep(0.1)
-
-        def bar2():
-            with pg.LastTicToc('bar2'):
-                time.sleep(0.1)
-                bar1()
-                
-        def foo():
-            with pg.LastTicToc('foo'):
-                for i in range(4):
-                    bar1()
-                bar2()
-
-        with pg.tictoc('foobar1'):
-            for i in range(2):
-                time.sleep(0.1) # uncovered
-                # with pg.tictoc('uncount', trace=timing):
-                #     time.sleep(0.1)
-                foo()    
-
-        with pg.tictoc('foobar2'):
-            for i in range(2):
-                time.sleep(0.1) # uncovered
-                # with pg.tictoc('uncount', trace=timing):
-                #     time.sleep(0.1)
-                foo()    
-
+        print(pg.timings('foo'))
         print(pg.timings('foobar1'))
-        print(pg.timings('foobar2'))
-
+        print(pg.timings('foo/foobar2'))
+        print(pg.timings())
+        
 
 if __name__ == '__main__':
     

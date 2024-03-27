@@ -74,3 +74,18 @@ def symlogInv(y, tol=1e-12, linearSpread=0):
     pygimli.math.symlog
     """
     return (10**(np.abs(y)-linearSpread/2) - 1.) * tol * np.sign(y)
+
+
+def logMean(spec, model, axis=0):
+    """Compute log-mean (log-weighted mean) value of distribution.
+
+    spec : array
+        abscissa values (spectral axis)
+    model : array|array-2d
+        matrix of density values
+    axis : int [0]
+        axis to sum over
+    """
+    sum_model = np.sum(model, axis=axis)
+    sum_spec_model = np.sum(np.log(np.reshape(spec, [-1, 1]))*model, axis=axis)
+    return np.exp(sum_spec_model / sum_model)

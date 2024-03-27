@@ -35,7 +35,7 @@ Documentation
 
             Reference for Python modules
 
-          - :gimliapi:`Core API <GIMLI>`
+          - `Core API <gimliapi/index.html>`_
 
             Reference for C++ core
 
