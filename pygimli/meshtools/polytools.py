@@ -939,6 +939,10 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
     addNodes : int [1]
         Number of additional nodes to be added equidistant between sensors.
 
+    trapRatio : float [0]
+        Form a trapezoidal shape instead of a rectangle.
+        The value is a ratio of the total length to put inside at depth.
+
     Returns
     -------
     poly: :gimliapi:`GIMLI::Mesh`
