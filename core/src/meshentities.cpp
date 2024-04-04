@@ -363,48 +363,65 @@ RVector3 MeshEntity::vec(const RVector3 & xyz,
     return RVector3(pot(xyz, x(v)), pot(xyz, y(v)), pot(xyz, z(v)));
 }
 
-RVector3 MeshEntity::grad(const RVector3 & xyz, const RVector & u) const {
+RVector3 MeshEntity::grad(const RVector3 & xyz, const RVector & u, Index dim) const {
 
     RVector3 rst(shape_->rst(xyz));
 
     RMatrix MdNdL;
     MdNdL.push_back(dNdL(rst, 0));
     MdNdL.push_back(dNdL(rst, 1));
-    MdNdL.push_back(dNdL(rst, 2));
+    if (dim == 3){
+        MdNdL.push_back(dNdL(rst, 2));
+    }
 
     RVector up(u(this->ids()));
-    RVector3 gr;
+    RVector3 gr(0,0,0);
     gr[0] = sum(up * MdNdL.transMult(shape_->invJacobian().col(0)));
     gr[1] = sum(up * MdNdL.transMult(shape_->invJacobian().col(1)));
-    gr[2] = sum(up * MdNdL.transMult(shape_->invJacobian().col(2)));
+    if (dim == 3){
+        gr[2] = sum(up * MdNdL.transMult(shape_->invJacobian().col(2)));
+    }
     return gr;
 }
 
-RMatrix MeshEntity::grad(const RVector3 & xyz, const R3Vector & u) const {
+RMatrix MeshEntity::grad(const RVector3 & xyz, const R3Vector & u, Index dim) const {
 
     RVector3 rst(shape_->rst(xyz));
 
     RMatrix MdNdL;
-    MdNdL.push_back(dNdL(rst, 0));
-    MdNdL.push_back(dNdL(rst, 1));
-    MdNdL.push_back(dNdL(rst, 2));
+    for (Index i=0; i < dim; i++){
+        MdNdL.push_back(dNdL(rst, i));
+    }
+    // MdNdL.push_back(dNdL(rst, 1));
+    // if (dim == 3){
+    //     MdNdL.push_back(dNdL(rst, 2));
+    // }
 
-    RMatrix gr(3,3);
+    RMatrix gr(dim, dim);
     
-    RVector up0(x(u(this->ids())));
-    RVector up1(y(u(this->ids())));
-    RVector up2(z(u(this->ids())));
-    gr[0][0] = sum(up0 * MdNdL.transMult(shape_->invJacobian().col(0)));
-    gr[0][1] = sum(up0 * MdNdL.transMult(shape_->invJacobian().col(1)));
-    gr[0][2] = sum(up0 * MdNdL.transMult(shape_->invJacobian().col(2)));
+    RMatrix up(3, 3);
+    up[0] = x(u(this->ids()));
+    up[1] = y(u(this->ids()));
+    up[2] = z(u(this->ids()));
+    // RVector up0(x(u(this->ids())));
+    // RVector up1(y(u(this->ids())));
+    // RVector up2(z(u(this->ids())));
+    for (Index i=0; i < dim; i++){
+        for (Index j=0; j < dim; j++){
+            gr[i][j] = sum(up[i] * MdNdL.transMult(shape_->invJacobian().col(j)));
+        }
+    }
+    // gr[0][0] = sum(up0 * MdNdL.transMult(shape_->invJacobian().col(0)));
+    // gr[0][1] = sum(up0 * MdNdL.transMult(shape_->invJacobian().col(1)));
+    // gr[0][2] = sum(up0 * MdNdL.transMult(shape_->invJacobian().col(2)));
     
-    gr[1][0] = sum(up1 * MdNdL.transMult(shape_->invJacobian().col(0)));
-    gr[1][1] = sum(up1 * MdNdL.transMult(shape_->invJacobian().col(1)));
-    gr[1][2] = sum(up1 * MdNdL.transMult(shape_->invJacobian().col(2)));
+    // gr[1][0] = sum(up1 * MdNdL.transMult(shape_->invJacobian().col(0)));
+    // gr[1][1] = sum(up1 * MdNdL.transMult(shape_->invJacobian().col(1)));
+    // gr[1][2] = sum(up1 * MdNdL.transMult(shape_->invJacobian().col(2)));
     
-    gr[2][0] = sum(up2 * MdNdL.transMult(shape_->invJacobian().col(0)));
-    gr[2][1] = sum(up2 * MdNdL.transMult(shape_->invJacobian().col(1)));
-    gr[2][2] = sum(up2 * MdNdL.transMult(shape_->invJacobian().col(2)));
+    // gr[2][0] = sum(up2 * MdNdL.transMult(shape_->invJacobian().col(0)));
+    // gr[2][1] = sum(up2 * MdNdL.transMult(shape_->invJacobian().col(1)));
+    // gr[2][2] = sum(up2 * MdNdL.transMult(shape_->invJacobian().col(2)));
     return gr;
 }
 

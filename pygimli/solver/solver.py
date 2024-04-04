@@ -2679,7 +2679,7 @@ def checkCFL(times, mesh, vMax, verbose=False):
 
 def crankNicolson(times, S, I, f=None,
                   u0=None, theta=1.0, dirichlet=None,
-                  solver=None, progress=None, swatches=None):
+                  solver=None, progress=None, **kwargs):
     """Generic Crank Nicolson solver for time dependend problems.
 
     Limitations so far:
@@ -2722,89 +2722,89 @@ def crankNicolson(times, S, I, f=None,
         raise BaseException("We need at least 2 times for "
                             "Crank-Nicolsen time discretization." + str(len(times)))
 
-    if swatches is None:
-        swatches = pg.tictoc('Crank-Nicolson')
-
-    with swatches('prep'):
-        
-        if progress:
-            timeMeasure = True
-
-        dof = S.rows()
-
-        rhs = np.zeros((len(times), dof))
-        if f is not None:
-            rhs[:] = f
-
-        u = np.zeros((len(times), dof))
-
-        if u0 is not None and not pg.isScalar(u0, 0):
-            u[0, :] = u0
-
-        if theta == 0:
-            A = I.copy()
-
-        if isinstance(solver, str):
-            solver = pg.solver.LinSolver(solver=solver)
-        if solver is None:
-            solver = pg.solver.LinSolver(solver='scipy')
-
-            
-    dt = 0.0
-    for n in range(1, len(times)):
-        
-        newDt = times[n] - times[n-1]
-        
-        if newDt < 1e-8 :
-            pg.critical('Cannot find delta t for times', times)
-
-        if abs(newDt - dt) > 1e-8:
-            with swatches('factorize'):
-            
-                ## new dt, so we need to factorize the matrix again
-                dt = newDt
-                # pg.info('dt', dt)
-
-                A = I + S * (dt * theta)
-
-                if dirichlet is not None:
-                    dirichlet.apply(A, time=times[n])
-
-                solver.factorize(A)
-
-                St = None
-                
-        with swatches('build'):
-        
-            if theta == 0:
-                if St is None:
-                    St = I - S * dt  # cache what's possible
-                b = St * u[n-1] + dt * rhs[n-1]
-            elif theta == 1:
-                b = I * u[n-1] + dt * rhs[n]
-            else:
-                if St is None:
-                    St = I - S * (dt*(1.-theta))  # cache what's possible
-                b = St * u[n-1] + dt * ((1.0 - theta) * rhs[n-1] + theta * rhs[n])
-
-        with swatches('dirichlet'):
-            if dirichlet is not None:
-                dirichlet.apply(b, time=times[n])
-        
-        with swatches('solve'):
-            u[n, :] = solver(b)
+    swatches = pg.tictoc
+    with swatches('Crank-Nicolson'):
     
-        if progress:
-            progress.update(n)
-                # n, 't_prep: ' + pg.pf(timeAssemble[-1]*1000) + 'ms ' +
-                # 't_step: ' + pg.pf(timeSolve[-1]*1000) + 'ms')
+        with swatches('prep'):
+            
+            if progress:
+                timeMeasure = True
 
-        # if verbose and (n % verbose == 0):
-        #     # print(min(u[n]), max(u[n]))
-        #     print("timesteps:", n, "/", len(times),
-        #           'runtime:', sw.duration(), "s",
-        #           'assemble:', np.mean(timeAssemble),
-        #           'solve:', np.mean(timeSolve))
+            dof = S.rows()
+
+            rhs = np.zeros((len(times), dof))
+            if f is not None:
+                rhs[:] = f
+
+            u = np.zeros((len(times), dof))
+
+            if u0 is not None and not pg.isScalar(u0, 0):
+                u[0, :] = u0
+
+            if theta == 0:
+                A = I.copy()
+
+            if isinstance(solver, str):
+                solver = pg.solver.LinSolver(solver=solver)
+            if solver is None:
+                solver = pg.solver.LinSolver(solver='scipy')
+
+                
+        dt = 0.0
+        for n in range(1, len(times)):
+            
+            newDt = times[n] - times[n-1]
+            
+            if newDt < 1e-8 :
+                pg.critical('Cannot find delta t for times', times)
+
+            if abs(newDt - dt) > 1e-8:
+                with swatches('factorize'):
+                
+                    ## new dt, so we need to factorize the matrix again
+                    dt = newDt
+                    # pg.info('dt', dt)
+
+                    A = I + S * (dt * theta)
+
+                    if dirichlet is not None:
+                        dirichlet.apply(A, time=times[n])
+
+                    solver.factorize(A)
+
+                    St = None
+                    
+            with swatches('build'):
+            
+                if theta == 0:
+                    if St is None:
+                        St = I - S * dt  # cache what's possible
+                    b = St * u[n-1] + dt * rhs[n-1]
+                elif theta == 1:
+                    b = I * u[n-1] + dt * rhs[n]
+                else:
+                    if St is None:
+                        St = I - S * (dt*(1.-theta))  # cache what's possible
+                    b = St * u[n-1] + dt * ((1.0 - theta) * rhs[n-1] + theta * rhs[n])
+
+            with swatches('dirichlet'):
+                if dirichlet is not None:
+                    dirichlet.apply(b, time=times[n])
+            
+            with swatches('solve'):
+                u[n, :] = solver(b)
+        
+            if progress:
+                progress.update(n)
+                    # n, 't_prep: ' + pg.pf(timeAssemble[-1]*1000) + 'ms ' +
+                    # 't_step: ' + pg.pf(timeSolve[-1]*1000) + 'ms')
+
+            # if verbose and (n % verbose == 0):
+            #     # print(min(u[n]), max(u[n]))
+            #     print("timesteps:", n, "/", len(times),
+            #           'runtime:', sw.duration(), "s",
+            #           'assemble:', np.mean(timeAssemble),
+            #           'solve:', np.mean(timeSolve))
     return u
 
 
