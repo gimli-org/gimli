@@ -191,12 +191,12 @@ public:
     /*! Return gradient at position p for field u regarding to the shape functions of the entity.
     * The field vector u need to be of size mesh.nodeCount() for the corresponding mesh.
     * The position pos, in Cartesian coordinates (x,y,z), need to be inside, or on the boundary, of the entity.  */
-    RVector3 grad(const RVector3 & p, const RVector & u) const;
+    RVector3 grad(const RVector3 & p, const RVector & u, Index dim=3) const;
 
     /*! Return gradient at position p for vector field u regarding to the shape functions of the entity.
     * The field vector u need to be of size mesh.nodeCount() for the corresponding mesh.
     * The position pos, in Cartesian coordinates (x,y,z), need to be inside, or on the boundary, of the entity.  */
-    RMatrix grad(const RVector3 & xyz, const R3Vector & u) const;
+    RMatrix grad(const RVector3 & xyz, const R3Vector & u, Index dim=3) const;
         
     friend std::ostream & operator << (std::ostream & str, const MeshEntity & c);
 
