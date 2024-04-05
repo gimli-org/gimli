@@ -47,6 +47,14 @@ def load(fileName, verbose=False, **kwargs):
     pb = pg.optImport('pybert')
     data = pb.importData(fileName)
 
+    if kwargs.pop('ensureKRhoa', False):
+        if not data.haveData('k'):
+            data.createGeometricFactors()
+        if data.haveData('r'):
+            data['rhoa'] = data['r'] * data['k']
+        elif data.haveData('u') and data.haveData('i'):
+            data['rhoa'] = data['u'] / data['i'] * data['k']
+
     if isinstance(data, pg.DataContainerERT):
         return data
 
