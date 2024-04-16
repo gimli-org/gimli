@@ -15,6 +15,7 @@ rc = {
     # 1: german style: 'value in unit'
     # 2: default style: 'value (unit)'
     'view3D': 'auto',
+    'pyvista.backend': 'client',
     # auto: Use pyvista if installed or set it to 'fallback' to force fallback mode
     'globalCache': True,
     # call pg.wait() before the terminal script ends if there are pending 
@@ -74,19 +75,24 @@ __configfile = os.path.join(__configpath, "config.json")
 
 
 if os.path.isfile(__configfile):
+    #info("Loading user configuration file at " + __configfile)
     with open(__configfile) as cfg:
         debug("Loading user configuration file at " + __configfile)
         userrc = json.load(cfg)
 
     # Check if user config holds all keys and update if necessary
     if len(userrc.keys()) != len(rc.keys()):
-        for key in rc:
-            if key not in userrc:
-                debug("Updating user configuration with", key, "=", rc[key])
-                userrc[key] = rc[key]
+        #print(userrc)
+        rc.update(userrc)
+        #print(rc)
+        info("Updating user configuration.")
+        # # for key in rc:
+        #     if key not in userrc:
+        #         info("Updating user configuration with", key, "=", rc[key])
+        #         userrc[key] = rc[key]
         with open(__configfile, "w") as cfg:
-            json.dump(userrc, cfg, indent=4, sort_keys=True)
-    rc = userrc
+            json.dump(rc, cfg, indent=4, sort_keys=True)
+    rc.update(userrc)
 else:
     info("Creating default user configuration file at " + __configfile)
     os.makedirs(os.path.join(__configpath, "pygimli"), exist_ok=True)

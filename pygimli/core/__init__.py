@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 Imports and extensions of the C++ bindings.
 """

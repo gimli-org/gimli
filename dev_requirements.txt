@@ -1,15 +1,30 @@
-# pip install -r dev_requirements.txt --user
-# pip list
-# pip install package== --user # list all possible versions for <pip-20.3
-# pip install --use-deprecated=legacy-resolver package== --user # same as above for >=pip-20.3 and <pip-21
-# pip install package==version --user
+# recommand to create a suitable virtual environment first:
+# python -m venv $ENVNAME
+# source $ENVNAME/bin/activate
+# python -m pip install -r dev_requirements.txt
+# python -m pip list
+# python -m pip install package==version
 
-
-# needed
-numpy
-matplotlib
+# needed to build
+numpy>=1.25
 pyplusplus==1.8.4
 pygccxml==2.0.0
+
+# needed to run
+matplotlib>=1.37
+
+# useful to run
+ipython
+jupytext
+
+# optional, but strongly recommended
+scipy>=1.11 
+scooby
+pyvista[all]>=0.42
+pyqt5
+tabulate
+
+# needed to build docu
 sphinx>=3.1
 sphinxcontrib-bibtex
 sphinxcontrib-programoutput
@@ -19,19 +34,16 @@ sphinx-design
 pydata-sphinx-theme
 bibtexparser
 
-pyvista[all,trame]>=0.42
-
-# optional, but strongly recommended
-scipy<1.12 
-scooby
-tabulate
-
-# useful
-ipython
-
 # for testing
 pytest
 meshio
+
+# needed for wheel build
+wheel
+auditwheel; sys_platform == 'linux'
+delvewheel; sys_platform == 'win32'
+delocate; sys_platform == 'darwin'
+twine
 
 # optional
 tetgen

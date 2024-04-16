@@ -10,11 +10,13 @@ pgcore = None
 __PY_MAX__ = max
 
 try:
-    from . import _pygimli_  # if it works: as pgcore, replace all _pygimli_
-    # from . import _pygimli_ as pgcore  # if it works: as pgcore, replace all _pygimli_
-    # dir(pgcore)
-    from ._pygimli_ import *  # check if . can be omitted
-    pgcore = _pygimli_
+    # from . import _pygimli_  # if it works: as pgcore, replace all _pygimli_
+    # from ._pygimli_ import *  # check if . can be omitted
+    # pgcore = _pygimli_
+
+    from .libs import _pygimli_ as pgcore  
+    from .libs._pygimli_ import *  
+        
 except ImportError as e:
     # print("did not find in-place pg core, try import pgcore")
     # import pgcore as _pygimli_
