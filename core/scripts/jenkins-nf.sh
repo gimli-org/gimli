@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 # This script is for continuous integration using Jenkins (http://jenkins-ci.org/)
-# It is called for the newfea branch from the jenkins workspace, i.e., source gimli/core/scripts/jenkins-fn.sh
+# It is called for the newfea branch from the jenkins workspace, i.e., 
+# bash -xe ./gimli/core/scripts/jenkins-nf.sh
+
 #rm -rf /var/lib/jenkins/.cache/pygimli # We need a better cleaning process
 GIMLISRC=gimli
 GIMLIBLD=build
