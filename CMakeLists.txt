@@ -144,34 +144,42 @@ endif()
 
 find_package(Git)
 if (GIT_FOUND)
-    message(STATUS, ${GIT_FOUND})
-    execute_process(
-        COMMAND
-            ${GIT_EXECUTABLE} describe --tags
-        WORKING_DIRECTORY
-            ${CMAKE_SOURCE_DIR}
-        OUTPUT_VARIABLE
-            GIMLI_GITVERSION
+    message(STATUS ${GIT_FOUND})
+    execute_process(COMMAND ${GIT_EXECUTABLE} describe --tags --abbrev=0
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIMLI_GIT_TAG
         OUTPUT_STRIP_TRAILING_WHITESPACE
         ERROR_STRIP_TRAILING_WHITESPACE
         )
-    message(STATUS, "setting version from git description: ${GIMLI_GITVERSION}")
-    set(LIBGIMLI_VERSION ${GIMLI_GITVERSION})
-    execute_process(
-        COMMAND
-            ${GIT_EXECUTABLE} describe --tags --abbrev=0
-        WORKING_DIRECTORY
-            ${CMAKE_SOURCE_DIR}
-        OUTPUT_VARIABLE
-            GIMLI_GITVERSION_WHL
+    message(STATUS "getting tag from git description: GIMLI_GIT_TAG=${GIMLI_GIT_TAG}")
+
+    execute_process(COMMAND ${GIT_EXECUTABLE} describe --tags
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIMLI_GIT_TAG_FULLVERSION
         OUTPUT_STRIP_TRAILING_WHITESPACE
         ERROR_STRIP_TRAILING_WHITESPACE
         )
-    message(STATUS, "setting whl version from git description: ${GIMLI_GITVERSION_WHL}")
-    if (WHL_POST)
-        set(LIBGIMLI_VERSION_WHL "${GIMLI_GITVERSION_WHL}.post${WHL_POST}")
+    message(STATUS "getting full version from git description: GIMLI_GIT_TAG_FULLVERSION=${GIMLI_GIT_TAG_FULLVERSION}")
+    
+    execute_process(COMMAND ${GIT_EXECUTABLE} describe --all --contains
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIMLI_GIT_BRANCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_STRIP_TRAILING_WHITESPACE
+    )
+    message(STATUS "getting branch name from git description: GIMLI_GIT_BRANCH=${GIMLI_GIT_BRANCH}")
+    
+    if (NOT GIMLI_GIT_BRANCH STREQUAL "master")
+        set(LIBGIMLI_VERSION "${GIMLI_GIT_TAG_FULLVERSION}(${GIMLI_GIT_BRANCH})")
     else()
-        set(LIBGIMLI_VERSION_WHL "${GIMLI_GITVERSION_WHL}")
+        set(LIBGIMLI_VERSION ${GIMLI_GIT_TAG_FULLVERSION})
+    endif()
+    message(STATUS "setting core version from git description to: ${LIBGIMLI_VERSION}")
+
+    if (WHL_POST)
+        set(LIBGIMLI_VERSION_WHL "${GIMLI_GIT_TAG}.post${WHL_POST}")
+    else()
+        set(LIBGIMLI_VERSION_WHL "${GIMLI_GIT_TAG}")
     endif()
 else()
     set(LIBGIMLI_VERSION "untagged")

@@ -14,8 +14,8 @@ fi
 # bash -xe ./gimli/core/scripts/jenkins-nf.sh
 
 #rm -rf /var/lib/jenkins/.cache/pygimli # We need a better cleaning process
-GIMLISRC=gimli
-GIMLIBLD=build
+GIMLIROOT=$pwd
+GIMLISRC=$GIMLIROOT/gimli
 
 echo "Starting automatic build #$BUILD_NUMBER on" `date`
 start=$(date +"%s")
@@ -43,28 +43,47 @@ export GIMLI_NUM_THREADS=$((`nproc --all` - 4))
 #  Main build  #
 ################
 
-mkdir -p $GIMLIBLD
+function build(){
+    PYVERSION=$1
+    
+    pushd $GIMLIROOT
+        PYPLATFORM=cp$PYVERSION-cp$PYVERSION
+        BUILDENV=venv_$PYPLATFORM
+        BUILDDIR=build_$PYPLATFORM
+        $PYTHON -m venv $BUILDENV
+        source $BUILDENV/bin/activate
 
-pushd $GIMLIBLD
-    if [ ! -f CMakeCache.txt ]; then
-        # Always rebuild core when Cmake cache does not exist
-        core_update=2
-    fi
+        # build minimum
+        python -m pip install --upgrade pip
+        python -m pip install numpy pygccxml pyplusplus 
+        # build wheel needs
+        python -m pip install wheel auditwheel twine 
 
-    if [ $core_update -ge 1 ]; then
-        echo "# Core changes detected. #"
-        touch CMakeCache.txt
-	
-        cmake ../$GIMLISRC
+        python3 -m pip install -r $GIMLISRC/core/scripts/requirements.txt
 
-        make -j $GIMLI_NUM_THREADS 
-       	make pygimli J=$GIMLI_NUM_THREADS
+        mkdir -p $BUILDDIR
+        pushd $BUILDDIR
+
+        if [ $core_update -ge 1 ]; then
+            echo "# Core changes detected. #"
+            rm -rf CMakeCache.txt
+
+            cmake $GIMLISRC
+
+            make -j $GIMLI_NUM_THREADS 
+            make pygimli J=$GIMLI_NUM_THREADS
         
-    else
-        echo "# No core changes detected. #"
-    fi
-popd
+        else
+            echo "# No core changes detected. #"
+        fi
 
+        make whlTest            
+
+        popd        
+    popd
+}
+
+#build
 
 #############################
 #  Testing & documentation  #
