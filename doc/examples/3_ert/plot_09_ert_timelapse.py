@@ -16,10 +16,7 @@ standards.
 This notebook is a simplistic model for a synthetic case.
 """
 
-# %%%
-# We import the used libraries pygimli, meshtools the ERT module.
-#
-
+# sphinx_gallery_thumbnail_number = 5
 import numpy as np
 import matplotlib.pyplot as plt
 import pygimli as pg

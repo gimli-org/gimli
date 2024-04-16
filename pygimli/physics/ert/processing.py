@@ -41,7 +41,7 @@ def uniqueERTIndex(data, nI=0, reverse=False, unify=True):
     for el in abmn:
         ind = ind * nI + normABMN[el]  # data(el)
 
-    return np.array(ind, dtype=np.int64)
+    return np.array(ind, dtype=int)
 
 def generateDataFromUniqueIndex(ind, data=None, nI=None):
     """Generate data container from unique index."""
@@ -93,8 +93,8 @@ def reciprocalIndices(data, onlyOnce=False):
             iF.append(i)
             iB.append(ii[0])
 
-    iF = np.array(iF, dtype=np.int)
-    iB = np.array(iB, dtype=np.int)
+    iF = np.array(iF, dtype=int)
+    iB = np.array(iB, dtype=int)
     if onlyOnce:
         return iF[iF < iB], iB[iF < iB]
     else:

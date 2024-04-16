@@ -2043,8 +2043,7 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
 
     # print(xMin, xMax, dx)
     x = pg.utils.grange(xMin, xMax, dx=dx)
-
-    y = -pg.utils.grange(dz, paraDepth, n=nLayers, log=True)
+    y = -pg.cat([0], pg.utils.grange(dz, paraDepth, n=nLayers, log=True))
 
     mesh.createGrid(x, y[::-1])
     mesh.setCellMarkers([2] * mesh.cellCount())
@@ -2056,7 +2055,8 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
         boundary = abs((paraXLimits[1] - paraXLimits[0]) * 4.0)
 
     mesh = pg.meshtools.appendTriangleBoundary(  # circular import?
-        mesh, xbound=boundary, ybound=boundary, marker=1, addNodes=5, **kwargs)
+        mesh, xbound=boundary, ybound=boundary,
+        marker=1, addNodes=5, **kwargs)
 
     return mesh
 
@@ -2092,8 +2092,9 @@ def extractUpperSurface2dMesh(mesh, zCut=None):
         mesh.createNeighborInfos()
 
     zCut = zCut or pg.mean(pg.z(mesh))
-    bind = [b.id() for b in mesh.boundaries() if b.outside() and
-            b.center().z() > zCut and b.shape().norm().z() != 0]
+    bind = [b.id() for b in mesh.boundaries()
+            if (b.leftCell() is None or b.rightCell() is None)
+            and b.center().z() > zCut and b.shape().norm().z() != 0]
     bMesh = mesh.createSubMesh(mesh.boundaries(bind))
 
     mesh2d = pg.Mesh(2)
@@ -2102,7 +2103,15 @@ def extractUpperSurface2dMesh(mesh, zCut=None):
         mesh2d.createCell([n.id() for n in b.nodes()])
 
     # copy data
-    cind = np.array([mesh.boundary(i).leftCell().id() for i in bind])
+    cind = np.zeros(len(bind), dtype=int)
+    print(cind.shape)
+    for i, bi in enumerate(bind):
+        lc = mesh.boundary(bi).leftCell()
+        if lc is not None:
+            cind[i] = lc.id()
+        else:
+            cind[i] = mesh.boundary(bi).rightCell().id()
+    # cind = np.array([mesh.boundary(i).leftCell().id() for i in bind])
     for k in mesh.dataKeys():
         mesh2d[k] = mesh[k][cind]
 

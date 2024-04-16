@@ -8,6 +8,7 @@ This tutorial solves the stationary heat equation in 2D. The example is
 taken from the pyGIMLi paper (https://cg17.pygimli.org).
 """
 
+# sphinx_gallery_thumbnail_number = 3
 import pygimli as pg
 import pygimli.meshtools as mt
 
