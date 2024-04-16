@@ -1,4 +1,13 @@
-#!/usr/bin/env bash
+#!/bin/bash
+if [[ $- == *i* ]]; then
+    # run with . *.sh
+    echo "Running on interactive mode. Aliases will work"
+else
+    # run with bash *.sh
+    echo "Running on NON interactive mode. Aliases will not work. Setting then now."
+    shopt -s expand_aliases ## else aliases will be ignored in this bash session
+    alias python='python3'
+fi
 
 # This script is for continuous integration using Jenkins (http://jenkins-ci.org/)
 # It is called for the newfea branch from the jenkins workspace, i.e., 
@@ -20,8 +29,8 @@ uname -a
 gcc --version
 cmake --version
 python --version
-python -c "import numpy; print(numpy.__version__)"
-python -c "import matplotlib; print(matplotlib.__version__)"
+python -c "import numpy; print('Numpy:', numpy.__version__)"
+python -c "import matplotlib; print('MPL:', matplotlib.__version__)"
 
 # Check if core was changed
 core_update=$(git --git-dir=$GIMLISRC/.git diff --name-only $GIT_PREVIOUS_COMMIT $GIT_COMMIT | grep -c core/src || true)
@@ -42,14 +51,14 @@ pushd $GIMLIBLD
         core_update=2
     fi
 
-    if [[ $core_update -ge 1 ]]; then
+    if [ $core_update -ge 1 ]; then
         echo "# Core changes detected. #"
         touch CMakeCache.txt
+	
+        cmake ../$GIMLISRC
 
-        #cmake ../$GIMLISRC
-
-        #make -j $GIMLI_NUM_THREADS
-        #make pygimli J=$GIMLI_NUM_THREADS
+        make -j $GIMLI_NUM_THREADS 
+       	make pygimli J=$GIMLI_NUM_THREADS
         
     else
         echo "# No core changes detected. #"
