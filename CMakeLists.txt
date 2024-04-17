@@ -16,7 +16,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/core/cmake")
 include(GIMLImacros)
 
-
 add_custom_target(pygimli)
 
 if (NOT CMAKE_BUILD_TYPE)
@@ -811,10 +810,14 @@ include_directories("${PROJECT_BINARY_DIR}")
 ################################################################################
 # add virtual env for whl package test
 ################################################################################
-set(PYTHON_VIRTUAL_ENV "${CMAKE_BINARY_DIR}/wheeltest_venv")
+if (NOT TESTVENV)
+    set(TESTVENV "${CMAKE_BINARY_DIR}/wheeltest_venv")
+endif()
+
+set(PYTHON_VIRTUAL_ENV ${TESTVENV})
 if (NOT EXISTS "${PYTHON_VIRTUAL_ENV}")
     message(STATUS "Creating virtual python environment for testing [${PYTHON_VIRTUAL_ENV}]")
-    execute_process(COMMAND "${Python_EXECUTABLE}" -m venv "${PYTHON_VIRTUAL_ENV}")
+    execute_process(COMMAND "${Python_EXECUTABLE}" --quiet -m venv "${PYTHON_VIRTUAL_ENV}")
 else ()
     message(STATUS "Using virtual python environment for testing [${PYTHON_VIRTUAL_ENV}]")
 endif ()

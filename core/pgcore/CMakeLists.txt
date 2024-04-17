@@ -37,7 +37,7 @@ else()
 
     ## POST Build
 
-    ## create the wheel: make whl${TARGET_NAME}
+    ### PREPARE the wheel: make whl${TARGET_NAME}
     add_custom_target(whl${TARGET_NAME}CopyLibs)
     set(WHEEL_LIBRARIES_DIR ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}/libs/ )
 
@@ -63,30 +63,32 @@ else()
         )
     endforeach(file)
 
+    ### PACKAGE the wheel
     add_custom_target(whl${TARGET_NAME}PackageBuild DEPENDS whl${TARGET_NAME}CopyLibs
-        COMMAND "${Python_EXECUTABLE}" -m pip wheel --wheel-dir=${WHEELHOUSE} .
+        COMMAND "${Python_EXECUTABLE}" -m pip --quiet wheel --wheel-dir=${WHEELHOUSE} .
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
         COMMENT "Building python wheel package for ${TARGET_NAME}"
     )
+    ### REPAIR the wheel
     if (OS_VAR STREQUAL "almalinux")
         add_custom_target(whl${TARGET_NAME}PackageRepair DEPENDS whl${TARGET_NAME}PackageBuild
             COMMAND "auditwheel" repair ${WHEELHOUSE}/${PY_WHEELFILE}
             WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-            COMMENT "Building python wheel package at: ${CMAKE_BINARY_DIR}"
+            COMMENT "Repairing python wheel package at: ${CMAKE_BINARY_DIR}"
         )
         add_custom_target(whl${TARGET_NAME} DEPENDS whl${TARGET_NAME}PackageRepair)
     elseif (OS_VAR STREQUAL "Windows")
         add_custom_target(whl${TARGET_NAME}PackageRepair DEPENDS whl${TARGET_NAME}PackageBuild
             COMMAND "delvewheel" repair ${WHEELHOUSE}/${PY_WHEELFILE} --add-path ${CMAKE_BINARY_DIR}/bin/
             WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-            COMMENT "Building python wheel package at: ${CMAKE_BINARY_DIR}"
+            COMMENT "Repairing python wheel package at: ${CMAKE_BINARY_DIR}"
         )
         add_custom_target(whl${TARGET_NAME} DEPENDS whl${TARGET_NAME}PackageRepair)
     elseif (OS_VAR STREQUAL "MAC")
         add_custom_target(whl${TARGET_NAME}PackageRepair DEPENDS whl${TARGET_NAME}PackageBuild
             COMMAND "delocate" repair ${WHEELHOUSE}/${PY_WHEELFILE} 
             WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-            COMMENT "Building python wheel package at: ${CMAKE_BINARY_DIR}"
+            COMMENT "Repairing python wheel package at: ${CMAKE_BINARY_DIR}"
         )
         add_custom_target(whl${TARGET_NAME} DEPENDS whl${TARGET_NAME}PackageRepair)
     else()
@@ -94,11 +96,12 @@ else()
                     "For manylinux target, build on Almalinux 8 (docker image).")
         add_custom_target(whl${TARGET_NAME} DEPENDS whl${TARGET_NAME}PackageBuild)
     endif()
+    ### FINAL TARGET make whlpgcore
 
     ## test the wheel: make whlTest
     add_custom_target(whl${TARGET_NAME}TestInstall DEPENDS whl${TARGET_NAME}
         COMMAND "${Python3_EXECUTABLE}" -m pip uninstall -y ${TARGET_NAME}
-        COMMAND "${Python3_EXECUTABLE}" -m pip install ${TARGET_NAME} --find-links=${WHEELHOUSE}
+        COMMAND "${Python3_EXECUTABLE}" -q -m pip install ${WHEELHOUSE}/${PY_WHEELFILE} --find-links=${WHEELHOUSE}
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMENT "Installing ${TARGET_NAME} in virtual test environment"
     )

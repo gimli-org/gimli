@@ -29,7 +29,7 @@ else()
         set(patch ${numbers} PARENT_SCOPE)
     endfunction()
 
-    get_versions(${GIMLI_GITVERSION_WHL} major minor patch)
+    get_versions(${GIMLI_GIT_TAG} major minor patch)
     set(PGCORE_VERSION_WHL ${major}.${minor})
     
     message(STATUS "Detected Python wheel filename: ${WHEELFILE}")
@@ -47,7 +47,7 @@ else()
     endforeach (filename)
     
     add_custom_target(whl${TARGET_NAME}PackageBuild DEPENDS whlpgcore
-        COMMAND "${Python_EXECUTABLE}" -m pip wheel . --wheel-dir=${WHEELHOUSE} --find-links ${WHEELHOUSE}
+        COMMAND "${Python_EXECUTABLE}" -m pip wheel --quiet . --wheel-dir=${WHEELHOUSE} --find-links ${WHEELHOUSE}
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
         COMMENT "Building python wheel package for ${TARGET_NAME}"
     )
@@ -58,11 +58,11 @@ else()
     # update the environment with VIRTUAL_ENV variable (mimic the activate script) and search again
     add_custom_target(whl${TARGET_NAME}TestInstall DEPENDS whl${TARGET_NAME} DEPENDS whlpgcoreTestRun
         COMMAND "${Python3_EXECUTABLE}" -m pip uninstall -y ${TARGET_NAME}
-        COMMAND "${Python3_EXECUTABLE}" -m pip install ${TARGET_NAME} --find-links=${WHEELHOUSE}
+        COMMAND "${Python3_EXECUTABLE}" -m pip --quiet install ${WHEELHOUSE}/${PY_WHEELFILE} --find-links=${WHEELHOUSE}
         COMMENT "Installing ${TARGET_NAME} in virtual test environment"
     )
     add_custom_target(whl${TARGET_NAME}TestRun DEPENDS whl${TARGET_NAME}TestInstall
-        COMMAND ${Python3_EXECUTABLE} -c "import pygimli as pg; pg.version()"
+        COMMAND ${Python3_EXECUTABLE} -c "import pygimli as pg; pg.version(cache=False)"
         VERBATIM
         COMMENT "Testing ${TARGET_NAME} installation in virtual test environment. ${Python3_EXECUTABLE} -c \'import pygimli as pg; pg.version()\'"
     )
