@@ -52,7 +52,7 @@ function build(){
 
     GIMLIBLD=$GIMLIROOT/build_$PYPLATFORM
     BUILDENV=$GIMLIROOT/build_$PYPLATFORM'_venv'
-    GIMLITST=$GIMLIROOT/test_$PYPLATFORM'_venv'
+    TESTVENV=$GIMLIROOT/test_$PYPLATFORM'_venv'
 
     pushd $GIMLIROOT
         
@@ -71,15 +71,13 @@ function build(){
                 echo "# Core changes detected. #"
                 rm -rf CMakeCache.txt
 
-                cmake $GIMLISRC -DTESTVENV=$GIMLITST
-
-                make -j $GIMLI_NUM_THREADS 
-                make pygimli J=$GIMLI_NUM_THREADS
-                make whlpgcore
             else
                 echo "# No core changes detected. #"
             fi
 
+            cmake $GIMLISRC -DTESTVENV=$TESTVENV
+            make -j $GIMLI_NUM_THREADS 
+            make pygimli J=$GIMLI_NUM_THREADS
             make whlTest
 
         popd        
