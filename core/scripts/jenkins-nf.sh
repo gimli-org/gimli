@@ -12,21 +12,26 @@ else
     alias python='python3'
 fi
 
+
+#rm -rf /var/lib/jenkins/.cache/pygimli # We need a better cleaning process
 echo "Starting automatic build #$BUILD_NUMBER on" `date` 
 
 echo "JOB_NAME=$JOB_NAME"
 echo "JOB_BASE_NAME=$JOB_BASE_NAME"
 echo "JENKINS_HOME=$JENKINS_HOME"
-echo "BUILD_TAG=$BUILD_TAG"
 echo "WORKSPACE=$WORKSPACE"
-echo "GIT_COMMIT=$GIT_COMMIT"
+echo "BUILD_TAG=$BUILD_TAG"
 
 #rm -rf /var/lib/jenkins/.cache/pygimli # We need a better cleaning process
 AGENTS_ROOT=$WORKSPACE/../
-GIMLIROOT=$WORKSPACE/gimli
+GIMLIROOT=$WORKSPACE
+GIMLISRC=$GIMLIROOT/gimli
 
 echo "GIMLIROOT=$GIMLIROOT"
+echo "GIMLISRC=$GIMLISRC"
 
+
+echo "Starting automatic build #$BUILD_NUMBER on" `date` "ROOT: $GIMLIROOT"
 start=$(date +"%s")
 
 # Show system information
@@ -90,6 +95,7 @@ function build(){
 
         popd        
     popd
+    
 }
 
 
