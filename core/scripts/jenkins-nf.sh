@@ -21,10 +21,9 @@ echo "BUILD_TAG=$BUILD_TAG"
 echo "WORKSPACE=$WORKSPACE"
 echo "GIT_COMMIT=$GIT_COMMIT"
 
-
 #rm -rf /var/lib/jenkins/.cache/pygimli # We need a better cleaning process
-JENKINSROOT=$(pwd)../../
-GIMLIROOT=$JENKINSROOT/gimli.newfea/gimli
+AGENTS_ROOT=$WORKSPACE/../
+GIMLIROOT=$WORKSPACE/gimli
 
 echo "GIMLIROOT=$GIMLIROOT"
 
@@ -91,9 +90,8 @@ function build(){
 
         popd        
     popd
-    
 }
 
 
-#build $PYVERSION
+build $PYVERSION
 #test
