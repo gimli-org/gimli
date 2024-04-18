@@ -1,4 +1,7 @@
 #!/bin/bash
+# This script is for continuous integration using Jenkins (http://jenkins-ci.org/)
+# It is called for the newfea branch from the jenkins workspace, i.e., 
+# bash -xe ./gimli/core/scripts/jenkins-nf.sh
 if [[ $- == *i* ]]; then
     # run with . *.sh
     echo "Running on interactive mode. Aliases will work"
@@ -9,16 +12,22 @@ else
     alias python='python3'
 fi
 
-# This script is for continuous integration using Jenkins (http://jenkins-ci.org/)
-# It is called for the newfea branch from the jenkins workspace, i.e., 
-# bash -xe ./gimli/core/scripts/jenkins-nf.sh
+echo "Starting automatic build #$BUILD_NUMBER on" `date` 
+
+echo "JOB_NAME=$JOB_NAME"
+echo "JOB_BASE_NAME=$JOB_BASE_NAME"
+echo "JENKINS_HOME=$JENKINS_HOME"
+echo "BUILD_TAG=$BUILD_TAG"
+echo "WORKSPACE=$WORKSPACE"
+echo "GIT_COMMIT=$GIT_COMMIT"
+
 
 #rm -rf /var/lib/jenkins/.cache/pygimli # We need a better cleaning process
+JENKINSROOT=$(pwd)../../
+GIMLIROOT=$JENKINSROOT/gimli.newfea/gimli
 
-GIMLIROOT=$(pwd)
-GIMLISRC=$GIMLIROOT/gimli
+echo "GIMLIROOT=$GIMLIROOT"
 
-echo "Starting automatic build #$BUILD_NUMBER on" `date` "ROOT: $GIMLIROOT"
 start=$(date +"%s")
 
 # Show system information
@@ -43,7 +52,7 @@ core_update=$(git --git-dir=$GIMLISRC/.git diff --name-only $GIT_PREVIOUS_COMMIT
 
 # Set this to 1 if you want clean build (also of dependencies)
 export CLEAN=0
-export GIMLI_NUM_THREADS=$((`nproc --all` / 2))
+export GIMLI_NUM_THREADS=$((`nproc --all` - 4))
 
 function build(){
 
