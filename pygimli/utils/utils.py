@@ -13,6 +13,7 @@ import pygimli as pg
 # scooby is a soft dependency.
 try:
     from scooby import Report as ScoobyReport
+
 except ImportError:
     class ScoobyReport:
         """Local scooby reporting class."""
