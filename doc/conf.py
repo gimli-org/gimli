@@ -623,20 +623,20 @@ def monkeypatch(self, section: str, use_admonition: bool):
     lines = self._strip_empty(self._consume_to_next_section())
     lines = self._dedent(lines)
     all_lines = " ".join(lines)
-    if (
-        ("show" in all_lines or "draw" in all_lines)
+    if (("show" in all_lines or "draw" in all_lines)
         and "Example" in section
         and ".. plot::" not in all_lines
-    ):
-        header = ".. plot::\n\n"
+       ):
+        header = [f".. rubric:: {section}"]
+        header.append(".. plot::\n\n")
         lines = self._indent(lines, 3)
-    else:
-        header = ".. rubric:: %s" % section
-    if lines:
-        return [header, ""] + lines + [""]
-    else:
-        return [header, ""]
+        else:
+        header = [f".. rubric:: {section}"]
 
+    if lines:
+        return header + [""] + lines + [""]
+    else:
+        return header + [""]
 
 NumpyDocstring._parse_generic_section = monkeypatch
 
