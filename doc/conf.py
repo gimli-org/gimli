@@ -630,7 +630,7 @@ def monkeypatch(self, section: str, use_admonition: bool):
         header = [f".. rubric:: {section}"]
         header.append(".. plot::\n\n")
         lines = self._indent(lines, 3)
-        else:
+    else:
         header = [f".. rubric:: {section}"]
 
     if lines:
