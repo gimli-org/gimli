@@ -121,12 +121,12 @@ def showERTData(data, vals=None, **kwargs):
         kwargs.setdefault("y", ["a", "b"])
         kwargs.setdefault("x", "m")
     elif sty == "sepa-m":
-        data["ab"] = data["b"] - data["a"]
+        data["ab"] = np.abs(data["b"] - data["a"])
         kwargs.setdefault("y", ["ab", "a"])
         kwargs.setdefault("x", "m")
     elif sty == "a-sepm":
-        data["mn"] = data["n"] - data["m"]
-        kwargs.setdefault("y", "a")
+        data["mn"] = np.abs(data["n"] - data["m"])
+        kwargs.setdefault("x", "a")
         kwargs.setdefault("y", ["mn", "m"])
     elif sty is not None and sty != 0:
         kwargs.setdefault("y", ["a", "b"])
