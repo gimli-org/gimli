@@ -488,7 +488,7 @@ class Cm05Matrix(MatrixBase):
 
     def cols(self):
         """Return number of columns (using underlying matrix)."""
-        return self.row()
+        return self.rows()
 
     def mult(self, x):
         """Multiplication from right-hand side (dot product)."""
