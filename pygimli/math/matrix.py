@@ -460,10 +460,9 @@ class Cm05Matrix(MatrixBase):
                 pg.info('(C) Time for eigenvalue decomposition {:.1f}s'.format(
                         pg.dur(key='init cm05')))
 
-            # self.A = A
-
     @property
     def mul(self):
+        """Scaling vector for A**(-0.5), 1/sqrt(eigenvalues)."""
         if self._mul is None:
             self._mul = np.sqrt(1./self.ew)
         return self._mul
@@ -488,7 +487,7 @@ class Cm05Matrix(MatrixBase):
 
     def cols(self):
         """Return number of columns (using underlying matrix)."""
-        return self.row()
+        return self.rows()
 
     def mult(self, x):
         """Multiplication from right-hand side (dot product)."""
