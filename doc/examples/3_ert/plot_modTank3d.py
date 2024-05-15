@@ -36,8 +36,7 @@ plc = mt.createCube(size=[0.99, 0.5, 1.0], pos=[0.495, 0.25], boundaryMarker=1)
 # We first read the measuring scheme file and add the electrodes as nodes with
 # the marker -99 to the geometry.
 
-filename = pg.getExampleFile("ert/modeltank.shm")
-shm = pg.DataContainerERT(filename)
+shm = pg.getExampleData("ert/modeltank.shm")
 
 for s in shm.sensors():
     plc.createNode(s, marker=-99)

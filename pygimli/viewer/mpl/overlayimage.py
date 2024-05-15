@@ -388,6 +388,7 @@ def underlayBKGMap(ax, mode='DOP', utmzone=32, epsg=0, imsize=2500, uuid='',
     Parameters
     ----------
     mode : str
+        'MAP' basemapDE or
         'DOP' (digital orthophoto 40cm) or
         'DTK' (digital topo map 1:25000)
     imsize : int

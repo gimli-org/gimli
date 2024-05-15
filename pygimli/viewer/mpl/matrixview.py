@@ -112,17 +112,20 @@ def drawBlockMatrix(ax, mat, **kwargs):
             mid = e.matrixID
             widthy = mat.mat(mid).rows() - 0.1 # to make sure non-matrix regions are not connected in the plot
             widthx = mat.mat(mid).cols() - 0.1
-            plc = pg.meshtools.createRectangle([e.colStart, e.rowStart],
-                                   [e.colStart + widthx, e.rowStart + widthy],
-                                                marker=mid)
+            plc = pg.meshtools.createRectangle(
+                [e.colStart, e.rowStart],
+                [e.colStart + widthx, e.rowStart + widthy],
+                marker=mid)
             plcs.append(plc)
 
         bm = pg.meshtools.mergePLC(plcs)
-        gci, cBar = pg.viewer.mpl.drawPLC(ax, bm, fitView=False)
+        gci, cBar = pg.viewer.mpl.drawPLC(ax, bm, fitView=False, **kwargs)
         ax.invert_yaxis()
         ax.xaxis.tick_top()
-        cBar.set_label("Matrix ID")
+        if cBar is not None:
+            cBar.set_label("Matrix ID")
 
         if len(mat.entries()) > 10:
             gci.set_cmap("viridis")
+
         return gci, cBar

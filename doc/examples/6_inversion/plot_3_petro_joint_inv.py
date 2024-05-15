@@ -11,8 +11,8 @@ In this example, ERT and traveltime data are inverted for water saturation
 using petrophysical relations to resistivity and velocity. For details see 
 section 3.3 of the pyGIMLi paper (https://cg17.pygimli.org).
 """
-# sphinx_gallery_thumbnail_number = 5
 
+# sphinx_gallery_thumbnail_number = 10
 import numpy as np
 import pygimli as pg
 

@@ -1289,6 +1289,12 @@ def linSolve(mat, b, solver=None, verbose=False, **kwargs):
 def applyDirichlet(mat, rhs, uDirIndex, uDirichlet):
     """This should be moved directly into the core"""
 
+    # idx = np.argsort(uDirIndex)
+    # print(idx)
+    # print(np.asarray(uDirIndex)[idx])
+    # print(np.asarray(uDirichlet[idx]))
+
+
     if mat is not None:
         if rhs is not None:
             uDir = pg.Vector(mat.rows(), 0.0)

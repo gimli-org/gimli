@@ -8,12 +8,11 @@ In this tutorial we like to demonstrate how to control the regularization of
 subsurface regions individually by using an ERT field case. The data is a 2d
 profile that was measured in 2005 on the bottom of a lake. The water body is
 of course influencing the fields and needs to be treated accordingly.
+
+We first import pygimli and the modules for ERT and mesh building.
 """
+
 # sphinx_gallery_thumbnail_number = 12
-
-# %%%
-# We first import pygimli and the modules for ERT and mesh building.
-
 import matplotlib.pyplot as plt
 import pygimli as pg
 from pygimli.physics import ert
@@ -109,7 +108,7 @@ ax, _ = pg.show(mesh, markers=True, showMesh=True)
 
 mgr = ert.ERTManager(data, verbose=True)
 mgr.setMesh(mesh)  # use this mesh for all subsequent runs
-mgr.invert(maxIter=1)
+mgr.invert()
 # mgr.invert(mesh=mesh) would only temporally use the mesh
 
 # %%%

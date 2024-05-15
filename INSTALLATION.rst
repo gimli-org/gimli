@@ -97,7 +97,7 @@ pyGIMLi package via pip:
 
 .. code:: python
 
-    !pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple pygimli
+    !pip install pygimli
 
 Staying up-to-date
 ------------------

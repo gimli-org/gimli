@@ -736,9 +736,11 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True,
                 areas = {}
                 for reg in mesh.regionMarkers():
                     areas[reg.marker()] = reg.area()
-                    ax.plot(reg.x(), reg.y(), "mx", alpha=0.5)
-                    ax.text(reg.x(), reg.y(), str(reg.marker()), color="m",
-                            ha="center", va="center")
+                    # if kwargs.get("regionMarkers", True):
+                    if regionMarker:
+                        ax.plot(reg.x(), reg.y(), "mx", alpha=0.5)
+                        ax.text(reg.x(), reg.y(), str(reg.marker()),
+                                color="m", ha="center", va="center")
 
                 labels = []
                 for marker in uniquemarkers:
@@ -787,8 +789,8 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True,
         ax.set_aspect('equal')
 
     updateAxes_(ax)
-    if cbar is None:
-        return gci
+    # if cbar is None:
+    #     return gci
     return gci, cbar
 
 
@@ -1333,6 +1335,9 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
     **kwargs
         Additional kwargs forwarded to mpl.PatchCollection, mpl.Circle
 
+    sensorMarker:
+        Also 'sm'. Set marker style: 'o' Circle, 'v' Triangle pointing down. 
+
     Examples
     --------
     >>> import numpy as np
@@ -1353,21 +1358,33 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
                 not pg.core.zVari(sensors) and sensors[0][2] == 0.0:
             coords = [0, 1]
 
-    eCircles = []
 
     if diam is None:
         eSpacing = pg.Pos(sensors[0]).distance(sensors[1])
         diam = eSpacing / 2.5
 
+    eSensors = []
+    sm = kwargs.pop('sm', kwargs.pop('sensorMarker', 'o'))
     for e in sensors:
-        eCircles.append(mpl.patches.Circle((e[coords[0]],
-                                            e[coords[1]]), diam/2, **kwargs))
+        x = e[coords[0]]
+        y = e[coords[1]]
+        if sm == 'o':
+            eSensors.append(mpl.patches.Circle((x,y), diam/2, 
+                                               **kwargs))
+        else:
+            eSensors.append(mpl.patches.Polygon(([x, y],
+                                                 [x+diam/1.5/1.4, y+diam/1.5],
+                                                 [x-diam/1.5/1.4, y+diam/1.5]
+                                                 ), 
+                                                closed=True,
+                                                **kwargs))
 
-    p = mpl.collections.PatchCollection(eCircles, **kwargs)
+    p = mpl.collections.PatchCollection(eSensors, clip_on=False, **kwargs)
     p.set_zorder(100)
     ax.add_collection(p)
 
     updateAxes_(ax)
+    #ax.set(ylim=[None, y+diam])
 
 
 def _createParameterContraintsLines(mesh, cMat, cWeights=None):

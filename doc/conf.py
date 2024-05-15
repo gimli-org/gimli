@@ -334,7 +334,7 @@ import datetime
 today = datetime.datetime.now()
 webinar = datetime.datetime(2024, 3, 19) 
 if today < webinar:
-    html_theme_options["announcement"] = "There will be a webinar on pyGIMLi hosted by SEG on March 19, 2024 at 4 pm CET. Watch this space!"
+    html_theme_options["announcement"] = "There will be a webinar on pyGIMLi hosted by SEG on March 19, 2024 at 4 pm CET. Register for free <a href='https://seg.org/calendar_events/open-source-software-webinar-pygimli/', target='_blank'>here</a>."
 
 html_css_files = [
     "css/custom.css",
@@ -623,20 +623,20 @@ def monkeypatch(self, section: str, use_admonition: bool):
     lines = self._strip_empty(self._consume_to_next_section())
     lines = self._dedent(lines)
     all_lines = " ".join(lines)
-    if (
-        ("show" in all_lines or "draw" in all_lines)
+    if (("show" in all_lines or "draw" in all_lines)
         and "Example" in section
         and ".. plot::" not in all_lines
-    ):
-        header = ".. plot::\n\n"
+       ):
+        header = [f".. rubric:: {section}"]
+        header.append(".. plot::\n\n")
         lines = self._indent(lines, 3)
     else:
-        header = ".. rubric:: %s" % section
-    if lines:
-        return [header, ""] + lines + [""]
-    else:
-        return [header, ""]
+        header = [f".. rubric:: {section}"]
 
+    if lines:
+        return header + [""] + lines + [""]
+    else:
+        return header + [""]
 
 NumpyDocstring._parse_generic_section = monkeypatch
 
