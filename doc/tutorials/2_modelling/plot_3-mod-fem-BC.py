@@ -40,13 +40,14 @@ grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 21),
 # of the individual boundaries b.
 
 def uDirichlet(boundary):
-    """Return a solution value for a given boundary. Scalar values are applied to all nodes of the boundary."""
+    """Return a solution value for a given boundary. 
+        Scalar values are applied to all nodes of the boundary."""
     return 4.0
 
 dirichletBC = {1: 1,                                           # left
                2: 2.0,                                         # right
-               3: lambda boundary: 3.0 + boundary.center()[0], # top
-               4: uDirichlet}                                  # bottom
+               3: lambda boundary: 3.0 + boundary.center()[0], # bottom
+               4: uDirichlet}                                  # top
 
 ###############################################################################
 # The boundary conditions are passed using the bc keyword dictionary.
@@ -57,10 +58,10 @@ ax, cbar = show(grid, data=u, label='Solution $u$')
 
 show(grid, ax=ax)
 
-ax.text(0, 1.01, '$u=3+x$', ha='center')
-ax.text(-1.01, 0, '$u=1$', va='center', ha='right', rotation='vertical')
-ax.text(0, -1.01, '$u=4$', ha='center', va='top')
 ax.text(1.02, 0, '$u=2$', va='center', ha='left',  rotation='vertical')
+ax.text(-1.01, 0, '$u=1$', va='center', ha='right', rotation='vertical')
+ax.text(0, 1.01, '$u=4$', ha='center')
+ax.text(0, -1.01, '$u=3+x$', ha='center', va='top')
 
 ax.set_title('$\\nabla\cdot(1\\nabla u)=1$')
 

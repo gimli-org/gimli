@@ -939,6 +939,10 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
     addNodes : int [1]
         Number of additional nodes to be added equidistant between sensors.
 
+    trapRatio : float [0]
+        Form a trapezoidal shape instead of a rectangle.
+        The value is a ratio of the total length to put inside at depth.
+
     Returns
     -------
     poly: :gimliapi:`GIMLI::Mesh`
@@ -1003,13 +1007,18 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
     poly = pg.Mesh(dim=2, isGeometry=True)
     # define para domain without surface
     n1 = poly.createNode([xMin - paraBound, sensors[0][iz]])
+    xStart = xMin - paraBound
+    xEnd = xMax + paraBound
+    trapRatio = np.minimum(kwargs.pop("trapRatio", 0), 0.45)
+    dxTrap = (xEnd - xStart) * trapRatio
     if balanceDepth:
         bD = min(sensors[0][iz] - paraDepth, sensors[-1][iz] - paraDepth)
-        n2 = poly.createNode([xMin - paraBound, bD])
-        n3 = poly.createNode([xMax + paraBound, bD])
+        n2 = poly.createNode([xStart + dxTrap, bD])
+        n3 = poly.createNode([xEnd - dxTrap, bD])
     else:
-        n2 = poly.createNode([xMin - paraBound, sensors[0][iz] - paraDepth])
-        n3 = poly.createNode([xMax + paraBound, sensors[-1][iz] - paraDepth])
+        n2 = poly.createNode([xStart + dxTrap, sensors[0][iz] - paraDepth])
+        n3 = poly.createNode([xEnd - dxTrap, sensors[-1][iz] - paraDepth])
+
     n4 = poly.createNode([xMax + paraBound, sensors[-1][iz]])
 
     if boundary < 0:

@@ -47,6 +47,14 @@ def load(fileName, verbose=False, **kwargs):
     pb = pg.optImport('pybert')
     data = pb.importData(fileName)
 
+    if kwargs.pop('ensureKRhoa', False):
+        if not data.haveData('k'):
+            data.createGeometricFactors()
+        if data.haveData('r'):
+            data['rhoa'] = data['r'] * data['k']
+        elif data.haveData('u') and data.haveData('i'):
+            data['rhoa'] = data['u'] / data['i'] * data['k']
+
     if isinstance(data, pg.DataContainerERT):
         return data
 
@@ -325,8 +333,8 @@ def importAsciiColumns(filename, verbose=False, return_header=False):
             content = content[n+1:]
 
         if content[0].startswith('Filename'):  # ABEM lead-in
-            for n in range(1000):
-                if content[n].find("MeasID") > 0:
+            for n, line in enumerate(content):
+                if line.find("MeasID") > 0:
                     break
 
             for i in range(n):

@@ -858,7 +858,7 @@ def abs(v):
     elif hasattr(v, 'vals'):
         return pgcore.abs(v.vals)
     elif hasattr(v, 'values'):
-        return pgcore.abs(v.values)
+        return pgcore.fabs(v.values)
 
     return pgcore.fabs(v)
 
