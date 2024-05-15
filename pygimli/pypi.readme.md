@@ -35,16 +35,16 @@ python -m venv pygimli
 source pygimli/bin/activate
 ```
 
-To install pygimli from the test repository:
+To install pygimli :
 
 ``` bash
-python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple pygimli
+python -m pip install pygimli
 ```
 
 You might add the 'all' option to install also optional dependencies.
 
 ``` bash
-python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple pygimli['all']
+python -m pip install pygimli['all']
 ```
 
 You can see if the installation was successful:
