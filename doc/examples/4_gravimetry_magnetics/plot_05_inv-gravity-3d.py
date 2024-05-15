@@ -41,7 +41,7 @@ print(grid)
 
 v = np.zeros((len(z)-1, len(y)-1, len(x)-1))
 for i in range(7):
-    v[1+i, 11-i:16-i, 7:13] = 1000 # 1g/cm³
+    v[1+i, 11-i:16-i, 7:13] = 1 # 1g/cm³
 
 grid["synth"] = v.ravel()
 
