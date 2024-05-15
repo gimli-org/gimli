@@ -97,7 +97,7 @@ pyGIMLi package via pip:
 
 .. code:: python
 
-    !pip install pygimli
+    !pip install pygimli tetgen
 
 Staying up-to-date
 ------------------
