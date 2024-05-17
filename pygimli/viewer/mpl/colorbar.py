@@ -372,6 +372,8 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
 
     cmap = cmapFromName(cMap)
     kwargs.pop('colorBar', False)  # often False for multiple plots
+    kwargs.pop('xlabel', False)
+    kwargs.pop('ylabel', False)
     aspect = kwargs.pop('aspect', None)
     levels = kwargs.pop('levels', None)
     cbar = ColorbarBase(ax, norm=norm, cmap=cmap,
@@ -391,7 +393,7 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     # updateColorBar(cbar, **kwargs)
 
     if savefig is not None:
-        saveFigure(fig, savefig)
+        saveFigure(ax.figure, savefig)
 
     return ax
 
