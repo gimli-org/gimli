@@ -129,8 +129,7 @@ mgr.showMisfit(errorWeighted=True)
 # distribution of Gaussian noise.
 #
 
-cov = pg.Vector(mgr.model.size(), 1.0)
-kw = dict(cMin=20, cMax=300, logScale=True, cMap="Spectral_r", coverage=cov)
+kw = dict(cMin=20, cMax=300, logScale=True, cMap="Spectral_r")
 ax, cb = mgr.showResult(**kw)
 
 # %%%
