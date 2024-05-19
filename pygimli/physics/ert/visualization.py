@@ -69,20 +69,13 @@ def showERTData(data, vals=None, **kwargs):
     cb : matplotlib.colorbar
         colorbar instance
     """
-    var = kwargs.pop('var', 0)
-    if var > 0:
-        import pybert as pb
-        pg._g(kwargs)
-        return pb.showData(data, vals, var=var, **kwargs)
-
-    # remove ax keyword global
+    # remove ax keyword globally (problems with colorbar)
     ax = kwargs.pop('ax', None)
-
     if ax is None:
         fig = pg.plt.figure()
         ax = None
         axTopo = None
-        if 'showTopo' in kwargs:
+        if 'showTopo' in kwargs:  # can be removed?
             ax = fig.add_subplot(1, 1, 1)
 #            axs = fig.subplots(2, 1, sharex=True)
 #            # Remove horizontal space between axes
@@ -180,8 +173,6 @@ def showERTData(data, vals=None, **kwargs):
         axTopo.set_ylim(min(pg.z(data)), max(pg.z(data)))
         axTopo.set_aspect(1)
 
-    # ax.set_aspect('equal')
-    # plt.pause(0.1)
     pg.viewer.mpl.updateAxes(ax)
     return ax, cbar
 
