@@ -12,7 +12,16 @@ from pygimli.frameworks import Block1DModelling
 
 
 def registerDAEROcmap():
-    """Standardized colormap from A-AERO projects (purple=0.3 to red=500)."""
+    """Standardized colormap from A-AERO projects (purple=0.3 to red=500).
+
+    Example
+    -------
+    >>> import pygimli as pg
+    >>> cmap = pg.physics.em.hemmodelling.registerDAEROcmap()
+    >>> mesh = pg.createGrid(20,2)
+    >>> data = pg.x(mesh.cellCenters())
+    >>> pg.show(mesh, data, cmap=cmap)
+    """
     CMY = np.array([
         [127, 255, 31], [111, 255, 47], [95, 255, 63], [79, 255, 79],
         [63, 255, 95], [47, 255, 111], [31, 255, 127], [16, 255, 159],
