@@ -41,7 +41,7 @@ print(grid)
 
 v = np.zeros((len(z)-1, len(y)-1, len(x)-1))
 for i in range(7):
-    v[1+i, 11-i:16-i, 7:13] = 1
+    v[1+i, 11-i:16-i, 7:13] = 1 # 1g/cm³
 
 grid["synth"] = v.ravel()
 
@@ -66,17 +66,14 @@ pl.camera.zoom(1.2)
 _ = pl.show()
 
 # %%%
-# For the computation of the total field, we define the global magnetic
-# field using the IGRF (total field, inclination and declination) settings
-# given in the paper. Any global field can also be retrieved by the
-# ``pyIGRF`` module.
+# We simulate the synthetic model and display the model response.
 #
 
 xx, yy = np.meshgrid(x, y)
 points = np.column_stack((xx.ravel(), yy.ravel(), -np.ones(np.prod(xx.shape))))
 fop = GravityModelling(grid, points)
 data = fop.response(grid["synth"])
-noise_level = 0.1
+noise_level = 1
 data += np.random.randn(len(data)) * noise_level
 plt.contourf(yy, xx, np.reshape(data, xx.shape))
 plt.colorbar();
@@ -91,15 +88,15 @@ plt.colorbar();
 # .. math::
 #
 #
-#    w_z = \frac{1}{(z+z_0)^{3/2}}
+#    w_z = \frac{1}{(z+z_0)^{\beta/2}}
 #
 
 # depth weighting
 bz = np.array([b.center().z() for b in grid.boundaries() if not b.outside()])
 bn = np.array([b.norm().z() for b in grid.boundaries() if not b.outside()])
-z0 = 100
-wz = z0 / (bz+z0)**1
-# wz = z0 / (pg.z(grid.cellCenters())+z0)
+z0 = 50
+beta = 2.0
+wz = (z0 / (bz+z0))**(beta/2)
 
 # %%%
 # Inversion
@@ -113,9 +110,17 @@ inv = pg.Inversion(fop=fop, verbose=True)  # , debug=True)
 inv.modelTrans = pg.trans.TransCotLU(-2, 2)
 # inv.setRegularization(correlationLengths=[500, 500, 100])
 inv.setConstraintWeights(wz)
-invmodel = inv.run(data, absoluteError=noise_level, lam=3e4,  # zWeight=0.3,
+invmodel = inv.run(data, absoluteError=noise_level, lam=1e4,  # zWeight=0.3,
                    startModel=0.1, verbose=True)
 grid["inv"] = invmodel
+
+# %%%
+# Model response
+#
+
+misfit = np.reshape(data-inv.response, xx.shape) / noise_level
+plt.pcolor(yy, xx, misfit, cmap="bwr", vmin=-3, vmax=3)
+plt.colorbar();
 
 # %%%
 # Visualization
@@ -129,8 +134,9 @@ grid["inv"] = invmodel
 ftr = dict(value=0.5, scalars="synth")
 pl, _ = pg.show(grid, label="synth", style="wireframe",
                 filter={"threshold": ftr}, hold=True)
-ftr = dict(value=0.3, scalars="inv")
-pv.drawMesh(pl, grid, label="inv", style="surface", filter={"threshold": ftr})
+ftr = dict(value=0.4, scalars="inv")
+pv.drawMesh(pl, grid, label="inv", style="surface", filter={"threshold": ftr},
+            cMin=0, cMax=1)
 pl.camera_position = "yz"
 pl.camera.roll = 90
 pl.camera.azimuth = 180

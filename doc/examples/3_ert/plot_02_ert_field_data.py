@@ -15,10 +15,10 @@ import pygimli as pg
 from pygimli.physics import ert
 
 ###############################################################################
-# Get some example data with topography, typically by a call like
+# Get some example data with, typically by a call like
 # data = ert.load("filename.dat")
 # that supports various file formats
-data = pg.getExampleFile('ert/slagdump.ohm', load=True, verbose=True)
+data = pg.getExampleData('ert/slagdump.ohm', verbose=True)
 print(data)
 
 ###############################################################################

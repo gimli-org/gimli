@@ -303,7 +303,8 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
                 np.array(mesh.cellMarkers()), return_inverse=True)
 
             label = label or "Cell markers"
-            cMap = pg.plt.cm.get_cmap("Set3", len(uniquemarkers))
+            cMap = cmapFromName("Set3", ncols=len(uniquemarkers))
+            #cMap = pg.plt.colormaps.get_cmap("Set3", len(uniquemarkers))
             kwargs["logScale"] = False
             kwargs["cMin"] = -0.5
             kwargs["cMax"] = len(uniquemarkers) - 0.5
@@ -442,11 +443,13 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             gci.set_antialiased(True)
             gci.set_linewidth(0.3)
             gci.set_edgecolor(kwargs.pop('color', "0.1"))
-        else:
-            pg.viewer.mpl.drawSelectedMeshBoundaries(
-                ax, mesh.boundaries(), color=kwargs.pop('color', "0.1"),
-                linewidth=0.3)
-            # drawMesh(ax, mesh, **kwargs)
+            #drawMesh(ax, mesh, lw=0.3, **kwargs)
+        #else:
+        drawMesh(ax, mesh, lw=0.3, **kwargs)
+        # pg.viewer.mpl.drawSelectedMeshBoundaries(ax, 
+        #         mesh.boundaries(), 
+        #         color=kwargs.pop('color', "0.1"),
+        #         linewidth=kwargs.pop('lw', 0.3))
 
     if bool(showBoundary) is True:
         b = mesh.boundaries(mesh.boundaryMarkers() != 0)

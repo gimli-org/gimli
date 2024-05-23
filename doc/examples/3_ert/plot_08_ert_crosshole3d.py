@@ -9,14 +9,12 @@ Instead of a regular grid or an irregular tetrahedral mesh, we use triangular
 prism mesh (triangles in x-y plane and regular along z). This is beneficial
 in cases of a predominant layering that can be accounted for by using the
 zWeight inversion parameter because the boundaries are perfectly vertical.
+
+We import the used libraries pygimli, meshtools the ERT module and a function
+for displaying a data container.
 """
+
 # sphinx_gallery_thumbnail_number = 4
-
-# %%%
-# We import the used libraries pygimli, meshtools the ERT module and a function
-# for displaying a data container.
-#
-
 import numpy as np
 import pygimli as pg
 import pygimli.meshtools as mt

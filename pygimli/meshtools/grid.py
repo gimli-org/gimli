@@ -216,7 +216,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
     mesh: :gimliapi:`GIMLI::Mesh`
         Mesh to which the triangle boundary should be appended.
     xbound: float, optional
-        Absolute horizontal prolongation distance.
+        Absolute horizontal prolongation distance. Need to be greater 2.
     ybound: float, optional
         Absolute vertical prolongation distance.
     marker: int, optional
@@ -358,8 +358,9 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
             poly.copyBoundary(b)
 
     preserveSwitch = 'Y'
-    # pg.show(poly, boundaryMarkers=True, showNodes=True)
-    # pg.wait()
+    #pg.show(poly, fillRegion=False)
+    #pg.show(poly, boundaryMarkers=True, showNodes=True)
+    #pg.wait()
 
     mesh2 = pg.meshtools.createMesh(poly, preserveBoundary=preserveSwitch,
                                     **kwargs)

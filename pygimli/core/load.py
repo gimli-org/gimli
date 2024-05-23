@@ -237,7 +237,9 @@ def getUrlFile(url, fileName, timeout=10, verbose=False):
         # print(pg.pf(header))
         length = int(header['Content-Length'])
 
-        p = pg.utils.ProgressBar(length)
+        if verbose:
+            p = pg.utils.ProgressBar(length)
+
         blockSize = 1024 * 8
         block = fp.read(blockSize)
         blockCounter = 1
@@ -246,6 +248,7 @@ def getUrlFile(url, fileName, timeout=10, verbose=False):
             with open(fileName, 'wb') as outFile:
                 if verbose:
                     p(min(length-1, blockCounter*blockSize))
+
                 md5_hash.update(block)
                 outFile.write(block)
                 while True:
