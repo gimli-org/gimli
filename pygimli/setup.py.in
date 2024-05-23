@@ -42,14 +42,15 @@ setup(
     keywords=["inversion", "modelling", "geophysics"],
     install_requires=['pgcore>=@PGCORE_VERSION_WHL@',
                       'numpy>=1.25',
-                      'matplotlib>=3.7.0',
+                      'matplotlib>=3.7',
                       'scipy>=1.11.0',
                       'scooby',
-                      'pyvista[all]>=0.42',
+                      'pyvista[all]>=0.42', 
                       'tetgen',
+                      'tqdm',
                       ],
     #extras_require = {
-    #    'all':  ['pyvista[all]>=0.42'],
+    #    'all':  ['pyvista[all]>=0.42', 'tetgen', 'tqdm'],
     #},
     classifiers=CLASSIFIERS,
 )
