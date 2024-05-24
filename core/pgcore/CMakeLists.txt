@@ -65,7 +65,7 @@ else()
 
     ### PACKAGE the wheel
     add_custom_target(whl${TARGET_NAME}PackageBuild DEPENDS whl${TARGET_NAME}CopyLibs
-        COMMAND "${Python_EXECUTABLE}" -m pip --quiet wheel --wheel-dir=${WHEELHOUSE} .
+        COMMAND "${Python_EXECUTABLE}" -m pip wheel --quiet --wheel-dir=${WHEELHOUSE} .
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
         COMMENT "Building python wheel package for ${TARGET_NAME}"
     )
@@ -101,7 +101,7 @@ else()
     ## test the wheel: make whlTest
     add_custom_target(whl${TARGET_NAME}TestInstall DEPENDS whl${TARGET_NAME}
         COMMAND "${Python3_EXECUTABLE}" -m pip uninstall -y ${TARGET_NAME}
-        COMMAND "${Python3_EXECUTABLE}" -q -m pip install ${WHEELHOUSE}/${PY_WHEELFILE} --find-links=${WHEELHOUSE}
+        COMMAND "${Python3_EXECUTABLE}" -q -m pip install ${WHEELHOUSE}/${PY_WHEELFILE} --quiet --find-links=${WHEELHOUSE}
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMENT "Installing ${TARGET_NAME} in virtual test environment"
     )
