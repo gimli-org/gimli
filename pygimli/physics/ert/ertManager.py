@@ -340,7 +340,8 @@ class ERTManager(MeshMethodManager):
         for c in self.fop.paraDomain.cells():
             paramSizes[c.marker()] += c.size()
 
-        return np.log10(covTrans / paramSizes)
+        wCovLog = np.log10(covTrans / paramSizes)
+        return wCovLog[self.fop.paraDomain.cellMarkers()]
 
     def standardizedCoverage(self, threshold=0.01):
         """Return standardized coverage vector (0|1) using thresholding."""

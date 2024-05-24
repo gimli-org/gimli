@@ -341,15 +341,6 @@ class Add2Matrix(MatrixBase):
         """Return M.T*x=(A.T*x)*r"""
         return self.A.transMult(x) + self.B.transMult(x)
 
-    # def rows(self):
-    #     """Number of rows."""
-    #     return self.A.rows()
-    
-    # def cols(self):
-    #     """Number of columns."""
-    #     return self.A.cols()
-
-
 
 class Mult2Matrix(MatrixBase):
     """Matrix by multipication of two matrices implicitly.
@@ -383,14 +374,6 @@ class Mult2Matrix(MatrixBase):
         """Return M.T*x=(A.T*x)*B"""
         return self.B.transMult(self.A.transMult(x))
 
-    # def rows(self):
-    #     """Number of rows."""
-    #     return self.A.rows()
-    # def cols(self):
-    #     """Number of columns."""
-    #     return self.B.cols()
-
-
 class DiagonalMatrix(MatrixBase):
     """Square matrix with a vector on the main diagonal."""
 
@@ -412,14 +395,6 @@ class DiagonalMatrix(MatrixBase):
     def transMult(self, x):
         """Return M.T*x = M*x"""
         return x * self.d
-
-    # def rows(self):
-    #     """Number of rows (length of diagonal)."""
-    #     return len(self.d)
-
-    # def cols(self):
-    #     """Number of columns (length of diagonal)."""
-    #     return len(self.d)
 
 
 @pg.cache
@@ -472,10 +447,9 @@ class Cm05Matrix(MatrixBase):
                 pg.info('(C) Time for eigenvalue decomposition {:.1f}s'.format(
                         pg.dur(key='init cm05')))
 
-            # self.A = A
-
     @property
     def mul(self):
+        """Scaling vector for A**(-0.5), 1/sqrt(eigenvalues)."""
         if self._mul is None:
             self._mul = np.sqrt(1./self.ew)
         return self._mul

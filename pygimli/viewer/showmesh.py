@@ -349,8 +349,8 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
                         
             if cMap == 'viridis':
                 cMap = "Set3"
-            cMap = pg.plt.cm.get_cmap(cMap, len(uniquemarkers))
-            
+            cMap = cmapFromName("Set3", ncols=len(uniquemarkers))
+                        
             kwargs["logScale"] = False
             kwargs["cMin"] = -0.5
             kwargs["cMax"] = len(uniquemarkers) - 0.5

@@ -31,7 +31,16 @@ class VESModelling(Block1DModelling):
     """
 
     def __init__(self, ab2=None, mn2=None, **kwargs):
-        """Initialize with distances."""
+        """Initialize with distances.
+
+        Either with
+        * all distances AM, AN, BM, BN using am/an/bm/bn
+        * a dataContainerERT using data or dataContainerERT
+        * AB/2 and (optionally) MN/2 distances using ab2/mn2
+
+        nLayers : int [4]
+            Number of layers.
+        """
         self.am = kwargs.pop("am", None)
         self.bm = kwargs.pop("bm", None)
         self.an = kwargs.pop("an", None)
@@ -40,8 +49,11 @@ class VESModelling(Block1DModelling):
         self.ab2 = ab2
         self.mn2 = mn2
 
-        if 'dataContainerERT' in kwargs:
-            data = kwargs['dataContainerERT']
+        if 'dataContainerERT' in kwargs or 'data' in kwargs:
+            if 'data' in kwargs:
+                data = kwargs['data']
+            else:
+                data = kwargs['dataContainerERT']
             if isinstance(data, pg.DataContainerERT):
                 kwargs['am'] = [data.sensorPosition(data('a')[i]).distance(
                     data('m')[i]) for i in range(data.size())]

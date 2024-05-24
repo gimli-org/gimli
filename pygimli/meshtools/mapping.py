@@ -709,7 +709,7 @@ def extract2dSlice(mesh, origin=None, normal=[0, 1, 0], angle=0, dip=0):
     # from pygimli.meshtools import convertPVPolyData  # to be written yet
 
     meshtmp = pg.Mesh(mesh)
-    if origin:
+    if origin is not None:
         meshtmp.translate(-pg.Pos(origin))
 
     if isinstance(normal, str):  # "x", "yz" etc.

@@ -2104,7 +2104,6 @@ def extractUpperSurface2dMesh(mesh, zCut=None):
 
     # copy data
     cind = np.zeros(len(bind), dtype=int)
-    print(cind.shape)
     for i, bi in enumerate(bind):
         lc = mesh.boundary(bi).leftCell()
         if lc is not None:

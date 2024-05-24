@@ -7,7 +7,7 @@ import pygimli as pg
 
 from pygimli.utils import streamline
 
-from .colorbar import autolevel, createColorBar, updateColorBar
+from .colorbar import autolevel, createColorBar, updateColorBar, cmapFromName
 from .utils import updateAxes as updateAxes_
 
 
@@ -748,9 +748,11 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True,
                 cbar = createColorBar(gci, orientation=orient,
                                       label="Region markers")
 
-                updateColorBar(
-                    cbar, cMap=pg.plt.cm.get_cmap("Set3", len(uniquemarkers)),
-                    cMin=-0.5, cMax=len(uniquemarkers) - 0.5)
+                updateColorBar(cbar, 
+                               cMap=cmapFromName("Set3", 
+                                                 ncols=len(uniquemarkers)),
+                               cMin=-0.5, 
+                               cMax=len(uniquemarkers) - 0.5)
                 ticks = np.arange(len(uniquemarkers))
 
                 cbar.set_ticks(ticks)
