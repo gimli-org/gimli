@@ -82,6 +82,9 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
     cMap:
         matplotlib Colormap
     """
+    if not isinstance(cmapname, str):
+        return cmapname
+    
     import matplotlib as mpl
     if not bad:
         bad = [1.0, 1.0, 1.0, 0.0]
@@ -100,7 +103,7 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
     else:
         try:
             import copy
-            cMap = copy.copy(mpl.cm.get_cmap(cMapName, ncols))
+            cMap = copy.copy(mpl.colormaps.get_cmap(cMapName).resampled(ncols))
         except BaseException as e:
             pg.warn("Could not retrieve colormap ", cMapName, e)
 
