@@ -416,9 +416,13 @@ struct PySequence2CVector{
                 for (GIMLI::Index i = 0; i < vec->size(); i ++){
                     element = py_sequence[i];
 
+                    //see and fix me! https://numpy.org/devdocs/release/2.0.0-notes.html#complex-types-underlying-c-type-changes
                     (*vec)[i] = GIMLI::Complex(
-                            PyArrayScalar_VAL(element.ptr(), Complex128).real,
-                            PyArrayScalar_VAL(element.ptr(), Complex128).imag);
+                            npy_creal(PyArrayScalar_VAL(element.ptr(), Complex128)),
+                            npy_cimag(PyArrayScalar_VAL(element.ptr(), Complex128)));
+                    // (*vec)[i] = GIMLI::Complex(
+                    //         PyArrayScalar_VAL(element.ptr(), Complex128).real,
+                    //         PyArrayScalar_VAL(element.ptr(), Complex128).imag);
 
                     //                     (*vec)[i] = PyArrayScalar_VAL(element.ptr(),
 //                     __DC(i, " a ", element);
