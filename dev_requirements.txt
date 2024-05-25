@@ -22,11 +22,8 @@ scipy>=1.11
 scooby
 pyvista[all]>=0.42
 pyqt5
-<<<<<<< HEAD
 tabulate
-=======
 tqdm
->>>>>>> wheel
 
 # needed to build docu
 sphinx>=3.1
