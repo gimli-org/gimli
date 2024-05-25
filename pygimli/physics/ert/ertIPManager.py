@@ -92,6 +92,10 @@ class ERTIPManager(ERTManager):
         else:
             self.invertTDIP()
 
+    def invertDC(self, *args, **kwargs):
+        # Needed if we want to do ERT first without the IP and do IP later
+        super().invert(*args, **kwargs)
+    
     def simulate(self, mesh, res, m, scheme=None, **kwargs):
         """."""
         from pygimli.physics.ert import ERTModelling
