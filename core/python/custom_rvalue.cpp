@@ -420,6 +420,7 @@ struct PySequence2CVector{
                     (*vec)[i] = GIMLI::Complex(
                             npy_creal(PyArrayScalar_VAL(element.ptr(), Complex128)),
                             npy_cimag(PyArrayScalar_VAL(element.ptr(), Complex128)));
+
                     // (*vec)[i] = GIMLI::Complex(
                     //         PyArrayScalar_VAL(element.ptr(), Complex128).real,
                     //         PyArrayScalar_VAL(element.ptr(), Complex128).imag);
