@@ -65,8 +65,62 @@ def iterateBounds(inv, dchi2=0.5, maxiter=100, change=1.02):
 
     return modelL, modelU
 
+def modelCovariance(inv):
+    """Formal model covariance matrix (MCM) from inversion.
 
-def modCovar(inv):
+    Parameters
+    ----------
+    inv : pygimli inversion object
+
+    Returns
+    -------
+    var  : variances (inverse square roots of MCM matrix)
+    MCMs : scaled MCM (such that diagonals are 1.0)
+
+    Examples
+    --------
+    >>> # import pygimli as pg
+    >>> # import matplotlib.pyplot as plt
+    >>> # from matplotlib.cm import bwr
+    >>> # INV = pg.Inversion(data, f)
+    >>> # par = INV.run()
+    >>> # var, MCM = modCovar(INV)
+    >>> # i = plt.imshow(MCM, interpolation='nearest',
+    >>> #                 cmap=bwr, vmin=-1, vmax=1)
+    >>> # plt.colorbar(i)
+    """
+
+    J = inv.fop.jacobian()  # sensitivity matrix
+    d = 1. / inv.dataTrans.error(inv.response, inv.errorVals)
+    left = np.reshape(inv.dataTrans.deriv(inv.response) / d, [-1, 1])
+    right = np.reshape(1 / inv.modelTrans.deriv(inv.model), [1, -1])
+    if isinstance(J, pg.Matrix):  # e.g. ERT
+        DJ = left * pg.utils.gmat2numpy(J) * right
+    elif isinstance(J, pg.SparseMapMatrix):  # e.g. Traveltime
+        DJ = left * pg.utils.sparseMat2Numpy.sparseMatrix2Dense(J) * right
+    else:
+        raise TypeError("Matrix type cannot be converted")
+
+    JTJ = DJ.T.dot(DJ)
+    try:
+        MCM = np.linalg.inv(JTJ)   # model covariance matrix
+
+        varVG = np.sqrt(np.diag(MCM))  # standard deviations from main diagonal
+        di = (1.0 / varVG)  # variances as column vector
+
+        # scaled model covariance (=correlation) matrix
+        MCMs = di.reshape(len(di), 1) * MCM * di
+        return varVG, MCMs
+
+    except BaseException as e:
+        print(e)
+        import traceback
+        import sys
+
+        traceback.print_exc(file=sys.stdout)
+        return np.zeros(len(inv.model()),), 0
+
+def modCovarCoreInv(inv):
     """Formal model covariance matrix (MCM) from inversion.
 
     var, MCMs = modCovar(inv)
