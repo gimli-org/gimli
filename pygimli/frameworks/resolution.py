@@ -92,6 +92,49 @@ def computeR(J, C, alpha=0.5):
     R = np.diag(RM)
     return R
 
+def modelCovariance(inv):
+    """Formal model covariance matrix (MCM) from inversion.
+
+    Parameters
+    ----------
+    inv : pygimli inversion object
+
+    Returns
+    -------
+    var  : variances (inverse square roots of MCM matrix)
+    MCMs : scaled MCM (such that diagonals are 1.0)
+
+    Examples
+    --------
+    >>> # import pygimli as pg
+    >>> # import matplotlib.pyplot as plt
+    >>> # from matplotlib.cm import bwr
+    >>> # INV = pg.Inversion(data, f)
+    >>> # par = INV.run()
+    >>> # var, MCM = modCovar(INV)
+    >>> # i = plt.imshow(MCM, interpolation='nearest',
+    >>> #                 cmap=bwr, vmin=-1, vmax=1)
+    >>> # plt.colorbar(i)
+    """
+    DJ = scaledJacobianMatrix(inv)
+    JTJ = DJ.T.dot(DJ)
+    try:
+        MCM = np.linalg.inv(JTJ)   # model covariance matrix
+        varVG = np.sqrt(np.diag(MCM))  # standard deviations from main diagonal
+        di = (1.0 / varVG)  # variances as column vector
+
+        # scaled model covariance (=correlation) matrix
+        MCMs = di.reshape(len(di), 1) * MCM * di
+        return varVG, MCMs
+
+    except BaseException as e:
+        print(e)
+        import traceback
+        import sys
+
+        traceback.print_exc(file=sys.stdout)
+        return np.zeros(len(inv.model()),), 0
+
 #
 # # self-made imports
 # import pygimli as g
