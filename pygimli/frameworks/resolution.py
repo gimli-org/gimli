@@ -9,6 +9,50 @@ import numpy as np
 import pygimli as pg
 
 
+def scaledJacobianMatrix(inv):
+    """Return error-weighted transformation-scaled Jacobian.
+
+    Parameters
+    ----------
+    inv : pg.Inversion (pygimli.framework.Inversion)
+
+    Returns
+    -------
+    DJ : numpy full matrix
+    """
+    J = inv.fop.jacobian()  # sensitivity matrix
+    d = 1. / inv.dataTrans.error(inv.response, inv.errorVals)
+    left = np.reshape(inv.dataTrans.deriv(inv.response) / d, [-1, 1])
+    right = np.reshape(1 / inv.modelTrans.deriv(inv.model), [1, -1])
+    if isinstance(J, pg.Matrix):  # e.g. ERT
+        return left * pg.utils.gmat2numpy(J) * right
+    elif isinstance(J, pg.SparseMapMatrix):  # e.g. Traveltime
+        return left * pg.utils.sparseMat2Numpy.sparseMatrix2Dense(J) * right
+    else:
+        raise TypeError("Matrix type cannot be converted")
+
+def modelResolutionMatrix(inv):
+    """Formal model resolution matrix (MCM) from inversion.
+
+    Parameters
+    ----------
+    inv : pg.Inversion
+        pygimli inversion instance after inversion
+
+    Returns
+    -------
+    RM : numpy.array
+        model resolution matrix
+    """
+    DJ = scaledJacobianMatrix(inv)
+    C = pg.utils.sparseMat2Numpy.sparseMatrix2Dense(inv.fop.constraints())
+    cw = inv.fop.regionManager().constraintWeights()
+    CC = np.reshape(cw ,[-1, 1]) * C
+    JTJ = DJ.T.dot(DJ)
+    JI = np.linalg.inv(JTJ+CC.T.dot(CC)*inv.lam)
+    RM = JI.dot(JTJ)
+    return RM
+
 def computeR(J, C, alpha=0.5):
     r"""Return diagional of model resolution matrix.
 
