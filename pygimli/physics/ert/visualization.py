@@ -53,12 +53,12 @@ def showERTData(data, vals=None, **kwargs):
             can be strings ("a", "m", "mid", "sep") or lists of them ["a", "m"]
         * style : str
             predefined styles for choosing x and y arguments (x/y overrides)
-            "ab-mn" (default):  any combination of current/potential electrodes
-            "a-m" : only a and m electrode (for unique dipole spacings like DD)
-            "a-mn" : a and combination of mn electrode (PD with different MN)
-            "ab-m" : a and combination of mn electrode
-            "sepa-m" : current dipole length with a and m (multi-gradient)
-            "a-sepm" : a and potential dipole length with m
+            - "ab-mn" (default):  any combination of current/potential electrodes
+            - "a-m" : only a and m electrode (for unique dipole spacings like DD)
+            - "a-mn" : a and combination of mn electrode (PD with different MN)
+            - "ab-m" : a and combination of mn electrode
+            - "sepa-m" : current dipole length with a and m (multi-gradient)
+            - "a-sepm" : a and potential dipole length with m
         * switchxy : bool
             exchange x and y axes before plotting
 
@@ -69,20 +69,13 @@ def showERTData(data, vals=None, **kwargs):
     cb : matplotlib.colorbar
         colorbar instance
     """
-    var = kwargs.pop('var', 0)
-    if var > 0:
-        import pybert as pb
-        pg._g(kwargs)
-        return pb.showData(data, vals, var=var, **kwargs)
-
-    # remove ax keyword global
+    # remove ax keyword globally (problems with colorbar)
     ax = kwargs.pop('ax', None)
-
     if ax is None:
         fig = pg.plt.figure()
         ax = None
         axTopo = None
-        if 'showTopo' in kwargs:
+        if 'showTopo' in kwargs:  # can be removed?
             ax = fig.add_subplot(1, 1, 1)
 #            axs = fig.subplots(2, 1, sharex=True)
 #            # Remove horizontal space between axes
@@ -121,12 +114,12 @@ def showERTData(data, vals=None, **kwargs):
         kwargs.setdefault("y", ["a", "b"])
         kwargs.setdefault("x", "m")
     elif sty == "sepa-m":
-        data["ab"] = data["b"] - data["a"]
+        data["ab"] = np.abs(data["b"] - data["a"])
         kwargs.setdefault("y", ["ab", "a"])
         kwargs.setdefault("x", "m")
     elif sty == "a-sepm":
-        data["mn"] = data["n"] - data["m"]
-        kwargs.setdefault("y", "a")
+        data["mn"] = np.abs(data["n"] - data["m"])
+        kwargs.setdefault("x", "a")
         kwargs.setdefault("y", ["mn", "m"])
     elif sty is not None and sty != 0:
         kwargs.setdefault("y", ["a", "b"])
@@ -180,8 +173,6 @@ def showERTData(data, vals=None, **kwargs):
         axTopo.set_ylim(min(pg.z(data)), max(pg.z(data)))
         axTopo.set_aspect(1)
 
-    # ax.set_aspect('equal')
-    # plt.pause(0.1)
     pg.viewer.mpl.updateAxes(ax)
     return ax, cbar
 
@@ -334,9 +325,9 @@ def midconfERT(data, ind=None, rnum=1, circular=False, switch=False):
             else:
                 # topography with probably missing electrodes
                 dx = np.floor(dx/np.round(dxM)) * dxM
-                pass
+
         if max(dx) < 0.5:
-            print("Detecting small distances, using mm accuracy")
+            pg.debug("Detecting small distances, using mm accuracy")
             rnum = 3
         xe = np.hstack((0., np.cumsum(np.round(dx, rnum)), np.nan))
 

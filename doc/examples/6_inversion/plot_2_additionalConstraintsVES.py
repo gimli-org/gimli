@@ -16,7 +16,7 @@ We use the LSQR inversion framework as used by Wagner et al. (2019) to
 constrain the sum of water, ice, air and rock fraction to be 1.
 """
 
-# Start by importing the used
+# sphinx_gallery_thumbnail_number = 2
 import numpy as np
 import pygimli as pg
 from pygimli.frameworks.lsqrinversion import LSQRInversion

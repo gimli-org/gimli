@@ -1,0 +1,18 @@
+# minimum requirements to build the core
+# python -m venv $ENVNAME
+# source $ENVNAME/bin/activate
+# python -m pip install -r requirements.txt
+# python -m pip list
+# python -m pip install package==version
+
+# needed to build
+numpy>=1.25
+pyplusplus==1.8.4
+pygccxml==2.0.0
+
+# needed for wheel build
+wheel
+auditwheel; sys_platform == 'linux'
+delvewheel; sys_platform == 'win32'
+delocate; sys_platform == 'darwin'
+twine

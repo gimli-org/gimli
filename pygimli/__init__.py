@@ -207,7 +207,7 @@ def findVersion(cache=True):  # careful: cache is already imported!
 
 
 # call once to get version from cache, setup or _version.py
-findVersion()
+findVersion(cache=False)
 
 
 def version(cache=True):  # imported cach will be overwritten

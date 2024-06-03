@@ -130,7 +130,7 @@ def setMemberFunctionCallPolicieByReturn(mb, MemberRetRef, callPolicie, verbose=
 
         if verbose is True:
             print(ref, len(memFuns))
-
+            
         for memFun in memFuns:
             memFun.call_policies = \
                 call_policies.return_value_policy(callPolicie)
@@ -170,6 +170,7 @@ def generate(defined_symbols, extraIncludes):
         , messages.W1007  # more than 10 args -> BOOST_PYTHON_MAX_ARITY is set
         , messages.W1009  # execution error W1009: The function takes as argument (name=pFunIdx, pos=1) >
                           # non-const reference to Python immutable type - function could not be called > from Python
+        , messages.W1010  #: The function introduces registration order problem.
         , messages.W1014  # "operator*" is not supported. See
         , messages.W1016  # `Py++` does not exports non-const casting operators
         # Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
@@ -184,6 +185,7 @@ def generate(defined_symbols, extraIncludes):
         , messages.W1040  # error. The declaration is unexposed, but there are other > declarations, which
                           # refer to it. This could cause "no to_python converter > found" run
                           # time error
+        , messages.W1042  #: `Py++` can not find out container value_type( mapped_type )
         # This is serious and lead to RuntimeError: `Py++` is going to write different content to the same file
         #, messages.W1047 # There are two or more classes that use same > alias("MatElement"). Duplicated aliases causes
                          # few problems, but the main one > is that some of the classes will not
@@ -525,7 +527,8 @@ def generate(defined_symbols, extraIncludes):
                     logger.debug("Exclude callable for: " + str(mem))
                     mem.exclude()
                 else:
-                    print("skipping to exclude: " + str(mem))
+                    pass
+                    #print("skipping to exclude: " + str(mem))
                     #exit()
        
         # print('#'*100)
@@ -546,9 +549,9 @@ def generate(defined_symbols, extraIncludes):
                 pass
                 #print("\t constructors:", mem)
             for mem in c.operators():
-                print("\t operator:", mem)
-                print("\t\t\t:", mem.name)
-                print("\t\t\t:", mem.decl_string)
+                # print("\t operator:", mem)
+                # print("\t\t\t:", mem.name)
+                # print("\t\t\t:", mem.decl_string)
 
                 if "operator()" in mem.name:
                     #print("Exclude: " + str(mem))

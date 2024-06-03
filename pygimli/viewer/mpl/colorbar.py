@@ -82,6 +82,9 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
     cMap:
         matplotlib Colormap
     """
+    if not isinstance(cmapname, str):
+        return cmapname
+    
     import matplotlib as mpl
     import copy
     if not bad:
@@ -97,30 +100,30 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
 
     if cMapName == 'b2r':
         pg.warn("Don't use manual b2r cMap, use MPL internal 'RdBu' instead.")
-        cMap = "RdBu_r"
-    else:
+        cMapName = "RdBu_r"
+
+    try:
+        cMap = copy.copy(mpl.colormaps.get_cmap(cMapName).resampled(ncols))
+    except ValueError as e:
+        cMap = copy.copy(mpl.colormaps.get_cmap('viridis').resampled(ncols))           
+        
+        ## colormap probably unknown we try if we find it on cmocean
         try:
-            cMap = copy.copy(mpl.cm.get_cmap(cMapName, ncols))
-        except ValueError as e:
-            cMap = copy.copy(mpl.cm.get_cmap('viridis', ncols))
-            
-            ## colormap probably unknown we try if we find it on cmocean
-            try:
-                import cmocean
-                cMap = copy.copy(getattr(cmocean.cm, cMapName.lower()))
-            except ImportError as eo:
+            import cmocean
+            cMap = copy.copy(getattr(cmocean.cm, cMapName.lower()))
+        except ImportError as eo:
                 
-                pg.warn("Could not retrieve colormap:", cMapName, "Reason:", e)
-                pg.warn("Fallback to cmocean: ", cMapName, " but: ", eo)
+            pg.warn("Could not retrieve colormap:", cMapName, "Reason:", e)
+            pg.warn("Fallback to cmocean: ", cMapName, " but: ", eo)
 
-            except AttributeError as eo:
-                pg.warn("Could not retrieve colormap ", cMapName, e)
-                pg.warn("Fallback to cmocean but does not know: ", cMapName, eo)
-                print('available:', cmocean.cm.cmapnames)
-
-
-            # import cmocean
-            # import matplotlib.pyplot as plt
+        except AttributeError as eo:
+            pg.warn("Could not retrieve colormap ", cMapName, e)
+            pg.warn("Fallback to cmocean but does not know: ", cMapName, eo)
+            print('available:', cmocean.cm.cmapnames)
+           
+        except BaseException as e:
+            pg.warn("Could not retrieve colormap ", cMapName, e)
+            
 
     cMap.set_bad(bad)
     return cMap
@@ -392,6 +395,8 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
 
     cmap = cmapFromName(cMap)
     kwargs.pop('colorBar', False)  # often False for multiple plots
+    kwargs.pop('xlabel', False)
+    kwargs.pop('ylabel', False)
     aspect = kwargs.pop('aspect', None)
     levels = kwargs.pop('levels', None)
     cbar = ColorbarBase(ax, norm=norm, cmap=cmap,
@@ -411,7 +416,7 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     # updateColorBar(cbar, **kwargs)
 
     if savefig is not None:
-        saveFigure(fig, savefig)
+        saveFigure(ax.figure, savefig)
 
     return ax
 

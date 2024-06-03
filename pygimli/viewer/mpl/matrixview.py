@@ -7,6 +7,7 @@ import numpy as np
 # import matplotlib.pyplot as plt
 
 import pygimli as pg
+from .colorbar import cmapFromName
 
 
 def drawSparseMatrix(ax, mat, **kwargs):
@@ -92,7 +93,7 @@ def drawBlockMatrix(ax, mat, **kwargs):
     if kwargs.pop('spy', False):
         gci = []
         ids = pg.unique([e.matrixID for e in mat.entries()])
-        cMap = pg.plt.cm.get_cmap("Set3", len(ids))
+        cMap = cmapFromName("Set3", ncols=len(ids))
 
         for e in mat.entries():
             mid = e.matrixID
