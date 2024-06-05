@@ -21,7 +21,7 @@ def scaledJacobianMatrix(inv):
     DJ : numpy full matrix
     """
     J = inv.fop.jacobian()  # sensitivity matrix
-    d = 1. / inv.dataTrans.error(inv.response, inv.errorVals)
+    d = inv.dataTrans.error(inv.response, inv.errorVals)
     left = np.reshape(inv.dataTrans.deriv(inv.response) / d, [-1, 1])
     right = np.reshape(1 / inv.modelTrans.deriv(inv.model), [1, -1])
     if isinstance(J, pg.Matrix):  # e.g. ERT
@@ -31,7 +31,7 @@ def scaledJacobianMatrix(inv):
     else:
         raise TypeError("Matrix type cannot be converted")
 
-def modelResolutionMatrix(inv):
+def resolutionMatrix(inv, returnRD=False):
     """Formal model resolution matrix (MCM) from inversion.
 
     Parameters
@@ -48,10 +48,18 @@ def modelResolutionMatrix(inv):
     C = pg.utils.sparseMat2Numpy.sparseMatrix2Dense(inv.fop.constraints())
     cw = inv.fop.regionManager().constraintWeights()
     CC = np.reshape(cw ,[-1, 1]) * C
-    JTJ = DJ.T.dot(DJ)
-    JI = np.linalg.inv(JTJ+CC.T.dot(CC)*inv.lam)
-    RM = JI.dot(JTJ)
-    return RM
+    JTJ = DJ.T @ DJ
+    JI = np.linalg.inv(JTJ + CC.T @ CC * inv.lam)
+    RM = JI @ JTJ
+    if returnRD:
+        RD = DJ @ JI @ DJ
+        return RM, RD
+    else:
+        return RM
+
+def modelResolutionMatrix(inv):
+    """Only model resolution matrix."""
+    return resolutionMatrix(inv)
 
 def computeR(J, C, alpha=0.5):
     r"""Return diagional of model resolution matrix.
