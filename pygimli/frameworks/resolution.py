@@ -76,6 +76,38 @@ def modelResolutionMatrix(inv):
     """
     return resolutionMatrix(inv)
 
+def modelResolutionKernel(inv, nr=0, maxiter=50):
+    """Compute single resolution kernel by solving an inverse problem.
+
+    Parameters
+    ----------
+    inv : pg.Inversion
+        inversion instance
+    nr : int
+        parameter/cell number
+    maxiter : int
+        maximum iterations for LSQR solver
+
+    Returns
+    -------
+    reskernel : np.array
+        resolution
+    """
+    from pygimli.solver.leastsquares import lsqr
+    td = inv.dataTrans  # data transformation (e.g. lin/log/symlog)
+    tm = inv.modelTrans  # model transformation (typically log or logLU)
+    C = inv.fop.constraints()  # (sparse) regularization matrix
+    left = td.deriv(inv.response) / inv.errorVals
+    right = 1 / tm.deriv(inv.model)
+    DS = pg.matrix.MultLeftRightMatrix(inv.fop.jacobian(), left, right)
+    JC = pg.BlockMatrix()
+    JC.addMatrix(DS, 0, 0)
+    JC.addMatrix(C, DS.rows(), 0, np.sqrt(inv.lam))
+    JC.recalcMatrixSize()
+    if isinstance(nr, int):
+        invec = pg.cat(pg.math.matrix.matrixColumn(DS, nr),
+                       pg.Vector(C.rows()))
+        return lsqr(JC, invec, maxiter=50)
 
 
 def computeR(J, C, alpha=0.5):
