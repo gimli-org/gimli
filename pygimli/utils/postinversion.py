@@ -65,6 +65,46 @@ def iterateBounds(inv, dchi2=0.5, maxiter=100, change=1.02):
 
     return modelL, modelU
 
+def scaledJacobianMatrix(inv):
+    """Return error-weighted transformation-scaled Jacobian.
+
+    Parameters
+    ----------
+    inv : pg.Inversion (pygimli.framework.Inversion)
+
+    Returns
+    -------
+    DJ : numpy full matrix
+    """
+    J = inv.fop.jacobian()  # sensitivity matrix
+    d = 1. / inv.dataTrans.error(inv.response, inv.errorVals)
+    left = np.reshape(inv.dataTrans.deriv(inv.response) / d, [-1, 1])
+    right = np.reshape(1 / inv.modelTrans.deriv(inv.model), [1, -1])
+    if isinstance(J, pg.Matrix):  # e.g. ERT
+        return left * pg.utils.gmat2numpy(J) * right
+    elif isinstance(J, pg.SparseMapMatrix):  # e.g. Traveltime
+        return left * pg.utils.sparseMat2Numpy.sparseMatrix2Dense(J) * right
+    else:
+        raise TypeError("Matrix type cannot be converted")
+
+
+
+def modelResolutionMatrix(inv):
+    """Formal model resolution matrix (MRM) from inversion.
+
+    Parameters
+    ----------
+    inv : pg.Inversion (pygimli.framework.Inversion)
+
+    Returns
+    -------
+    MR : pg.Matrix (pg.matrix.core.RMatrix dense matrix)
+    """
+
+    DJ = scaledJacobianMatrix(inv)
+    JTJ = DJ.T.dot(DJ)
+
+
 def modelCovariance(inv):
     """Formal model covariance matrix (MCM) from inversion.
 
@@ -90,17 +130,7 @@ def modelCovariance(inv):
     >>> # plt.colorbar(i)
     """
 
-    J = inv.fop.jacobian()  # sensitivity matrix
-    d = 1. / inv.dataTrans.error(inv.response, inv.errorVals)
-    left = np.reshape(inv.dataTrans.deriv(inv.response) / d, [-1, 1])
-    right = np.reshape(1 / inv.modelTrans.deriv(inv.model), [1, -1])
-    if isinstance(J, pg.Matrix):  # e.g. ERT
-        DJ = left * pg.utils.gmat2numpy(J) * right
-    elif isinstance(J, pg.SparseMapMatrix):  # e.g. Traveltime
-        DJ = left * pg.utils.sparseMat2Numpy.sparseMatrix2Dense(J) * right
-    else:
-        raise TypeError("Matrix type cannot be converted")
-
+    DJ = scaledJacobianMatrix(inv)
     JTJ = DJ.T.dot(DJ)
     try:
         MCM = np.linalg.inv(JTJ)   # model covariance matrix

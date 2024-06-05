@@ -23,7 +23,7 @@ from .geostatistics import (computeInverseRootMatrix, covarianceMatrix,
                             generateGeostatisticalModel)
 from .gps import GKtoUTM, findUTMZone, getProjection, getUTMProjection, readGPX
 from .hankel import hankelFC
-from .postinversion import iterateBounds, modCovar
+from .postinversion import iterateBounds, modelCovariance, modelResolutionMatrix
 from .sparseMat2Numpy import (convertCRSIndex2Map, sparseMatrix2Array,
                               sparseMatrix2coo, sparseMatrix2csr, sparseMatrix2Dense,
                               toSparseMatrix, toSparseMapMatrix, toCSR, toCOO,
