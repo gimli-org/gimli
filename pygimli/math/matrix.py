@@ -932,14 +932,14 @@ def dstack(mats):
 
 def matrixRow(A, n):
     """Return matrix row of arbitrary matrix."""
-    assert n < A.rows()
+    assert n < A.rows(), "number exceeds number of rows in matrix"
     one = pg.Vector(A.rows())
     one[n] = 1.0
     return A.transMult(one)
 
 def matrixColumn(A, n):
     """Return matrix column of arbitrary matrix."""
-    assert n < A.cols()
+    assert n < A.cols(), "number exceeds number of columns in matrix"
     one = pg.Vector(A.cols())
     one[n] = 1.0
     return A.mult(one)
