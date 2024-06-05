@@ -38,11 +38,15 @@ def resolutionMatrix(inv, returnRD=False):
     ----------
     inv : pg.Inversion
         pygimli inversion instance after inversion
+    returnRD : bool [false]
+        also return data resolution (information) matrix
 
     Returns
     -------
     RM : numpy.array
         model resolution matrix
+    RD : numpy.array
+        data resolution matrix
     """
     DJ = scaledJacobianMatrix(inv)
     C = pg.utils.sparseMat2Numpy.sparseMatrix2Dense(inv.fop.constraints())
@@ -58,8 +62,21 @@ def resolutionMatrix(inv, returnRD=False):
         return RM
 
 def modelResolutionMatrix(inv):
-    """Only model resolution matrix."""
+    """Formal model resolution matrix (MCM) from inversion.
+
+    Parameters
+    ----------
+    inv : pg.Inversion
+        pygimli inversion instance after inversion
+
+    Returns
+    -------
+    RM : numpy.array
+        model resolution matrix
+    """
     return resolutionMatrix(inv)
+
+
 
 def computeR(J, C, alpha=0.5):
     r"""Return diagional of model resolution matrix.
