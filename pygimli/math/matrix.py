@@ -930,6 +930,21 @@ def dstack(mats):
     return A
 
 
+def matrixRow(A, n):
+    """Return matrix row of arbitrary matrix."""
+    assert n < A.rows()
+    one = pg.Vector(A.rows())
+    one[n] = 1.0
+    return A.transMult(one)
+
+def matrixColumn(A, n):
+    """Return matrix column of arbitrary matrix."""
+    assert n < A.cols()
+    one = pg.Vector(A.cols())
+    one[n] = 1.0
+    return A.mult(one)
+
+
 if __name__ == "__main__":
     Amat = pg.Matrix(3, 4)
     Bmat = TransposedMatrix(Amat)
