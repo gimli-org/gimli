@@ -379,7 +379,7 @@ def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
     return addr, box
 
 
-def underlayBKGMap(ax, mode='DOP', utmzone=32, epsg=0, imsize=2500, uuid='',
+def underlayBKGMap(ax, mode='MAP', utmzone=32, epsg=0, imsize=2500, uuid='',
                    usetls=False, origin=None, imname=None, box=None):
     """Underlay digital orthophoto or topographic (mode='DTK') map under axes.
 
