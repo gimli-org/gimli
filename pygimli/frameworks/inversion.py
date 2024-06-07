@@ -256,6 +256,11 @@ class Inversion(object):
             raise Exception(
                 "There was no inversion run so there is no response yet")
 
+    @response.setter
+    def response(self, v):
+        """Set response vector in the inside RInversion."""
+        self.inv.setResponse(v)
+
     # backward compatibility
     @property
     def dataErrs(self):
