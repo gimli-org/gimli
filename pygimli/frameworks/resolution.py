@@ -56,7 +56,7 @@ def resolutionMatrix(inv, returnRD=False):
     JI = np.linalg.inv(JTJ + CC.T @ CC * inv.lam)
     RM = JI @ JTJ
     if returnRD:
-        RD = DJ @ JI @ DJ
+        RD = DJ @ JI @ DJ.T
         return RM, RD
     else:
         return RM
