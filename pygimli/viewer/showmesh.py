@@ -303,7 +303,8 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
                 np.array(mesh.cellMarkers()), return_inverse=True)
 
             label = label or "Cell markers"
-            cMap = pg.plt.cm.get_cmap("Set3", len(uniquemarkers))
+            cMap = cmapFromName("Set3", ncols=len(uniquemarkers))
+            #cMap = pg.plt.colormaps.get_cmap("Set3", len(uniquemarkers))
             kwargs["logScale"] = False
             kwargs["cMin"] = -0.5
             kwargs["cMax"] = len(uniquemarkers) - 0.5

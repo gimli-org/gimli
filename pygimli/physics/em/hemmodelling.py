@@ -4,15 +4,25 @@
 from math import sqrt, pi
 import numpy as np
 
-from matplotlib.colors import LinearSegmentedColormap
-from matplotlib.cm import register_cmap
 
 import pygimli as pg
 from pygimli.frameworks import Block1DModelling
 
 
 def registerDAEROcmap():
-    """Standardized colormap from A-AERO projects (purple=0.3 to red=500)."""
+    """Standardized colormap from A-AERO projects (purple=0.3 to red=500).
+
+    Example
+    -------
+    >>> import pygimli as pg
+    >>> cmap = pg.physics.em.hemmodelling.registerDAEROcmap()
+    >>> mesh = pg.createGrid(20,2)
+    >>> data = pg.x(mesh.cellCenters())
+    >>> _ = pg.show(mesh, data, cMap=cmap)
+    """
+    from matplotlib.colors import LinearSegmentedColormap
+    import matplotlib as mpl
+        
     CMY = np.array([
         [127, 255, 31], [111, 255, 47], [95, 255, 63], [79, 255, 79],
         [63, 255, 95], [47, 255, 111], [31, 255, 127], [16, 255, 159],
@@ -24,7 +34,7 @@ def registerDAEROcmap():
         [239, 199, 63], [223, 207, 79], [207, 239, 111]], dtype=float)
     RGB = 1.0 - CMY/255
     daero = LinearSegmentedColormap.from_list('D-AERO', RGB)
-    register_cmap(name='daero', cmap=daero)
+    mpl.colormaps.register(name='daero', cmap=daero)
     return daero
 
 

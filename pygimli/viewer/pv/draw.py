@@ -7,6 +7,8 @@ import matplotlib
 import pygimli as pg
 from .utils import pgMesh2pvMesh
 
+from pygimli.viewer.mpl.colorbar import cmapFromName
+
 pv = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
 
 
@@ -143,7 +145,7 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
     if kwargs.pop('markers', False) is True:
         # show boundary mesh with markers
         data = mesh.boundaryMarkers()
-        defaultCMap = pg.plt.cm.get_cmap("Set3", max(1, len(pg.unique(data))))
+        defaultCMap = cmapFromName("Set3", ncols=max(1, len(pg.unique(data))))
         dataName = 'Boundary Marker'
         mesh = pgMesh2pvMesh(mesh, data, dataName, boundaries=True)
     else:
