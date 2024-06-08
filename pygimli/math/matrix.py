@@ -18,6 +18,31 @@ SparseMapMatrix = pgcore.RSparseMapMatrix
 BlockMatrix = pgcore.RBlockMatrix
 
 
+class ScaledMatrix(MatrixBase):
+    """Super-simple matrix with scaling factor B=A*s."""
+
+    def __init__(self, A, scale=1.0, verbose=False):
+        super().__init__(verbose)
+        self._A = A
+        self._scale = scale
+
+    def rows(self):
+        """Return number of rows (forwarded)."""
+        return self._A.rows()
+
+    def cols(self):
+        """Return number of cols (forwarded)."""
+        return self._A.cols()
+
+    def mult(self, x):
+        """Multiplication from right-hand-side (A.T*x)."""
+        return self._A.mult(x) * self._scale
+
+    def transMult(self, x):
+        """Multiplication from right-hand-side (A*x)"""
+        return self._A.transMult(x) * self._scale
+
+
 class TransposedMatrix(MatrixBase):
     """Wrapper for transposed matrix (of any kind)."""
 
@@ -648,7 +673,7 @@ class NDMatrix(pgcore.BlockMatrix):
         self.recalcMatrixSize()
 
 
-class KroneckerMatrix(pg.core.MatrixBase):
+class KroneckerMatrix(MatrixBase):
     """Memory-saving implementation of Kronecker matrix.
 
     The Kronecker matrix consists of repetitions of an inner
@@ -698,7 +723,7 @@ class KroneckerMatrix(pg.core.MatrixBase):
 
         return yy.ravel()
 
-class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
+class GeostatisticConstraintsMatrix(MatrixBase):
     """Geostatistic constraints matrix
 
     Uses geostatistical operators described by Jordi et al. (2018),
@@ -903,6 +928,21 @@ def dstack(mats):
 
     A.recalcMatrixSize()
     return A
+
+
+def matrixRow(A, n):
+    """Return matrix row of arbitrary matrix."""
+    assert n < A.rows(), "number exceeds number of rows in matrix"
+    one = pg.Vector(A.rows())
+    one[n] = 1.0
+    return A.transMult(one)
+
+def matrixColumn(A, n):
+    """Return matrix column of arbitrary matrix."""
+    assert n < A.cols(), "number exceeds number of columns in matrix"
+    one = pg.Vector(A.cols())
+    one[n] = 1.0
+    return A.mult(one)
 
 
 if __name__ == "__main__":
