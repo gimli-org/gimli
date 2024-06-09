@@ -93,7 +93,7 @@ class ProgressBar(object):
         self._swatch = pg.core.Stopwatch()
         self._nbProgress = None
         self._iter = -1
-        
+
         if pg.isNotebook():
             tqdm = pg.optImport(
                 'tqdm', requiredFor="use nice progressbar in jupyter notebook")
@@ -319,7 +319,7 @@ def prettyFloat(value, roundValue=None, mathtex=False):
     elif '.' in string and not 'e' in string and string.endswith("0"):
         # pg._r(string[0:len(string)-1])
         string = string[0:len(string)-1]
-    
+
     if mathtex is True:
         if 'e+' in string:
             string = string.replace('e+', '\cdot 10^{')
@@ -327,7 +327,7 @@ def prettyFloat(value, roundValue=None, mathtex=False):
         elif 'e-' in string:
             string = string.replace('e-', '\cdot 10^{-')
             string+='}'
-            
+
     return string
 
 
@@ -594,7 +594,7 @@ def diff(v):
 def rate(v):
     """Calculate reduction rate.
 
-    Calculate reduction rate of v as r[i+1] = v[i]/v[i+1] for i = 0 .. len(v)-1 
+    Calculate reduction rate of v as r[i+1] = v[i]/v[i+1] for i = 0 .. len(v)-1
     and r[0] = 0
     """
     v = np.atleast_1d(v)
@@ -1043,12 +1043,10 @@ class Table(object):
             for i, row in enumerate(self.table):
                 #self.table[i][self.pn] = f'${pg.pf(row[self.pn], mathtex=True)}$'
                 self.table[i][self.pn] = f'{pg.pf(row[self.pn])}'
+    @property
+    def fmt(self):
+        _fmt = dict(stralign="left", )
 
-    def __str__(self):
-
-        #fmt = dict(floatfmt=".1f", stralign="left", )
-        fmt = dict(stralign="left", )
-        
         ca = []
         if self.align is not None:
             for a in self.align:
@@ -1058,7 +1056,7 @@ class Table(object):
                     ca.append('center')
                 elif a == 'r':
                     ca.append('right')
-            
+
         else:
             for j, col in enumerate(self.table[0]):
                 if j == 0:
@@ -1072,15 +1070,29 @@ class Table(object):
                         ca.append('right')
                     else:
                         ca.append('left')
-            
-        fmt['colalign'] = ca
+
+        _fmt['colalign'] = ca
+        return _fmt
+
+
+    def _repr_html_(self):
+        """Return html representation for jupyter notebooks and
+        sphinx-gallery."""
+        from tabulate import tabulate
+        md = tabulate(self.table, headers=self.header,
+                     tablefmt="pipe", **self.fmt)
+        return repr(md)
+
+
+    def __str__(self):
+        """Print table."""
 
         if pg.isNotebook():
-            from IPython.display import display, Markdown, Latex
-            
+            from IPython.display import display, Markdown
+
             from tabulate import tabulate
-            md = tabulate(self.table, headers=self.header, 
-                          tablefmt="pipe", **fmt)
+            md = tabulate(self.table, headers=self.header,
+                          tablefmt="pipe", **self.fmt)
 
             # md =  '| | | Value | Unit | Dim |\n'
             # md += '| :- | :- | -: | :- | -:|\n'
@@ -1096,11 +1108,15 @@ class Table(object):
             display(Markdown(md))
             return ''
 
+        elif pg.isIPyTerminal():
+            return self.__repr__()
+
         try:
             from tabulate import tabulate
             if self.header is None:
                 return '\n' + tabulate(self.table) + '\n'
-            return '\n' + tabulate(self.table, headers=self.header, **fmt) + '\n'
+            return '\n' + tabulate(self.table, headers=self.header,
+                                   **self.fmt) + '\n'
         except ImportError:
             pass
         except BaseException as e:
