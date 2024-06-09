@@ -17,3 +17,8 @@ hosts yearly Transform meetings. We joined in 2021 and 2022 and provided tutoria
 accompagnied by Jupyter notebooks 
 (`Transform2021 <https://github.com/gimli-org/transform2021>`_ and
 `Transform2022 <https://github.com/gimli-org/transform2022>`_).
+Additionally, there has been a pyGIMLi webinar in the SEG webinar series 
+Near-Surface Geophysics - Open-Source Software 
+(`YouTube video <https://www.youtube.com/watch?v=qbLGbSEWOSw&list=PLEIS8l89JCa2EKsWLjkOsfzvua1tspOh->`_)
+covering some newer features
+(`GitHub project <https://github.com/gimli-org/SEGwebinar>`_)

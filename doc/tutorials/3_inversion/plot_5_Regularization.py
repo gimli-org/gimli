@@ -20,7 +20,7 @@ regularization term :math:`\Phi`, weighted by a regularization parameter
 The regularization strength :math:`\lambda` should be chosen so that the
 data are fitted within noise, i.e. :math:`\chi^2=\Phi_d/N=1`.
 
-In the term :math:`\Phi-m` we put our expectations to the model, e.g. to
+In the term :math:`\Phi_m` we put our expectations to the model, e.g. to
 be close to any prior model. In many cases we do not have much
 information and aim for the smoothest model that is able to fit our
 data. We decribe it by the operator :math:`W_m`:

@@ -50,8 +50,14 @@ static int __GIMLI_NO_CBLAS__ = false;
 
 Index __setTC__(){
     // to close to number of cpu can bring significent shedular overhead
-    long tc = numberOfCPU()-2;
+    int tc = getEnvironment("OPENBLAS_NUM_THREADS", -1, false);
+
+    if (tc == -1){
+        tc = min(16, numberOfCPU()-2);
+    }
+
     if (tc == -1) return 1;
+
     setThreadCount(tc);
     return (Index)(tc);
 }
@@ -279,7 +285,7 @@ std::vector < std::string > split(const std::string & str, char delimiter){
     return subStrings;
 }
 
-std::string replace(const std::string & str, const std::string & from, 
+std::string replace(const std::string & str, const std::string & from,
                     const std::string & to){
     std::string ret(str);
     if (ret.find(from) != std::string::npos){
