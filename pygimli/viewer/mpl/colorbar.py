@@ -82,6 +82,9 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
     cMap:
         matplotlib Colormap
     """
+    if not isinstance(cmapname, str):
+        return cmapname
+    
     import matplotlib as mpl
     if not bad:
         bad = [1.0, 1.0, 1.0, 0.0]
@@ -100,7 +103,7 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
     else:
         try:
             import copy
-            cMap = copy.copy(mpl.cm.get_cmap(cMapName, ncols))
+            cMap = copy.copy(mpl.colormaps.get_cmap(cMapName).resampled(ncols))
         except BaseException as e:
             pg.warn("Could not retrieve colormap ", cMapName, e)
 
@@ -374,6 +377,8 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
 
     cmap = cmapFromName(cMap)
     kwargs.pop('colorBar', False)  # often False for multiple plots
+    kwargs.pop('xlabel', False)
+    kwargs.pop('ylabel', False)
     aspect = kwargs.pop('aspect', None)
     levels = kwargs.pop('levels', None)
     cbar = ColorbarBase(ax, norm=norm, cmap=cmap,
@@ -393,7 +398,7 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     # updateColorBar(cbar, **kwargs)
 
     if savefig is not None:
-        saveFigure(fig, savefig)
+        saveFigure(ax.figure, savefig)
 
     return ax
 
