@@ -1075,22 +1075,13 @@ class Table(object):
         return _fmt
 
 
-    def _repr_html_(self):
-        """Return html representation for jupyter notebooks and
-        sphinx-gallery."""
-        from tabulate import tabulate
-        md = tabulate(self.table, headers=self.header,
-                     tablefmt="pipe", **self.fmt)
-        return repr(md)
-
-
     def __str__(self):
         """Print table."""
+        from tabulate import tabulate
 
         if pg.isNotebook():
             from IPython.display import display, Markdown
 
-            from tabulate import tabulate
             md = tabulate(self.table, headers=self.header,
                           tablefmt="pipe", **self.fmt)
 
@@ -1109,12 +1100,12 @@ class Table(object):
             return ''
 
         elif pg.isIPyTerminal():
-            return self.__repr__()
+            return self._repr_html_()
 
         try:
-            from tabulate import tabulate
             if self.header is None:
                 return '\n' + tabulate(self.table) + '\n'
+
             return '\n' + tabulate(self.table, headers=self.header,
                                    **self.fmt) + '\n'
         except ImportError:
@@ -1126,3 +1117,26 @@ class Table(object):
             return '\n' + str(self.header) + '\n' + (self.table)
         else:
             return '\n' + (self.table)
+
+
+    def _repr_html_(self):
+        """Return html representation for jupyter notebooks and
+        sphinx-gallery."""
+        from tabulate import tabulate
+        if pg.isNotebook():
+            #math works here
+            md = tabulate(self.table, headers=self.header,
+                          tablefmt="html", **self.fmt)
+        elif pg.isIPyTerminal():
+            #math does not works here for tablefmt=html
+            md = tabulate(self.table, headers=self.header,
+                     tablefmt="latex", **self.fmt)
+        return str(md)
+
+
+    # def __repr__(self):
+    #     """Print table."""
+    #     if pg.isNotebook():
+    #         # covered by _repr_html_
+    #         return ""
+    #     return str(self)
