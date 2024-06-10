@@ -223,7 +223,13 @@ def version(cache=True):  # imported cach will be overwritten
 def isNotebook():
     """Determine if run inside Jupyter notebook or Spyder."""
     import sys
-    return 'ipykernel_launcher.py' in sys.argv[0]
+    return 'ipykernel_launcher.py' in sys.argv[0] or 'ipykernel' in sys.modules
+
+
+def isIPyTerminal():
+    """Determine if run inside ipython terminal, e.g., sphinx-gallery."""
+    import sys
+    return 'IPython' in sys.modules
 
 
 # @singleton
