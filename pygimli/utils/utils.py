@@ -1100,7 +1100,7 @@ class Table(object):
             return ''
 
         elif pg.isIPyTerminal():
-            return self._repr_html_()
+            return self._repr_rst_()
 
         try:
             if self.header is None:
@@ -1122,21 +1122,57 @@ class Table(object):
     def _repr_html_(self):
         """Return html representation for jupyter notebooks and
         sphinx-gallery."""
-        from tabulate import tabulate
         if pg.isNotebook():
+            from tabulate import tabulate
             #math works here
             md = tabulate(self.table, headers=self.header,
                           tablefmt="html", **self.fmt)
+            return str(md)
         elif pg.isIPyTerminal():
             #math does not works here for tablefmt=html
-            md = tabulate(self.table, headers=self.header,
-                     tablefmt="latex", **self.fmt)
-        return str(md)
+            # for Sphinx-gallery
+            return None
+        
+            
+    def _repr_rst_(self):
+        """Return restructured text representation for sphinx-gallery.
+        """
+        from textwrap import indent
+
+        SG_RST_TABLE = """
+{0}
+        """
+        from tabulate import tabulate
+        import re
+        def _m2r(s): 
+            if isinstance(s, str):
+                return re.sub('\$(.*)\$', 
+                                lambda m: f':math:`{m.group(1)}`', s)
+            return s
+
+        for i, col in enumerate(self.header):
+            self.header[i] = _m2r(col)
+        
+        for i, row in enumerate(self.table):
+            for j, r in enumerate(row):
+                self.table[i][j] = _m2r(r)
+
+        md = tabulate(self.table, headers=self.header,
+                    tablefmt="rst", **self.fmt)
+        
+        return SG_RST_TABLE.format(indent(md, ''))  
 
 
-    # def __repr__(self):
-    #     """Print table."""
-    #     if pg.isNotebook():
-    #         # covered by _repr_html_
-    #         return ""
-    #     return str(self)
+    def __repr__(self):
+        """
+        """
+        if pg.isNotebook():
+            ## covered by _repr_html, we don't need both
+            return ""
+        
+        elif pg.isIPyTerminal():
+            # for Sphinx-gallery
+            return self._repr_rst_()
+    
+        return str(self)
+
