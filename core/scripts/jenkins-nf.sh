@@ -31,8 +31,11 @@ function clean(){
     NCOL
 
     pushd $PROJECT_ROOT
+        echo "remove PROJECT_BLD: $PROJECT_BLD"
         rm -rf $PROJECT_BLD
+        echo "remove BUILD_ENV: $BUILD_ENV"
         rm -rf $BUILD_ENV
+        echo "remove TEST_ENV: $TEST_ENV"
         rm -rf $TEST_ENV
     popd
 }
