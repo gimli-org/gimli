@@ -80,6 +80,12 @@ start=$(date +"%s")
 
 # Show last change to repo in build log
 echo `git --git-dir $PROJECT_SRC/.git log -1 --pretty="Last change by %cn (%h): %B"`
+LAST_COMMIT_MSG=`git --git-dir $PROJECT_SRC/.git log -1`
+
+if ( $LAST_COMMIT_MSG == *"[CI"* ); then
+    CI_CMD=`echo $LAST_COMMIT_MSG | sed 's/.*\[CI \([^]]*\)\].*/\1/g'`
+    echo "CUSTOM CI COMMAND:" $CI_CMD
+fi
 
 # Check if core was changed
 CORE_NEEDS_UPDATE=$(git --git-dir=$PROJECT_SRC/.git diff --name-only $GIT_PREVIOUS_COMMIT $GIT_COMMIT | grep -c core/src || true)
