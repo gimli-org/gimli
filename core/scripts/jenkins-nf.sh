@@ -132,7 +132,6 @@ function all(){
     doc
     deploy
 }
-
 start=$(date +"%s")
 echo "Starting automatic build #$BUILD_NUMBER on" `date`
 
