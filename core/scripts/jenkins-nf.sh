@@ -199,40 +199,40 @@ export GIMLI_NUM_THREADS=$((`nproc --all` - 4))
 
 if ( echo $LAST_COMMIT_MSG == *"[CI"* ); then
     CI_CMD=`echo -e $LAST_COMMIT_MSG | sed 's/.*\[CI \([^]]*\)\].*/\1/g'`
-    echo "custom CI command forced by git command message:" $CI_CMD
+    echo "Custom CI command from git command message run before all:" $CI_CMD
     $CI_CMD
-else
-
-    [ $# -lt 1 ] && help
-
-    for arg in $@
-    do
-        case $arg in
-        build)
-            build;;
-        test)
-            test;;
-        doc)
-            doc;;
-        pylint)
-            pylint;;
-        docclean)
-            docclean;;
-        depclean)
-            depclean;;
-        deploy)
-            deploy;;
-        all)
-            all;;
-        help)
-            help
-            return;;
-        *)
-            echo "Don't know what to do."
-            help;;
-        esac
-    done
 fi
+
+[ $# -lt 1 ] && help
+
+for arg in $@
+do
+    case $arg in
+    build)
+        build;;
+    test)
+        test;;
+    doc)
+        doc;;
+    pylint)
+        pylint;;
+    docclean)
+        docclean;;
+    depclean)
+        depclean;;
+    deploy)
+        deploy;;
+    all)
+        all;;
+    help)
+        help
+        return;;
+    *)
+        echo "Don't know what to do."
+        help;;
+    esac
+done
+
 
 end=$(date +"%s")
 echo "Ending automatic build #$BUILD_NUMBER".
