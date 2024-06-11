@@ -215,10 +215,10 @@ echo `git --git-dir $PROJECT_SRC/.git log -1 --pretty="Last change by %cn (%h): 
 LAST_COMMIT_MSG=`git --git-dir $PROJECT_SRC/.git log -1`
 
 # Find if there is a [CI cmd] in the last commit message
-if ( echo $LAST_COMMIT_MSG == *"[CI"* ); then
+if [[ "$LAST_COMMIT_MSG" == *"[CI"* ]]; then
     CI_CMD=`echo -e $LAST_COMMIT_MSG | sed 's/.*\[CI \([^]]*\)\].*/\1/g'`
     echo "Custom CI command from git command message run before all:" $CI_CMD
-    $CI_CMD
+    #$CI_CMD
 fi
 
 [ $# -lt 1 ] && help
