@@ -23,77 +23,6 @@ GREEN(){
 NCOL(){
     echo -e '\033[0m'
 }
-
-start=$(date +"%s")
-echo "Starting automatic build #$BUILD_NUMBER on" `date`
-
-if [ -z $WORKSPACE ]; then
-    GREEN
-    echo "Local Build (no Jenkins)"
-    NCOL
-    WORKSPACE=$(pwd)
-else
-    GREEN
-    echo "Jenkins Build"
-    NCOL
-    echo "JOB_NAME=$JOB_NAME"
-    echo "JOB_BASE_NAME=$JOB_BASE_NAME"
-    echo "JENKINS_HOME=$JENKINS_HOME"
-    echo "WORKSPACE=$WORKSPACE"
-    echo "BUILD_TAG=$BUILD_TAG"
-fi
-
-PROJECT=gimli
-
-AGENTS_ROOT=$WORKSPACE/..
-PROJECT_ROOT=$(realpath $AGENTS_ROOT/$PROJECT.newfea)
-PROJECT_SRC=$PROJECT_ROOT/$PROJECT
-WHEELHOUSE=$(realpath $AGENTS_ROOT/wheelhouse) # path for resulting whls
-
-# Show system information
-lsb_release -d
-uname -a
-python --version
-
-if [ -z $PYVERSION ]; then
-    PYVERSION=$(python -c 'import sys; print(f"{sys.version_info.major}{sys.version_info.minor}")')
-    echo "building for python: $PYVERSION"
-else
-    echo "building for python: $PYVERSION (forced by setting PYVERSION)"
-fi
-
-PYPLATFORM=cp$PYVERSION-cp$PYVERSION
-PROJECT_BLD=$PROJECT_ROOT/build_$PYPLATFORM
-BUILD_ENV=$PROJECT_ROOT/build_$PYPLATFORM'_venv'
-TEST_ENV=$PROJECT_ROOT/test_$PYPLATFORM'_venv'
-
-echo "AGENTS_ROOT=$AGENTS_ROOT"
-echo "PROJECT_ROOT=$PROJECT_ROOT"
-echo "PROJECT_SRC=$PROJECT_SRC"
-echo "PROJECT_BLD=$PROJECT_BLD"
-echo "BUILD_ENV=$BUILD_ENV"
-echo "TEST_ENV=$TEST_ENV"
-echo "WHEELHOUSE=$WHEELHOUSE"
-
-echo "Starting automatic build #$BUILD_NUMBER on" `date` "ROOT: $PROJECT_ROOT"
-start=$(date +"%s")
-
-# Show last change to repo in build log
-echo `git --git-dir $PROJECT_SRC/.git log -1 --pretty="Last change by %cn (%h): %B"`
-LAST_COMMIT_MSG=`git --git-dir $PROJECT_SRC/.git log -1`
-
-if ( $LAST_COMMIT_MSG == *"[CI"* ); then
-    CI_CMD=`echo $LAST_COMMIT_MSG | sed 's/.*\[CI \([^]]*\)\].*/\1/g'`
-    echo "CUSTOM CI COMMAND:" $CI_CMD
-fi
-
-# Check if core was changed
-CORE_NEEDS_UPDATE=$(git --git-dir=$PROJECT_SRC/.git diff --name-only $GIT_PREVIOUS_COMMIT $GIT_COMMIT | grep -c core/src || true)
-
-echo "Core update: $CORE_NEEDS_UPDATE"
-
-export GIMLI_NUM_THREADS=$((`nproc --all` - 4))
-
 function clean(){
     GREEN
     echo "************************************"
@@ -199,35 +128,107 @@ function all(){
     deploy
 }
 
-[ $# -lt 1 ] && help
+start=$(date +"%s")
+echo "Starting automatic build #$BUILD_NUMBER on" `date`
 
-for arg in $@
-do
-    case $arg in
-    build)
-        build;;
-    test)
-        test;;
-    doc)
-        doc;;
-    pylint)
-        pylint;;
-    docclean)
-        docclean;;
-    depclean)
-        depclean;;
-    deploy)
-        deploy;;
-    all)
-        all;;
-    help)
-        help
-        return;;
-    *)
-        echo "Don't know what to do."
-        help;;
-    esac
-done
+if [ -z $WORKSPACE ]; then
+    GREEN
+    echo "Local Build (no Jenkins)"
+    NCOL
+    WORKSPACE=$(pwd)
+else
+    GREEN
+    echo "Jenkins Build"
+    NCOL
+    echo "JOB_NAME=$JOB_NAME"
+    echo "JOB_BASE_NAME=$JOB_BASE_NAME"
+    echo "JENKINS_HOME=$JENKINS_HOME"
+    echo "WORKSPACE=$WORKSPACE"
+    echo "BUILD_TAG=$BUILD_TAG"
+fi
+
+PROJECT=gimli
+
+AGENTS_ROOT=$WORKSPACE/..
+PROJECT_ROOT=$(realpath $AGENTS_ROOT/$PROJECT.newfea)
+PROJECT_SRC=$PROJECT_ROOT/$PROJECT
+WHEELHOUSE=$(realpath $AGENTS_ROOT/wheelhouse) # path for resulting whls
+
+# Show system information
+lsb_release -d
+uname -a
+python --version
+
+if [ -z $PYVERSION ]; then
+    PYVERSION=$(python -c 'import sys; print(f"{sys.version_info.major}{sys.version_info.minor}")')
+    echo "building for python: $PYVERSION"
+else
+    echo "building for python: $PYVERSION (forced by setting PYVERSION)"
+fi
+
+PYPLATFORM=cp$PYVERSION-cp$PYVERSION
+PROJECT_BLD=$PROJECT_ROOT/build_$PYPLATFORM
+BUILD_ENV=$PROJECT_ROOT/build_$PYPLATFORM'_venv'
+TEST_ENV=$PROJECT_ROOT/test_$PYPLATFORM'_venv'
+
+echo "AGENTS_ROOT=$AGENTS_ROOT"
+echo "PROJECT_ROOT=$PROJECT_ROOT"
+echo "PROJECT_SRC=$PROJECT_SRC"
+echo "PROJECT_BLD=$PROJECT_BLD"
+echo "BUILD_ENV=$BUILD_ENV"
+echo "TEST_ENV=$TEST_ENV"
+echo "WHEELHOUSE=$WHEELHOUSE"
+
+echo "Starting automatic build #$BUILD_NUMBER on" `date` "ROOT: $PROJECT_ROOT"
+start=$(date +"%s")
+
+# Show last change to repo in build log
+echo `git --git-dir $PROJECT_SRC/.git log -1 --pretty="Last change by %cn (%h): %B"`
+LAST_COMMIT_MSG=`git --git-dir $PROJECT_SRC/.git log -1`
+
+# Check if core was changed
+CORE_NEEDS_UPDATE=$(git --git-dir=$PROJECT_SRC/.git diff --name-only $GIT_PREVIOUS_COMMIT $GIT_COMMIT | grep -c core/src || true)
+
+echo "Core update: $CORE_NEEDS_UPDATE"
+
+export GIMLI_NUM_THREADS=$((`nproc --all` - 4))
+
+if ( echo $LAST_COMMIT_MSG == *"[CI"* ); then
+    CI_CMD=`echo -e $LAST_COMMIT_MSG | sed 's/.*\[CI \([^]]*\)\].*/\1/g'`
+    echo "custom CI command forced by git command message:" $CI_CMD
+    $CI_CMD
+else
+
+    [ $# -lt 1 ] && help
+
+    for arg in $@
+    do
+        case $arg in
+        build)
+            build;;
+        test)
+            test;;
+        doc)
+            doc;;
+        pylint)
+            pylint;;
+        docclean)
+            docclean;;
+        depclean)
+            depclean;;
+        deploy)
+            deploy;;
+        all)
+            all;;
+        help)
+            help
+            return;;
+        *)
+            echo "Don't know what to do."
+            help;;
+        esac
+    done
+fi
 
 end=$(date +"%s")
 echo "Ending automatic build #$BUILD_NUMBER".
