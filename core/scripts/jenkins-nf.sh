@@ -20,6 +20,9 @@ fi
 GREEN(){
     echo -e '\033[0;32m'
 }
+BLUE(){
+    echo -e '\033[0;34;49m'
+}
 NCOL(){
     echo -e '\033[0m'
 }
@@ -116,6 +119,18 @@ function deploy(){
     echo "*** Deploying ...                ***"
     echo "************************************"
     NCOL
+    PGCOREWHL=`ls -dtr1 $PROJECT_BLD/wheelhouse/pgcore* | tail -1`
+    PGWHL=`ls -dtr1 $PROJECT_BLD/wheelhouse/pygimli* | tail -1`
+
+    BLUE
+    echo "copy final whl $PGCOREWHL $WHEELHOUSE"
+    echo "copy final whl $PGWHL $WHEELHOUSE"
+    NCOL
+
+    mkdir -p $WHEELHOUSE
+    cp $PGCOREWHL $WHEELHOUSE
+    cp $PGWHL $WHEELHOUSE
+
 }
 function skip(){
     GREEN
@@ -189,17 +204,17 @@ echo "WHEELHOUSE=$WHEELHOUSE"
 echo "Starting automatic build #$BUILD_NUMBER on" `date` "ROOT: $PROJECT_ROOT"
 start=$(date +"%s")
 
+export GIMLI_NUM_THREADS=$((`nproc --all` - 4))
+
+# Check if core was changed
+CORE_NEEDS_UPDATE=$(git --git-dir=$PROJECT_SRC/.git diff --name-only $GIT_PREVIOUS_COMMIT $GIT_COMMIT | grep -c core/src || true)
+echo "Core update: $CORE_NEEDS_UPDATE"
+
 # Show last change to repo in build log
 echo `git --git-dir $PROJECT_SRC/.git log -1 --pretty="Last change by %cn (%h): %B"`
 LAST_COMMIT_MSG=`git --git-dir $PROJECT_SRC/.git log -1`
 
-# Check if core was changed
-CORE_NEEDS_UPDATE=$(git --git-dir=$PROJECT_SRC/.git diff --name-only $GIT_PREVIOUS_COMMIT $GIT_COMMIT | grep -c core/src || true)
-
-echo "Core update: $CORE_NEEDS_UPDATE"
-
-export GIMLI_NUM_THREADS=$((`nproc --all` - 4))
-
+# Find if there is a [CI cmd] in the last commit message
 if ( echo $LAST_COMMIT_MSG == *"[CI"* ); then
     CI_CMD=`echo -e $LAST_COMMIT_MSG | sed 's/.*\[CI \([^]]*\)\].*/\1/g'`
     echo "Custom CI command from git command message run before all:" $CI_CMD
@@ -236,9 +251,7 @@ do
     esac
 done
 
-
 end=$(date +"%s")
 echo "Ending automatic build #$BUILD_NUMBER".
 diff=$(($end-$start))
 echo "$(($diff / 60)) minutes and $(($diff % 60)) seconds elapsed."
-
