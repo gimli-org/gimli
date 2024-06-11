@@ -197,6 +197,7 @@ if ( echo $LAST_COMMIT_MSG == *"[CI"* ); then
     CI_CMD=`echo -e $LAST_COMMIT_MSG | sed 's/.*\[CI \([^]]*\)\].*/\1/g'`
     echo "custom CI command forced by git command message:" $CI_CMD
     $CI_CMD
+
 else
 
     [ $# -lt 1 ] && help
