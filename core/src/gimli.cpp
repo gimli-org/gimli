@@ -39,6 +39,7 @@
     std::mutex __GIMLILogWriteMutex__;
 #endif
 
+#include <omp.h>
 
 namespace GIMLI{
 
@@ -48,6 +49,11 @@ static int __GIMLI_DEEP_DEBUG__ = 0;
 
 Index __setTC__(){
     // to close to number of cpu can bring significent shedular overhead
+    int omp = getEnvironment("OMP_NUM_THREADS", -1, false);
+    if (omp == -1){
+        omp_set_num_threads(min(8, numberOfCPU()-2));
+    }
+
     int tc = getEnvironment("OPENBLAS_NUM_THREADS", -1, false);
 
     if (tc == -1){
@@ -85,6 +91,7 @@ void setThreadCount(Index nThreads){
     log(Debug, "Set amount of threads to " + str(nThreads));
     //log(Debug, "omp_get_max_threads: " + str(omp_get_max_threads()));
     //omp_set_num_threads
+
 #if OPENBLAS_CBLAS_FOUND
     openblas_set_num_threads(nThreads);
     //omp_set_num_threads

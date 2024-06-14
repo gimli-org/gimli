@@ -108,6 +108,9 @@ extensions = [
     "sphinxcontrib.doxylink",
     "sphinx_design",
     # "sphinxcontrib.spelling"
+    #'sphinx.ext.pngmath',   # for breath
+    #'sphinx.ext.todo',      # for breath
+    'breathe',              # doxgen to sphinx api docu
 ]
 
 extensions += [dep.replace("-", ".") for dep in deps]
@@ -332,7 +335,7 @@ html_theme_options = {
 # Temp: SEG announcement
 import datetime
 today = datetime.datetime.now()
-webinar = datetime.datetime(2024, 3, 19) 
+webinar = datetime.datetime(2024, 3, 19)
 if today < webinar:
     html_theme_options["announcement"] = "There will be a webinar on pyGIMLi hosted by SEG on March 19, 2024 at 4 pm CET. Register for free <a href='https://seg.org/calendar_events/open-source-software-webinar-pygimli/', target='_blank'>here</a>."
 
@@ -614,10 +617,12 @@ srclink_project = "https://github.com/gimli-org/gimli"
 srclink_src_path = "doc/"
 srclink_branch = "dev"
 
+################################################################################
+# -- Options for Napoleon
+################################################################################
 # New docstring parsing using Napoleon instead of numpydoc
 # The monkeypatch detects draw or show commands
 from sphinx.ext.napoleon import NumpyDocstring
-
 
 def monkeypatch(self, section: str, use_admonition: bool):
     lines = self._strip_empty(self._consume_to_next_section())
@@ -640,7 +645,6 @@ def monkeypatch(self, section: str, use_admonition: bool):
 
 NumpyDocstring._parse_generic_section = monkeypatch
 
-# Napoleon settings
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = True
 napoleon_include_private_with_doc = False
@@ -652,6 +656,19 @@ napoleon_use_ivar = True
 napoleon_use_param = True
 napoleon_use_rtype = True
 
-# Bibtex settings
+################################################################################
+# -- Options for Bibtex
+################################################################################
+
 bibtex_bibfiles = ["gimliuses.bib", "libgimli.bib", "references.bib"]
 bibtex_reference_style = "author_year"
+
+################################################################################
+# -- Options for breath
+################################################################################
+
+breathe_projects = {"gimli":
+                        os.path.abspath(join(DOC_BUILD_DIR, "../../doxygen/xml")),
+                    }
+
+breathe_default_project = "gimli"
