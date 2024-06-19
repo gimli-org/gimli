@@ -1,4 +1,5 @@
-# CODING=Utf-8
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Plotting utilities used throughout the viewer.mpl package."""
 import sys
 import os
