@@ -56,7 +56,7 @@ class Inversion(object):
         self._fop = None
         self._lam = 20      # lambda regularization
         self.chi2History = []
-        
+
         # cache: keep startmodel if set explicitly or calculated from FOP, will
         # be recalulated for every run if not set explicitly
         self._startModel = None
@@ -611,7 +611,7 @@ class Inversion(object):
                 self.verbose = kwargs.pop('verbose', self.verbose)
                 self.debug = kwargs.pop('debug', self.debug)
                 self.robustData = kwargs.pop('robustData', False)
-                
+
                 if "stopAtChi1" in kwargs:
                     self._stopAtChi1 = kwargs["stopAtChi1"]
 
@@ -672,9 +672,10 @@ class Inversion(object):
                     print("min/max (start model): {0}/{1}".format(
                         pf(min(startModel)), pf(max(startModel))))
 
-                # To ensure reproduceability of the run() call, inv.start() will
+                # To ensure reproducibility of the run() call, inv.start() will
                 # reset self.inv.model() to fop.startModel().
                 self.fop.setStartModel(startModel)
+
                 if kwargs.pop("isReference", False):
                     self.inv.setReferenceModel(startModel)
                     pg.info("Setting starting model as reference!")
@@ -684,10 +685,19 @@ class Inversion(object):
                 if self._preStep and callable(self._preStep):
                     self._preStep(0, self)
 
-                self.inv.setMaxIter(0)
-                
-            with pg.tictoc('start'):
-                self.inv.start()
+        if self._postStep and callable(self._postStep):
+            self._postStep(0, self)
+
+        if showProgress:
+            self.showProgress(showProgress)
+
+        lastPhi = self.phi()
+        self.chi2History = [self.chi2()]
+        self.modelHistory = [startModel]
+
+        for i in range(1, maxIter+1):
+            if self._preStep and callable(self._preStep):
+                self._preStep(i, self)
 
             self.maxIter = maxIterTmp
             if self.verbose:
@@ -700,9 +710,8 @@ class Inversion(object):
             if showProgress:
                 self.showProgress(showProgress)
 
-            lastPhi = self.phi()
-            self.chi2History = [self.chi2()]
-            self.modelHistory = [startModel]
+            if self._postStep and callable(self._postStep):
+                self._postStep(i, self)
 
             for i in range(1, maxIter+1):
                 with pg.tictoc('iter'):

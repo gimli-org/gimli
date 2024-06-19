@@ -42,6 +42,7 @@ from .utils import (ProgressBar, Table, boxprint, cumDist, cut, diff, dist, rate
                     unique_everseen, unique_rows, uniqueAndSum)
 
 from .streams import streamline, streamlineDir
+from .dem import DEM
 
 
 __all__ = [name for name in dir() if '_' not in name]

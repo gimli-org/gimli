@@ -568,7 +568,7 @@ void DCMultiElectrodeModelling::init_(){
     Index nThreads = getEnvironment("BERTTHREADS", 0, verbose_);
     nThreads = getEnvironment("BERT_NUM_THREADS", 0, verbose_);
     if (nThreads > 0) setThreadCount(nThreads);
-
+    //log(Info, "DCMultiElectrodeModelling init with thread count:", nThreads);
 }
 
 void DCMultiElectrodeModelling::setComplex(bool c) {
@@ -1849,9 +1849,9 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
         solver = new LinSolver(debug);
         solverNeedsDelete = true;
         dynamic_cast< LinSolver * >(solver)->setMatrix(S_, 1);
-        if (debug) std::cout << "Factorize (" << solver->name() << ") matrix ... " << swatch.duration() << std::endl;        
+        if (debug) std::cout << "Factorize (" << solver->name() << ") matrix ... " << swatch.duration() << std::endl;
     }
-    
+
 // MEMINFO
 
     Vector < ValueType > sol(S_.cols());
@@ -2209,7 +2209,7 @@ void DCSRMultiElectrodeModelling::calculateK(const std::vector < ElectrodeShape 
         dynamic_cast< LinSolver * >(solver)->setMatrix(S_, 1);
         if (debug) std::cout << "Factorize (" << solver->name() << ") matrix ... " << swatch.duration() << std::endl;
     }
-    
+
 
 // MEMINFO
 
@@ -2289,11 +2289,11 @@ void DCSRMultiElectrodeModelling::calculateK(const std::vector < ElectrodeShape 
 
         if (singleVerbose) singleVerbose = false;
     }
-    
+
     if (solverNeedsDelete == true){
         delete solver;
     }
-    
+
 }
 
 } // namespace GIMLI{

@@ -74,7 +74,7 @@ void ModellingBase::init_() {
     constraints_        = 0;
     dataContainer_      = 0;
 
-    nThreads_           = numberOfCPU();
+    nThreads_           = min(16, numberOfCPU()-2);
     nThreadsJacobian_   = 1;
 
     ownJacobian_        = false;
@@ -404,13 +404,13 @@ RSparseMapMatrix & ModellingBase::constraintsRef() {
     return *dynamic_cast < RSparseMapMatrix *>(constraints_);
 }
 
-RVector ModellingBase::createMappedModel(const RVector & model, 
+RVector ModellingBase::createMappedModel(const RVector & model,
                                          double background) const {
     if (mesh_ == 0) throwError("ModellingBase has no mesh for ModellingBase::createMappedModel");
 
     // __MS("ModellingBase::createMappedModel: " << this << " rm: " << regionManager_
     //             << " " << model.size() << " " <<  mesh_->cellCount())
-    
+
     if (model.size() == mesh_->cellCount()) {
         IVector cM(mesh_->cellMarkers());
 
@@ -470,10 +470,10 @@ RVector ModellingBase::createMappedModel(const RVector & model,
         // if (abs(cellAtts[i]) < TOLERANCE){ // this will never work since the prior prolongation
         if (mesh_->cell(i).marker() <= MARKER_FIXEDVALUE_REGION){
                 // setting fixed values
-            SIndex regionMarker = -(mesh_->cell(i).marker() -           
+            SIndex regionMarker = -(mesh_->cell(i).marker() -
                                     MARKER_FIXEDVALUE_REGION);
 
-            // __MS(regionManagerInUse_ << " " << this <<  " " << 
+            // __MS(regionManagerInUse_ << " " << this <<  " " <<
             //         regionManager_->region(regionMarker)->fixValue())
 
             if (regionManagerInUse_){
@@ -529,7 +529,7 @@ void ModellingBase::setRegionManager(RegionManager * reg){
     } else {
         regionManagerInUse_ = false;
         regionManager_      = new RegionManager(verbose_);
-        ownRegionManager_   = true; 
+        ownRegionManager_   = true;
         // __MS("ModellingBase::setRegionManager new " << this << " rm: " << regionManager_)
     }
     // __MS("MB:setRegionManager: " << this << " rm: " << regionManager_)

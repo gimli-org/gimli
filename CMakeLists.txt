@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.15)
 if (POLICY CMP0025) # recognize appleclang
     cmake_policy(SET CMP0025 NEW)
 endif()
-if (POLICY CMP0094) 
+if (POLICY CMP0094)
     cmake_policy(SET CMP0094 NEW) #Python_FIND_STRATEGY LOCATION
 endif()
 
@@ -92,14 +92,14 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-int-in-bool-context")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedefs") # pg build
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations") # loot of boost complaints about bind   
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations") # loot of boost complaints about bind
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-overloaded-virtual")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_BIND_GLOBAL_PLACEHOLDERS")
-    
+
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -ansi -pedantic -fno-omit-frame-pointer -Wall")
     #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -std=c++11 -ansi -pedantic -fno-omit-frame-pointer -Wall")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fopenmp")
-    
+
     ### debug settings
     # run with -DCMAKE_BUILD_TYPE=Debug
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -p -g -ansi -pedantic -fno-common -fno-omit-frame-pointer -Wall")
@@ -113,10 +113,10 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
     if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-overloaded-virtual")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Qunused-arguments")
-    
+
         if (APPLE)
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-warning-option") # on apple clang 
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undefined-var-template") # on apple clang 
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-warning-option") # on apple clang
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undefined-var-template") # on apple clang
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-infinite-recursion")
             # If it's libc++ and you're on <= 10.8, you need to compile with
             # clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later,
@@ -159,7 +159,7 @@ if (GIT_FOUND)
         ERROR_STRIP_TRAILING_WHITESPACE
         )
     message(STATUS "getting full version from git description: GIMLI_GIT_TAG_FULLVERSION=${GIMLI_GIT_TAG_FULLVERSION}")
-    
+
     execute_process(COMMAND ${GIT_EXECUTABLE} describe --all --contains
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     OUTPUT_VARIABLE GIMLI_GIT_BRANCH
@@ -167,7 +167,7 @@ if (GIT_FOUND)
     ERROR_STRIP_TRAILING_WHITESPACE
     )
     message(STATUS "getting branch name from git description: GIMLI_GIT_BRANCH=${GIMLI_GIT_BRANCH}")
-    
+
     if (NOT GIMLI_GIT_BRANCH STREQUAL "master")
         set(LIBGIMLI_VERSION "${GIMLI_GIT_TAG_FULLVERSION}(${GIMLI_GIT_BRANCH})")
     else()
@@ -231,7 +231,7 @@ if (NOT PYVERSION)
             PYVERSION_GUESS
         OUTPUT_STRIP_TRAILING_WHITESPACE
             ERROR_STRIP_TRAILING_WHITESPACE
-    )    
+    )
     STRING(REPLACE "Python " "" PYVERSION_GUESS "${PYVERSION_GUESS}")
     message(STATUS "No PYVERSION set, guessing from current python executable: ${PYVERSION_GUESS}")
     set(PYVERSION ${PYVERSION_GUESS})
@@ -244,8 +244,8 @@ set(Python_ADDITIONAL_VERSIONS=${PYVERSION})
 set(Python_FIND_VIRTUALENV FIRST)
 
 if (OS_VAR STREQUAL "almalinux")
-    ## almalinux used for manylinux builds, 
-    ## EXACT fails since Python_Includes are not part of 
+    ## almalinux used for manylinux builds,
+    ## EXACT fails since Python_Includes are not part of
     ## build virtual enviroment but on /opt
     find_package(Python ${PYVERSION} COMPONENTS Interpreter REQUIRED)
     find_package(Python ${PYVERSION} COMPONENTS Development.Module REQUIRED)
@@ -257,7 +257,7 @@ else()
 endif()
 
 set (PYTHON_FOUND TRUE CACHE BOOL "Is python available")
-    
+
 message(STATUS "Python_FOUND: ${Python_FOUND}")
 message(STATUS "Python_Interpreter_FOUND: ${Python_Interpreter_FOUND}")
 message(STATUS "Python_EXECUTABLE: ${Python_EXECUTABLE}")
@@ -277,7 +277,7 @@ message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES}")
 message(STATUS "Python_LINK_OPTIONS: ${Python_LINK_OPTIONS}")
 message(STATUS "Python_VERSION: ${Python_VERSION}")
 message(STATUS "Python_NumPy: ${Python_NumPy_FOUND}, ${Python_NumPy_INCLUDE_DIRS}, ${Python_NumPy_VERSION}")
-        
+
 
 ################################################################################
 #   boost
@@ -358,7 +358,7 @@ message(STATUS "Found Boost_ROOT: ${Boost_ROOT}")
 message(STATUS "Found Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
 if (NOT Boost_PYTHON_LIBRARY)
     # Who sets this? It prevents successfull search directly after build
-    unset(Boost_USE_DEBUG_RUNTIME) 
+    unset(Boost_USE_DEBUG_RUNTIME)
     find_package(Boost COMPONENTS "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
     #find_or_build_package(Boost boost)
 endif()
@@ -663,31 +663,55 @@ find_package(Sphinx 3.1)
 
 if (SPHINX_FOUND AND NOT SKIP_SPHINX)
     add_subdirectory(doc EXCLUDE_FROM_ALL)
-    message(STATUS "Search recursive for *.rst from here: " ${CMAKE_SOURCE_DIR})
-    file(GLOB_RECURSE DOCFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.rst")
+    message(STATUS "Search recursive for related doc files from here: " ${CMAKE_SOURCE_DIR})
+
+    file(GLOB DOCFILES LIST_DIRECTORIES false
+            RELATIVE "${CMAKE_SOURCE_DIR}"
+        "*.rst")
     message(STATUS "DOCFILES: " ${DOCFILES})
 
-    file(GLOB_RECURSE PNGFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.png")
-    list(APPEND DOCFILES ${PNGFILES})
+    file(GLOB DFILES LIST_DIRECTORIES false
+            RELATIVE "${CMAKE_SOURCE_DIR}"
+        "*.md")
+    message(STATUS "MDFILES: " ${DFILES})
+    list(APPEND DOCFILES ${DFILES})
 
-    message(STATUS "PNGFILES: " ${PNGFILES})
+    set (RECDOCTYPES "*.rst" "*.md" "*.png" "*.svg" "*.bib" "paper/*.py")
 
-    file(GLOB_RECURSE BIBFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.bib")
-    list(APPEND DOCFILES ${BIBFILES})
+    foreach (DTYPE ${RECDOCTYPES})
+        file(GLOB_RECURSE DFILES
+                LIST_DIRECTORIES false
+                RELATIVE "${CMAKE_SOURCE_DIR}"
+            "./doc/${DTYPE}")
+        message(STATUS "Append DOC files: (${DTYPE}) " ${DFILES})
+        list(APPEND DOCFILES ${DFILES})
+    endforeach()
+    # message(STATUS "RSTFILES: " ${DFILES})
 
-    message(STATUS "BIBFILES: " ${BIBFILES})
+    # file(GLOB_RECURSE DFILES LIST_DIRECTORIES false
+    # RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "./doc/*.md")
+    # message(STATUS "MDFILES: " ${DFILES})
+    # list(APPEND DOCFILES ${DFILES})
 
-    file(GLOB_RECURSE PYFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "doc/paper/*.py")
-    message(STATUS "PYFILES: " ${PYFILES})
+    # file(GLOB_RECURSE DFILES LIST_DIRECTORIES false
+    # RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "./doc/*.png")
+    # message(STATUS "PNGFILES: " ${DFILES})
+    # list(APPEND DOCFILES ${DFILES})
 
-    list(APPEND DOCFILES ${PYFILES})
+    # file(GLOB_RECURSE DFILES LIST_DIRECTORIES false
+    # RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "./doc/*.bib")
+    # message(STATUS "BIBFILES: " ${DFILES})
+    # list(APPEND DOCFILES ${DFILES})
+
+    # file(GLOB_RECURSE PYFILES LIST_DIRECTORIES false
+    #     RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "doc/paper/*.py")
+    # message(STATUS "PYFILES: " ${PYFILES})
+    # list(APPEND DOCFILES ${PYFILES})
 
     set(RSTFILES ${DOCFILES} CACHE INTERNAL "RST source file that we need to copy")
 
-    set(RSTFILES ${DOCFILES} CACHE INTERNAL "RST source file that we need to copy")
-    execute_process(
-        COMMAND ${SPHINX_EXECUTABLE} --version
-        OUTPUT_VARIABLE SPHINX_VERSION
+    execute_process(COMMAND ${SPHINX_EXECUTABLE} --version
+                    OUTPUT_VARIABLE SPHINX_VERSION
     )
 
     add_custom_target(removedoc

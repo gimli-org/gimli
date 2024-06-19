@@ -74,14 +74,14 @@ __registeredShowPendingFigsAtExit__ = False
 def registerShowPendingFigsAtExit():
     """If called it register a closing function that will ensure all pending MPL figures are shown.
 
-    Its only set on demand by pg.show() since we only need it if matplotlib is used. 
+    Its only set on demand by pg.show() since we only need it if matplotlib is used.
     """
     global __registeredShowPendingFigsAtExit__
     if __registeredShowPendingFigsAtExit__ == False:
         import atexit
 
         #pg._y('register wait on exit')
-        ## first  call one empty show to initial QtManager before register 
+        ## first  call one empty show to initial QtManager before register
         # onExit to avoid RuntimeError: wrapped C/C++ object of type MainWindow has been deleted
         if 'matplotlib.pyplot' in sys.modules:
             import matplotlib.pyplot as plt
@@ -108,7 +108,7 @@ def registerShowPendingFigsAtExit():
                             pg.info(f'Showing pending widgets ({backend}) on exit. '
                                         'Close all figures or Ctrl-C to quit the programm')
                             pg.wait()
-                
+
     __registeredShowPendingFigsAtExit__ = True
 
 
@@ -148,12 +148,15 @@ def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
         ax.set_yticklabels(labels)
 
 
-def adjustWorldAxes(ax):
+def adjustWorldAxes(ax, depth=True):
     """Set some common default properties for an axe."""
-    ax.set_ylabel('Depth (m)')
-    ax.set_xlabel('$x$ (m)')
+    if depth is True:
+        ax.set_ylabel('Depth in m')
+        renameDepthTicks(ax)
+    else:
+        ax.set_ylabel('$y$ in m')
+    ax.set_xlabel('$x$ in m')
 
-    renameDepthTicks(ax)
     ax.figure.tight_layout()
     updateAxes(ax)
 

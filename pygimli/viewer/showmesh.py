@@ -97,7 +97,7 @@ def show(obj=None, data=None, **kwargs):
 
         return ax, None
 
-    ### obj containes a mesh 
+    ### obj containes a mesh
     if hasattr(obj, 'mesh'):
         ### data has values
         if hasattr(obj, 'values'):
@@ -106,8 +106,8 @@ def show(obj=None, data=None, **kwargs):
                            label=kwargs.pop('label', obj.name),
                             **kwargs)
             else:
-                return show1D(obj.mesh, obj, **kwargs)                    
-        ### data need to be evaluated 
+                return show1D(obj.mesh, obj, **kwargs)
+        ### data need to be evaluated
         if hasattr(obj, 'eval'):
             if obj.mesh.dim() > 1:
                 return pg.show(obj.mesh, obj.eval(),
@@ -151,7 +151,7 @@ def show(obj=None, data=None, **kwargs):
                         **kwargs)
 
         for i, m in enumerate(mesh[1:]):
-            ax, cBar = show(m, data, ax=ax, hold=True, fitView=False, 
+            ax, cBar = show(m, data, ax=ax, hold=True, fitView=False,
                             label=label[i], **kwargs)
 
         if fitView is not False:
@@ -162,7 +162,7 @@ def show(obj=None, data=None, **kwargs):
     if isinstance(mesh, pg.Mesh):
         if mesh.dim() == 1:
             return show1D(mesh, data, **kwargs)
-            
+
         elif mesh.dim() == 2:
             if pg.zero(pg.y(mesh)):
                 pg.info("swap z<->y coordinates for visualization.")
@@ -276,6 +276,11 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         If hold is set to False your script will open the figure and continue
         working. You can change global hold with pg.hold(bool).
 
+    axisLabels: bool [True]
+        Set x/yLabels for ax. X will be "x in m" and "y in m".
+        Y ticks change to depth values for a mesh with world
+        boundary markers and the label becomes "Depth in m".
+
     All remaining will be forwarded to the draw functions
     and matplotlib methods, respectively.
 
@@ -285,7 +290,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     >>> import pygimli as pg
     >>> import pygimli.meshtools as mt
     >>> world = mt.createWorld(start=[-10, 0], end=[10, -10],
-    ...                        layers=[-3, -7], worldMarker=False)
+    ...                        layers=[-3, -7], worldMarker=True)
     >>> mesh = mt.createMesh(world, quality=32, area=0.2, smooth=[1, 10])
     >>> _ = pg.viewer.showMesh(mesh, markers=True)
 
@@ -300,6 +305,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     cMap = kwargs.pop('cMap', 'viridis')
     cBarOrientation = kwargs.pop('orientation', 'horizontal')
     replaceData = kwargs.pop('replaceData', False)
+    axisLabels = kwargs.pop('axisLabels', True)
 
     if ax is None:
         ax, _ = pg.show(figsize=kwargs.pop('figsize', None), **kwargs)
@@ -333,7 +339,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         if len(ud) == len(levs) and ud == levs:
             kwargs["boundaryMarkers"] = kwargs.get("boundaryMarkers", False)
 
-            uniquemarkers, uniqueidx = np.unique(np.array(data), 
+            uniquemarkers, uniqueidx = np.unique(np.array(data),
                                                  return_inverse=True)
 
             markers = True
@@ -344,19 +350,20 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         if mesh.cellCount() > 0:
             if uniquemarkers is None:
                 uniquemarkers, uniqueidx = np.unique(
-                    np.array(mesh.cellMarkers()), return_inverse=True)
+                                                np.array(mesh.cellMarkers()),
+                                                return_inverse=True)
                 label = "Cell markers"
-                        
+
             if cMap == 'viridis':
                 cMap = "Set3"
             cMap = cmapFromName("Set3", ncols=len(uniquemarkers))
-                        
+
             kwargs["logScale"] = False
             kwargs["cMin"] = -0.5
             kwargs["cMax"] = len(uniquemarkers) - 0.5
-            
-            data = np.arange(len(uniquemarkers))[uniqueidx] 
-            
+
+            data = np.arange(len(uniquemarkers))[uniqueidx]
+
     if isinstance(data, str):
         if data in mesh.dataKeys():
             data = mesh[data]
@@ -389,7 +396,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
                 isinstance(data[0], str):
 
             data = np.asarray(data)
-            
+
             ### [u,v] x N
             if len(data) == 2:
                 data = np.array(data).T
@@ -504,8 +511,8 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             #drawMesh(ax, mesh, lw=0.3, **kwargs)
         #else:
         drawMesh(ax, mesh, lw=0.3, **kwargs)
-        # pg.viewer.mpl.drawSelectedMeshBoundaries(ax, 
-        #         mesh.boundaries(), 
+        # pg.viewer.mpl.drawSelectedMeshBoundaries(ax,
+        #         mesh.boundaries(),
         #         color=kwargs.pop('color', "0.1"),
         #         linewidth=kwargs.pop('lw', 0.3))
 
@@ -586,7 +593,11 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         except BaseException:
             pass
 
-    pg.viewer.mpl.updateAxes(ax)
+    if axisLabels == True:
+        pg.viewer.mpl.adjustWorldAxes(ax, depth=min(mesh.boundaryMarkers()) < 0)
+    else:
+        pg.viewer.mpl.updateAxes(ax)
+
     pg.viewer.mpl.hold(val=lastHoldStatus)
 
     if kwargs.get('depth', False):
@@ -720,7 +731,7 @@ def show1D(mesh, obj, **kwargs):
         curve = ax.plot(v, x, label=label, **kwargs)
     else:
         curve = ax.plot(x, v, label=label, **kwargs)
-        
+
     if label is not None and label != '':
         ax.legend()
     ax.grid(grid)
@@ -776,7 +787,7 @@ def showAnimation(mesh, data, ax=None, **kwargs):
 
     if mesh.dim() == 1:
         ax, curve = pg.show(mesh, data[0], ax=ax, **kwargs)
-        
+
         if swapAxes is True:
             ax.set_xlim(min(data.flatten()), max(data.flatten()))
         else:
@@ -793,7 +804,7 @@ def showAnimation(mesh, data, ax=None, **kwargs):
         times = None
 
     p = pg.utils.ProgressBar(len(data))
-    
+
 
     def animate(t):
         p.update(t)
