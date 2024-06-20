@@ -232,13 +232,13 @@ class DLLEXPORT MatrixBase{
 public:
 
     /*! Default constructor. */
-    MatrixBase(bool verbose=false) 
+    MatrixBase(bool verbose=false)
         : verbose_(verbose), _rows(0), _cols(0) {}
 
     /*! Default constructor. */
-    MatrixBase(Index rows, Index cols, bool verbose=false) 
+    MatrixBase(Index rows, Index cols, bool verbose=false)
         : verbose_(verbose), _rows(rows), _cols(cols) {}
- 
+
     /*! Default destructor. */
     virtual ~MatrixBase(){}
 
@@ -289,30 +289,30 @@ public:
     }
 
     /*! Multiplication c = alpha * (A*b) + beta * c. */
-    virtual void mult(const RVector & b, RVector & c, 
-                     const double & alpha=1.0, 
-                     const double & beta=0.0, 
+    virtual void mult(const RVector & b, RVector & c,
+                     const double & alpha=1.0,
+                     const double & beta=0.0,
                      Index bOff=0, Index cOff=0) const {
         log(Warning, "no mult(const & b, const & b, alpha, beta, bOff, cOff) implemented for: ", typeid(*this).name());
     }
     /*! Multiplication c = alpha * (A*b) + beta * c. */
-    virtual void transMult(const RVector & b, RVector & c, 
-                     const double & alpha=1.0, 
-                     const double & beta=0.0, 
+    virtual void transMult(const RVector & b, RVector & c,
+                     const double & alpha=1.0,
+                     const double & beta=0.0,
                      Index bOff=0, Index cOff=0) const {
         log(Warning, "no transMult(const & b, const & b, alpha, beta, bOff, cOff) implemented for: ", typeid(*this).name());
     }
     /*! Multiplication c = alpha * (A*b) + beta * c. */
-    virtual void mult(const CVector & b, CVector & c, 
-                     const Complex & alpha=1.0, 
-                     const Complex & beta=0.0, 
+    virtual void mult(const CVector & b, CVector & c,
+                     const Complex & alpha=1.0,
+                     const Complex & beta=0.0,
                      Index bOff=0, Index cOff=0) const {
         log(Warning, "no mult(const & b, const & b, alpha, beta, bOff, cOff) implemented for: ", typeid(*this).name());
     }
     /*! Multiplication c = alpha * (A*b) + beta * c. */
-    virtual void transMult(const CVector & b, CVector & c, 
-                     const Complex & alpha=1.0, 
-                     const Complex & beta=0.0, 
+    virtual void transMult(const CVector & b, CVector & c,
+                     const Complex & alpha=1.0,
+                     const Complex & beta=0.0,
                      Index bOff=0, Index cOff=0) const {
         log(Warning, "no transMult(const & b, const & b, alpha, beta, bOff, cOff) implemented for: ", typeid(*this).name());
     }
@@ -465,7 +465,7 @@ public:
 
     DenseMatrix()
         : MatrixBase(), _rowView(0){
-        // __MS("mat(0)", this); 
+        // __MS("mat(0)", this);
         this->resize(0, 0);
     }
     /*!Create Densematrix with specified dimensions.*/
@@ -478,7 +478,7 @@ public:
     /*!Create Densematrix with specified dimensions.*/
     DenseMatrix(Index rows, Index cols)
         : MatrixBase(), _rowView(0){
-        // __MS("mat", this); 
+        // __MS("mat", this);
         // __MS("mat(i,i): ", _data.use_count())
         this->resize(rows, cols);
     }
@@ -492,7 +492,7 @@ public:
 
     DenseMatrix(const DenseMatrix < ValueType > & mat)
         : MatrixBase(), _rowView(0) {
-        // __MS("mat(C)", this, &mat); 
+        // __MS("mat(C)", this, &mat);
         copy_(mat);
     }
     DenseMatrix(const Matrix < ValueType > & S)
@@ -506,11 +506,11 @@ public:
     }
 
     virtual ~DenseMatrix(){
-        // __MS("~mat", this); 
+        // __MS("~mat", this);
         free_();
     }
     DenseMatrix < ValueType > & operator=(const DenseMatrix < ValueType > & mat) {
-        // __MS("mat=", this, &mat); 
+        // __MS("mat=", this, &mat);
         if (this != & mat){
             copy_(mat);
         } return *this;
@@ -532,11 +532,11 @@ public:
     inline Vector< ValueType > operator[](Index i) const {
         return row(i);
     }
-        
+
     /*! Read only access to matrix element i,j. */
     inline const ValueType & operator ()(Index i, Index j) const {
         // assert(i < this->_rows && j < this->_cols);
-        
+
         if (i >= this->_rows || j >= this->_cols) {
             throwLengthError(WHERE_AM_I + " ASSERT_LOWER2: ");
             // weirdly this costs 80% runtime performance even if not called.
@@ -738,36 +738,36 @@ public:
     DenseMatrix < ValueType > & transAdd(const DenseMatrix < ValueType > & a);
 
     /*! Multiplication c = alpha * (A*b) + beta * c. */
-    inline void mult(const Vector < ValueType > & b, 
-                      Vector < ValueType >& c, 
-                      const ValueType & alpha=1.0, 
-                      const ValueType & beta=0.0, 
+    inline void mult(const Vector < ValueType > & b,
+                      Vector < ValueType >& c,
+                      const ValueType & alpha=1.0,
+                      const ValueType & beta=0.0,
                       Index bOff=0, Index cOff=0) const {
         return GIMLI::mult(*this, b, c, alpha, beta, bOff, cOff);
     }
     /*! Multiplication c = alpha * (A.T*b) + beta * c. */
-    inline void transMult(const Vector < ValueType > & b, 
-                          Vector < ValueType > & c, 
-                          const ValueType & alpha=1.0, 
-                          const ValueType & beta=0.0, 
+    inline void transMult(const Vector < ValueType > & b,
+                          Vector < ValueType > & c,
+                          const ValueType & alpha=1.0,
+                          const ValueType & beta=0.0,
                           Index bOff=0, Index cOff=0) const {
         return GIMLI::transMult(*this, b, c, alpha, beta, bOff, cOff);
     }
-    /*! Multiplication c = alpha * (A*b) + beta * c. 
+    /*! Multiplication c = alpha * (A*b) + beta * c.
     Same as mult but slightly faster to call from python because of unique name. */
-    inline void multMV(const Vector < ValueType > & b, 
-                       Vector < ValueType >& c, 
-                       const ValueType & alpha=1.0, 
-                       const ValueType & beta=0.0, 
+    inline void multMV(const Vector < ValueType > & b,
+                       Vector < ValueType >& c,
+                       const ValueType & alpha=1.0,
+                       const ValueType & beta=0.0,
                        Index bOff=0, Index cOff=0) const {
         return GIMLI::mult(*this, b, c, alpha, beta, bOff, cOff);
     }
-    /*! Multiplication c = alpha * (A.T*b) + beta * c. 
+    /*! Multiplication c = alpha * (A.T*b) + beta * c.
     Same like transMult but slightly faster to call from python because of unique name. */
-    inline void transMultMV(const Vector < ValueType > & b, 
-                            Vector < ValueType > & c, 
-                            const ValueType & alpha=1.0, 
-                            const ValueType & beta=0.0, 
+    inline void transMultMV(const Vector < ValueType > & b,
+                            Vector < ValueType > & c,
+                            const ValueType & alpha=1.0,
+                            const ValueType & beta=0.0,
                             Index bOff=0, Index cOff=0) const {
         return GIMLI::transMult(*this, b, c, alpha, beta, bOff, cOff);
     }
@@ -785,34 +785,34 @@ public:
         return ret;
     }
     /*! Multiplication C = alpha * (A*B) + beta * C. */
-    inline void mult(const DenseMatrix < ValueType > & B, 
-                     DenseMatrix < ValueType > & C, 
-                     const ValueType & alpha = 1.0, 
+    inline void mult(const DenseMatrix < ValueType > & B,
+                     DenseMatrix < ValueType > & C,
+                     const ValueType & alpha = 1.0,
                      const ValueType & beta = 0.0) const {
         GIMLI::mult((*this), B, C, alpha, beta);
     }
     /*! Multiplication C = alpha * (A.T*B) + beta * C. */
-    inline void transMult(const DenseMatrix < ValueType > & B, 
-                          DenseMatrix < ValueType > & C, 
-                          const ValueType & alpha = 1.0, 
+    inline void transMult(const DenseMatrix < ValueType > & B,
+                          DenseMatrix < ValueType > & C,
+                          const ValueType & alpha = 1.0,
                           const ValueType & beta = 0.0) const {
         GIMLI::transMult((*this), B, C, alpha, beta);
     }
 
-    /*! Multiplication C = alpha * (A*B) + beta * C. 
+    /*! Multiplication C = alpha * (A*B) + beta * C.
     Same like mult but slightly faster to call from python because of unique name. */
-    inline void multMM(const DenseMatrix < ValueType > & B, 
-                     DenseMatrix < ValueType > & C, 
-                     const ValueType & alpha = 1.0, 
+    inline void multMM(const DenseMatrix < ValueType > & B,
+                     DenseMatrix < ValueType > & C,
+                     const ValueType & alpha = 1.0,
                      const ValueType & beta = 0.0) const {
         GIMLI::mult((*this), B, C, alpha, beta);
     }
 
 
     /*! Multiplication C = alpha * (A.T*B) + beta * C. Same like transMult but slightly faster to call from python because of unique name. */
-    inline void transMultMM(const DenseMatrix < ValueType > & B, 
-                          DenseMatrix < ValueType > & C, 
-                          const ValueType & alpha = 1.0, 
+    inline void transMultMM(const DenseMatrix < ValueType > & B,
+                          DenseMatrix < ValueType > & C,
+                          const ValueType & alpha = 1.0,
                           const ValueType & beta = 0.0) const {
         GIMLI::transMult((*this), B, C, alpha, beta);
     }
@@ -838,7 +838,7 @@ public:
     inline Index length() const {return this->_rows * this->_cols;}
 
     std::shared_ptr< ValueType [] > _data;
-    
+
     mutable Vector < ValueType > * _rowView;
 protected:
     void copy_(const DenseMatrix< ValueType > & mat){
@@ -858,11 +858,11 @@ protected:
             if (_data.use_count() == 2 || _data != nullptr){
                 free_();
             }
-            
+
             _data = std::shared_ptr< ValueType [] >(new ValueType[rows*cols]);
 
             std::memset(_data.get(), '\0', sizeof(ValueType) * rows*cols);
-            
+
         }
 
         if (cols != _cols || _rowView == nullptr){
@@ -923,7 +923,7 @@ DEFINE_BINARY_OPERATOR__(*, MULT)
 
 // template <> DLLEXPORT const Vector< double > &
 // DenseMatrix< double >::row(Index i) const;
-// template <> DLLEXPORT Vector< double > & 
+// template <> DLLEXPORT Vector< double > &
 // DenseMatrix< double >::row(Index i);
 
 // template <> DLLEXPORT const Vector< Complex > &
@@ -1108,8 +1108,8 @@ public:
 
     /*! Clear the matrix and free memory. */
     inline void clear() {
-        mat_.clear(); 
-        _cols = 0; _rows = 0; 
+        mat_.clear();
+        _cols = 0; _rows = 0;
     }
 
     inline Index length() const {return rows() * cols();}
@@ -1168,6 +1168,7 @@ public:
         for (Index j = 0, jmax = rows(); j < jmax; j ++) col[j] = mat_[j][i];
         return col;
     }
+
 
     /*! Add another row vector at the end. */
     inline void push_back(const Vector < ValueType > & vec) {
@@ -1230,34 +1231,34 @@ public:
     Matrix < ValueType > & transAdd(const Matrix < ValueType > & a);
 
     /*! Multiplication c = alpha * (A*b) + beta * c. */
-    inline void mult(const Vector < ValueType > & b, 
-                      Vector < ValueType >& c, 
-                      const ValueType & alpha=1.0, 
-                      const ValueType & beta=0.0, 
+    inline void mult(const Vector < ValueType > & b,
+                      Vector < ValueType >& c,
+                      const ValueType & alpha=1.0,
+                      const ValueType & beta=0.0,
                       Index bOff=0, Index cOff=0) const {
         return GIMLI::mult(*this, b, c, alpha, beta, bOff, cOff);
     }
     /*! Multiplication c = alpha * (A.T*b) + beta * c. */
-    inline void transMult(const Vector < ValueType > & b, 
-                          Vector < ValueType > & c, 
-                          const ValueType & alpha=1.0, 
-                          const ValueType & beta=0.0, 
+    inline void transMult(const Vector < ValueType > & b,
+                          Vector < ValueType > & c,
+                          const ValueType & alpha=1.0,
+                          const ValueType & beta=0.0,
                           Index bOff=0, Index cOff=0) const {
         return GIMLI::transMult(*this, b, c, alpha, beta, bOff, cOff);
     }
     /*! Multiplication c = alpha * (A*b) + beta * c. Same like mult but slightly faster to call from python because of unique name. */
-    inline void multMV(const Vector < ValueType > & b, 
-                      Vector < ValueType >& c, 
-                      const ValueType & alpha=1.0, 
-                      const ValueType & beta=0.0, 
+    inline void multMV(const Vector < ValueType > & b,
+                      Vector < ValueType >& c,
+                      const ValueType & alpha=1.0,
+                      const ValueType & beta=0.0,
                       Index bOff=0, Index cOff=0) const {
         return GIMLI::mult(*this, b, c, alpha, beta, bOff, cOff);
     }
     /*! Multiplication c = alpha * (A.T*b) + beta * c.  Same like transMult but slightly faster to call from python because of unique name. */
-    inline void transMultMV(const Vector < ValueType > & b, 
-                          Vector < ValueType > & c, 
-                          const ValueType & alpha=1.0, 
-                          const ValueType & beta=0.0, 
+    inline void transMultMV(const Vector < ValueType > & b,
+                          Vector < ValueType > & c,
+                          const ValueType & alpha=1.0,
+                          const ValueType & beta=0.0,
                           Index bOff=0, Index cOff=0) const {
         return GIMLI::transMult(*this, b, c, alpha, beta, bOff, cOff);
     }
@@ -1275,30 +1276,30 @@ public:
     }
 
     /*! Multiplication C = alpha * (A*B) + beta * C. */
-    inline void mult(const Matrix < ValueType > & B, 
-                     Matrix < ValueType > & C, 
-                     const ValueType & alpha = 1.0, 
+    inline void mult(const Matrix < ValueType > & B,
+                     Matrix < ValueType > & C,
+                     const ValueType & alpha = 1.0,
                      const ValueType & beta = 0.0) const {
         GIMLI::mult((*this), B, C, alpha, beta);
     }
     /*! Multiplication C = alpha * (A.T*B) + beta * C. */
-    inline void transMult(const Matrix < ValueType > & B, 
-                          Matrix < ValueType > & C, 
-                          const ValueType & alpha = 1.0, 
+    inline void transMult(const Matrix < ValueType > & B,
+                          Matrix < ValueType > & C,
+                          const ValueType & alpha = 1.0,
                           const ValueType & beta = 0.0) const {
         GIMLI::transMult((*this), B, C, alpha, beta);
     }
     /*! Multiplication C = alpha * (A*B) + beta * C. Same like mult but slightly faster to call from python because of unique name. */
-    inline void multMM(const Matrix < ValueType > & B, 
-                     Matrix < ValueType > & C, 
-                     const ValueType & alpha = 1.0, 
+    inline void multMM(const Matrix < ValueType > & B,
+                     Matrix < ValueType > & C,
+                     const ValueType & alpha = 1.0,
                      const ValueType & beta = 0.0) const {
         GIMLI::mult((*this), B, C, alpha, beta);
     }
     /*! Multiplication C = alpha * (A.T*B) + beta * C. Same like transMult but slightly faster to call from python because of unique name. */
-    inline void transMultMM(const Matrix < ValueType > & B, 
-                          Matrix < ValueType > & C, 
-                          const ValueType & alpha = 1.0, 
+    inline void transMultMM(const Matrix < ValueType > & B,
+                          Matrix < ValueType > & C,
+                          const ValueType & alpha = 1.0,
                           const ValueType & beta = 0.0) const {
         GIMLI::transMult((*this), B, C, alpha, beta);
     }
@@ -1317,7 +1318,7 @@ public:
     /*!Copy matrix content into buf of length size. If size is not sufficient,  a new buffer is created which need to be deleted manually. */
     ValueType * toData(ValueType * buf, Index size=0) const{
         ValueType * b_;
-        
+
         if (size < length()){
             b_ = new ValueType[length()];
         } else {
@@ -1338,12 +1339,22 @@ public:
         }
     }
 
+    Vector< ValueType > values() const {
+        Vector< ValueType > b_(this->rows()*this->cols());
+        Index N = sizeof(ValueType) * this->cols();
+
+        for (Index i = 0; i < mat_.size(); i ++) {
+            std::memcpy(&b_[i*this->cols()], &mat_[i][0], N);
+        }
+        return b_;
+    }
+
 	std::vector < Vector< ValueType > > mat_;
 
 protected:
 
     void allocate_(Index rows, Index cols){
-        
+
         this->_cols = cols;
         this->_rows = rows;
 
@@ -1686,36 +1697,36 @@ AtB might be for temporary memory allocation.  */
 DLLEXPORT void matMultABA(const RDenseMatrix & A,
                           const RDenseMatrix & B,
                           RDenseMatrix & C,
-                          RDenseMatrix & AtB, 
+                          RDenseMatrix & AtB,
                           const double & a=1.0, const double & b=0.0);
 DLLEXPORT void matMultABA(const RMatrix & A,
                           const RMatrix & B,
                           RMatrix & C,
-                          RMatrix & AtB, 
+                          RMatrix & AtB,
                           const double & a=1.0, const double & b=0.0);
 
 /*!Inplace matrix calculation: $C = a*A*B + b*C$. B are transposed if needed to fit appropriate dimensions. */
 // DLLEXPORT void matMult(const RDenseMatrix & A,
 //                        const RDenseMatrix & B,
-//                        RDenseMatrix & C, 
+//                        RDenseMatrix & C,
 //                        const double & a=1.0, const double & b=0.0);
 // DLLEXPORT void matMult(const RMatrix & A,
 //                        const RMatrix & B,
-//                        RMatrix & C, 
+//                        RMatrix & C,
 //                        const double & a=1.0, const double & b=0.0);
 
 /*!Inplace matrix calculation: $C = a * A.T * B + b*C$. B are transposed if needed to fit appropriate dimensions. */
 // DLLEXPORT void matTransMult(const RDenseMatrix & A,
 //                             const RDenseMatrix & B,
-//                             RDenseMatrix & C, 
+//                             RDenseMatrix & C,
 //                             const double & a=1.0, const double & b=0.0);
 // DLLEXPORT void matTransMult(const RMatrix & A,
 //                             const RMatrix & B,
-//                             RMatrix & C, 
+//                             RMatrix & C,
 //                             const double & a=1.0, const double & b=0.0);
 
 /*! Return determinant for Matrix(2 x 2). */
-template < class T > inline T det(const T & a, const T & b, 
+template < class T > inline T det(const T & a, const T & b,
                                   const T & c, const T & d){
     return a * d - b * c;
 }

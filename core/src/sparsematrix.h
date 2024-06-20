@@ -174,7 +174,7 @@ public:
 
     virtual uint rtti() const { return GIMLI_SPARSE_CRS_MATRIX_RTTI; }
 
-    
+
     // void add(const ElementMatrix< double > & A, const double & scale){
     //     return add(A, ValueType(scale), 1.0scale);
     // }
@@ -186,11 +186,11 @@ public:
                      const SmallMatrix < ValueType > & f, const double & scale=1.0);
 
     /*! Perftest .. maybe optimizer problem. Single calls outside calls of addVall suffer from polymorphism. */
-    void addS(const ElementMatrix< double > & A, const ValueType & f, 
+    void addS(const ElementMatrix< double > & A, const ValueType & f,
               const double & scale){
 
         ValueType b = f*scale;
-        
+
         A.integrate();
 
         for (Index i = 0, imax = A.rows(); i < imax; i++){
@@ -260,18 +260,18 @@ public:
     }
 
     /*! Multiplication c = alpha * (A*b) + beta * c. */
-    inline void mult(const Vector < ValueType > & b, 
-                      Vector < ValueType >& c, 
-                      const ValueType & alpha=1.0, 
-                      const ValueType & beta=0.0, 
+    inline void mult(const Vector < ValueType > & b,
+                      Vector < ValueType >& c,
+                      const ValueType & alpha=1.0,
+                      const ValueType & beta=0.0,
                       Index bOff=0, Index cOff=0) const {
         return GIMLI::mult(*this, b, c, alpha, beta, bOff, cOff);
     }
     /*! Multiplication c = alpha * (A.T*b) + beta * c. */
-    inline void transMult(const Vector < ValueType > & b, 
-                          Vector < ValueType > & c, 
-                          const ValueType & alpha=1.0, 
-                          const ValueType & beta=0.0, 
+    inline void transMult(const Vector < ValueType > & b,
+                          Vector < ValueType > & c,
+                          const ValueType & alpha=1.0,
+                          const ValueType & beta=0.0,
                           Index bOff=0, Index cOff=0) const {
         return GIMLI::transMult(*this, b, c, alpha, beta, bOff, cOff);
     }
@@ -326,7 +326,7 @@ public:
     inline const Vector < ValueType > & values() const { return vals_; }
 
     void update(const Vector < ValueType > & v) { vals_ = v; }
-    
+
     // inline Index size() const { return rows(); }
     inline Index nVals() const { return vals_.size(); }
     // inline Index cols() const { return _cols; }
@@ -382,11 +382,11 @@ public:
             if (_cols != cols){
                 // __M
                 // colPtr_.resize(_rows + 1, 0);
-            } 
+            }
             if (_rows != rows){
                 // __M
                 colPtr_.resize(_rows + 1, 0);
-            } 
+            }
             _rows = rows;
             _cols = cols;
         }

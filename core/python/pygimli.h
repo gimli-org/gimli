@@ -28,11 +28,11 @@
 
 namespace GIMLI{
     inline void tmp(){
-         std::cout << "tmp"<< std::endl;  
+         std::cout << "tmp"<< std::endl;
     }
     // class TMP {
     //         public:
-    //         void a(){std::cout << "TMP"<< std::endl;}  
+    //         void a(){std::cout << "TMP"<< std::endl;}
     // };
 
     // extern template class Vector< double >;
@@ -72,11 +72,11 @@ namespace GIMLI{
 //     typedef GIMLI::Vector< double >                 RVector;
 //     // typedef GIMLI::Vector< bool >                 BVector;
 //     // typedef GIMLI::Vector< long >                 IVector;
-    
+
 //     typedef GIMLI::VectorIterator< double >          RVectorIter;// avoid doubs
 //     typedef GIMLI::VectorIterator< bool >            BVectorIter;// avoid doubs
 //     typedef GIMLI::VectorIterator< long >            IVectorIter;// avoid doubs
-    
+
 //     // typedef GIMLI::VectorIterator< Complex >              CVectorIter;
 //     // typedef GIMLI::BlockMatrix< double >                 RBlockMatrix;
 
@@ -197,7 +197,14 @@ namespace GIMLI{
     inline RDenseMatrix operator OP (const double & a, const RDenseMatrix & b){ \
         RDenseMatrix ret(b.rows(), b.cols()); for (Index i = 0; i < b.rows(); i ++) ret[i] = a OP b[i]; return ret; } \
     inline RDenseMatrix operator OP (const RDenseMatrix & a, const RDenseMatrix & b){ \
-         RDenseMatrix ret(a);   ret OP##=b; return ret; } \
+        RDenseMatrix ret(a);   ret OP##=b; return ret; } \
+        /*!*/ \
+    inline RSparseMatrix operator OP (const RSparseMatrix & a, const double & b){ \
+        RSparseMatrix ret(a); ret OP##=b; return ret; } \
+    inline RSparseMatrix operator OP (const double & a, const RSparseMatrix & b){ \
+        RSparseMatrix ret(b); THROW_TO_IMPL return ret; } \
+    inline RSparseMatrix operator OP (const RSparseMatrix & a, const RSparseMatrix & b){ \
+        RSparseMatrix ret(a); THROW_TO_IMPL; return ret; } \
         /*!*/ \
     inline R3Vector operator OP (const R3Vector & a, const R3Vector & b){ \
         ASSERT_EQUAL_SIZE(a, b) \
@@ -289,7 +296,7 @@ DEFINE_PY_VEC_UNARY_OPERATOR__(tanh,  TANH)
 
 
 //** maybe better to move these instantiation into libgimli, but why should the lib have unused template symbols??
-// explicit instantiaion leads to duplicate symbols for architecture arm64 
+// explicit instantiaion leads to duplicate symbols for architecture arm64
 // if the symbols allready exists, extern to mark them
 
 #define DEFINE_COMPARE_OPERATOR__(OP) \
@@ -394,22 +401,22 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     extern template class SparseMatrix< double >;
     extern template class SparseMatrix< GIMLI::Complex >;
 
-    template RSparseMatrix operator + (const RSparseMatrix & A, 
+    template RSparseMatrix operator + (const RSparseMatrix & A,
                                        const RSparseMatrix & B);
-    template RSparseMatrix operator - (const RSparseMatrix & A, 
+    template RSparseMatrix operator - (const RSparseMatrix & A,
                                        const RSparseMatrix & B);
-    template RSparseMatrix operator * (const RSparseMatrix & A, 
+    template RSparseMatrix operator * (const RSparseMatrix & A,
                                        const double & b);
-    template RSparseMatrix operator * (const double & b, 
+    template RSparseMatrix operator * (const double & b,
                                        const RSparseMatrix & A);
 
-    template CSparseMatrix operator + (const CSparseMatrix & A, 
+    template CSparseMatrix operator + (const CSparseMatrix & A,
                                        const CSparseMatrix & B);
-    template CSparseMatrix operator - (const CSparseMatrix & A, 
+    template CSparseMatrix operator - (const CSparseMatrix & A,
                                        const CSparseMatrix & B);
-    template CSparseMatrix operator * (const GIMLI::Complex & b, 
+    template CSparseMatrix operator * (const GIMLI::Complex & b,
                                        const CSparseMatrix & A);
-    template CSparseMatrix operator * (const CSparseMatrix & A, 
+    template CSparseMatrix operator * (const CSparseMatrix & A,
                                        const GIMLI::Complex & b);
 
     extern template class ElementMatrix< double >;
@@ -690,9 +697,9 @@ namespace pyplusplus{ namespace aliases{
     typedef std::map< unsigned long, double >           stdMapUL_D;
     typedef std::map< int, int >                        stdMapI_I;
     typedef std::map< std::string, std::string >        stdMapS_S;
-    
+
     typedef std::pair<unsigned long, unsigned long>     stdPairUL_UL;
-    
+
 #ifdef WIN32
     typedef std::map< long long, double > stdMapL_D;
     typedef std::map< unsigned long long, unsigned long long > stdMapL_L;

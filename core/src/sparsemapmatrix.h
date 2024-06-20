@@ -179,7 +179,7 @@ public:
         }
     }
     /*!Copy constructor from Matrix. Drops all absolute values lower than droptol. */
-    SparseMapMatrix(const Matrix< ValueType > & S, 
+    SparseMapMatrix(const Matrix< ValueType > & S,
                     const ValueType & dropTol=0.0)
         : SparseMatrixBase(){
         clear();
@@ -307,11 +307,11 @@ public:
     inline const_iterator end()   const { return C_.end(); }
 
     /*!Scale with scale */
-    void add(const ElementMatrix < double > & A, 
+    void add(const ElementMatrix < double > & A,
              const ValueType & f=1.0, const ValueType & scale=1.0);
-    void add(const ElementMatrix < double > & A, 
+    void add(const ElementMatrix < double > & A,
              const Pos & f, const ValueType & scale=1.0);
-    void add(const ElementMatrix < double > & A, 
+    void add(const ElementMatrix < double > & A,
              const SmallMatrix< ValueType> & f, const ValueType & scale=1.0);
     /*!Scale with values from vector scale. Take values from scale[A.ids()]. */
     void add(const ElementMatrix < double > & A,
@@ -328,10 +328,10 @@ public:
         return *this; \
     } \
 
-        DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(+)
-        DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(-)
-        DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(*)
-        DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(/)
+    DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(+)
+    DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(-)
+    DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(*)
+    DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(/)
 
 #undef DEFINE_SPARSEMMAPATRIX_UNARY_MOD_OPERATOR__
 
@@ -431,18 +431,18 @@ public:
     }
 
     /*! Multiplication c = alpha * (A*b) + beta * c. */
-    inline void mult(const Vector < ValueType > & b, 
-                      Vector < ValueType >& c, 
-                      const ValueType & alpha=1.0, 
-                      const ValueType & beta=0.0, 
+    inline void mult(const Vector < ValueType > & b,
+                      Vector < ValueType >& c,
+                      const ValueType & alpha=1.0,
+                      const ValueType & beta=0.0,
                       Index bOff=0, Index cOff=0) const {
         return GIMLI::mult(*this, b, c, alpha, beta, bOff, cOff);
     }
     /*! Multiplication c = alpha * (A.T*b) + beta * c. */
-    inline void transMult(const Vector < ValueType > & b, 
-                          Vector < ValueType > & c, 
-                          const ValueType & alpha=1.0, 
-                          const ValueType & beta=0.0, 
+    inline void transMult(const Vector < ValueType > & b,
+                          Vector < ValueType > & c,
+                          const ValueType & alpha=1.0,
+                          const ValueType & beta=0.0,
                           Index bOff=0, Index cOff=0) const {
         return GIMLI::transMult(*this, b, c, alpha, beta, bOff, cOff);
     }
@@ -756,7 +756,7 @@ template <> DLLEXPORT void SparseMapMatrix< double, Index >::
     add(const ElementMatrix < double > & A, const double & f,
         const double & scale);
 template <> DLLEXPORT void SparseMapMatrix< double, Index >::
-    add(const ElementMatrix < double > & A, const Pos & f, 
+    add(const ElementMatrix < double > & A, const Pos & f,
         const double & scale);
 template <> DLLEXPORT void SparseMapMatrix< double, Index >::
     add(const ElementMatrix < double > & A, const RSmallMatrix & f,

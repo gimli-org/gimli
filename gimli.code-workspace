@@ -5,6 +5,9 @@
         }
     ],
     "settings": {
-        "fortran.fortls.disabled": true
+        "fortran.fortls.disabled": true,
+        "files.associations": {
+            "random": "cpp"
+        }
     }
 }
