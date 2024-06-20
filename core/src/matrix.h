@@ -588,6 +588,10 @@ public:
             std::memcpy(src, _data.get(), sizeof(ValueType) * length());
         }
     }
+    /*! Return all values as \ref Vector of size \ref length*/
+    Vector< ValueType > values() const {
+        return Vector< ValueType >(_data.get(), this->length());
+    }
 
     // /*! Return read only view to row i*/
     // const Vector< ValueType > & row(Index i) const;
