@@ -102,6 +102,10 @@ class BoreHoles(object):
 
     def __init__(self, fnames):
         """Load a list of bore hole from filenames."""
+        if isinstance(fnames, str):
+            if fnames.find("*") >= 0:
+                from glob import glob
+                fnames = glob(fnames)
         self._fnames = fnames
         if len(fnames) > 0:
             self.boreholes = [BoreHole(f) for f in fnames]
