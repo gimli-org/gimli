@@ -1,11 +1,12 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Digital Elevation Model (DEM) class for interpolating elevations."""
 import os.path
 import math
 import numpy as np
+
 from scipy.interpolate import RegularGridInterpolator, LinearNDInterpolator
-import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
-import utm
 
 
 class DEM:
@@ -22,13 +23,21 @@ class DEM:
             * x, y, z list of grid points or irregular points
 
         x, y : iterable of (unique) x and y positions matching z
+
+        Keyword Arguments
+        -----------------
+        toLatLon: callable(x, y) [None]
+            Custom coordinate translator. If set to None then
+            `lambda x_, y_: utm.to_latlon(x_, y_, 32, 'N')` is taken.
         """
         self.latlon = False
         self.x = x
         self.y = y
         self.fallback = kwargs.pop('fallback', kwargs.pop('z0', None))
+
         if isinstance(self.fallback, str):
             self.fallback = DEM(self.fallback)
+
         if isinstance(demfile, (list, tuple)):
             self.__init__(demfile[0], **kwargs)
             for addfile in demfile[1:]:
@@ -47,11 +56,16 @@ class DEM:
         else:
             raise Exception("Either DEM file or z with x and y must be given!")
 
+        self._toLatLon = kwargs.pop('toLatLon', None)
+        if self._toLatLon is None:
+            import utm
+            self._toLatLon = lambda x_, y_: utm.to_latlon(x_, y_, 32, 'N')
+
 
     def __call__(self, x, y=None):
         """Interpolation function."""
-        if self.latlon:
-            y, x = utm.to_latlon(x, y, 32, 'N')
+        y, x = self._toLatLon(x, y)
+
         if y is None:
             return self.dem(x)
         else:
@@ -70,6 +84,7 @@ class DEM:
                 out[np.isnan(out)] = self.fallback(x, y)
 
         return out
+
 
     def loadTXT(self, demfile):
         """Load column-based DEM."""
@@ -119,6 +134,7 @@ class DEM:
                                            self.z.T,
                                            bounds_error=be)
 
+
     def loadASC(self, ascfile):
         """Load ASC (DEM matrix with location header) file."""
         with open(ascfile) as fid:
@@ -141,6 +157,7 @@ class DEM:
         self.dem = RegularGridInterpolator((self.x, self.y),
                                            self.z.T, bounds_error=be)
 
+
     def loadHGT(self, hgtfile):
         """Load ASC (DEM matrix with location header) file."""
         siz = os.path.getsize(hgtfile)
@@ -158,6 +175,7 @@ class DEM:
         self.dem = RegularGridInterpolator((self.x, self.y),
                                            np.fliplr(self.z.T), bounds_error=be)
         self.latlon = True
+
 
     def add(self, new):
         """Combine two DEM by concatenatation.
@@ -187,6 +205,7 @@ class DEM:
                 self.y = np.concatenate([new.y, self.y])
                 self.z = np.hstack([self.z, new.z])
 
+
     def show(self, cmap="terrain", cbar=True, ax=None, **kwargs):
         """Show digital elevation model (i.e. the elevation map).
 
@@ -206,7 +225,7 @@ class DEM:
             add additional keyword arguments for the plot style (e.g., *lw*)
         """
         if ax is None:
-            fig, ax = plt.subplots(figsize=kwargs.pop('figsize', (15, 15)))
+            fig, ax = pg.plt.subplots(figsize=kwargs.pop('figsize', (15, 15)))
 
         # extract some kwargs for axis setting and colorbar
         orientation = kwargs.pop('orientation', 'vertical')
@@ -241,7 +260,7 @@ class DEM:
         cb = None
         if cbar:
             # norm = Normalize(vmin=clim[0], vmax=clim[1])
-            cb = plt.colorbar(im, ax=ax, orientation=orientation)
+            cb = pg.plt.colorbar(im, ax=ax, orientation=orientation)
             if clim:
                 cb.vmin = clim[0]
                 cb.vmax = clim[1]

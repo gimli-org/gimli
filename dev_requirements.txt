@@ -8,6 +8,7 @@
 # needed
 numpy
 matplotlib
+pyqt5 #pyqtagg backend
 pyplusplus==1.8.4
 pygccxml==2.0.0
 sphinx>=3.1
@@ -18,7 +19,6 @@ sphinx-gallery
 sphinx-design
 pydata-sphinx-theme
 bibtexparser
-
 pyvista[all,trame]>=0.42
 
 # optional, but strongly recommended

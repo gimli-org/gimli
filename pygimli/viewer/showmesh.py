@@ -246,6 +246,11 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         If hold is set to False your script will open the figure and continue
         working. You can change global hold with pg.hold(bool).
 
+    axisLabels: bool [True]
+        Set x/yLabels for ax. X will be "x in m" and "y in m".
+        Y ticks change to depth values for a mesh with world
+        boundary markers and the label becomes "Depth in m".
+
     All remaining will be forwarded to the draw functions
     and matplotlib methods, respectively.
 
@@ -255,7 +260,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     >>> import pygimli as pg
     >>> import pygimli.meshtools as mt
     >>> world = mt.createWorld(start=[-10, 0], end=[10, -10],
-    ...                        layers=[-3, -7], worldMarker=False)
+    ...                        layers=[-3, -7], worldMarker=True)
     >>> mesh = mt.createMesh(world, quality=32, area=0.2, smooth=[1, 10])
     >>> _ = pg.viewer.showMesh(mesh, markers=True)
 
@@ -270,6 +275,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     cMap = kwargs.pop('cMap', 'viridis')
     cBarOrientation = kwargs.pop('orientation', 'horizontal')
     replaceData = kwargs.pop('replaceData', False)
+    axisLabels = kwargs.pop('axisLabels', True)
 
     if ax is None:
         ax, _ = pg.show(figsize=kwargs.pop('figsize', None), **kwargs)
@@ -446,8 +452,8 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             #drawMesh(ax, mesh, lw=0.3, **kwargs)
         #else:
         drawMesh(ax, mesh, lw=0.3, **kwargs)
-        # pg.viewer.mpl.drawSelectedMeshBoundaries(ax, 
-        #         mesh.boundaries(), 
+        # pg.viewer.mpl.drawSelectedMeshBoundaries(ax,
+        #         mesh.boundaries(),
         #         color=kwargs.pop('color', "0.1"),
         #         linewidth=kwargs.pop('lw', 0.3))
 
@@ -528,8 +534,10 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         except BaseException:
             pass
 
-    pg.viewer.mpl.updateAxes(ax)
-
+    if axisLabels == True:
+        pg.viewer.mpl.adjustWorldAxes(ax, depth=min(mesh.boundaryMarkers()) < 0)
+    else:
+        pg.viewer.mpl.updateAxes(ax)
     pg.viewer.mpl.hold(val=lastHoldStatus)
 
     if savefig:
