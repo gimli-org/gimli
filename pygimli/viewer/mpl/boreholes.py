@@ -5,7 +5,7 @@ Created on Mon Feb 16 09:33:14 2015
 @author: Marcus Wennermark
 """
 import numpy as np
-import matplotlib.pyplot as plt
+
 from .modelview import draw1DColumn
 from .colorbar import cmapFromName
 
@@ -138,7 +138,7 @@ class BoreHoles(object):
             b.unique_classes = self.common_unique
             start_idx += diff_idx
 
-        self.cm = plt.get_cmap('jet', len(self.common_unique))
+        self.cm = pg.plt.get_cmap('jet', len(self.common_unique))
         self.cmin = min(self.class_id)
         self.cmax = max(self.class_id)
 

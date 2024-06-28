@@ -78,12 +78,12 @@ from .dataview import (drawSensorAsMarker,  # dups to meshview??
 
 # which of these do we actually need?
 from .modelview import (drawModel1D,
-                        showmymatrix,  # needed ?
+                        #showmymatrix,  # needed ?
                         draw1DColumn, # needed or redundant ?
-                        draw1dmodel,   # needed or redundant ?
+                        #draw1dmodel,   # needed or redundant ?
                         show1dmodel,  # needed or redundant ?
-                        draw1dmodelErr,  # needed or redundant ?
-                        draw1dmodelLU,  # needed or redundant ?
+                        #draw1dmodelErr,  # needed or redundant ?
+                        #draw1dmodelLU,  # needed or redundant ?
                         showStitchedModels,
                         showfdemsounding)
 
