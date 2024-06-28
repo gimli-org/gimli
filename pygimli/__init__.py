@@ -15,10 +15,10 @@ from .core import (BVector, CVector, DataContainer, DataContainerERT,
                    Vector, PosList, abs, cat, center, exp, find,
                    interpolate, log, log10, logDropTol, max,
                    mean, median, min, search, setThreadCount, sort,
-                   Stopwatch, Swatches, 
+                   Stopwatch, Swatches,
                    sum, trans, unique, versionStr, x, y, z, zero)
 
-from .core import (isInt, isScalar, isIterable, isArray, isPos, 
+from .core import (isInt, isScalar, isIterable, isArray, isPos,
                   isR3Array, isPosList, isVecField, isComplex, isMatrix)
 
 from .core import math # alias all from .core.math.* to pg.math.*
@@ -232,47 +232,16 @@ def isIPyTerminal():
     return 'IPython' in sys.modules
 
 
-# @singleton
-# class SWatches(object):
-#     def __init__(self):
-#         self._sw = dict()
-        
-#     def __getitem__(self, id):
-#         if not id in self._sw:
-#             self._sw[id] = Stopwatch(start=True)    
-        
-#         return self._sw[id]
-
-#     def keys(self):
-#         return list(self._sw.keys())
-
-#     def items(self):
-#         return self._sw.items()
-
-#     def remove(self, key, isRoot=False):
-#         if isRoot is False:
-#             self._sw.pop(key, None)
-#         else:
-#             for k in list(self._sw.keys()):
-#                 if k.startswith(key):
-#                     self._sw.pop(k, None)
-
 class SWatches(object):
     @staticmethod
-    def __getitem__(id):
-        return Swatches.instance()[str(id)]
+    def __getitem__(key:str):
+        return Swatches.instance()[key]
     @staticmethod
     def keys():
-        return Swatches.instance().keys()
-        
-
-# SWatches = Swatches
-# def __swatches_call(self):
-#     return self.pInstance()
-# SWatches.__call__ = __swatches_call
+        return list(Swatches.instance().keys())
 
 
-def tic(msg=None, key=0):
+def tic(msg=None, key=''):
     """Start global timer. Print elapsed time with `toc()`.
 
     You can start multiple stopwatches with optional identifier.
@@ -286,11 +255,11 @@ def tic(msg=None, key=0):
     """
     if msg:
         print(msg)
-    
-    SWatches()[key].start()
+
+    SWatches()['/'+key].start()
 
 
-def toc(msg=None, box=False, stop=False, reset=False, key=0):
+def toc(msg=None, box=False, stop=False, reset=False, key=''):
     """Print elapsed time since global timer was started with `tic()`.
 
     Arguments
@@ -313,7 +282,7 @@ def toc(msg=None, box=False, stop=False, reset=False, key=0):
         else:
             print(msg, end=' ')
 
-    seconds = dur(key=key, stop=stop, reset=reset)
+    seconds = dur(key='/' + key, stop=stop, reset=reset)
 
     ## refactor with prettyTime
     m, s = divmod(seconds, 60)
@@ -332,14 +301,14 @@ def toc(msg=None, box=False, stop=False, reset=False, key=0):
     p = print if not box else boxprint
 
     if len(SWatches().keys()):
-        p("Elapsed time ({0}) is {1} seconds.".format(key, time))
+        p("Elapsed time ({0}) is {1} seconds.".format('/' + key, time))
     else:
         p("Elapsed time is {0} seconds.".format(time))
 
 
-def dur(key=0, stop=False, reset=False):
+def dur(key='', stop=False, reset=False):
     """Return time in seconds since global timer was started with `tic()`.
-    
+
     Arguments
     ---------
     key: identifier
@@ -353,13 +322,13 @@ def dur(key=0, stop=False, reset=False):
         key = stop
 
     if stop is True:
-        SWatches()[key].stop()
-    return SWatches()[key].duration(restart=reset)
-    
+        SWatches()['/'+key].stop()
+    return SWatches()['/'+key].duration(restart=reset)
 
-def store(key=0, stop=True):
+
+def store(key='', stop=True):
     """Store current time in seconds since global timer was started with `tic()`.
-    
+
     Arguments
     ---------
     stop: bool [True]
@@ -368,15 +337,13 @@ def store(key=0, stop=True):
         Identifier for your Stopwatch.
     """
     if stop is True:
-        SWatches()[key].stop()
-        
-    return SWatches()[key].store()
-    
+        SWatches()['/'+key].stop()
 
-__LAST_TICK_TOCK__ = None
+    return SWatches()['/'+key].store()
+
 
 class tictoc(object):
-    def __init__(self, key):
+    def __init__(self, key: str):
         self._tt = core.TicToc(key)
 
     def __enter__(self):
@@ -384,79 +351,19 @@ class tictoc(object):
 
     def __exit__(self, type, value, traceback):
         pass
-            
-# class tictoc(object):
-#     """Timer class with persistant clock.
+
+
+# class WithSkip(object):
+#     """ FallBack if you need empty with clause.
 #     """
-#     def __init__(self, key='', trace=None, reset=False, skipLast=False):
-
-#         if reset is True:
-#             SWatches().remove(key, isRoot=True)
-
-#         if trace is not None:
-#             self._trace = trace
-#         else:
-#             self._trace = []
-
-#         if len(key) > 0:
-#             self._trace.append(key)
-#         self._key = '/'.join(self._trace)
-        
-#         tic(key=self._key)
-
-#         if skipLast == False:
-#             global __LAST_TICK_TOCK__
-#             __LAST_TICK_TOCK__ = self
-
-#     def __call__(self, key):
-#         try:
-#             return tictoc(key, trace=self._trace)
-#         except:
-#             return WithSkip()
-
+#     def __init__(self, *args, **kwargs):
+#         critical('in use?')
+#         pass
 #     def __enter__(self):
 #         return self
-
 #     def __exit__(self, type, value, traceback):
-#         store(key=self._key)
-#         self._trace.pop()
-                
+#         pass
 
-class LastTicToc(tictoc):
-    def __init__(self, key='', reset=False):
-        global __LAST_TICK_TOCK__
-        self._skip = False
-        if __LAST_TICK_TOCK__ is None:
-            self._skip = True
-        else:
-            super().__init__(key=key, 
-                             trace=__LAST_TICK_TOCK__._trace, 
-                             reset=reset, skipLast=True)
-        
-    def __enter__(self):
-        if not self._skip:
-            super().__enter__()
-        
-        return self
-
-    def __exit__(self, type, value, traceback):
-        if not self._skip:
-            super().__exit__(type, value, traceback)
-        pass
-        
-
-class WithSkip(object):
-    """ FallBack if you need empty with clause.
-    """
-    def __init__(self, *args, **kwargs):
-        pass
-    def __enter__(self):
-        return self
-    def __exit__(self, type, value, traceback):
-        pass
-
-
-__MPL_PLT__ = None
 
 def timings(name='/'):
     """ Return table of timings for a given root swatch key name.
@@ -468,7 +375,7 @@ def timings(name='/'):
             self.name = None
             self.childs = {}
             self.data = None
-        
+
         def __getitem__(self, k):
             names = k.split('/')
 
@@ -477,13 +384,13 @@ def timings(name='/'):
             else:
                 if names[0] != self.name:
                     error(f'Wrong tree({self.name}) for {k}')
-            
+
             if len(names) > 1:
                 if names[1] not in self.childs:
                     self.childs[names[1]] = TTree(parent=self)
-                
+
                 return self.childs[names[1]]['/'.join(names[1:])]
-                        
+
             return self
 
         @property
@@ -496,9 +403,9 @@ def timings(name='/'):
             p = self.parent
             while 1:
                 try:
-                    ps = p.name + "/"+ ps
+                    ps = p.name + "/" + ps
                     p = p.parent
-                except:
+                except BaseException as e:
                     break
 
             return ps + ":" + str(self.data)
@@ -513,12 +420,18 @@ def timings(name='/'):
     tree = TTree()
     header = ['', 'single', 'count', 'sum', 'rel.(%)', 'uncov.(%)']
     table = []
+
     # if len(SWatches().items()) == 0:
     #     pg.error('')
-    #_g(SWatches().items())
+    #_g(SWatches().keys())
     maxTime = 0
+
+    if not name.startswith('/'):
+        name = '/' + name
+
     for k in SWatches().keys():
         s = SWatches()[k]
+
         if isinstance(k, str):
             if k.startswith(name):
 
@@ -526,29 +439,35 @@ def timings(name='/'):
                 # if len(ts) > 0:
                 #     sts = sum(ts)
                 maxTime = max(float(maxTime), sum(ts))
-                table.append([k, np.mean(ts), len(ts), sum(ts), 
-                              str(int(sum(ts)/maxTime*100)).rjust(3*(k.count('/')),'-'),
+
+                perc = 0
+                try:
+                    perc = int(sum(ts)/maxTime*100)
+                except ZeroDivisionError:
+                    pass
+
+                table.append([k, np.mean(ts), len(ts), sum(ts),
+                    str(perc).rjust(3*(k.count('/')),'-'),
                                None])
-                
+
                 tree[k].data = sum(ts)
-                
+
                 # print(f'\t{k}: {pg.pf(sts)}s ({len(ts)} x {pg.pf(np.mean(ts)*1000)}ms)' )
 
     #print(tree)
 
     for row in table:
         if len(list(tree[row[0]].childs.keys())) > 0:
-            
+
             row[-1] = row[-3]
             for n, tc in tree[row[0]].childs.items():
                 try:
-                    row[-1] -= tc.data 
+                    row[-1] -= tc.data
                 except:
                     pass
 
             #row[-1] = f'{pf(row[-1])} {str(int(row[-1]/maxTime*100)).rjust(2)}'
             row[-1] = f'{pf(row[-1]/maxTime*100)}'
-
 
     if len(table) == 0:
         error(f'No timeings for: {name}')
@@ -575,16 +494,16 @@ def _plt():
                 pass
             except BaseException as e:
                 info(f"matplotlib notebook backend set to {rc['matplotlib']} failed: ", e)
-        # tic()        
+        # tic()
         import matplotlib.pyplot as plt
-        
+
         # if isNotebook():
-        #     pass    
+        #     pass
         # else:
         #     import matplotlib
         #     matplotlib.use('qtagg')
         #     print('############### importing plt took ', dur())
-            
+
         #     print('############### backend:', plt.get_backend())
 
         from .viewer.mpl import registerShowPendingFigsAtExit, hold

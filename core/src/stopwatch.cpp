@@ -64,21 +64,21 @@ void Stopwatch::reset(){
 
 double Stopwatch::duration(bool restart){
     std::chrono::time_point<std::chrono::high_resolution_clock> now;
-    
+
     if (_state == undefined) {
         log(Error, "Stopwatch not started!");
     }
-        
+
     if (_state == running) {
         //ftime(&stoptime);
-        // double t = (stoptime.time - starttime.time) + 
+        // double t = (stoptime.time - starttime.time) +
         //     double(stoptime.millitm - starttime.millitm) / 1000.0;
-            
+
         now = std::chrono::high_resolution_clock::now();
     } else {
         now = this->_stop;
     }
-    
+
     std::chrono::duration< double > t = now - this->_start;
 
     if (restart) this->restart();
@@ -136,6 +136,7 @@ template < > DLLEXPORT Swatches * Singleton < Swatches >::pInstance_ = NULL;
 
 Swatches::Swatches(){
 // __MS("Swatches()")
+    this->_trace = '/';
 }
 
 Swatches::~Swatches(){
@@ -146,18 +147,18 @@ Stopwatch & Swatches::operator[](const std::string & key) {
     // __MS("[]", this, key)
     if (this->_sw.count(key) == 0){
         this->_sw[key] = new Stopwatch(true);
+        //_trace = key;
     }
-    _trace = key;
     return *this->_sw[key];
 }
 
 std::vector < std::string > Swatches::keys(){
     // __MS(this)
-    std::vector< std::string > keys; 
-    keys.reserve(this->_sw.size()); 
-    for (auto &kv: this->_sw){ 
-        keys.push_back(kv.first); 
-    } 
+    std::vector< std::string > keys;
+    keys.reserve(this->_sw.size());
+    for (auto &kv: this->_sw){
+        keys.push_back(kv.first);
+    }
 
     // auto kv = std::views::keys(this->_sw); ## since c++20
     // std::vector<std::string> keys{ kv.begin(), kv.end() };
@@ -166,11 +167,11 @@ std::vector < std::string > Swatches::keys(){
 }
 
 std::vector < const Stopwatch * > Swatches::vals(){
-    std::vector< const Stopwatch * > vals; 
-    vals.reserve(this->_sw.size()); 
-    for (auto &kv: this->_sw){ 
-        vals.push_back(kv.second); 
-    } 
+    std::vector< const Stopwatch * > vals;
+    vals.reserve(this->_sw.size());
+    for (auto &kv: this->_sw){
+        vals.push_back(kv.second);
+    }
 
     // auto kv = std::views::keys(this->_sw); ## since c++20
     // std::vector<std::string> keys{ kv.begin(), kv.end() };
@@ -178,14 +179,14 @@ std::vector < const Stopwatch * > Swatches::vals(){
 }
 
 std::vector < std::pair< std::string, Stopwatch * > > Swatches::items(){
-    std::vector< std::pair< std::string, Stopwatch * > > items; 
-    items.reserve(this->_sw.size()); 
-    for (auto &kv: this->_sw){ 
-        items.push_back(std::pair< std::string, Stopwatch * >(kv.first, kv.second)); 
-    } 
+    std::vector< std::pair< std::string, Stopwatch * > > items;
+    items.reserve(this->_sw.size());
+    for (auto &kv: this->_sw){
+        items.push_back(std::pair< std::string, Stopwatch * >(kv.first, kv.second));
+    }
     return items;
 }
-    
+
 void Swatches::remove(const std::string & key, bool isRoot){
     if (isRoot == false){
         Stopwatch * s = this->_sw[key];
@@ -200,14 +201,17 @@ void Swatches::remove(const std::string & key, bool isRoot){
 }
 
 TicToc::TicToc(const std::string & name, bool reset){
-    
+
     this->_parentTrace = Swatches::instance().trace();
+    //__MS(&Swatches::instance(), name, "parent:", this->_parentTrace)
     std::string curTrace;
 
     if (this->_parentTrace.size() > 0){
-        curTrace = this->_parentTrace + '/' + name;
-    } else{
-        curTrace = name;
+        if (this->_parentTrace[this->_parentTrace.size()-1] == '/'){
+            curTrace = this->_parentTrace + name;
+        } else {
+            curTrace = this->_parentTrace + '/' + name;
+        }
     }
 
     if (reset == true){
@@ -215,14 +219,13 @@ TicToc::TicToc(const std::string & name, bool reset){
         Swatches::instance().remove(this->_parentTrace, true);
     }
     // __MS(this->_parentTrace, "start")
-    
+
     this->_sw = & Swatches::instance()[curTrace];
     Swatches::instance().setTrace(curTrace);
     this->_sw->start();
 }
 
 TicToc::~TicToc(){
-    // __MS(this->_parentTrace, "store", this->_sw->duration())
     this->_sw->store();
     Swatches::instance().setTrace(this->_parentTrace);
 }

@@ -1031,18 +1031,36 @@ class Report(ScoobyReport):
 class Table(object):
     """Simple table for nice formated output
     """
-    def __init__(self, table, header=None, align=None, pn=None):
+    def __init__(self, table, header=None, align=None, pn=None,
+                 transpose:bool=False):
+
         """
+        Arguments
+        ---------
+        table: [list,]
+            Table body.
+        header: [list]
+            Header row.
+        align: string
+            Alignment string, for each column either 'l', 'r', or 'c'.
+        transpose: bool [False]
+            Transpose table.
         """
         self.table = table
         self.header = header
         self.align = align
         self.pn = pn
 
+        if transpose is True:
+            self.table = list(map(list, zip(*self.table)))
+
+
         if self.pn is not None:
             for i, row in enumerate(self.table):
-                #self.table[i][self.pn] = f'${pg.pf(row[self.pn], mathtex=True)}$'
+                #self.table[i][self.pn]=f'${pg.pf(row[self.pn], mathtex=True)}$'
                 self.table[i][self.pn] = f'{pg.pf(row[self.pn])}'
+
+
     @property
     def fmt(self):
         _fmt = dict(stralign="left", )
@@ -1132,8 +1150,8 @@ class Table(object):
             #math does not works here for tablefmt=html
             # for Sphinx-gallery
             return None
-        
-            
+
+
     def _repr_rst_(self):
         """Return restructured text representation for sphinx-gallery.
         """
@@ -1144,23 +1162,23 @@ class Table(object):
         """
         from tabulate import tabulate
         import re
-        def _m2r(s): 
+        def _m2r(s):
             if isinstance(s, str):
-                return re.sub('\$(.*)\$', 
+                return re.sub('\$(.*)\$',
                                 lambda m: f':math:`{m.group(1)}`', s)
             return s
 
         for i, col in enumerate(self.header):
             self.header[i] = _m2r(col)
-        
+
         for i, row in enumerate(self.table):
             for j, r in enumerate(row):
                 self.table[i][j] = _m2r(r)
 
         md = tabulate(self.table, headers=self.header,
                     tablefmt="rst", **self.fmt)
-        
-        return SG_RST_TABLE.format(indent(md, ''))  
+
+        return SG_RST_TABLE.format(indent(md, ''))
 
 
     def __repr__(self):
@@ -1169,10 +1187,10 @@ class Table(object):
         if pg.isNotebook():
             ## covered by _repr_html, we don't need both
             return ""
-        
+
         elif pg.isIPyTerminal():
             # for Sphinx-gallery
             return self._repr_rst_()
-    
+
         return str(self)
 

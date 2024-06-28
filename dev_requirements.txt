@@ -1,6 +1,6 @@
 # recommand to create a suitable virtual environment first:
-# python -m venv $ENVNAME
-# source $ENVNAME/bin/activate
+# python -m venv .venv --prompt=gimli.newfea
+# source .venv/bin/activate
 # python -m pip install -r dev_requirements.txt
 # python -m pip list
 # python -m pip install package==version

@@ -126,7 +126,7 @@ def _lowerThan_(self, v2):
     boost binding generation
     """
     if isinstance(v2, int):
-        return self < float(v2) 
+        return self < float(v2)
     return pgcore.inv(self >= v2)
 pgcore.RVector.__lt__ = _lowerThan_
 pgcore.R3Vector.__lt__ = _lowerThan_
@@ -705,7 +705,7 @@ def __PosIterCall__(self):
 
 pgcore.Pos.__iter__ = __PosIterCall__
 
-## there are weird exposed value expressions for POS OP with int argument 
+## there are weird exposed value expressions for POS OP with int argument
 ## so we need to overwrite them here until its known how to avoid the exposure
 ## 231006
 
@@ -831,17 +831,17 @@ pgcore.CVector.__array__ = __CVectorArrayCall__
 # Check why they are not exposed by generator!!
 ##################################
 
-__IOP__ = ['__iadd__', 
+__IOP__ = ['__iadd__',
            '__isub__',
            '__imul__',
            #'__itruediv__',
            ]
 
-__BINOP__ = ['__add__', 
+__BINOP__ = ['__add__',
              '__sub__',
              '__mul__',
              '__truediv__',
-             '__radd__', 
+             '__radd__',
              '__rsub__',
              '__rmul__',
              '__rtruediv__',
@@ -882,7 +882,7 @@ def __stdVectorRVector_IOP__(self, a, OP):
     return self
 
 def __stdVectorRVector_BIOP__(self, b, OP):
-    
+
     ret = pgcore.stdVectorRVector()
     if isScalar(b):
         for i, ai in enumerate(self):
@@ -892,7 +892,7 @@ def __stdVectorRVector_BIOP__(self, b, OP):
             ret.append(getattr(ai, OP)(b[i]))
     else:
         critical(f'Cannot {OP} stdVectorRVector with different lengths. {len(self)} != {len(b)}')
-    
+
     return ret
 
 # for _OP in __IOP__:
@@ -915,10 +915,10 @@ def __stdVectorRVector__array_ufunc__(self, ufunc, method, *inputs, **kwargs):
     if ufunc == np.power:
         vRv = inputs[0]
         exp = inputs[1]
-        
-        print('*'*80, vRv)
-        print('-'*80, exp)
-        
+
+        # print('*'*80, vRv)
+        # print('-'*80, exp)
+
         return vRv ** exp
 
     ### rmul
@@ -927,7 +927,7 @@ def __stdVectorRVector__array_ufunc__(self, ufunc, method, *inputs, **kwargs):
             return inputs[0] * inputs[1]
         else:
             return inputs[1] * inputs[0]
-        
+
     pg._r(self)
     pg._y(f'ufunc: {ufunc}')
     pg._y(f'method: {method}')
@@ -943,20 +943,20 @@ pgcore.stdVectorRVector.__array_ufunc__ = __stdVectorRVector__array_ufunc__
 ##################################
 
 def __stdVectorR3Vector_BINARY_OP__(self, b, OP):
-    
+
     ret = pgcore.stdVectorR3Vector()
-    
+
     if isScalar(b):
         for i, ai in enumerate(self):
             ret.append(getattr(ai, OP)(b))
         return ret
-    
+
     elif len(self) == len(b):
         for i, ai in enumerate(self):
             ret.append(getattr(ai, OP)(b[i]))
     else:
         pg.critical(f'Cannot {OP} stdVectorR3Vector with different lengths: {len(self)}{len(b)}')
-    
+
     return ret
 
 def __stdVectorR3Vector_ABS__(self):
@@ -1094,7 +1094,7 @@ def abs(v):
         return abs(v.vals)
     elif isinstance(v, (int, float)):
         return __PY_ABS__(v)
-    
+
     try:
         return __PY_ABS__(v)
     except:
@@ -1314,7 +1314,7 @@ ModellingBase = ModellingBaseMT__
 
 def __getCoords(coord, dim, ent):
     """Syntactic sugar to find all x-coordinates of a given entity."""
-    
+
     if isScalar(ent):
         return ent
     if isPos(ent):
@@ -1447,8 +1447,8 @@ from .matrix import (BlockMatrix, SparseMatrix, SparseMapMatrix, IdentityMatrix,
                      Matrix)
 
 from .matrix import (convertCRSIndex2Map, sparseMatrix2Array,
-                     sparseMatrix2coo, sparseMatrix2csr, 
-                     sparseMatrix2Dense, sparseMatrix2csc, 
+                     sparseMatrix2coo, sparseMatrix2csr,
+                     sparseMatrix2Dense, sparseMatrix2csc,
                      toSparseMatrix, toSparseMapMatrix,
                      toCSC, toCSR, toCOO,
                      toDense, reduceEntries, removeEntries,

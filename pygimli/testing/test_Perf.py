@@ -26,12 +26,12 @@ st = range(N)
 """
 
 class TestPerf(unittest.TestCase):
-    
+
     def test_Performance(self):
         """
         """
         #pg.setDebug(True)
-        
+
         sw = pg.Stopwatch(True)
         #print(timeit.repeat('r = grid.cellSizes() * np1', setup=setup, number=1000))
         #print(timeit.repeat('r = c * np1', setup=setup, number=1000))
@@ -64,9 +64,18 @@ class TestPerf(unittest.TestCase):
         print((sum(np1 * pg1)))
         print((sum(pg1 * np1)))
 
+
     def test_tictoc(self):
-        """ with core Tictoc with global trace
+        """Test core TicToc with global trace.
         """
+        with pg.tictoc('foo1'):
+            pass
+        print(pg.timings())
+        with pg.tictoc('foo2'):
+            pass
+        print(pg.timings())
+        #return
+
 
         def bar1():
             with pg.tictoc('bar1'):
@@ -76,7 +85,7 @@ class TestPerf(unittest.TestCase):
             with pg.tictoc('bar2'):
                 time.sleep(0.01)
                 bar1()
-                
+
         def foo():
             with pg.tictoc('foo'):
                 for i in range(4):
@@ -87,20 +96,25 @@ class TestPerf(unittest.TestCase):
             with pg.tictoc('foobar1'):
                 for i in range(2):
                     time.sleep(0.01) # uncovered
-                    foo()    
+                    foo()
 
             with pg.tictoc('foobar2'):
                 for i in range(2):
                     time.sleep(0.01) # uncovered
-                    foo()    
-
+                    foo()
         print(pg.timings('foo'))
-        print(pg.timings('foobar1'))
+
+        with pg.tictoc('foo1'):
+            foo()
+
+        #print(pg.timings())
+        print(pg.timings('foo'))
+        print(pg.timings('foo/foobar1'))
         print(pg.timings('foo/foobar2'))
         print(pg.timings())
-        
+
 
 if __name__ == '__main__':
-    
+
     unittest.main()
 

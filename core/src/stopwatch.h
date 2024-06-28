@@ -83,7 +83,7 @@ public:
 
     const CycleCounter & cycleCounter() const { return _cCounter; }
 
-    /*!Save current duration value into store. 
+    /*!Save current duration value into store.
     Reset current time if needed to store relative times.*/
     void store(bool restart=false);
 
@@ -95,7 +95,7 @@ protected:
 
     std::chrono::time_point<std::chrono::high_resolution_clock> _start, _stop;
     RVector *_store;
-    
+
     CycleCounter _cCounter;
 };
 
@@ -107,7 +107,7 @@ protected:
 DLLEXPORT void waitms(Index us, Index count=1);
 DLLEXPORT void waitmsOMP(Index us, Index count=1);
 
-/*! Microseconds are rounded somewhat to system clock of 1000Hz. 
+/*! Microseconds are rounded somewhat to system clock of 1000Hz.
 Also there seems to be an offset of 0.05 ms. */
 DLLEXPORT void waitus(Index us, Index count=1);
 DLLEXPORT void waitusOMP(Index us, Index count=1);
@@ -120,11 +120,11 @@ public:
     Stopwatch & operator[](const std::string & key);
 
     std::vector < std::string > keys();
-    
+
     std::vector < const Stopwatch * > vals();
-    
+
     std::vector < std::pair< std::string, Stopwatch * > > items();
-    
+
     void remove(const std::string & key, bool isRoot=false);
 
     void setTrace(const std::string & trace) { _trace = trace; }
@@ -150,9 +150,9 @@ private:
 class TicToc{
 public:
     TicToc(const std::string & name, bool reset=false);
-    
+
     ~TicToc();
-    
+
 protected:
 
     Stopwatch *_sw;

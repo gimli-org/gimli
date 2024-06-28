@@ -864,9 +864,6 @@ set(WHEELHOUSE ${CMAKE_BINARY_DIR}/wheelhouse)
 #      enable_testing()
 # endif(LIBGIMLI_BUILD_TESTS)
 
-
-
-
 ################################################################################
 # descend into subdirs
 ################################################################################
