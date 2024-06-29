@@ -49,12 +49,13 @@ from .meshview import (CellBrowser,
                        drawStreamLines,
                        drawStreams)
 
-from .overlayimage import (cacheFileName,
-                           deg2MapTile,
-                           getMapTile,
-                           mapTile2deg,
-                           underlayMap,
-                           underlayBKGMap)
+# do not default import
+# from .overlayimage import (cacheFileName,
+#                            deg2MapTile,
+#                            getMapTile,
+#                            mapTile2deg,
+#                            underlayMap,
+#                            underlayBKGMap)
 
 from .matrixview import (drawBlockMatrix, drawSparseMatrix)
 
@@ -80,7 +81,7 @@ from .dataview import (drawSensorAsMarker,  # dups to meshview??
 from .modelview import (drawModel1D,
                         #showmymatrix,  # needed ?
                         draw1DColumn, # needed or redundant ?
-                        #draw1dmodel,   # needed or redundant ?
+                        draw1dmodel,   # needed or redundant ?
                         show1dmodel,  # needed or redundant ?
                         #draw1dmodelErr,  # needed or redundant ?
                         #draw1dmodelLU,  # needed or redundant ?

@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 """Define special colorbar behavior."""
 import numpy as np
-from matplotlib.colors import LogNorm, Normalize
-from matplotlib.colorbar import ColorbarBase
-
 from packaging import version
+
+# from matplotlib.colors import LogNorm, Normalize
+# from matplotlib.colorbar import ColorbarBase
 
 import pygimli as pg
 from . import saveFigure, updateAxes
@@ -84,7 +84,7 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
     """
     if not isinstance(cmapname, str):
         return cmapname
-    
+
     import matplotlib as mpl
     if not bad:
         bad = [1.0, 1.0, 1.0, 0.0]
@@ -578,6 +578,7 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
 #    else:
 #        print('taking the values directly')
     import matplotlib as mpl
+
     if version.parse(mpl.__version__) >= version.parse("3.4"):
         patches.set_alpha(C)
         patches.set_snap(True)
