@@ -8,7 +8,7 @@ import numpy as np
 
 class TestFiniteElementBasics(unittest.TestCase):
     def test_Poisson(self):
-        """
+        r"""
         \d² u / d x² + f = 0
 
         u = sin(x) ## maybe a good test case for harmonic (spectral) base functions TODO
@@ -27,7 +27,7 @@ class TestFiniteElementBasics(unittest.TestCase):
         pass
 
     def test_Helmholtz(self):
-        """
+        r"""
             d² u / d x² + k u + f = 0
             k = 2
             a) P1(exact)
@@ -74,7 +74,7 @@ class TestFiniteElementBasics(unittest.TestCase):
 
     def test_Neumann_BC(self):
         def _test_(mesh, p2=False, show=False):
-            """
+            r"""
                 \Laplace u = 0
                 x = [0, -1], y, z
                 int_0^1 u = 0
@@ -193,7 +193,7 @@ class TestFiniteElementBasics(unittest.TestCase):
         """
         """
         def _testP2_(mesh, show=False):
-            """ Laplace u - 2 = 0
+            r""" Laplace u - 2 = 0
                 with u(x) = x² + x/(xMax-xMin) + xMin/(xMax-xMin)
                 and u(xMin)=0 and u(xMax)=1
                 Test for u_h === u(x) for P2 base functions
@@ -218,7 +218,7 @@ class TestFiniteElementBasics(unittest.TestCase):
 
 
         def _testP1_(mesh, show=False, followP2=True):
-            """ Laplace u = 0
+            r""" Laplace u = 0
                 with u = x and u(x=min)=0 and u(x=max)=1
                 Test for u == exact x for P1 base functions
             """
@@ -293,7 +293,7 @@ class TestFiniteElementBasics(unittest.TestCase):
         #v = _testP1_(grid, show=False) #2D reg - rotated
 
     def test_Robin_BC(self):
-        """
+        r"""
             Linear function should result in exact solution with linear base
             u(x) = Ax + B on x = [0, .. ,1]
 
@@ -317,7 +317,7 @@ class TestFiniteElementBasics(unittest.TestCase):
             du/dn(0) = -A + a B = g (a=1, b=1.0, g=-A+a*B)
             du/dn(1) =  A + a (A+B) = g  (a=1, b=1.0, g= A + a*(A+B))
         """
-        return 
+        return
         show=False
         A = 1
         B = 3
