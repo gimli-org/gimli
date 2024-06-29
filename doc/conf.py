@@ -111,7 +111,7 @@ extensions = [
     # "sphinxcontrib.spelling"
     #'sphinx.ext.pngmath',   # for breath
     #'sphinx.ext.todo',      # for breath
-    'breathe',              # doxgen to sphinx api docu
+    #'breathe',              # doxgen to sphinx api docu
 ]
 
 extensions += [dep.replace("-", ".") for dep in deps]
