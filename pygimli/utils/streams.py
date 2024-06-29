@@ -136,7 +136,6 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
         dAbs = d.length()
         #print("cell:", c.id(), u, d, dAbs)
 
-
         if dAbs == 0.0:
             #print(d, "check this in streamlineDir(",)
             break
@@ -195,6 +194,3 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
         xd.reverse(), yd.reverse(), vd.reverse()
 
     return xd, yd, vd
-
-
-

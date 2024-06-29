@@ -6,6 +6,7 @@
 # python -m pip install package==version
 
 # needed to build
+setuptools
 numpy>=1.25
 
 # needed

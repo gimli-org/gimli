@@ -4,10 +4,6 @@
 
 import numpy as np
 import pygimli as pg
-from matplotlib.colors import LogNorm, Normalize
-from matplotlib.patches import Wedge, Rectangle
-from matplotlib.collections import PatchCollection
-
 from .utils import updateAxes as updateAxes_
 
 
@@ -109,6 +105,8 @@ def drawValMapPatches(ax, vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
     circular : bool
         assume circular (cyclic) positions
     """
+    from matplotlib.collections import PatchCollection
+    from matplotlib.patches import Wedge, Rectangle
     recs = []
 
     circular = kwargs.pop('circular', False)
@@ -203,6 +201,10 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
         * circular : bool
             Plot in polar coordinates.
     """
+    from matplotlib.collections import PatchCollection
+    from matplotlib.patches import Wedge, Rectangle
+    from matplotlib.colors import LogNorm, Normalize
+
     if cMin is None:
         cMin = np.min(vals)
         # cMin = np.nanquantile(vals, cTrim/100)
@@ -341,6 +343,10 @@ def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     dx : float
         width of the matrix elements (by default 1)
     """
+    from matplotlib.collections import PatchCollection
+    from matplotlib.patches import Wedge, Rectangle
+    from matplotlib.colors import LogNorm, Normalize
+
     mat = np.ma.masked_where(mat == 0.0, mat, False)
     if cMin is None:
         cMin = np.min(mat)
@@ -523,7 +529,7 @@ def showVecMatrix(xvec, yvec, vals, full=False, **kwargs):
     cb : matplotlib colorbar
         colorbar object
     """
-    A, xmap, ymap = generateMatrix(xvec, yvec, vals, full=full, 
+    A, xmap, ymap = generateMatrix(xvec, yvec, vals, full=full,
                                    verbose=kwargs.get("verbose", True))
     return showDataMatrix(A, xmap=xmap, ymap=ymap, **kwargs)
 
