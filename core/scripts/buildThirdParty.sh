@@ -24,12 +24,7 @@ CASTXML_URL=https://github.com/CastXML/CastXML.git
 #CASTXML_REV=9d7a46d639ce921b8ddd36ecaa23c567d003294a #last functional
 
 # Check for updates https://data.kitware.com/#search/results?query=castxml&mode=text
-#CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/file/5b6c5b4d8d777f06857c323b/download # 0.1
-#CASTXML_BIN_MAC=https://data.kitware.com/api/v1/file/57b5de9f8d777f10f2696378/download # 0.1.0
-#CASTXML_BIN_WIN=https://data.kitware.com/api/v1/file/5b68bfc28d777f06857c1f44/download # 0.1.0
-
 CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/item/63bed74d6d3fc641a02d7e98/download # 0.5.0
-CASTXML_BIN_MAC=https://data.kitware.com/api/v1/item/63bed7726d3fc641a02d7e9e/download # 0.5.0
 CASTXML_BIN_WIN=https://data.kitware.com/api/v1/file/63bed83a6d3fc641a02d7ea3/download # 0.5.0
 
 if [[ $(uname -m) == 'arm64' ]]; then
@@ -38,6 +33,10 @@ if [[ $(uname -m) == 'arm64' ]]; then
 else
     CASTXML_BIN_MAC=https://data.kitware.com/api/v1/item/63bed7726d3fc641a02d7e9e/download # Intel chips
 fi
+
+#.. needs testing
+# Check for updates https://github.com/CastXML/CastXMLSuperbuild/releases/tag/v0.6.5
+#CASTXML_BIN_LINUX=https://github.com/CastXML/CastXMLSuperbuild/releases/download/v0.6.5/
 
 PYGCCXML_URL=https://github.com/CastXML/pygccxml
 PYGCCXML_REV=v2.2.1

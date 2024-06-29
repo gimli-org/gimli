@@ -3,6 +3,49 @@
 Building on Linux
 -----------------
 
+Compiling with a virtual environment
+....................................
+
+If you don't want to use the conda environment we encourage the use of a
+virtual python environment.
+Assuming you have a proper build toolchain and the required libraries
+(see Installation on Ubuntu below) installed.
+
+.. code-block:: bash
+    mkdir -p gimli
+    cd gimli
+    git clone https://github.com/gimli-org/gimli.git
+    cd gimli
+    deactivate # in case there are other venv active
+    python -m venv .venv --prompt=gimli
+    . .venv/bin/activate
+    python -m pip install -r dev_requirements.txt
+    cd ..
+
+We recommend an out of source build:
+
+.. code-block:: bash
+    mkdir -p build
+    cd build
+    cmake ../gimli
+    make -j 4 gimli
+    make pygimli J=4
+    cd ..
+
+There is no more need to change the `PATH`` or `LD_LIBRARY_PATH``.
+In fact, check to remove any prior changes to these environment variables from
+older installations.
+
+.. code-block:: bash
+
+    export PYTHONPATH=$PYTHONPATH:$(pwd)/gimli
+    python -c 'import pygimli as pg; pg.version()'
+
+
+**All following building procedures are outdated and may not work without
+tweaking**
+
+
 Curl installer
 ..............
 
@@ -27,7 +70,7 @@ If the installation fails you can try the following instructions for manual
 installation.
 
 
-Example Installation on Ubuntu 
+Example Installation on Ubuntu
 ..............................
 
 Last try on Ubuntu 22.04.03 (23-11-14)
@@ -38,8 +81,8 @@ Last try on Ubuntu 22.04.03 (23-11-14)
                  python3-dev python3-matplotlib python3-numpy python3-pyqt5 \
                  python3-scipy libboost-all-dev libedit-dev \
                  libsuitesparse-dev libopenblas-openmp-dev libumfpack5 \
-                 libcppunit-dev clang 
-    
+                 libcppunit-dev clang
+
     mkdir -p ~/src/gimli
     cd ~/src/gimli
     git clone https://github.com/gimli-org/gimli.git
