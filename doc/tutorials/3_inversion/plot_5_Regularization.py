@@ -23,7 +23,7 @@ data are fitted within noise, i.e. :math:`\chi^2=\Phi_d/N=1`.
 In the term :math:`\Phi_m` we put our expectations to the model, e.g. to
 be close to any prior model. In many cases we do not have much
 information and aim for the smoothest model that is able to fit our
-data. We decribe it by the operator :math:`W_m`:
+data. We describe it by the operator :math:`W_m`:
 
 .. math:: \Phi_m=\|W_m (m-m_{ref})\|^2
 
@@ -53,7 +53,10 @@ import pygimli.meshtools as mt
 from pygimli.frameworks import PriorModelling
 
 # %%%
-# Implementation 1. determine the indices where the cells are
+# Implementation
+# --------------
+#
+# 1. determine the indices where the cells are
 #
 # ::
 #
@@ -94,9 +97,10 @@ fop = PriorModelling(mesh, pos)
 
 # %%%
 # We set up an inversion instance with the forward operator and prepare
-# the keywords for running the inversion always the same way: - the data
-# vector - the error vector (as relative error) - a starting model value
-# (could also be vector)
+# the keywords for running the inversion always the same way:
+# - the data vector
+# - the error vector (as relative error)
+# - a starting model value (could also be vector)
 #
 
 inv = pg.Inversion(fop=fop, verbose=False)
