@@ -278,8 +278,32 @@ RVector cellDataToPointData(const Mesh & mesh, const RVector & cellData){
 
 }
 
-// double interpolate(const RVector3 & queryPos, const MeshEntity & entity, const RVector & sol){
-//   return entity->interpolate(queryPos, sol);
-// }
+void interpolateGradients(const Mesh & mesh,
+                          const stdVectorR3Vector & qp,
+                          const RVector & u,
+                          stdVectorR3Vector & grad,
+                          Index dim){
+    grad.resize(qp.size());
+
+    Index i = 0;
+    for (auto &iqp: qp){
+        grad[i].resize(iqp.size());
+        const Cell &c = mesh.cell(i);
+        Index j = 0;
+        for (auto &p: iqp){
+            grad[i][j] = c.grad(p, u, dim);
+            j++;
+        }
+        i++;
+    }
+}
+void interpolateGradients(const Mesh & mesh,
+                          const stdVectorR3Vector & qp,
+                          const R3Vector & u,
+                          stdVectorRMatrix & grad,
+                          Index dim){
+    THROW_TO_IMPL
+}
+
 
 } // namespace GIMLI

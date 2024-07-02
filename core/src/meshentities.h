@@ -46,7 +46,7 @@ DLLEXPORT Boundary * findBoundary(const Node & n1, const Node & n2, const Node &
 DLLEXPORT Boundary * findBoundary(const std::vector < Node * > & n);
 
 /*! Find all boundaries that have these nodes in common. */
-DLLEXPORT std::set < Boundary * >  
+DLLEXPORT std::set < Boundary * >
 findBoundaries(const std::vector < Node * > & n);
 
 /*! */
@@ -127,7 +127,7 @@ public:
     inline Node & node(uint i) {
         ASSERT_RANGE(i, 0, nodeCount()); return *nodeVector_[i];
     }
-    
+
     inline Node & node(uint i) const {
         ASSERT_RANGE(i, 0, nodeCount()); return *nodeVector_[i];
     }
@@ -197,7 +197,7 @@ public:
     * The field vector u need to be of size mesh.nodeCount() for the corresponding mesh.
     * The position pos, in Cartesian coordinates (x,y,z), need to be inside, or on the boundary, of the entity.  */
     RMatrix grad(const RVector3 & xyz, const R3Vector & u, Index dim=3) const;
-        
+
     friend std::ostream & operator << (std::ostream & str, const MeshEntity & c);
 
     /*! Geometry has been changed. Deletes cache.*/
@@ -226,7 +226,7 @@ protected:
 
     virtual void registerSecNode_(Node *n);
     virtual void deRegisterSecNode_(Node *n);
-    
+
 
     Shape * shape_;
 
@@ -320,7 +320,7 @@ protected:
     virtual void deRegisterNodes_();
     virtual void registerSecNode_(Node *n);
     virtual void deRegisterSecNode_(Node *n);
-    
+
     std::vector < Cell * > neighborCells_;
     double attribute_;
 
@@ -390,7 +390,7 @@ protected:
     virtual void deRegisterNodes_();
     virtual void registerSecNode_(Node *n);
     virtual void deRegisterSecNode_(Node *n);
-    
+
 
     Cell *leftCell_;
     Cell *rightCell_;
@@ -641,10 +641,10 @@ public:
 
     /*!Return reference to all defined hole markers. */
     HoleMarkerList & holeMarkers(){ return holeMarker_;}
-    
+
     /*! Placeholder. Create empty shape functions. */
     std::vector < PolynomialFunction < double > > createShapeFunctions() const;
-    
+
 protected:
     std::vector < std::vector < Node * > > subfaces_;
     HoleMarkerList holeMarker_;
@@ -655,7 +655,7 @@ private:
 class DLLEXPORT EdgeCell : public Cell {
 public:
     EdgeCell();
-    
+
     EdgeCell(Node & n1, Node & n2);
 
     EdgeCell(const std::vector < Node * > & nodes);
@@ -900,8 +900,8 @@ public:
 protected:
 
     /*! Don't call this class directly */
-    Tetrahedron(const Tetrahedron& cell){ 
-        std::cerr << "Tetrahedron cell(const cell & cell)" << std::endl; 
+    Tetrahedron(const Tetrahedron& cell){
+        std::cerr << "Tetrahedron cell(const cell & cell)" << std::endl;
     }
 
     /*! Don't call this class directly */
@@ -1083,7 +1083,7 @@ static const uint8 TriPrismFacesID[5][4] = {
 class DLLEXPORT TriPrism : public Cell {
 public:
     TriPrism();
-    
+
     TriPrism(const std::vector < Node * > & nodes);
 
     virtual ~TriPrism();
@@ -1169,7 +1169,7 @@ static const uint8 PyramidFacesID[5][4] = {
 class DLLEXPORT Pyramid : public Cell {
 public:
     Pyramid();
-    
+
     Pyramid(const std::vector < Node * > & nodes);
 
     virtual ~Pyramid();

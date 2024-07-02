@@ -955,7 +955,8 @@ def __stdVectorR3Vector_BINARY_OP__(self, b, OP):
         for i, ai in enumerate(self):
             ret.append(getattr(ai, OP)(b[i]))
     else:
-        pg.critical(f'Cannot {OP} stdVectorR3Vector with different lengths: {len(self)}{len(b)}')
+        pg.critical(f'Cannot {OP} stdVectorR3Vector with different lengths:'
+                    f'{len(self)}{len(b)}')
 
     return ret
 
