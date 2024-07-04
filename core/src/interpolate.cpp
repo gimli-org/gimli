@@ -283,6 +283,8 @@ void interpolateGradients(const Mesh & mesh,
                           const RVector & u,
                           stdVectorR3Vector & grad,
                           Index dim){
+    ASSERT_VEC_SIZE(qp, mesh.cellCount())
+
     grad.resize(qp.size());
 
     Index i = 0;

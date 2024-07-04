@@ -236,13 +236,18 @@ def refineQuad2Tri(mesh, style=1):
             #                c.marker())
             # out.createCell([c.node(1).id(), c.node(2).id(), c.node(3).id()],
             #                c.marker())
-
-            out.createCell([c.node(0).id(), c.node(1).id(), c.node(2).id()],
-                           c.marker())
-            out.createCell([c.node(0).id(), c.node(2).id(), c.node(3).id()],
-                           c.marker())
+            if c.nodeCount() == 3:
+                out.createCell([c.node(0).id(), c.node(1).id(), c.node(2).id()],
+                                c.marker())
+            else:
+                out.createCell([c.node(0).id(), c.node(1).id(), c.node(2).id()],
+                            c.marker())
+                out.createCell([c.node(0).id(), c.node(2).id(), c.node(3).id()],
+                            c.marker())
 
         elif style == 2:
+            if c.nodeCount() == 3:
+                pg.critical('Implement me')
             newNode = out.createNodeWithCheck(c.center())
 
             for i in range(4):

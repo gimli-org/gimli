@@ -47,20 +47,28 @@ DLLEXPORT RVector z(const R3Vector & rv);
 DLLEXPORT R3Vector r3(const RVector & x, const RVector & y, const RVector & z);
 /*! Vectorize vector of r3vectors. */
 DLLEXPORT void vectorizePosVectorList(const std::vector < PosVector > & v, PosVector & r);
-DLLEXPORT void vectorizePosVectorList(const std::vector < PosVector > & v, 
-                                      PosVector & r, 
-                                      int marker, 
+DLLEXPORT void vectorizePosVectorList(const std::vector < PosVector > & v,
+                                      PosVector & r,
+                                      int marker,
                                       const ElementMatrixMap & eMap);
-         
-DLLEXPORT void deVectorizeRVectorToPosVectorList(std::vector < RVector > & ret, 
-                                            const RVector & r, 
+
+DLLEXPORT void deVectorizeRVectorToPosVectorList(std::vector < RVector > & ret,
+                                            const RVector & r,
                                             const std::vector < PosVector > & v);
 
-DLLEXPORT void deVectorizeRVectorToPosVectorList(std::vector < RVector > & ret, 
-                                            const RVector & r, 
+DLLEXPORT void deVectorizeRVectorToPosVectorList(std::vector < RVector > & ret,
+                                            const RVector & r,
                                             const std::vector < PosVector > & v,
-                                            int marker, 
+                                            int marker,
                                             const ElementMatrixMap & eMap);
+
+DLLEXPORT void dot(const PosVector & a,
+                   const PosVector & b,
+                   RVector & r);
+
+DLLEXPORT void dot(const std::vector < PosVector > & a,
+                   const std::vector < PosVector > & b,
+                   std::vector < RVector > & r);
 
 DLLEXPORT RVector absR3(const R3Vector & vPos);
 

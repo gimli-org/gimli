@@ -120,8 +120,8 @@ typedef int64_t int64;
 
 
 /*!Replace from with to inside str and return the result*/
-DLLEXPORT  std::string replace(const std::string & str, 
-                               const std::string & from, 
+DLLEXPORT  std::string replace(const std::string & str,
+                               const std::string & from,
                                const std::string & to);
 
 #ifndef SRC_DIR
@@ -213,6 +213,8 @@ void print(Args&&... args) {
 #define VECTORASCSUFFIX ".vector"
 #define NOT_DEFINED "notDefined"
 
+#define ASSERT_EQUAL_SIZES(m, n) if (m.size() != n.size()) \
+    throwLengthError(WHERE_AM_I + " " + str(m.size()) + " != " + str(n.size()));
 #define ASSERT_EQUAL_SIZE(m, n) if (m.size() != n.size()) \
     throwLengthError(WHERE_AM_I + " " + str(m.size()) + " != " + str(n.size()));
 #define ASSERT_GREATER_EQUAL(m, n) if (m < n) \
@@ -551,7 +553,7 @@ DLLEXPORT std::string replace(const std::string & str, const char from, const ch
 DLLEXPORT std::string lower(const std::string & str);
 
 DLLEXPORT bool endswith(const std::string & a, const std::string & b);
-    
+
 // template < typename T > inline void swapVal(T & a, T & m){
 //     T tmp(a); a = m; m = tmp;
 // }

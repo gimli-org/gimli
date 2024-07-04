@@ -46,7 +46,7 @@ R3Vector r3(const RVector & x, const RVector & y, const RVector & z){
     ASSERT_EQUAL_SIZE(x, y)
     ASSERT_EQUAL_SIZE(x, z)
     R3Vector ret(x.size());
-    for (Index i = 0; i < x.size(); i ++) { 
+    for (Index i = 0; i < x.size(); i ++) {
         ret[i] = RVector3(x[i], y[i], z[i]);
     }
     return ret;
@@ -54,31 +54,31 @@ R3Vector r3(const RVector & x, const RVector & y, const RVector & z){
 
 void vectorizePosVectorList(const std::vector < PosVector > & v, PosVector & r){
     r.clear();
-    for (Index i = 0; i < v.size(); i ++) { 
-        for (Index j = 0; j < v[i].size(); j ++) { 
+    for (Index i = 0; i < v.size(); i ++) {
+        for (Index j = 0; j < v[i].size(); j ++) {
             r.push_back(v[i][j]);
         }
     }
 
     // Index count = 0;
-    // for (Index i = 0; i < v.size(); i ++) { 
+    // for (Index i = 0; i < v.size(); i ++) {
     //     count += v[i].size();
     // }
     // r.resize(count);
     // Indes start = 0;
-    // for (Index i = 0; i < v.size(); i ++) { 
+    // for (Index i = 0; i < v.size(); i ++) {
     //     r.setVal(v[count += v[i].size();
     // }
 }
 
 
-void deVectorizeRVectorToPosVectorList(std::vector < RVector > & ret, 
-                                       const RVector & r, 
+void deVectorizeRVectorToPosVectorList(std::vector < RVector > & ret,
+                                       const RVector & r,
                                        const std::vector < PosVector > & v){
     ret.clear();
     Index start = 0;
     Index end = 0;
-    for (Index i = 0; i < v.size(); i ++) { 
+    for (Index i = 0; i < v.size(); i ++) {
         end = start + v[i].size();
         ret.push_back(r.getVal(start, end));
         //#std::copy(&data_[se.first], &data_[se.second], &v[0]);
@@ -91,20 +91,20 @@ void vectorizePosVectorList(const std::vector < PosVector > & v, PosVector & r,
                             int marker, const ElementMatrixMap & eMap){
     ASSERT_EQUAL_SIZE(v, eMap)
     r.clear();
-    for (Index i = 0; i < v.size(); i ++) { 
+    for (Index i = 0; i < v.size(); i ++) {
         if (eMap.mats()[i].entity()->marker() == marker){
-            for (Index j = 0; j < v[i].size(); j ++) { 
+            for (Index j = 0; j < v[i].size(); j ++) {
                 r.push_back(v[i][j]);
             }
         }
-    }                           
+    }
 }
 
 
-void deVectorizeRVectorToPosVectorList(std::vector < RVector > & ret, 
-                                       const RVector & r, 
+void deVectorizeRVectorToPosVectorList(std::vector < RVector > & ret,
+                                       const RVector & r,
                                        const std::vector < PosVector > & v,
-                                       int marker, 
+                                       int marker,
                                        const ElementMatrixMap & eMap){
     if (ret.size() != eMap.size()){
         ret.resize(eMap.size(), RVector(0));
@@ -112,7 +112,7 @@ void deVectorizeRVectorToPosVectorList(std::vector < RVector > & ret,
 
     Index start = 0;
     Index end = 0;
-    for (Index i = 0; i < v.size(); i ++) { 
+    for (Index i = 0; i < v.size(); i ++) {
         if (eMap.mats()[i].entity()->marker() == marker){
             end = start + v[i].size();
             ret[i] = r.getVal(start, end);
@@ -122,6 +122,27 @@ void deVectorizeRVectorToPosVectorList(std::vector < RVector > & ret,
     }
 }
 
+void dot(const PosVector & a,
+         const PosVector & b,
+         RVector & r){
+
+    ASSERT_EQUAL_SIZES(a, b)
+    r.resize(a.size());
+    for (Index i = 0; i < a.size(); i ++ ){
+        r[i] = a[i].dot(b[i]);
+    }
+}
+
+void dot(const std::vector < PosVector > & a,
+         const std::vector < PosVector > & b,
+         std::vector < RVector > & r){
+
+    ASSERT_EQUAL_SIZES(a, b)
+    r.resize(a.size());
+    for (Index i = 0; i < a.size(); i ++ ){
+        dot(a[i], b[i], r[i]);
+    }
+}
 
 void saveRVector3(const std::vector < Pos > l, const std::string & fileName){
     std::fstream file; openOutFile(fileName, & file);
@@ -205,8 +226,8 @@ RVector z(const R3Vector & rv){
     for (uint i = 0, imax = rv.size(); i < imax; i ++) t[i] = rv[i].z();
     return t;
 }
-template < class ValueType > void swap(ValueType & v1, ValueType & v2){ 
-    ValueType tmp = v1; v1 = v2; v2 = tmp; 
+template < class ValueType > void swap(ValueType & v1, ValueType & v2){
+    ValueType tmp = v1; v1 = v2; v2 = tmp;
 }
 
 RVector absR3(const R3Vector & vPos){

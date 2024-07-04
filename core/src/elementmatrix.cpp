@@ -123,9 +123,9 @@ ElementMatrix < double >::operator += (const ElementMatrix < double > & E){
 // }
 
 /*! Set specific columns to zero. */
-template < > void 
+template < > void
 ElementMatrix < double >::cleanCols(const IndexArray & c){
-    this->mat_.cleanCols(c);    
+    this->mat_.cleanCols(c);
 }
 
 template < > DLLEXPORT Vector< double >
@@ -174,7 +174,7 @@ ElementMatrix < double >::setMatXI(Index i, const RSmallMatrix & m){
 //     return this->setMat(m);
 // // #endif
 // }
-// template < > DLLEXPORT RSmallMatrix 
+// template < > DLLEXPORT RSmallMatrix
 // ElementMatrix < double >::mat_RM() const {
 //     // __MS(this->mat().rows(), this->mat().cols() )
 // // #if USE_EIGEN3
@@ -291,13 +291,13 @@ ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
         double t;
         for (uint i = 0; i < nVerts; i ++){
             for (uint j = i; j < nVerts; j ++){
-                
+
                 // print(i, N[i]);
                 // print(j, N[j]);
                 // print('*', N[i],N[j]);
                 // print('*', N[i]*N[j]);
                 // print("*********************************************");
-                
+
                 t = sum(w * N[j] * N[i]);
 
                 u2[i][j] = t;
@@ -1368,7 +1368,7 @@ void ElementMatrix < double >::fillIds(const MeshEntity & ent, Index nC){
 //** old interface constructor
 template < > DLLEXPORT
 ElementMatrix < double >::ElementMatrix(Index dof) {
-    // __MS("EM()", this); 
+    // __MS("EM()", this);
     this->init(0, 0, 0);
     this->_nDof = dof;
     this->_newStyle = false;
@@ -1385,13 +1385,13 @@ ElementMatrix < double >::ElementMatrix(Index dof) {
 template < > DLLEXPORT
 ElementMatrix < double >::ElementMatrix(Index nCoeff, Index dofPerCoeff,
                                         Index dofOffset){
-    // __MS("EM(a,b,c)", this); 
+    // __MS("EM(a,b,c)", this);
     this->init(nCoeff, dofPerCoeff, dofOffset);
 }
 
 template < > DLLEXPORT
 ElementMatrix < double >::ElementMatrix(const ElementMatrix < double > & E){
-    // __MS("EM(a,b,c)", this); 
+    // __MS("EM(a,b,c)", this);
     this->copyFrom(E, true);
 }
 
@@ -1497,7 +1497,7 @@ ElementMatrix < double >::add(const ElementMatrix < double > & B,
 template < > DLLEXPORT
 void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
                                         bool withMat){
-// __M                                            
+// __M
     this->_newStyle = true;
     this->_order = E.order(); //quadrature order
     this->_nCoeff = E.nCoeff(); //number of cofficients e.g, dim
@@ -1559,7 +1559,7 @@ void ElementMatrix < double >::integrate() const {
         for (Index i = 0; i < nRules; i ++){
             // improve either with matrix expressions or shift w as scale
             // __MS(_matX[i] * (w[i] * this->_ent->size()))
-            
+
             this->mat_.transAdd((_matX[i] * (w[i] * this->_ent->size())));
 
             // MAT_TRANS_ADD(this->mat_, (_matX[i] * (w[i] * this->_ent->size())))
@@ -1577,13 +1577,13 @@ void ElementMatrix < double >::fillEntityAndOrder_(const MeshEntity & ent, Index
     this->_order = order;
     this->_ent = &ent;
     this->_integrated = false;
-        
+
     this->_x = &IntegrationRules::instance().abscissa(ent.shape(), this->_order);
     this->_w = &IntegrationRules::instance().weights(ent.shape(), this->_order);
 }
 
 
-template < > DLLEXPORT 
+template < > DLLEXPORT
 void ElementMatrix < double >::resizeMatX_U_(){
     Index nRules(_x->size());
     Index nVerts(_ent->nodeCount());
@@ -1606,22 +1606,22 @@ void ElementMatrix < double >::resizeMatX_U_(){
 }
 
 
-template < > DLLEXPORT 
+template < > DLLEXPORT
 void ElementMatrix < double >::fillMatX_U_(bool sum){
     Index nRules(_x->size());
     Index nVerts(_ent->nodeCount());
     Index nCoeff(this->_nCoeff);
 
     const PosVector &x = *this->_x;
-    
+
     if (0 && nCoeff == 1){
         for (Index i = 0; i < nRules; i ++ ){
-            _matX[i][0].setVal(_ent->N(x[i]), 0, nVerts);    
+            _matX[i][0].setVal(_ent->N(x[i]), 0, nVerts);
         }
     } else {
 
         RSmallMatrix N(nRules, nVerts);
-    
+
         for (Index i = 0; i < nRules; i ++ ){
             N[i] = _ent->N(x[i]);
             for (Index n = 0; n < nCoeff; n ++ ){
@@ -1642,7 +1642,7 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
     if (this->_valid && this->order() == order && this->_ent == &ent){
         return *this;
     }
-    
+
     this->fillEntityAndOrder_(ent, order);
     this->resizeMatX_U_();
     this->fillMatX_U_(sum);
@@ -1956,7 +1956,7 @@ ElementMatrix < double >::trace() const {
     return 0;
 }
 
-template < > DLLEXPORT RSmallMatrix 
+template < > DLLEXPORT RSmallMatrix
 ElementMatrix < double >::traceX() const {
     // __M
     RSmallMatrix  ret(_matX.size(), _matX[0].cols());
@@ -1977,7 +1977,7 @@ ElementMatrix < double >::traceX() const {
             THROW_TO_IMPL
         }
         i++;
-    } 
+    }
     // __MS(ret)
     return ret;
 }
@@ -2185,7 +2185,7 @@ void dot(const ElementMatrix < double > & A,
         log(Critical, "Parameter matrix need to match Elementmatrix shapes: "
             "A:(", A.rows(), ",", A.cols(), ")",
             "B:(", B.rows(), ",", B.cols(), ")");
-        
+
         return;
     }
 
@@ -2200,7 +2200,7 @@ void dot(const ElementMatrix < double > & A,
 // #if USE_EIGEN3
 //     RSmallMatrix ce;
 //     toEigenMatrix(c, ce);
-// #else 
+// #else
     const RSmallMatrix &ce = c;
 // #endif
 
@@ -2300,7 +2300,7 @@ DEFINE_DOT_MULT_WITH_RETURN(const FEAFunction &)
 
 
 // this *= const. Scalar
-void mult(const ElementMatrix < double > & A, 
+void mult(const ElementMatrix < double > & A,
           double f,
           ElementMatrix < double > & C){
     // __MS("** mult(A, d)")
@@ -2321,7 +2321,7 @@ void mult(const ElementMatrix < double > & A,
     C.integrate();
 }
 // this *= constant Pos
-void mult(const ElementMatrix < double > & A, 
+void mult(const ElementMatrix < double > & A,
           const Pos & f,
           ElementMatrix < double > & C){
     // __MS("** mult(A, p)")
@@ -2336,28 +2336,33 @@ void mult(const ElementMatrix < double > & A,
     for (Index r = 0; r < nRules; r++){
         RSmallMatrix & iC = (*C.pMatX())[r];
 
-        for (Index k = 0; k < iC.rows(); k ++){
-            iC.row(k) *= f[k];
+        if (0 and iC.rows() == 1){
+            __M
+            iC.row(0) *= f.sum();
+        } else {
+            for (Index k = 0; k < iC.rows(); k ++){
+                iC.row(k) *= f[k];
+            }
         }
     }
     C.setValid(true);
     C.integrate();
 }
 // this *= scalar per quadrature
-void mult(const ElementMatrix < double > & A, 
+void mult(const ElementMatrix < double > & A,
           const RVector & b,
           ElementMatrix < double > & C){
     // __MS("** mult(A, rv)")
     // __MS(b)
-    
+
     if (b.size() == A.cols()){
         C.copyFrom(A, false);
         //const PosVector &x = *A.x();
         Index nRules(C.w()->size());
         // __MS(A.rows(), A.cols(), b.size())
-        
+
         //** const scalar scale of matrix components
-        
+
         for (Index r = 0; r < nRules; r++){
             RSmallMatrix & iC = (*C.pMatX())[r];
             // print("iC:", iC);
@@ -2365,7 +2370,7 @@ void mult(const ElementMatrix < double > & A,
                 // print('r', r, 'k', k, mr(k), b[r]);
                 iC.row(k) *= b[k];
             }
-        }    
+        }
         C.integrate();
         return;
     }
@@ -2373,7 +2378,7 @@ void mult(const ElementMatrix < double > & A,
     mult_s_q(A, b, C);
 }
 // vector per quadrature
-void mult(const ElementMatrix < double > & A, 
+void mult(const ElementMatrix < double > & A,
           const PosVector & f,
           ElementMatrix < double > & C){
     // result is no bilinear form, so keep it a rowMatrix check!!
@@ -2388,10 +2393,15 @@ void mult(const ElementMatrix < double > & A,
 
     for (Index r = 0; r < nRules; r++){
         RSmallMatrix & iC = (*C.pMatX())[r];
-        for (Index k = 0; k < iC.rows(); k ++){
-            // __MS(r ," ", k ," ", f[r][k])
-            iC.row(k) *= f[r][k];
-            // iC.row(k) *= f[k][r];
+        if (0 and iC.rows() == 1){
+            __M
+            iC.row(0) *= f[r].sum();
+        } else {
+            for (Index k = 0; k < iC.rows(); k ++){
+                // __MS(r ," ", k ," ", f[r][k])
+                iC.row(k) *= f[r][k];
+                // iC.row(k) *= f[k][r];
+            }
         }
         // __MS(iC)
     }
@@ -2400,7 +2410,7 @@ void mult(const ElementMatrix < double > & A,
     C.integrate();
 }
 // constant Matrix
-void mult(const ElementMatrix < double > & A, 
+void mult(const ElementMatrix < double > & A,
           const RSmallMatrix  &  b,
           ElementMatrix < double > & C){
     // __MS("** mult(A, rm)")
@@ -2423,7 +2433,7 @@ void mult(const ElementMatrix < double > & A,
 
 
     if (b.rows() == A.matX().size() && b[0].size() == A.matX()[0].cols()){
-        //** RVector per quadrature 
+        //** RVector per quadrature
 
         for (Index i = 0; i < nRules; i++){
             RSmallMatrix & Ci = (*C.pMatX())[i];
@@ -2465,14 +2475,14 @@ void mult(const ElementMatrix < double > & A,
             b.mult(Ai, Ci, 1.0, beta);
 // #endif
         }
-        
+
         C.setValid(true);
         C.integrate(); // check if necessary
     }
 }
 
 // matrix per quadrature
-void mult(const ElementMatrix < double > & A, 
+void mult(const ElementMatrix < double > & A,
           const std::vector < RSmallMatrix  > & b,
           ElementMatrix < double > & C){
     // __MS("** mult(A, vrm)")
@@ -2498,7 +2508,7 @@ void mult(const ElementMatrix < double > & A,
         Ai.transMult(b[i], Ci, 1.0, beta);
 // #endif
     }
-    
+
     C.setValid(true);
     C.integrate();
 }
@@ -2507,14 +2517,14 @@ void mult(const ElementMatrix < double > & A, const FEAFunction & b,
           ElementMatrix < double > & C){
     // refactor with above
     // __MS(b.valueSize())
-    
+
     if (b.valueSize() == 1){
         switch (b.evalOrder()){
             case 0: // cell center
-                return mult(A, b.evalR1(A.entity()->center(), A.entity()), C); 
+                return mult(A, b.evalR1(A.entity()->center(), A.entity()), C);
                 break;
             case 1:  // nodes
-                THROW_TO_IMPL; 
+                THROW_TO_IMPL;
                 break;
             case 2: { // quads
                 RVector e;
@@ -2540,7 +2550,7 @@ void mult(const ElementMatrix < double > & A, const FEAFunction & b,
             default:
                 __M
                 log(Error, "Eval order = ", b.evalOrder(), " is not defined.");
-        } 
+        }
     } else {
         switch (b.evalOrder()){
             case 0:
@@ -2567,11 +2577,11 @@ void mult_n(const ElementMatrix < double > & A, \
             A_TYPE b, ElementMatrix < double > & C){ \
     THROW_TO_IMPL \
 }
-DEFINE_DOT_MULT(const PosVector &)   
-DEFINE_DOT_MULT(const std::vector < RVector > &)    
-DEFINE_DOT_MULT(const std::vector < PosVector > &)  
+DEFINE_DOT_MULT(const PosVector &)
+DEFINE_DOT_MULT(const std::vector < RVector > &)
+DEFINE_DOT_MULT(const std::vector < PosVector > &)
 DEFINE_DOT_MULT(const std::vector < RSmallMatrix > &)
-DEFINE_DOT_MULT(const std::vector < std::vector < RSmallMatrix  > > &) 
+DEFINE_DOT_MULT(const std::vector < std::vector < RSmallMatrix  > > &)
 #undef DEFINE_DOT_MULT
 
 void mult_n(const ElementMatrix < double > & A, \
@@ -2579,11 +2589,11 @@ void mult_n(const ElementMatrix < double > & A, \
     mult_s_n(A, b, C);
 }
 // this *= scalar per node
-void mult_s_n(const ElementMatrix < double > & A, 
+void mult_s_n(const ElementMatrix < double > & A,
               const RVector & b,
               ElementMatrix < double > & C){
 
-                
+
     C.copyFrom(A, false);
     Index nRules(C.w()->size());
 
@@ -2596,7 +2606,7 @@ void mult_s_n(const ElementMatrix < double > & A,
                 // print('r', r, 'k', k, mr(k), b[r]);
                 iC.row(k) *= b;
             }
-        }    
+        }
         C.integrate();
         return;
     } else if (b.size() == A.rows() / A.nCoeff()){
@@ -2612,7 +2622,7 @@ void mult_s_n(const ElementMatrix < double > & A,
                     iC[k][c] *= b[c%nodeCount];
                 }
             }
-        }           
+        }
         C.integrate();
         return;
 
@@ -2628,7 +2638,7 @@ void mult_s_n(const ElementMatrix < double > & A,
         //         // print('r', r, 'k', k, mr(k), b[r]);
         //         iC.row(k) *= b[A.rowIDs()];
         //     }
-        // }           
+        // }
         // C.integrate();
     } else if (b.size() == A.dofPerCoeff()){
         //## b is for all nodes
@@ -2642,7 +2652,7 @@ void mult_s_n(const ElementMatrix < double > & A,
                     iC[k][c] *= b[A.rowIDs()[c]%A.dofPerCoeff()];
                 }
             }
-        }           
+        }
         C.integrate();
         return;
 
@@ -2657,7 +2667,7 @@ void mult_s_n(const ElementMatrix < double > & A,
 }
 
 
-void mult_s_q(const ElementMatrix < double > & A, 
+void mult_s_q(const ElementMatrix < double > & A,
               const RVector & b,
               ElementMatrix < double > & C){
 
@@ -2717,11 +2727,11 @@ void mult_s_q(const ElementMatrix < double > & A,
 //******************************************************************************
 // LINEAR-FORM -- integration -- const Scalar -- f in R evalOnCells
 //******************************************************************************
-template < > void 
+template < > void
 ElementMatrix < double >::integrate(double f,
                                     RVector & R, double scale) const {
     this->integrate();
-    R.add(*this, f*scale);    
+    R.add(*this, f*scale);
     // INTEGRATE_LINFORM()
     // rt *= this->_ent->size() * f * scale;
     // R.addVal(rt, this->rowIDs());
@@ -2729,7 +2739,7 @@ ElementMatrix < double >::integrate(double f,
 //******************************************************************************
 // LINEAR-FORM -- integration -- const Vector -- ??
 //******************************************************************************
-template < > void 
+template < > void
 ElementMatrix < double >::integrate(const Pos & f,
                                     RVector & R, double scale) const {
     INTEGRATE_LINFORM(*f[k])
@@ -2739,7 +2749,7 @@ ElementMatrix < double >::integrate(const Pos & f,
 //******************************************************************************
 // LINEAR-FORM -- integration -- scalar per QUADRATURE -- f in R evalOnQuads
 //******************************************************************************
-template < > void 
+template < > void
 ElementMatrix < double >::integrate(const RVector & f,
                                     RVector & R, double scale) const {
     // only integrate if f fits size
@@ -2755,8 +2765,8 @@ ElementMatrix < double >::integrate(const RVector & f,
 template < >
 void ElementMatrix < double >::integrate(const PosVector & f,
                                          RVector & R, double scale) const {
-    //__MS("** M.integrate(rv, ->R)", this->_ent->size(), " ", scale) 
-    // __MS("** M.integrate(rv, ->R): ", R) 
+    //__MS("** M.integrate(rv, ->R)", this->_ent->size(), " ", scale)
+    // __MS("** M.integrate(rv, ->R): ", R)
     ASSERT_VEC_SIZE(f, this->_w->size())
     INTEGRATE_LINFORM(*f[q][k]) // #orig
     rt *= this->_ent->size() * scale;
@@ -2779,7 +2789,7 @@ DEFINE_INTEGRATOR_LF(const FEAFunction &)
 //*****************************************************************************
 // LINEAR-FORM -- integration  -- scalar per NODE
 //*****************************************************************************
-template < > void 
+template < > void
 ElementMatrix < double >::integrate_n(const RVector & f,
                                       RVector & R, double scale) const {
 
@@ -2787,9 +2797,9 @@ ElementMatrix < double >::integrate_n(const RVector & f,
     this->integrate();
 
     if (scale != 1.0) {
-        R.add(*this, f*scale);    
+        R.add(*this, f*scale);
     } else {
-        R.add(*this, f);    
+        R.add(*this, f);
     }
 }
 //*****************************************************************************
@@ -2810,7 +2820,7 @@ DEFINE_INTEGRATOR_LF_N(const std::vector< std::vector< RSmallMatrix  > > &)  // 
 
 
 //*****************************************************************************
-// BILINEAR-FORM -- Per CELL and QAUD integration 
+// BILINEAR-FORM -- Per CELL and QAUD integration
 //*****************************************************************************
 #define DEFINE_INTEGRATOR(A_TYPE) \
 template < > \
@@ -2845,11 +2855,11 @@ DEFINE_INTEGRATOR(const std::vector< RSmallMatrix  > &)// matrix for each quadrs
 template < >
 void ElementMatrix < double >::integrate(const ElementMatrix < double > & B, \
                        const Pos & v, SparseMatrixBase & A, double scale) const {
-    ElementMatrix < double > dAB; 
-    ElementMatrix < double > vm; 
-    GIMLI::mult(B, v, vm); 
-    dot(*this, vm, 1, dAB); 
-    A.add(dAB, scale); 
+    ElementMatrix < double > dAB;
+    ElementMatrix < double > vm;
+    GIMLI::mult(B, v, vm);
+    dot(*this, vm, 1, dAB);
+    A.add(dAB, scale);
 }
 
 template < >
@@ -3083,7 +3093,7 @@ void createForceVectorMult_(const Mesh & mesh, Index order, RVector & ret,
     }
     Index dof = mesh.nodeCount() * nCoeff;
     ret.resize(dof);
-    
+
     ElementMatrix < double > u;
     ElementMatrix < double > ua;
 

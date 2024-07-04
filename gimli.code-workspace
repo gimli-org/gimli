@@ -7,7 +7,8 @@
     "settings": {
         "fortran.fortls.disabled": true,
         "files.associations": {
-            "random": "cpp"
+            "random": "cpp",
+            "*.ipp": "cpp"
         }
     }
 }
