@@ -5,9 +5,6 @@ import os.path
 import math
 import numpy as np
 
-from scipy.interpolate import RegularGridInterpolator, LinearNDInterpolator
-import matplotlib.tri as mtri
-
 
 class DEM:
     """Interpolation class for digital elevation models."""
@@ -30,6 +27,8 @@ class DEM:
             Custom coordinate translator. If set to None then
             `lambda x_, y_: utm.to_latlon(x_, y_, 32, 'N')` is taken.
         """
+        from scipy.interpolate import RegularGridInterpolator, LinearNDInterpolator
+
         self.latlon = False
         self.x = x
         self.y = y
@@ -88,6 +87,9 @@ class DEM:
 
     def loadTXT(self, demfile):
         """Load column-based DEM."""
+        import matplotlib.tri as mtri
+        from scipy.interpolate import RegularGridInterpolator, LinearNDInterpolator
+
         xp, yp, zp = np.loadtxt(demfile, unpack=True)
         be = self.fallback is None
         if len(np.unique(xp)) * len(np.unique(yp)) > len(xp):
@@ -137,6 +139,8 @@ class DEM:
 
     def loadASC(self, ascfile):
         """Load ASC (DEM matrix with location header) file."""
+        from scipy.interpolate import RegularGridInterpolator, LinearNDInterpolator
+
         with open(ascfile) as fid:
             header = {}
             sp = []
@@ -224,6 +228,9 @@ class DEM:
         - **kwargs, type keyword arguments
             add additional keyword arguments for the plot style (e.g., *lw*)
         """
+        import matplotlib.tri as mtri
+        from scipy.interpolate import RegularGridInterpolator, LinearNDInterpolator
+
         if ax is None:
             fig, ax = pg.plt.subplots(figsize=kwargs.pop('figsize', (15, 15)))
 

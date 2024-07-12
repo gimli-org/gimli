@@ -534,8 +534,12 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         except BaseException:
             pass
 
-    if axisLabels == True:
-        pg.viewer.mpl.adjustWorldAxes(ax, depth=min(mesh.boundaryMarkers()) < 0)
+    if axisLabels == True and mesh.dim() == 2:
+
+        try:
+            pg.viewer.mpl.adjustWorldAxes(ax, useDepth=min(mesh.boundaryMarkers()) < 0)
+        except BaseException:
+            pass
     else:
         pg.viewer.mpl.updateAxes(ax)
     pg.viewer.mpl.hold(val=lastHoldStatus)

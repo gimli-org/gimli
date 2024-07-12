@@ -44,7 +44,7 @@ def load(fileName, verbose=False, **kwargs):
     elif 'SIP-Quad' in firstLine:
         if verbose:
             pg.info("Reading SIP Quad file")
-        f, amp, phi, header = readFuchs3File(fileName, nfr=9, namp=10, nphi=11, 
+        f, amp, phi, header = readFuchs3File(fileName, nfr=9, namp=10, nphi=11,
                                              nk=7, verbose=verbose, **kwargs)
         phi *= -np.pi/180.
     elif 'SIP-Fuchs' in firstLine:
@@ -370,8 +370,8 @@ def readSIP256file(resfile, verbose=False):
             # search for two numbers (with .) without a space inbetween
             # variant 1: do it for every part
             for i, ss in enumerate(sline):
-                if re.search('\.20[01][0-9]', ss) is None:  # no date
-                    fd = re.search('\.[0-9-]*\.', ss)
+                if re.search(r'\.20[01][0-9]', ss) is None:  # no date
+                    fd = re.search(r'\.[0-9-]*\.', ss)
                     if fd:
                         if '-' in ss[1:]:
                             bpos = ss[1:].find('-') + 1
@@ -383,7 +383,7 @@ def readSIP256file(resfile, verbose=False):
                             sline.insert(i, ss[:bpos])
                             sline[i+1] = ss[bpos:]
                         # print(sline)
-                    fd = re.search('NaN[0-9-]*\.', ss)
+                    fd = re.search(r'NaN[0-9-]*\.', ss)
                     if fd:
                         if '-' in ss[1:]:
                             bpos = ss.find('-')

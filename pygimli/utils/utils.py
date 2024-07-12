@@ -12,22 +12,6 @@ import pygimli as pg
 # scooby is a soft dependency.
 try:
     from scooby import Report as ScoobyReport
-    def platform():
-        import platform
-        return platform
-    def _system(self):
-        s = platform().system()
-        if s == 'Linux':
-            s += f' ({platform().freedesktop_os_release()["NAME"]} ' +\
-                 f'{platform().freedesktop_os_release()["VERSION_ID"]})'
-        elif s == 'Windows':
-            # parse platform().win32_ver()
-            pass
-        elif s == 'Mac':
-            # parse platform().mac_ver()
-            pass
-        return s
-    setattr(ScoobyReport, 'system', property(_system))
 except ImportError:
     class ScoobyReport:
         """Local scooby reporting class."""

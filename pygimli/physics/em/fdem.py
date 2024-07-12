@@ -3,9 +3,6 @@
 """Frequency Domain Electromagnetics (FDEM) functions and class."""
 
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import pygimli as pg
 from pygimli.viewer.mpl import show1dmodel, drawModel1D
@@ -25,6 +22,7 @@ rBKS60 = np.array([7.918, 7.918, 7.957, 8.033, 7.906, 9.042])
 
 def cmapDAERO():
     """Standardized colormap from A-AERO projects (purple=0.3 to red=500)."""
+    from matplotlib.colors import LinearSegmentedColormap
     CMY = np.array([
         [127, 255, 31], [111, 255, 47], [95, 255, 63], [79, 255, 79],
         [63, 255, 95], [47, 255, 111], [31, 255, 127], [16, 255, 159],
@@ -41,6 +39,8 @@ def cmapDAERO():
 def xfplot(ax, DATA, x, freq, everyx=5, orientation='horizontal', aspect=30,
            label=None, cMap="Spectral_r"):
     """Plots a matrix according to x and frequencies."""
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+
     nt = list(range(0, len(x), everyx))
     im = ax.matshow(DATA.T, interpolation='nearest', cmap=cMap)
     ax.set_ylim(ax.get_ylim()[::-1])
@@ -54,7 +54,7 @@ def xfplot(ax, DATA, x, freq, everyx=5, orientation='horizontal', aspect=30,
     ax.set_aspect("auto")
     divider = make_axes_locatable(ax)
     cax = divider.append_axes('bottom', size='5%', pad=0.3)
-    plt.colorbar(im, ax=ax, cax=cax, orientation=orientation, aspect=aspect)
+    pg.plt.colorbar(im, ax=ax, cax=cax, orientation=orientation, aspect=aspect)
     if label is not None:
         cax.set_title(label)
     # plt.colorbar(im, ax=ax, orientation=orientation, aspect=aspect)
@@ -592,7 +592,7 @@ class FDEM():
         fr = self.freq()
 
         if ax is None:
-            _, ax = plt.subplots(nrows=1, ncols=nv)
+            _, ax = pg.plt.subplots(nrows=1, ncols=nv)
             ipax = ax[-2]
         else:
             ipax = ax[0]
@@ -626,7 +626,7 @@ class FDEM():
         opax = None
 
         if ax is None:
-            opax = plt.subplot(1, nv, nv)
+            opax = pg.plt.subplot(1, nv, nv)
         else:
             opax = ax[-1]
 
@@ -651,47 +651,47 @@ class FDEM():
         # plt.subplot(1, nv, 1)
         return ax
 
-    def plotDataOld(self, xpos=0, response=None,
-                    marker='bo-', rmarker='rx-', clf=True):
-        """Plot data as curves at given position."""
-        ip, op = self.selectData(xpos)
-        fr = self.freq()
+    # def plotDataOld(self, xpos=0, response=None,
+    #                 marker='bo-', rmarker='rx-', clf=True):
+    #     """Plot data as curves at given position."""
+    #     ip, op = self.selectData(xpos)
+    #     fr = self.freq()
 
-        if clf:
-            plt.clf()
+    #     if clf:
+    #         plt.clf()
 
-        plt.subplot(121)
-        plt.semilogy(ip, fr, marker, label='obs')
-        plt.axis('tight')
-        plt.grid(True)
-        plt.xlabel('inphase [%]')
-        plt.ylabel('f [Hz]')
+    #     plt.subplot(121)
+    #     plt.semilogy(ip, fr, marker, label='obs')
+    #     plt.axis('tight')
+    #     plt.grid(True)
+    #     plt.xlabel('inphase [%]')
+    #     plt.ylabel('f [Hz]')
 
-        if response is not None:
-            rip = np.asarray(response)[:len(ip)]
-            plt.semilogy(rip, fr, rmarker, label='syn')
+    #     if response is not None:
+    #         rip = np.asarray(response)[:len(ip)]
+    #         plt.semilogy(rip, fr, rmarker, label='syn')
 
-        plt.legend(loc='best')
+    #     plt.legend(loc='best')
 
-        plt.subplot(122)
-        plt.semilogy(op, fr, marker, label='obs')
+    #     plt.subplot(122)
+    #     plt.semilogy(op, fr, marker, label='obs')
 
-        if response is not None:
-            rop = np.asarray(response)[len(ip):]
-            plt.semilogy(rop, fr, rmarker, label='syn')
+    #     if response is not None:
+    #         rop = np.asarray(response)[len(ip):]
+    #         plt.semilogy(rop, fr, rmarker, label='syn')
 
-        plt.axis('tight')
-        plt.grid(True)
-        plt.xlabel('outphase [%]')
-        plt.ylabel('f [Hz]')
-        plt.legend(loc='best')
-        plt.show()
+    #     plt.axis('tight')
+    #     plt.grid(True)
+    #     plt.xlabel('outphase [%]')
+    #     plt.ylabel('f [Hz]')
+    #     plt.legend(loc='best')
+    #     plt.show()
 
-        return
+    #     return
 
     def showModelAndData(self, model, xpos=0, response=None, figsize=(8, 6)):
         """Show both model and data with response in subfigures."""
-        fig, ax = plt.subplots(1, 3, figsize=figsize)
+        fig, ax = pg.plt.subplots(1, 3, figsize=figsize)
 
         model = np.asarray(model)
         nlay = int((len(model) + 1) / 2)
@@ -719,7 +719,7 @@ class FDEM():
         if everyx is None:
             everyx = len(self.x) // 10
 
-        _, ax = plt.subplots(ncols=1, nrows=nr, figsize=figsize)
+        _, ax = pg.plt.subplots(ncols=1, nrows=nr, figsize=figsize)
         xfplot(ax[0], self.IP[:, self.activeFreq], self.x, freq,
                orientation=orientation, aspect=aspect, everyx=everyx,
                label='inphase percent')
@@ -736,10 +736,10 @@ class FDEM():
             ax[2].set_title('error percent')
 
         if outname is not None:
-            plt.savefig(outname)
+            pg.plt.savefig(outname)
 
         if show:
-            plt.show()
+            pg.plt.show()
 
         return ax
 
@@ -856,4 +856,4 @@ if __name__ == "__main__":
     INV = fdem.inv2D(options.nlay)
     INV.run()
 #    fig.savefig(name+str(xpos)+'-result.pdf', bbox_inches='tight')
-    plt.show()
+    pg.plt.show()
