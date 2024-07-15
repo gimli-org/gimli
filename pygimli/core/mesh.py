@@ -7,7 +7,7 @@ from math import ceil
 from .core import (cat, HexahedronShape, Line, RSparseMapMatrix,
                    Mesh, MeshEntity, Node, Boundary, RVector, Pos,
                    PolygonFace, TetrahedronShape, TriangleFace)
-                   
+
 from .logger import deprecated, error, info, warn, critical, _r
 
 from .base import isScalar, isArray, isPos, isR3Array, isComplex
@@ -45,7 +45,7 @@ def __Mesh_getData__(self):
         # print(k, v)
         if '_y' in k or '_z' in k:
             continue
-        
+
         name = k
 
         if '_x' in name:
@@ -63,7 +63,7 @@ def __Mesh_getData__(self):
             #print('\t', name, ret[name].shape)
         else:
             ret[name] = v
-        
+
     for k , v in ret.items():
         ret[k] = np.asarray(v)
         # print(k, ret[k].shape)
@@ -207,7 +207,7 @@ def __Mesh_setVal(self, key, val):
             return
             print('key:', key)
             print('val:', val)
-            
+
             try:
                 print(val.shape)
             except:
@@ -271,21 +271,9 @@ def __MeshBoundingBox__(self):
 Mesh.bb = __MeshBoundingBox__
 
 
-def __MeshGetCellMarker__(self):
-    deprecated(msg='Mesh::cellMarker()', hint='Mesh::cellMarkers()')
-    return self.cellMarkers()
-
-
-def __MeshSetCellMarker__(self, m):
-    deprecated(msg='Mesh::setCellMarker()', hint='Mesh::setCellMarkers()')
-    return self.setCellMarkers(m)
-
-
 def __MeshHoleMarkers__(self):
     return self.holeMarker()
 
-Mesh.cellMarker = __MeshGetCellMarker__
-Mesh.setCellMarker = __MeshSetCellMarker__
 Mesh.holeMarkers = __MeshHoleMarkers__
 
 
@@ -445,7 +433,7 @@ def __Boundary_outside__(self):
 Boundary.outside = __Boundary_outside__
 
 def __Node_on_boundary(self, outside=True):
-    """Is the node is on an boundary (i.e. marker != 0). 
+    """Is the node is on an boundary (i.e. marker != 0).
     Or is on and outside boundary-"""
     for b in self.boundSet():
         if outside is True and b.outside():
@@ -555,8 +543,8 @@ Mesh.findPaths = __Mesh_findPaths__
 def __Mesh_cutBoundary__(self, marker, boundaryMarker=None):
     """Cut the mesh along a given inner boundary.
 
-    Cut the mesh along a given boundary and convert this inner boundary to an outer. 
-    There will be new nodes to cut the connection between neighbouring cells. 
+    Cut the mesh along a given boundary and convert this inner boundary to an outer.
+    There will be new nodes to cut the connection between neighbouring cells.
     The new boundary can have an optional boundaryMarker.
 
     Restrictions
@@ -706,14 +694,14 @@ def __Mesh_cutBoundary__(self, marker, boundaryMarker=None):
             for _b in nA1.boundSet():
                 if _b.marker() > 0 and _b.marker() != marker:
                     onOtherBoundary = True
-            
+
             if onOtherBoundary == False:
                 # there is no other (or outer) boundary on the first node so we skip them
                 newNodes.append(nA1)
                 b.setRightCell(None)
                 rightCells.append(rC)
                 continue
-            
+
         nA2 = mesh.createNode(nA1.pos(), nA1.marker())
         newNodes.append(nA2)
 

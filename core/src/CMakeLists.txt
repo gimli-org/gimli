@@ -55,7 +55,7 @@ if (PYTHON_FOUND)
 
     # needed since the later doesnt seems to work
     target_link_libraries(${libgimli_TARGET_NAME} ${Python_LIBRARIES})
-    
+
     if (Python_Development.Module_FOUND)
         target_link_libraries(${libgimli_TARGET_NAME} Python::Module)
     else()

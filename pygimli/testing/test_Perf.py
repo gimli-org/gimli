@@ -65,7 +65,18 @@ class TestPerf(unittest.TestCase):
         print((sum(pg1 * np1)))
 
 
-    def test_tictoc(self):
+    def test_tictoc1(self):
+        """Test core tic toc.
+        """
+        pg.tic()
+        time.sleep(0.1)
+        print(pg.dur())
+
+        time.sleep(0.1)
+        pg.toc()
+        print(pg.timings())
+
+    def test_tictoc2(self):
         """Test core TicToc with global trace.
         """
         with pg.tictoc('foo1'):

@@ -41,9 +41,9 @@ class TestMisc(unittest.TestCase):
         f.add(pg.trans.TransLog(), 5)
         f.add(pg.trans.TransLog(), 5)
 
-        np.testing.assert_array_equal(f.at(0).fwd(np.ones(10)*10), 
+        np.testing.assert_array_equal(f.at(0).fwd(np.ones(10)*10),
                                       np.log(np.ones(10)*10))
-        np.testing.assert_array_equal(f.fwd(np.ones(10)*10), 
+        np.testing.assert_array_equal(f.fwd(np.ones(10)*10),
                                       np.log(np.ones(10)*10))
         # tm2 = pg.trans.TransLog()
         # tc.add(tm2, 5, 10)
@@ -64,10 +64,10 @@ class TestMisc(unittest.TestCase):
 
         data.markInvalid(pg.core.IndexArray(np.arange(5, dtype="long")))
         self.assertEqual(data['valid'], [0.0, 0.0, 0.0, 0.0, 0.0])
-        
+
         data.markValid(np.arange(5, dtype="long"))
         self.assertEqual(data['valid'], [1.0, 1.0, 1.0, 1.0, 1.0])
-        
+
         data.markInvalid(range(5))
         self.assertEqual(data['valid'], [0.0, 0.0, 0.0, 0.0, 0.0])
 
@@ -75,32 +75,34 @@ class TestMisc(unittest.TestCase):
 
         data.markValid(pg.Vector(x) > 2.0)
         self.assertEqual(data['valid'], [0.0, 0.0, 0.0, 1.0, 1.0])
-        
+
         data.markValid(pg.BVector(x < 2.0))
         self.assertEqual(data['valid'], [1.0, 1.0, 0.0, 1.0, 1.0])
 
         data.markInvalid(pg.find(x > 3.0))
         self.assertEqual(data['valid'], [1.0, 1.0, 0.0, 1.0, 0.0])
-        
+
         data.markInvalid(x < 1.0)
         self.assertEqual(data['valid'], [0.0, 1.0, 0.0, 1.0, 0.0])
 
+
     def test_DataContainerSensors(self):
         data = pg.DataContainer()
-        
+
         sensors = [[x, 0.0] for x in range(5)]
         data.setSensorPositions(sensors)
         data.setSensorPositions(data.sensors()[::-1])
-        
+
         self.assertEqual(data.sensor(0), [4., 0.0, 0.0])
         self.assertEqual(data.sensor(4), [0., 0.0, 0.0])
+
 
     def test_DataContainerIndex(self):
         data = pg.DataContainer()
         data['b'] = np.ones(2) * 3.14
         np.testing.assert_array_equal(data['b'], np.ones(2)*3.14)
         self.assertEqual(type(data['b']), type(pg.Vector()))
-        
+
         data['b'][0] = 1.0
         self.assertEqual(data['b'][0], 1.0)
 
@@ -110,16 +112,18 @@ class TestMisc(unittest.TestCase):
         self.assertEqual(type(data['a']), type(np.array(1)))
         self.assertEqual(data['a'].dtype, 'int')
         data['a'][0] = 1.0 # will not work for sensorIndex until its changed in the datacontainer as IndexArray
-    
+
         data['a'] = np.ones(2)*1.2
         np.testing.assert_array_equal(data['a'], np.ones(2))
         self.assertEqual(type(data['a']), type(np.array(1)))
         self.assertEqual(data['a'].dtype, 'int')
 
+
     def test_Operators(self):
         t = pg.Vector(10, 1.0)
         self.assertEqual(len(t == 1.0), len(t > 0))
         self.assertEqual(len(t == 1.0), len(t == 1))
+
 
     def test_Int64Problem(self):
         data = pg.DataContainerERT()
@@ -146,6 +150,7 @@ class TestMisc(unittest.TestCase):
         self.assertEqual(sum(data['m']), 9*2)
         self.assertEqual(sum(data['n']), 9*3)
 
+
     def test_PosConstMember(self):
         p1 = pg.Pos(1.0, 0.0, 0.0)
         p2 = pg.Pos(0.0, 1.0, 0.0)
@@ -153,12 +158,13 @@ class TestMisc(unittest.TestCase):
         p3 = p1.cross(p2)
         self.assertEqual(p3, pg.Pos(0.0, 0.0, 1.0))
 
+
     def test_Hash(self):
         v1 = pg.Vector(10, 2.)
         v2 = pg.Vector(10, 2.)
 
         self.assertFalse(pg.Vector(1, 0.).hash() == pg.Vector(2, 0.).hash())
-        
+
         self.assertEqual(v1.hash(), v2.hash())
         self.assertEqual(hash(v1), hash(v2))
         v2[2] = 3.
@@ -167,10 +173,11 @@ class TestMisc(unittest.TestCase):
         self.assertTrue(v1.hash() == v2.hash())
         self.assertEqual(v1.hash(), pg.Vector(10, 2.).hash())
 
+
     def test_HashData(self):
         d1 = pg.DataContainerERT()
         d2 = pg.DataContainerERT()
-        
+
         self.assertEqual(d1.hash(), d2.hash())
         d1.createSensor([1.0, 0.0])
         d2.createSensor([2.0, 0.0])
@@ -191,6 +198,7 @@ class TestMisc(unittest.TestCase):
         d2['a'][3] = 1.0
         self.assertTrue(d1.hash() == d2.hash())
 
+
     def test_HashMesh(self):
         m1 = pg.Mesh()
         m2 = pg.Mesh()
@@ -203,6 +211,7 @@ class TestMisc(unittest.TestCase):
         m2.node(0).setPos([1.0, 0.0])
         self.assertTrue(m1.hash() == m2.hash())
 
+
     def test_Cache(self):
 
         @pg.cache
@@ -212,14 +221,34 @@ class TestMisc(unittest.TestCase):
         c_ = c1(10)
 
 
-    # does not work .. need time to implement          
+    def test_Pickle(self):
+        """ Test pickling of some selected classes.
+        """
+        import pickle
+
+        a = pg.core.FEAFunction(1, 3)
+        p = pickle.dumps(a)
+        b = pickle.loads(p)
+        self.assertEqual(a.getEvalOrder(), a.getEvalOrder())
+
+        a = pg.meshtools.createGrid(3)
+        p = pickle.dumps(a)
+        b = pickle.loads(p)
+        self.assertEqual(a.hash(), b.hash())
+
+        a = pg.Pos(1, 2, 3)
+        p = pickle.dumps(a)
+        b = pickle.loads(p)
+        self.assertEqual(a.z(), b.z())
+
+    # does not work .. need time to implement
     # def test_DataContainerWrite(self):
     #     data = pg.DataContainer()
     #     data.save('test.dat')
     #     fi = open('test2.dat', 'w')
     #     data.write(fi)
     #     fi.close()
-    
+
     def test_DataTypes(self):
         pg.core.showSizes()
 

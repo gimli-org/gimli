@@ -163,6 +163,23 @@ protected:
 #define WITH_TICTOC(name) TicToc tictoc_name(name);
 
 
+class PickleTest{
+public:
+    PickleTest();
+
+    ~PickleTest();
+
+    std::string serialize();
+
+    void deserialize(const std::string & s);
+
+    void setName(const std::string &n );
+    std::string name() const { return this->_name; }
+
+protected:
+    std::string _name;
+};
+
 } // namespace GIMLI
 
 #endif // _GIMLI_STOPWATCH__H

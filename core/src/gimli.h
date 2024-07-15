@@ -335,13 +335,13 @@ template < class ValueType > class BlockMatrix;
 template < class ValueType > class Matrix3;
 template < class ValueType > class Vector;
 
-typedef Vector < double > RVector;
-typedef Vector < Complex > CVector;
-typedef Vector < Pos > PosVector;
-typedef PosVector R3Vector;
-typedef Vector < bool > BVector;
-typedef Vector < SIndex > IVector;
-typedef Vector < Index > IndexArray;
+typedef Vector < bool >     BVector;
+typedef Vector < SIndex >   IVector;
+typedef Vector < Index >    IndexArray;
+typedef Vector < double >   RVector;
+typedef Vector < Complex >  CVector;
+typedef Vector < Pos >      PosVector;
+typedef PosVector           R3Vector;
 
 typedef std::vector < SIndex > SIndexArray;
 typedef std::vector< GIMLI::Vector< double > >      stdVectorRVector;
@@ -393,11 +393,19 @@ DLLEXPORT bool debug();
 DLLEXPORT void setDeepDebug(int level);
 DLLEXPORT int deepDebug();
 
-/*! Set maximum amount of threads used by thirdparty software (e.g. openblas).
-Default is number of CPU. */
+/*! Set maximum amount of threads used by gimli and thirdparty software
+(sets openblas and omp to nThreads too). Default is number min(8, CPU./2)
+*/
 DLLEXPORT void setThreadCount(Index nThreads);
 DLLEXPORT Index threadCount();
+DLLEXPORT void setOMPThreadCount(Index nThreads);
+DLLEXPORT Index getOMPThreadCount();
+DLLEXPORT void setBLASThreadCount(Index nThreads);
+DLLEXPORT Index getBLASThreadCount();
 DLLEXPORT void threadsInfo();
+
+DLLEXPORT void setUseOMP(bool o);
+DLLEXPORT bool useOMP();
 
 DLLEXPORT void setDisableCacheForDBG(bool c);
 DLLEXPORT bool disableCacheForDBG();

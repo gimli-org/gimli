@@ -256,7 +256,7 @@ def tic(msg=None, key=''):
     if msg:
         print(msg)
 
-    SWatches()['/'+key].start()
+    SWatches()['/' + key].start()
 
 
 def toc(msg=None, box=False, stop=False, reset=False, key=''):
@@ -282,7 +282,7 @@ def toc(msg=None, box=False, stop=False, reset=False, key=''):
         else:
             print(msg, end=' ')
 
-    seconds = dur(key='/' + key, stop=stop, reset=reset)
+    seconds = dur(key, stop=stop, reset=reset)
 
     ## refactor with prettyTime
     m, s = divmod(seconds, 60)
@@ -300,10 +300,10 @@ def toc(msg=None, box=False, stop=False, reset=False, key=''):
         time = "%d hours, %d minutes and %.2f" % (h, m, s)
     p = print if not box else boxprint
 
-    if len(SWatches().keys()):
-        p("Elapsed time ({0}) is {1} seconds.".format('/' + key, time))
+    if len(SWatches().keys()) and key != '':
+        p("Elapsed time ({0}) is {1} seconds.".format(key, time))
     else:
-        p("Elapsed time is {0} seconds.".format(time))
+        p(f"Elapsed time is {time} seconds.")
 
 
 def dur(key='', stop=False, reset=False):
@@ -423,7 +423,7 @@ def timings(name='/'):
 
     # if len(SWatches().items()) == 0:
     #     pg.error('')
-    #_g(SWatches().keys())
+    # _g(SWatches().keys())
     maxTime = 0
 
     if not name.startswith('/'):
@@ -436,21 +436,23 @@ def timings(name='/'):
             if k.startswith(name):
 
                 ts = s.stored()
-                # if len(ts) > 0:
-                #     sts = sum(ts)
-                maxTime = max(float(maxTime), sum(ts))
+                if len(ts) == 0:
+                    table.append([k, s.duration(), 1, s.duration(), '',None])
+                else:
+                    #     sts = sum(ts)
+                    maxTime = max(float(maxTime), sum(ts))
 
-                perc = 0
-                try:
-                    perc = int(sum(ts)/maxTime*100)
-                except ZeroDivisionError:
-                    pass
+                    perc = 0
+                    try:
+                        perc = int(sum(ts)/maxTime*100)
+                    except ZeroDivisionError:
+                        pass
 
-                table.append([k, np.mean(ts), len(ts), sum(ts),
-                    str(perc).rjust(3*(k.count('/')),'-'),
-                               None])
+                    table.append([k, np.mean(ts), len(ts), sum(ts),
+                        str(perc).rjust(3*(k.count('/')),'-'),
+                                None])
 
-                tree[k].data = sum(ts)
+                    tree[k].data = sum(ts)
 
                 # print(f'\t{k}: {pg.pf(sts)}s ({len(ts)} x {pg.pf(np.mean(ts)*1000)}ms)' )
 

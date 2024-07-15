@@ -25,6 +25,7 @@
 #include "sparsematrix.h"
 
 #include "integration.h"
+#include <omp.h>
 
 namespace GIMLI{
 
@@ -63,18 +64,18 @@ template < class ValueType >
 void _T_integrate_LF_PerNode(const ElementMatrixMap * self, const ValueType & f,
                              RVector & R, const double & alpha){
     ASSERT_VEC_SIZE(f, self->dofPerCoeff())
-    // __MS("** EMM.intLPerNode(A, ...)") 
+    // __MS("** EMM.intLPerNode(A, ...)")
     // assuming per node values
     for (auto &m : self->mats()){
         m.integrate_n(f, R, alpha);
     }
 }
 template < class ValueType >
-void _T_integrate_LF_PerNode(const ElementMatrixMap * self, const ValueType & f, 
+void _T_integrate_LF_PerNode(const ElementMatrixMap * self, const ValueType & f,
                              RVector & R, const RVector & alpha){
     ASSERT_EQUAL_SIZE(self->mats(), alpha)
     ASSERT_VEC_SIZE(f, self->dofPerCoeff())
-    // __MS("** EMM.intLPerNode(A, ...)") 
+    // __MS("** EMM.intLPerNode(A, ...)")
     // assuming per node values
     for (auto &m : self->mats()){
         m.integrate_n(f, R, alpha[m.entity()->id()]);
@@ -83,7 +84,7 @@ void _T_integrate_LF_PerNode(const ElementMatrixMap * self, const ValueType & f,
 
 template < class ValueType >
 void _T_integrate_LF_PerCell(const ElementMatrixMap * self,
-                             const ValueType & f, RVector & R, 
+                             const ValueType & f, RVector & R,
                              const double & alpha){
     ASSERT_NON_EMPTY(R)
     ASSERT_EQUAL_SIZE(self->mats(), f)
@@ -111,12 +112,12 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R) const {
     const ElementMatrixMap & A = *this;
 
     //__MS(&A, A.dofA(), A.dofB(), R.rows(), R.cols())
-    
+
     Stopwatch sw(true);
     if (R.rows() == A.dof() && R.cols() == A.dofB()){
         // assume R have already a valid pattern
         return ;
-    } 
+    }
     // maybe count dofs before
     std::vector < std::set< Index > > idxMap(A.dof());
     Index i = 0;
@@ -141,7 +142,7 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R) const {
         R.buildSparsityPattern(idxMap);
         // __MS("pattern A*A.T (build)", sw.duration(true))
     }
-    
+
     // __MS(R.values().size())
 }
 
@@ -174,7 +175,7 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R,
     for (auto &m : A.mats()){
         const IndexArray &a = m.rowIDs();
         const IndexArray &b = B.mats()[i].rowIDs();
-        
+
         for (Index k = 0; k < a.size(); k ++){
             for (Index l = 0; l < b.size(); l ++){
                 idxMap.at(a[k]).insert(b[l]);
@@ -198,7 +199,7 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R,
 template < class ValueType >
 void _T_integrateBLConst(const ElementMatrixMap & A,
                          const ElementMatrixMap & B,
-                         const ValueType & f, SparseMatrixBase & R, 
+                         const ValueType & f, SparseMatrixBase & R,
                          const double & scale){
 
     // __MS(f)
@@ -252,7 +253,7 @@ void _T_integrateBLConst(const ElementMatrixMap & A,
 template < class ValueType >
 void _T_integrateBLPerCell(const ElementMatrixMap & A,
                            const ElementMatrixMap & B,
-                           const ValueType & f, SparseMatrixBase & R, 
+                           const ValueType & f, SparseMatrixBase & R,
                            const double & scale){
 
 // __M
@@ -283,7 +284,7 @@ void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const { \
         GIMLI::mult(m, f, *ret.pMat(i)); \
         i++; \
     } \
-} 
+}
 DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(double)
 DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(Pos)
 DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(RSmallMatrix)
@@ -338,7 +339,7 @@ void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const {  \
         __MS(this->size(), f.size()) \
         THROW_TO_IMPL \
     } \
-} 
+}
 DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL(RVector)
 DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL(PosVector)
 DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL(std::vector< RSmallMatrix >)
@@ -356,7 +357,7 @@ void ElementMatrixMap::integrate_n(const A_TYPE & f,                           \
 void ElementMatrixMap::integrate_n(const A_TYPE & f,                           \
                                    RVector & R, const RVector & alpha) const { \
     _T_integrate_LF_PerNode(this, f, R, alpha);                                \
-}                                                               
+}
 DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_NODE_IMPL(RVector)
 DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_NODE_IMPL(PosVector)
 DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_NODE_IMPL(std::vector< RSmallMatrix >)
@@ -478,7 +479,7 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
     }
     if (B.size() == 1 && B.mats()[0].order() == 0){
         //** this is: A * const Space
-       
+
 
         ret.resize(this->size());
         ret.setDof(this->dof(), B.mats()[0].nCoeff() + B.mats()[0].dofOffset());
@@ -510,7 +511,7 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
     // __MS(A.size(), A.dofA(), A.dofB(), B.size(), B.dofA(), B.dofB())
     ret.resize(B.size());
     ret.setDof(A.dof(), B.dof());
-    
+
     Index i = 0;
     for (auto &m : this->mats()){
         GIMLI::dot(m, B.mats()[i], *ret.pMat(i));
@@ -577,7 +578,7 @@ void _T_assembleFConst(const ElementMatrixMap * self, const double & f,
 
 
 template < class ValueType, class RetType >
-void assembleFPerCellT_(const ElementMatrixMap * self, const ValueType & f, 
+void assembleFPerCellT_(const ElementMatrixMap * self, const ValueType & f,
                        RetType & R, const double & scale){
     ASSERT_NON_EMPTY(R)
     ASSERT_EQUAL_SIZE(self->mats(), f)
@@ -628,28 +629,31 @@ const std::vector< ElementMatrix < double > > & ElementMatrixMap::mats() const {
 }
 
 void ElementMatrixMap::collectQuadraturePoints() const {
-        
+    // FIXME: oscar-workspace/debug/segfault-omp.py
+    // __MS(this->quadrPnts_.size(), this->mats_.size(), threadCount())
+
     if (!this->mats_[0].valid()){
         log(Critical, "uninitialized element map matrix. ");
         return;
     }
+
     this->quadrPnts_.clear();
     this->quadrPnts_.resize(this->mats_.size());
 
-    #pragma omp parallel 
+    #pragma omp parallel if (useOMP())
     {
+// __MS(omp_get_thread_num())
 
         #pragma omp for schedule(runtime)
         for (auto &m: this->mats_){
             this->quadrPnts_[m.entity()->id()] = PosVector(m.x()->size());
         }
-
         // run with setenv omp_schedule “dynamic,5”
         //#pragma omp parallel for schedule(dynamic, 5)
         #pragma omp for schedule(runtime)
         for (auto &m: this->mats_){
             const auto &x = *m.x();
-            Index cId = m.entity()->id();
+            const Index cId = m.entity()->id();
 
             const auto &s = m.entity()->shape();
             const auto &N = ShapeFunctionCache::instance().shapeFunctions(s);
@@ -661,9 +665,11 @@ void ElementMatrixMap::collectQuadraturePoints() const {
             }
         }
     }
+
 }
 
 std::vector < PosVector > & ElementMatrixMap::quadraturePoints() const {
+
     if (disableCacheForDBG() || this->quadrPnts_.size() != this->mats_.size()){
         collectQuadraturePoints();
     }
@@ -755,7 +761,7 @@ void createUMap(const Mesh & mesh, Index order, ElementMatrixMap & ret,
     ret.setDofs(nCoeff, dofPerCoeff, dofOffset);
     ret.resize(mesh.cellCount());
 
-    #pragma omp parallel
+    #pragma omp parallel if (useOMP())
     { // omp paralell
 
         #pragma omp for schedule(runtime)
@@ -799,9 +805,9 @@ void createUMap0_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
     }
 
     Index dofPerCoeff(mesh.nodeCount());
-    
+
     ret.setDofs(nCoeff, dofPerCoeff, dofOffset);
-    
+
     if (disableCacheForDBG()) ret.clear();
     ret.resize(mesh.cellCount());
 }
@@ -812,7 +818,7 @@ void createUMap1_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
 
     Index dofPerCoeff(mesh.nodeCount());
 
-    #pragma omp parallel
+    #pragma omp parallel  if (useOMP())
     { // omp paralell
 
         #pragma omp for schedule(runtime)
@@ -827,7 +833,7 @@ void createUMap1_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
 
 void createUMap2_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
                 Index nCoeff, Index dofOffset){
-    #pragma omp parallel
+    #pragma omp parallel  if (useOMP())
     { // omp paralell
 
         #pragma omp for schedule(runtime)
@@ -836,7 +842,7 @@ void createUMap2_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
         }
 
     }  // omp paralell
-            
+
 }
 
 

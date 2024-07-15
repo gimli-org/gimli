@@ -14,7 +14,7 @@ except:
 
         def warn(self, *args):
             print(*args)
-        
+
         def error(self, *args):
             print(*args)
 
@@ -130,7 +130,7 @@ def setMemberFunctionCallPolicieByReturn(mb, MemberRetRef, callPolicie, verbose=
 
         if verbose is True:
             print(ref, len(memFuns))
-            
+
         for memFun in memFuns:
             memFun.call_policies = \
                 call_policies.return_value_policy(callPolicie)
@@ -278,7 +278,7 @@ def generate(defined_symbols, extraIncludes):
                                          indexing_suite_version=2,
                                          xml_generator_config=xml_generator_config
                                         )
-    
+
     logger.info("Reading of c++ sources done.")
 
     mb.classes().always_expose_using_scope = True
@@ -305,7 +305,7 @@ def generate(defined_symbols, extraIncludes):
     except BaseException as e:
         import traceback
         traceback.print_exc(file=sys.stdout)
-        
+
         pg.error(e)
         sys.exit()
 
@@ -328,6 +328,8 @@ def generate(defined_symbols, extraIncludes):
         'register_numpy_to_rdensematrix_conversion',
         'register_numpy_to_int32_conversion',
         'register_numpy_to_uint32_conversion',
+        'register_numpy_to_uint8_conversion',
+        'register_numpy_to_uchar_conversion',
     ]
 
     for converter in rvalue_converters:
@@ -493,18 +495,18 @@ def generate(defined_symbols, extraIncludes):
 
     for c in main_ns.free_functions():
         excludeIfInDecl(c, ex)
-        
+
     for c in main_ns.classes():
 
         if excludeIfInDecl(c, ex) is True:
             continue
-        
+
         for mem in c.constructors():
-            excludeIfInDecl(mem, ex)                
+            excludeIfInDecl(mem, ex)
 
         try:
             for mem in c.member_functions():
-                excludeIfInDecl(mem, ex)            
+                excludeIfInDecl(mem, ex)
         except:
             pass
 
@@ -521,7 +523,7 @@ def generate(defined_symbols, extraIncludes):
             ### exclude all callable
             ##########
             if "operator()" in mem.name:
-                
+
                 #print("Exclude operator: " + str(mem))
                 if not 'GIMLI::Trans' in str(mem):
                     logger.debug("Exclude callable for: " + str(mem))
@@ -530,7 +532,7 @@ def generate(defined_symbols, extraIncludes):
                     pass
                     #print("skipping to exclude: " + str(mem))
                     #exit()
-       
+
         # print('#'*100)
         # print(c, c.name)
         if c.name.startswith('Vector<unsigned long>'):
@@ -544,7 +546,7 @@ def generate(defined_symbols, extraIncludes):
 
         if c.name.startswith("Matrix<double>") or \
             c.name.startswith("DenseMatrix<double>"):
-            
+
             for mem in c.constructors():
                 pass
                 #print("\t constructors:", mem)
@@ -579,9 +581,10 @@ def generate(defined_symbols, extraIncludes):
     # , call_policies.reference_existing_object)
 
     setMemberFunctionCallPolicieByReturn(mb,
-        ['::std::string *', 'float *', 
+        ['::std::string *', 'float *',
         'double *', 'double const *',
          'int *',
+         'char *',
          'long *',
          'long int *',
          'long long int *',
@@ -593,6 +596,7 @@ def generate(defined_symbols, extraIncludes):
         call_policies.return_pointee_value)
 
     setMemberFunctionCallPolicieByReturn(mb, ['::std::string &',
+                                              'char &',
                                               'float &',
                                               'double &',
                                               'int &',
@@ -624,7 +628,7 @@ def generate(defined_symbols, extraIncludes):
                                               '::GIMLI::RSmallMatrix const &', #1
                                               '::GIMLI::RDenseMatrix &', #0
                                               '::GIMLI::RDenseMatrix const &', #0
-                                              ], 
+                                              ],
                                         call_policies.reference_existing_object, verbose=False)
 
 

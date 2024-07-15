@@ -23,6 +23,7 @@
 #include "meshentities.h"
 #include "node.h"
 #include "pos.h"
+#include "utils.h"
 
 #include <vector>
 #include <list>
@@ -245,13 +246,13 @@ public:
      * marker: 1,2 for: left, right.*/
     void createGrid(const RVector & x) { create1DGrid(x); }
 
-    /*! Create two dimensional grid. Boundaries on the domain border will 
+    /*! Create two dimensional grid. Boundaries on the domain border will
     get the markers: 1,2,3,4 for: left, right, bottom, top.*/
     void createGrid(const RVector & x, const RVector & y,
                     int markerType=0, bool worldBoundaryMarker=false) {
         create2DGrid(x, y, markerType, worldBoundaryMarker);
     }
-    /*! Create three dimensional grid. 
+    /*! Create three dimensional grid.
     Boundaries on the domain border will get the markers:
     1,2,3,4,5,6 for: left, right, bottom, top, front, back*/
     void createGrid(const RVector & x, const RVector & y, const RVector & z,
@@ -508,6 +509,16 @@ public:
      * We have to replace and test it with uint32 or uint16 */
     int saveBinary(const std::string & fileName) const;
 
+    /*! Serialize mesh into a string. Same structure like save.*/
+    //std::string serialize() const;
+    ByteBuffer serialize() const;
+    /*! Deserialize mesh from a string. Same like loading a mesh.*/
+    void deserialize(const ByteBuffer & m);
+
+    void writeToStream(std::ostream & out) const;
+
+    void readFromStream(std::istream & in);
+
     /*! Load Mesh from file and try to import fileformat regarding file suffix.
      * If createNeighborInfos is set, the mesh is checked for consistency and
      * missing boundaries will be created. */
@@ -708,9 +719,9 @@ public:
     void interpolationMatrix(const PosVector & q, RSparseMapMatrix & I);
 
     /*! Inplace version of \ref interpolationMatrix(const PosVector & q) */
-    void interpolationMatrix(const std::vector < PosVector > & q,   
+    void interpolationMatrix(const std::vector < PosVector > & q,
                              std::vector < RSparseMapMatrix > & I);
-    
+
 
     /*! Return the reference to the matrix for cell value to boundary value interpolation matrix. */
     RSparseMapMatrix & cellToBoundaryInterpolation() const;

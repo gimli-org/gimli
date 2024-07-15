@@ -231,4 +231,27 @@ TicToc::~TicToc(){
 }
 
 
+PickleTest::PickleTest(){
+    __MS("PickleTest()")
+}
+
+PickleTest::~PickleTest(){
+   __MS("~PickleTest()")
+}
+
+std::string PickleTest::serialize(){
+    __MS("PickleTest::serialize")
+    return this->name();
+}
+
+void PickleTest::deserialize(const std::string & s){
+    __MS("PickleTest::deserialize")
+    this->setName(s);
+}
+
+void PickleTest::setName(const std::string &n ){
+    this->_name = n;
+}
+
+
 } // namespace GIMLI

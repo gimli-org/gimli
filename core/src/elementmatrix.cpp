@@ -2519,7 +2519,7 @@ void mult(const ElementMatrix < double > & A, const FEAFunction & b,
     // __MS(b.valueSize())
 
     if (b.valueSize() == 1){
-        switch (b.evalOrder()){
+        switch (b.getEvalOrder()){
             case 0: // cell center
                 return mult(A, b.evalR1(A.entity()->center(), A.entity()), C);
                 break;
@@ -2533,10 +2533,10 @@ void mult(const ElementMatrix < double > & A, const FEAFunction & b,
             } break;
             default:
                 __M
-                log(Error, "Eval order = ", b.evalOrder(), " is not defined.");
+                log(Error, "Eval order = ", b.getEvalOrder(), " is not defined.");
         }
     } else if (b.valueSize() == 3){
-        switch (b.evalOrder()){
+        switch (b.getEvalOrder()){
             case 0:
                 return mult(A, b.evalR3(A.entity()->center(), A.entity()), C);
             case 1:
@@ -2549,10 +2549,10 @@ void mult(const ElementMatrix < double > & A, const FEAFunction & b,
             } break;
             default:
                 __M
-                log(Error, "Eval order = ", b.evalOrder(), " is not defined.");
+                log(Error, "Eval order = ", b.getEvalOrder(), " is not defined.");
         }
     } else {
-        switch (b.evalOrder()){
+        switch (b.getEvalOrder()){
             case 0:
                 return mult(A, b.evalRM(A.entity()->center(), A.entity()), C);
             case 1:
@@ -2565,7 +2565,7 @@ void mult(const ElementMatrix < double > & A, const FEAFunction & b,
             } break;
             default:
                 __M
-                log(Error, "Eval order = ", b.evalOrder(), " is not defined.");
+                log(Error, "Eval order = ", b.getEvalOrder(), " is not defined.");
         }
     }
 

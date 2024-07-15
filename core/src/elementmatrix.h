@@ -34,8 +34,8 @@ public:
     For vector field solution give a dof, means be the number of nodes of the current mesh. */
     ElementMatrix(Index dof=0);
 
-    ~ElementMatrix() { 
-        // __MS("~EM", this); 
+    ~ElementMatrix() {
+        // __MS("~EM", this);
     }
 
     /*! Assignment operator.*/
@@ -385,7 +385,7 @@ public:
 
     /*! Do not use directly without resize and care! */
     void fillMatX_U_(bool sum=false);
-    
+
     /*! Set const reference to the current entity.*/
     void setEntity(const MeshEntity & ent) { _ent = &ent; }
 
@@ -436,7 +436,7 @@ public:
     #define DEFINE_INTEGRATOR_LF(A_TYPE) \
         /*! Integrate linear form: r = \int_entity this * f \d entity \
         with r = RVector(final form) and f = A_TYPE */ \
-        void integrate(A_TYPE f, RVector & r, double scale) const; 
+        void integrate(A_TYPE f, RVector & r, double scale) const;
     DEFINE_INTEGRATOR_LF(double)   // const scalar
     DEFINE_INTEGRATOR_LF(const RSmallMatrix  &)  // const Matrix
     DEFINE_INTEGRATOR_LF(const RVector &)  // scalar for each quadr
@@ -449,20 +449,20 @@ public:
     #define DEFINE_INTEGRATOR_LF_N(A_TYPE) \
         /*! Integrate linear form: r = \int_entity this * f \d entity \
         with r = RVector(final form) and f = A_TYPE(NodeCount())*/ \
-        void integrate_n(A_TYPE f, RVector & r, double scale) const; 
+        void integrate_n(A_TYPE f, RVector & r, double scale) const;
     DEFINE_INTEGRATOR_LF_N(const RVector &)                  // scalar for each node
     DEFINE_INTEGRATOR_LF_N(const PosVector &)
     DEFINE_INTEGRATOR_LF_N(const std::vector< PosVector > &)
-    DEFINE_INTEGRATOR_LF_N(const std::vector< RVector  > &) 
-    DEFINE_INTEGRATOR_LF_N(const std::vector< RSmallMatrix  > &)         
-    DEFINE_INTEGRATOR_LF_N(const std::vector< std::vector< RSmallMatrix > > &) 
+    DEFINE_INTEGRATOR_LF_N(const std::vector< RVector  > &)
+    DEFINE_INTEGRATOR_LF_N(const std::vector< RSmallMatrix  > &)
+    DEFINE_INTEGRATOR_LF_N(const std::vector< std::vector< RSmallMatrix > > &)
     #undef DEFINE_INTEGRATOR_LF_N
 
     #define DEFINE_INTEGRATOR_BF(A_TYPE) \
         /*! Integrate bilinear form A = \int_mesh this * f * R \d entity \
         with A = SparseMatrix(final form, final form) and f = A_TYPE */ \
         void integrate(const ElementMatrix < double > & R, \
-                       A_TYPE f, SparseMatrixBase & A, double scale) const; 
+                       A_TYPE f, SparseMatrixBase & A, double scale) const;
     DEFINE_INTEGRATOR_BF(double)   // const scalar
     DEFINE_INTEGRATOR_BF(const RSmallMatrix  &)  // const Matrix
     DEFINE_INTEGRATOR_BF(const RVector &)  // scalar for each quadr
@@ -611,13 +611,13 @@ DEFINE_DOT_MULT(const Pos &)        // vector per cell .. check Pos before RVect
 DEFINE_DOT_MULT(const PosVector &)  // vector per quad
 DEFINE_DOT_MULT(const RSmallMatrix  &) // matrix per cell
 DEFINE_DOT_MULT(const std::vector < RSmallMatrix  > &) // matrix per quad
-DEFINE_DOT_MULT(const FEAFunction &)  // aribrary function 
+DEFINE_DOT_MULT(const FEAFunction &)  // aribrary function
 #undef DEFINE_DOT_MULT
 
 #define DEFINE_DOT_MULT(A_TYPE) \
 DLLEXPORT void mult_n(const ElementMatrix < double > & A, \
                       A_TYPE b, \
-                      ElementMatrix < double > & C); 
+                      ElementMatrix < double > & C);
 DEFINE_DOT_MULT(const RVector &)    // scalar per quad
 DEFINE_DOT_MULT(const PosVector &)    // scalar per quad
 DEFINE_DOT_MULT(const std::vector < RVector > &)    // scalar per quad
@@ -628,30 +628,30 @@ DEFINE_DOT_MULT(const std::vector < std::vector < RSmallMatrix  > > &) // matrix
 
 #define DEFINE_INTEGRATOR_LF_N(A_TYPE) \
 template < > DLLEXPORT void ElementMatrix < double >:: \
-    integrate_n(A_TYPE f, RVector & r, double scale) const; 
-DEFINE_INTEGRATOR_LF_N(const RVector &)                 
-DEFINE_INTEGRATOR_LF_N(const PosVector &) 
+    integrate_n(A_TYPE f, RVector & r, double scale) const;
+DEFINE_INTEGRATOR_LF_N(const RVector &)
+DEFINE_INTEGRATOR_LF_N(const PosVector &)
 DEFINE_INTEGRATOR_LF_N(const std::vector< PosVector > &)
-DEFINE_INTEGRATOR_LF_N(const std::vector< RVector  > &) 
-DEFINE_INTEGRATOR_LF_N(const std::vector< RSmallMatrix  > &)         
-DEFINE_INTEGRATOR_LF_N(const std::vector< std::vector< RSmallMatrix > > &) 
+DEFINE_INTEGRATOR_LF_N(const std::vector< RVector  > &)
+DEFINE_INTEGRATOR_LF_N(const std::vector< RSmallMatrix  > &)
+DEFINE_INTEGRATOR_LF_N(const std::vector< std::vector< RSmallMatrix > > &)
 #undef DEFINE_INTEGRATOR_LF_N
 
 
 // Special declares to handle ambiguities for the python binding
 /*! scalar per quadrature point */
-DLLEXPORT void mult_s_q(const ElementMatrix < double > & A, 
+DLLEXPORT void mult_s_q(const ElementMatrix < double > & A,
                         const RVector & b,
                         ElementMatrix < double > & C);
-                        
+
 /*! vector per quadrature */
-DLLEXPORT inline void mult_v_q(const ElementMatrix < double > & A, 
+DLLEXPORT inline void mult_v_q(const ElementMatrix < double > & A,
                                const PosVector & b,
                                ElementMatrix < double > & C){
     mult(A, b, C);
 }
 /*! scalar per node */
-DLLEXPORT void mult_s_n(const ElementMatrix < double > & A, 
+DLLEXPORT void mult_s_n(const ElementMatrix < double > & A,
                         const RVector & b,
                         ElementMatrix < double > & C);
 
@@ -758,8 +758,8 @@ class DLLEXPORT FEAFunction {
     // evalOrder == 2: at Quads (default and fallback)
 
 public:
-    FEAFunction(Index valueSize)
-        : _valueSize(valueSize), _evalOnCellCenter(false), _evalOrder(2){ }
+    FEAFunction(Index valueSize=1, Index evalOrder=2)
+        : _valueSize(valueSize), _evalOrder(evalOrder){ }
 
     virtual ~FEAFunction() { }
 
@@ -782,21 +782,14 @@ public:
     /*!Set expected value size for evaluation */
     void setValueSize(Index s) { _valueSize = s; }
 
-    /*!Return if the function is marked for value evaluation on cell centers or quadrature points. */
-    bool evalOnCellCenter() const { return _evalOnCellCenter; }
-
-    /*!Mark the function to evaluate on cell centers instead of quadrature points. */
-    void setEvalOnCellCenter(bool e) { _evalOnCellCenter = e; }
-
-    /*! Set evaluation order, i.e., mark the function to be evaluatated 
+    /*! Set evaluation order, i.e., mark the function to be evaluatated
     on cell centers(2), on nodes(1) or at quadrature points (2). */
     inline void setEvalOrder(Index o) { this->_evalOrder = o; }
     /*! Get evaluation order. */
-    inline Index evalOrder() const { return this->_evalOrder; }
+    inline Index getEvalOrder() const { return this->_evalOrder; }
 
 protected:
     Index _valueSize;
-    bool _evalOnCellCenter;
     Index _evalOrder;
 };
 

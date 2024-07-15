@@ -130,6 +130,7 @@ namespace GIMLI{
 #include "trans.h"
 #include "triangleWrapper.h"
 #include "ttdijkstramodelling.h"
+#include "utils.h"
 #include "vector.h"
 #include "vectortemplates.h"
 #include "bert/bert.h"
@@ -323,8 +324,6 @@ DEFINE_COMPARE_OPERATOR__(==)
 DEFINE_COMPARE_OPERATOR__(!=)
 DEFINE_COMPARE_OPERATOR__(>)
 #undef DEFINE_COMPARE_OPERATOR__
-
-
 
     extern template class Vector< bool >;
     extern template class Vector< double >;
@@ -523,11 +522,13 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     void test_Mv_sv(RVector & rhs, const GIMLI::RSparseMapMatrix & M, const RVector & v1,
                    const double s, const RVector & v2);
 
-//     inline void ___instantiation___(){
+
+// inline void ___instantiation___(){
 //         sizeof(bool);
 //         sizeof(bool *);
 //         sizeof(bool &);
-//         sizeof(char);
+    //   sizeof(uint8);
+    //   sizeof(char);
 //         sizeof(char *);
 //         sizeof(char &);
 //         sizeof(false);
@@ -566,7 +567,7 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
 // 		sizeof(::GIMLI::IndexArray *);
 // 		sizeof(::GIMLI::IndexArray &);
 // 		sizeof(::GIMLI::IndexArray);
-//     }
+//}
 
     /*! Temporary workaround until there is as solution for
         http://www.mail-archive.com/cplusplus-sig@python.org/msg00333.html/
@@ -594,6 +595,7 @@ namespace pyplusplus{ namespace aliases{
     typedef GIMLI::Vector< GIMLI::SIndex >               IVector;
     typedef GIMLI::Vector< GIMLI::Index >                IndexArray;
     typedef GIMLI::Vector< Complex >                     CVector;
+    typedef GIMLI::Vector< unsigned char >               ByteVector;
 
     typedef GIMLI::VectorIterator< bool >                BVectorIter;
     typedef GIMLI::VectorIterator< double >              RVectorIter;
@@ -651,7 +653,7 @@ namespace pyplusplus{ namespace aliases{
     typedef std::vector< int >                          stdVectorI;
     typedef std::vector< GIMLI::SIndex >                stdVectorSIndex;
     typedef std::vector< GIMLI::Index >                 stdVectorIndex;
-
+    typedef std::vector< GIMLI::Pos >                   stdVectorPos;
     //typedef std::vector< long int >                     stdVectorLI;
     //typedef std::vector< double >                       stdVectorR;
     //typedef std::vector< std::complex < double > >      stdVectorC;

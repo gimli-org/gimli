@@ -103,7 +103,7 @@ void Mesh::copy_(const Mesh & mesh){
     for (Index i = 0; i < mesh.boundaryCount(); i ++){
         this->createBoundary(mesh.boundary(i));
     }
-    
+
     cellVector_.reserve(mesh.cellCount());
     for (Index i = 0; i < mesh.cellCount(); i ++){
         this->createCell(mesh.cell(i));
@@ -180,7 +180,7 @@ Node * Mesh::createNodeGC_(const RVector3 & pos, int marker){
         Index oldCount = this->nodeCount();
         Node *n = this->createNodeWithCheck(pos);
         n->setMarker(marker);
-        
+
         if ((this->nodeCount() == oldCount)){
             if (n->state() == No) n->setState(Original);
         }
@@ -350,14 +350,14 @@ Boundary * Mesh::createBoundary(const Boundary & bound, bool check){
         const PolygonFace & f = dynamic_cast< const PolygonFace & >(bound);
 
         Boundary * bt = findBoundary(nodes);
-       
+
         if (bt && (bt->nodeCount() != bound.nodeCount())) {
             // exclude the check if all nodes of bound are a hole in b
             b = createBoundaryChecked_< PolygonFace >(nodes, bound.marker(), false);
         } else {
             b = createBoundaryChecked_< PolygonFace >(nodes, bound.marker(), check);
         }
-        
+
         for (Index i = 0; i < f.subfaceCount(); i ++ ){
             dynamic_cast< PolygonFace* >(b)->addSubface(
                 this->nodes(ids(f.subface(i))));
@@ -373,7 +373,7 @@ Boundary * Mesh::createBoundary(const Boundary & bound, bool check){
     for (Index j = 0; j < bound.secondaryNodes().size(); j ++){
         b->addSecondaryNode(& this->node(bound.secondaryNodes()[j]->id()));
     }
-    
+
     return b;
 }
 
@@ -549,7 +549,7 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
 
     std::vector < Node * > nodes(bound.nodeCount());
     bool isFreeFace = false; //** the new face is no subface
-    
+
     std::vector < Node * > oldNodes;
     std::vector < Node * > conNodes;
     std::vector < Node * > secNodes;
@@ -581,7 +581,7 @@ _D("new Node:", nodes[i]->id(), nodes[i]->state(), "Bounds:", nodes[i]->boundSet
             case NodeState::Connected:
                 conNodes.push_back(nodes[i]); break;
             case NodeState::Original:
-                oldNodes.push_back(nodes[i]); 
+                oldNodes.push_back(nodes[i]);
                 break;
 
         }
@@ -592,7 +592,7 @@ _D("new Node:", nodes[i]->id(), nodes[i]->state(), "Bounds:", nodes[i]->boundSet
     std::vector < Node * > subNodes; // nodes for the new subface
     if (bound.rtti() == MESH_POLYGON_FACE_RTTI && check == true){
 
-        _D("connectedNodes:", conNodes, 
+        _D("connectedNodes:", conNodes,
            "secondaryNodes:", secNodes,
            "origNodes:", oldNodes)
         _D("new face nodes:", nodes, "freeface:", isFreeFace)
@@ -617,13 +617,13 @@ _D("new Node:", nodes[i]->id(), nodes[i]->state(), "Bounds:", nodes[i]->boundSet
                 _D("Check connected parents candidates (",conParentCand.size(), ")..")
                 for (auto *b: conParentCand){
                     _D("\t Candidate:", b->id(), b->shape().plane())
-                    if (b->shape().plane().compare(bound.shape().plane(), 
+                    if (b->shape().plane().compare(bound.shape().plane(),
                                                    TOLERANCE, true)){
                         conParent = b;
                         _D("\t found connected parent:", b->id())
                         break;
                     }
-                }            
+                }
             }
 
             if (conNodes.size() && secNodes.size()){
@@ -659,7 +659,7 @@ _D("new Node:", nodes[i]->id(), nodes[i]->state(), "Bounds:", nodes[i]->boundSet
                         for (auto *n: oldNodes){
                             if (!conParent->shape().touch(n->pos())) {
                                 _D("node not on connected parent", n->id())
-                                isFreeFace = true; 
+                                isFreeFace = true;
                             }
                         }
                     }
@@ -691,12 +691,12 @@ _D("new Node:", nodes[i]->id(), nodes[i]->state(), "Bounds:", nodes[i]->boundSet
                 }
             }
         }
-        
+
         //** create new face
-        _D("Subface freeface:", isFreeFace, 
-                "subsNodes:", subNodes.size(), 
+        _D("Subface freeface:", isFreeFace,
+                "subsNodes:", subNodes.size(),
                 "nodes", nodes.size())
-        
+
         if (isFreeFace){
             ret = createBoundaryChecked_< PolygonFace >(nodes,
                                                         bound.marker(), check);
@@ -928,7 +928,7 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
         }
         if (refNode->cellSet().empty() && refNode->boundSet().empty()){
             std::cout << "Node: " << *refNode << std::endl;
-            
+
             throwError(WHERE_AM_I +
                        " no cells or boundaries for this node. This may be a corrupt mesh");
         }
@@ -938,13 +938,13 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
         // __MS(pos << " " << refNode->pos())
 
         if (!refNode->cellSet().empty()){
-                
+
             for (auto *c: refNode->cellSet()){
                 // std::cout << (*it)->id() << std::endl;
                 //** isInside useing shapefunctions only work for aligned dimensions
                 if (c->shape().isInside(pos, false)) return c;
             }
-        
+
             //         exportVTK("slopesearch");
             //         exit(0);
             cell = findCellBySlopeSearch_(pos, *refNode->cellSet().begin(),
@@ -1933,13 +1933,13 @@ void Mesh::create3DGrid(const RVector & x, const RVector & y, const RVector & z,
                     if (std::abs(boundary(i).norm()[0] + 1.0) < TOLERANCE)
                         boundary(i).setMarker(MARKER_BOUND_MIXED);
                     // Right
-                    else if (std::abs(boundary(i).norm()[0] - 1.0) < TOLERANCE) 
+                    else if (std::abs(boundary(i).norm()[0] - 1.0) < TOLERANCE)
                         boundary(i).setMarker(MARKER_BOUND_MIXED);
                     // Bottom
-                    else if (std::abs(boundary(i).norm()[2] + 1.0) < TOLERANCE) 
+                    else if (std::abs(boundary(i).norm()[2] + 1.0) < TOLERANCE)
                         boundary(i).setMarker(MARKER_BOUND_MIXED);
                     // Top
-                    else if (std::abs(boundary(i).norm()[2] - 1.0) < TOLERANCE) 
+                    else if (std::abs(boundary(i).norm()[2] - 1.0) < TOLERANCE)
                         boundary(i).setMarker(MARKER_BOUND_HOMOGEN_NEUMANN);
                     // Front
                     else if (std::abs(boundary(i).norm()[1] + 1.0) < TOLERANCE)
@@ -1950,22 +1950,22 @@ void Mesh::create3DGrid(const RVector & x, const RVector & y, const RVector & z,
 
                 } else {
                     // Left
-                    if (std::abs(boundary(i).norm()[0] + 1.0) < TOLERANCE) 
+                    if (std::abs(boundary(i).norm()[0] + 1.0) < TOLERANCE)
                         boundary(i).setMarker(1);
                     // Right
-                    else if (std::abs(boundary(i).norm()[0] - 1.0) < TOLERANCE) 
+                    else if (std::abs(boundary(i).norm()[0] - 1.0) < TOLERANCE)
                         boundary(i).setMarker(2);
                     // Bottom
-                    else if (std::abs(boundary(i).norm()[2] + 1.0) < TOLERANCE) 
+                    else if (std::abs(boundary(i).norm()[2] + 1.0) < TOLERANCE)
                         boundary(i).setMarker(3);
                     // Top
-                    else if (std::abs(boundary(i).norm()[2] - 1.0) < TOLERANCE) 
+                    else if (std::abs(boundary(i).norm()[2] - 1.0) < TOLERANCE)
                         boundary(i).setMarker(4);
                     // Front
-                    else if (std::abs(boundary(i).norm()[1] + 1.0) < TOLERANCE) 
+                    else if (std::abs(boundary(i).norm()[1] + 1.0) < TOLERANCE)
                         boundary(i).setMarker(5);
                     // Back
-                    else if (std::abs(boundary(i).norm()[1] - 1.0) < TOLERANCE) 
+                    else if (std::abs(boundary(i).norm()[1] - 1.0) < TOLERANCE)
                         boundary(i).setMarker(6);
                 }
             }
@@ -2532,7 +2532,7 @@ void Mesh::smooth(bool nodeMoving, bool edgeSliding, uint smoothFunction, uint s
 }
 
 void Mesh::fillKDTree_() const {
-    
+
     if (!tree_) tree_ = new KDTreeWrapper();
 
     if (tree_->size() != nodeCount(true)){
@@ -2540,9 +2540,9 @@ void Mesh::fillKDTree_() const {
         if (tree_->size() == 0){
             // for_each(nodeVector_.begin(), nodeVector_.end(), boost::bind(&KDTreeWrapper::insert, tree_, _1));
             // for_each(secNodeVector_.begin(), secNodeVector_.end(), boost::bind(&KDTreeWrapper::insert, tree_, _1));
-            for_each(nodeVector_.begin(), nodeVector_.end(), 
+            for_each(nodeVector_.begin(), nodeVector_.end(),
                      [&](Node * n){tree_->insert(n);});
-            for_each(secNodeVector_.begin(), secNodeVector_.end(), 
+            for_each(secNodeVector_.begin(), secNodeVector_.end(),
                      [&](Node * n){tree_->insert(n);});
 
             tree_->tree()->optimize();
@@ -2590,14 +2590,14 @@ void Mesh::interpolationMatrix(const PosVector & q, RSparseMapMatrix & I){
     }
 }
 
-void Mesh::interpolationMatrix(const std::vector < PosVector > & q,         
+void Mesh::interpolationMatrix(const std::vector < PosVector > & q,
                                std::vector < RSparseMapMatrix > & I){
     for (auto & qi: q){
         I.push_back(RSparseMapMatrix());
         interpolationMatrix(qi, I.back());
     }
 }
-    
+
 RSparseMapMatrix Mesh::interpolationMatrix(const PosVector & q){
     RSparseMapMatrix I;
     interpolationMatrix(q, I);

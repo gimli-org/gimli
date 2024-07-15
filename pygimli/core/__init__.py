@@ -611,7 +611,6 @@ pgcore.Mesh.__hash__ = pgcore.Mesh.hash
 # Iterator support for RVector allow to apply python build-ins
 ############################
 
-
 class VectorIter:
 
     def __init__(self, vec):
@@ -1129,16 +1128,48 @@ def toIVector(v):
     return ret
 
 
-# __catOrig__ = pgcore.cat
+############################
+# for pickleing
+############################
 
-# def __cat__(v1, v2):
-# print("mycat")
-# if isinstance(v1, ndarray) and isinstance(v2, ndarray):
-# return cat(RVector(v1), v2)
-# else:
-# return __catOrig__(v1, v2)
+def __ByteBuffer_setstate(self, state):
+    """Recover bytestream data from state['_bytestream_']"""
+    self.fill(state['_bytestream_'])
 
-# pgcore.cat = __cat__
+def __ByteBuffer_reduce(self):
+    """Create bytestream data"""
+    return (pgcore.ByteBuffer, (),
+        dict(_bytestream_=self.array()))
+
+pgcore.ByteBuffer.__setstate__ = __ByteBuffer_setstate
+pgcore.ByteBuffer.__reduce__ = __ByteBuffer_reduce
+
+
+def __FEAFunction_reduce(self):
+    return (pgcore.FEAFunction, (self.valueSize(), self.getEvalOrder()),
+                    )
+pgcore.FEAFunction.__reduce__ = __FEAFunction_reduce
+
+
+def __Pos_reduce(self):
+    return (pgcore.Pos, (self.x(), self.y(), self.z()),
+                    )
+pgcore.Pos.__reduce__ = __Pos_reduce
+
+
+def __enablePickle(cls):
+    """Enable pickling for classes that support serialization.
+    """
+    def _setstate(self, state):
+        self.deserialize(state['_bytestream_'])
+    def _reduce(self):
+        return (cls, (),
+                dict(_bytestream_=self.serialize()))
+
+    cls.__setstate__ = _setstate
+    cls.__reduce__ = _reduce
+
+__enablePickle(pgcore.Mesh)
 
 
 # DEPRECATED for backward compatibility should be removed

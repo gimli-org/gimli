@@ -49,26 +49,35 @@ static bool __GIMLI_DEBUG__ = false;
 static int __GIMLI_DEEP_DEBUG__ = 0;
 static int __GIMLI_NO_CBLAS__ = false;
 
+
 Index __setTC__(){
     // to close to number of cpu can bring significent shedular overhead
     int omp = getEnvironment("OMP_NUM_THREADS", -1, false);
+    // __MS("environment OMP_NUM_THREADS set")
     if (omp == -1){
-        omp_set_num_threads(min(8, numberOfCPU()-2));
+        setOMPThreadCount(min(8, numberOfCPU()-2));
     }
 
-    int tc = getEnvironment("OPENBLAS_NUM_THREADS", -1, false);
-
-    if (tc == -1){
-        tc = min(16, numberOfCPU()-2);
+    int obl = getEnvironment("OPENBLAS_NUM_THREADS", -1, false);
+    // __MS("environment OPENBLAS_NUM_THREADS set")
+    if (obl == -1){
+        setBLASThreadCount(min(8, numberOfCPU()-2));
     }
 
-    if (tc == -1) return 1;
-
-    setThreadCount(tc);
+    int tc = min(8, numberOfCPU()-2);
     return (Index)(tc);
 }
 
 static Index __GIMLI_THREADCOUNT__ = __setTC__();
+
+static Index __GIMLI_USE_OMP__ = 1;
+
+void setUseOMP(bool o){
+    __GIMLI_USE_OMP__ = o;
+}
+bool useOMP(){
+    return __GIMLI_USE_OMP__;
+}
 
 // //** end forward declaration
 // // static here gives every .cpp its own static bool
@@ -76,7 +85,6 @@ static Index __GIMLI_THREADCOUNT__ = __setTC__();
 // extern static bool __GIMLI_DEBUG__;
 
 std::string versionStr(){
-
     std::string vers(str(PACKAGE_NAME) + "-" + PACKAGE_VERSION);
 #if USE_EIGEN3
     vers += " (Eigen3)";
@@ -96,25 +104,40 @@ int deepDebug(){ return __GIMLI_DEEP_DEBUG__; }
 void setNoCBlas(bool s ){__GIMLI_NO_CBLAS__ = s;}
 bool noCBlas(){ return __GIMLI_NO_CBLAS__; }
 
-void setThreadCount(Index nThreads){
-    log(Debug, "Set amount of threads to " + str(nThreads));
-    omp_set_num_threads(nThreads);     
-    //OMP_NUM_THREADS
-    //omp_set_num_threads
+void setOMPThreadCount(Index nThreads){
+    log(Debug, "Set amount of OMP threads to " + str(nThreads));
+    omp_set_num_threads(nThreads);
+}
+Index getOMPThreadCount(){
+    return omp_get_num_threads();
+}
+void setBLASThreadCount(Index nThreads){
 
 #if OPENBLAS_CBLAS_FOUND
+    log(Debug, "Set amount of openblas threads to " + str(nThreads));
     openblas_set_num_threads(nThreads);
     //omp_set_num_threads
 #else
     log(Debug, "can't set openblas thread count. ");
 #endif
-
-    __GIMLI_THREADCOUNT__ = nThreads;
 }
-
+Index getBLASThreadCount(){
+#if OPENBLAS_CBLAS_FOUND
+    return openblas_get_num_threads();
+#else
+    log(Debug, "can't set openblas thread count. ");
+    return 0;
+#endif
+}
+void setThreadCount(Index nThreads){
+    __GIMLI_THREADCOUNT__ = nThreads;
+    setOMPThreadCount(nThreads);
+    setBLASThreadCount(nThreads);
+}
 Index threadCount(){
     return __GIMLI_THREADCOUNT__;
 }
+
 void threadsInfo(){
     // log(Info, "omp_in_parallel: " + str(omp_in_parallel()));
     // log(Info, "omp_get_num_procs: " + str(omp_get_num_procs()));
