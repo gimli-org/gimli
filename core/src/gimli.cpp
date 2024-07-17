@@ -146,6 +146,7 @@ void threadsInfo(){
     // log(Info, "omp_get_num_threads: " + str(omp_get_thread_num()));
     log(Info, "omp " + str(omp_get_max_threads()) + "(" + str(omp_get_num_procs()) + "): par(" +
         str(omp_in_parallel()) + ") " + str(omp_get_thread_num()), '/', str(omp_get_num_threads()));
+
 }
 
 static bool __DISABLE_CACHE_FOR_DBG__ = false;

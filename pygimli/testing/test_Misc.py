@@ -241,6 +241,21 @@ class TestMisc(unittest.TestCase):
         b = pickle.loads(p)
         self.assertEqual(a.z(), b.z())
 
+        d1 = dict(mesh=pg.meshtools.createGrid(3), pos=pg.Pos(1,2,3))
+        p = pickle.dumps(d1)
+        d2 = pickle.loads(p)
+        self.assertEqual(d1['mesh'].hash(), hash(d2['mesh']))
+
+        import tempfile as tmp
+        _, fn = tmp.mkstemp()
+
+        with open(fn + '.pkl', 'wb') as f:
+            pickle.dump(d1, f)
+        with open(fn + '.pkl', 'rb') as f:
+            d3 = pickle.load(f)
+
+        self.assertEqual(d1['mesh'].hash(), hash(d3['mesh']))
+
     # does not work .. need time to implement
     # def test_DataContainerWrite(self):
     #     data = pg.DataContainer()

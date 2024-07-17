@@ -1097,7 +1097,7 @@ class LinSolver(object):
             If solver is none decide from matrix type.
         """
         self.verbose = verbose
-        
+
         self._m = None ## hold local copy if we need to convert the matrix first
         self._x = None ## hold local copy for result
         self._solver = None ## (str) 'pg', 'scipy', ...
@@ -1131,10 +1131,10 @@ class LinSolver(object):
         else:
             pg.critical('inuse?')
             self.solverStr = solver
-            
+
         self._solveCB = getattr(self, f'solve_{self.solverStr}')
         self._factorizeCB = getattr(self, f'factorize_{self.solverStr}')
-        
+
         if self.verbose:
             pg.info("Solving with {0}".format(self.solverStr))
 
@@ -1272,7 +1272,7 @@ def linSolve(mat, b, solver=None, verbose=False, **kwargs):
         x = solver.solve(b)
 
         if verbose:
-            pg.info("Matrix so  lution:", swatch.duration())
+            pg.info("Matrix solution:", swatch.duration())
 
     elif solver.lower() == 'numpy':
         if verbose:
@@ -2018,7 +2018,7 @@ def createStiffnessMatrix(mesh, a=None, isVector=False):
             A = pg.matrix.SparseMatrix()
             A.fillStiffnessMatrix(mesh, a)
             return A
-    
+
         dof = 0
         nDof = mesh.nodeCount()
     else:
@@ -2146,7 +2146,7 @@ def normL2(u, mat=None, mesh=None, warn=True):
     Note
     ----
         * wrong implementation .. better to come
-        
+
     Find the L2 norm for a solution in the finite element space. :math:`u` exact solution,
     :math:`{\bf M}` Mass matrix, i.e., Finite element identity matrix.
 
@@ -2175,7 +2175,7 @@ def normL2(u, mat=None, mesh=None, warn=True):
         Mesh with the FE space to generate M if necessary.
 
     warn: bool [True]
-        Warn if you forget a matrix or mass matrix which leads to algebraic L2 
+        Warn if you forget a matrix or mass matrix which leads to algebraic L2
 
     Returns
     -------
@@ -2324,8 +2324,8 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         Note this is only a shortcut for
         bc={'Dirichlet': [mesh.node(nodeID), value]}.
 
-        The parameter $a$ for Neumann boundary condition is choosen 
-        automatically from the diffusivity parameter $a$ of the associated cell. 
+        The parameter $a$ for Neumann boundary condition is choosen
+        automatically from the diffusivity parameter $a$ of the associated cell.
 
     times: array [None]
         Solve as time dependent problem for the given times.
@@ -2724,9 +2724,9 @@ def crankNicolson(times, S, I, f=None,
 
     swatches = pg.tictoc
     with swatches('Crank-Nicolson'):
-    
+
         with swatches('prep'):
-            
+
             if progress:
                 timeMeasure = True
 
@@ -2749,18 +2749,18 @@ def crankNicolson(times, S, I, f=None,
             if solver is None:
                 solver = pg.solver.LinSolver(solver='scipy')
 
-                
+
         dt = 0.0
         for n in range(1, len(times)):
-            
+
             newDt = times[n] - times[n-1]
-            
+
             if newDt < 1e-8 :
                 pg.critical('Cannot find delta t for times', times)
 
             if abs(newDt - dt) > 1e-8:
                 with swatches('factorize'):
-                
+
                     ## new dt, so we need to factorize the matrix again
                     dt = newDt
                     # pg.info('dt', dt)
@@ -2773,9 +2773,9 @@ def crankNicolson(times, S, I, f=None,
                     solver.factorize(A)
 
                     St = None
-                    
+
             with swatches('build'):
-            
+
                 if theta == 0:
                     if St is None:
                         St = I - S * dt  # cache what's possible
@@ -2790,10 +2790,10 @@ def crankNicolson(times, S, I, f=None,
             with swatches('dirichlet'):
                 if dirichlet is not None:
                     dirichlet.apply(b, time=times[n])
-            
+
             with swatches('solve'):
                 u[n, :] = solver(b)
-        
+
             if progress:
                 progress.update(n)
                     # n, 't_prep: ' + pg.pf(timeAssemble[-1]*1000) + 'ms ' +

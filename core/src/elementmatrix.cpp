@@ -625,7 +625,7 @@ void ElementMatrix < double >::fillGradientBase(
     }
     if (dNdr_.rows() != nRules){
         if (ent.dim() > 0) dNdr_.resize(nRules, nVerts);
-        if (ent.dim() > 1) dNds_.resize(nRules, nVerts);
+        // if (ent.dim() > 1) dNds_.resize(nRules, nVerts);
         if (ent.dim() > 2) dNdt_.resize(nRules, nVerts);
 
         for (Index i = 0; i < nRules; i ++){
@@ -2876,7 +2876,7 @@ void ElementMatrix < double >::integrate(const ElementMatrix < double > & B,
 THROW_TO_IMPL
 }
 
-
+//
 void evaluateQuadraturePoints(const Mesh & mesh, Index order,
                               const FEAFunction & f,
                               RVector & ret){

@@ -581,7 +581,7 @@ def rate(v):
     Calculate reduction rate of v as r[i+1] = v[i]/v[i+1] for i = 0 .. len(v)-1
     and r[0] = 0
     """
-    v = np.atleast_1d(v)
+    v = np.array(np.atleast_1d(v), dtype=float)
     r = np.zeros_like(v)
     r[1:] = v[:-1]/v[1:]
     return r

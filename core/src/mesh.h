@@ -24,6 +24,7 @@
 #include "node.h"
 #include "pos.h"
 #include "utils.h"
+#include "shape.h"
 
 #include <vector>
 #include <list>
@@ -784,6 +785,7 @@ protected:
         boundaryVector_.push_back(new B(nodes));
         boundaryVector_.back()->setMarker(marker);
         boundaryVector_.back()->setId(id);
+        ShapeFunctionCache::instance().shapeFunctions(*boundaryVector_.back());
         return boundaryVector_.back();
     }
 
@@ -808,6 +810,7 @@ protected:
         cellVector_.push_back(new C(nodes));
         cellVector_.back()->setMarker(marker);
         cellVector_.back()->setId(id);
+        ShapeFunctionCache::instance().shapeFunctions(*cellVector_.back());
         return cellVector_.back();
     }
 

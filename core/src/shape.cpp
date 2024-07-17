@@ -166,6 +166,7 @@ Pos Shape::norm() const {
 }
 
 std::vector < PolynomialFunction < double > > Shape::createShapeFunctions() const {
+
     uint nCoeff = 2;
     bool pascale = false;
     bool serendipity = false;
@@ -422,7 +423,7 @@ bool Shape::touch(const Pos & pos, double tol, bool verbose) const {
         log(Critical, "Shape need at least 3 nodes and should be a 3D boundary face.");
     }
     if (verbose) print("touch:",  pos, "tol:", tol);
-    
+
     Plane plane(this->plane());
     if (!plane.touch(pos, tol)) {
         if (verbose) print("\t does not touch plane!");
@@ -448,8 +449,8 @@ bool Shape::touch(const Pos & pos, double tol, bool verbose) const {
             Line segment(node(i).pos(), node((i+1)%nodeCount()).pos());
             // __MS(segment << " " << pos)
 
-            if (verbose) print("\t segment:", segment, "ray:", rayDir, "intersect:", 
-                                segment.intersectRay(pos, rayDir, iP, tol), 
+            if (verbose) print("\t segment:", segment, "ray:", rayDir, "intersect:",
+                                segment.intersectRay(pos, rayDir, iP, tol),
                                 "p:", iP, "t(iP):", segment.t(iP));
 
             if (segment.intersectRay(pos, rayDir, iP, tol)){

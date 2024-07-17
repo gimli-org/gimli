@@ -22,6 +22,7 @@
 #include "gimli.h"
 #include "polynomial.h"
 #include "curvefitting.h"
+#include <omp.h>
 
 #ifndef PYGIMLI_CAST // fails because of boost threads and clang problems
     #if USE_BOOST_THREAD
@@ -79,7 +80,8 @@ class DLLEXPORT ShapeFunctionCache : public Singleton< ShapeFunctionCache > {
 public:
     friend class Singleton< ShapeFunctionCache >;
 
-    template < class Ent > const std::vector < PolynomialFunction < double > > &
+    template < class Ent >
+    const std::vector < PolynomialFunction < double > > &
     shapeFunctions(const Ent & e) const {
 
         auto it = shapeFunctions_.find(e.rtti());
@@ -95,7 +97,7 @@ public:
 
     template < class Ent > const std::vector < PolynomialFunction < double > > &
     deriveShapeFunctions(const Ent & e , uint dim) const {
-        
+
         auto it = dShapeFunctions_.find(e.rtti());
 
         if (it == dShapeFunctions_.end()) {
@@ -121,28 +123,16 @@ private:
 
     /*! probably threading problems .. pls check*/
     template < class Ent > void createShapeFunctions_(const Ent & e) const {
+
+        // __MS(e.rtti())
+        // threadsInfo();
+
         std::vector < PolynomialFunction < double > > N = e.createShapeFunctions();
 
+        // #pragma omp critical
+        // std::unique_lock < std::mutex > lock(ShapeFunctionWriteCacheMutex__);
 
-
-        #if USE_BOOST_THREAD
-        //#ifdef WIN32_LEAN_AND_MEAN
-        //        __MS("pls check missing mutex")
-            //boost::mutex::scoped_lock lock(ShapeFunctionWriteCacheMutex__);
-        //#else
-            #ifndef PYGIMLI_CAST // fails because of boost threads and clang problems
-            boost::mutex::scoped_lock lock(ShapeFunctionWriteCacheMutex__);
-            #endif
-        //#endif
-
-        #else
-            // __MS("lock " << ShapeFunctionWriteCacheMutex__)
-
-            std::unique_lock < std::mutex > lock(ShapeFunctionWriteCacheMutex__);
-        #endif
-        // __MS(e.rtti())
-        //threadsInfo();
-
+        // print("start:", omp_get_thread_num());
         shapeFunctions_[e.rtti()] = N;
         dShapeFunctions_[e.rtti()] = std::vector < std::vector < PolynomialFunction < double > > >();
 
@@ -155,6 +145,9 @@ private:
             dShapeFunctions_[e.rtti()][1].push_back(N[i].derive(1));
             dShapeFunctions_[e.rtti()][2].push_back(N[i].derive(2));
         }
+        // __MS(e.rtti())
+        // print("end:", omp_get_thread_num());
+
     }
 
     /*! Private so that it can not be called */

@@ -26,6 +26,7 @@ import time
 
 import numpy as np
 import pygimli as pg
+import pickle
 
 
 __NO_CACHE__ = False
@@ -38,7 +39,7 @@ def strHash(string):
     return int(hashlib.sha224(string.encode()).hexdigest()[:16], 16)
 
 def valHash(a):
-    
+
     if isinstance(a, str):
         return strHash(a)
     elif isinstance(a, int):
@@ -49,7 +50,7 @@ def valHash(a):
             # pg._y(k, valHash(k))
             # pg._y(v, valHash(v))
             hsh = hsh ^ valHash(k) ^ valHash(v)
-            
+
         return hsh
     elif isinstance(a, list):
         hsh = 0
@@ -71,7 +72,7 @@ def valHash(a):
             pg.error('no hash for numpy array')
     elif hasattr(a, '__hash__') and not callable(a):
         # pg._r('has hash: ', a, hash(a))
-        return hash(a)    
+        return hash(a)
     elif isinstance(a, pg.DataContainer):
         return hash(a)
     elif callable(a):
@@ -79,7 +80,7 @@ def valHash(a):
             if hasattr(a, '_funct'):
                 ## FEAFunctions or any other wrapper containing lambda as _funct
                 # pg._g(inspect.getsource(a._funct))
-                return strHash(inspect.getsource(a._funct))    
+                return strHash(inspect.getsource(a._funct))
             # for lambdas
             # pg._r('callable: ', inspect.getsource(a))
             else:
@@ -133,7 +134,6 @@ class Cache(object):
         self.info['file'] = self._name
 
         # pg._r(self.info)
-        self.updateCacheInfo()
 
         if self.info['type'] == 'Mesh':
             pg.info('Save Mesh binary v2')
@@ -154,12 +154,16 @@ class Cache(object):
             #         pg._b(i, len(v), '#'*60)
             #         pg._g(v[i])
             #         np.save(f, v[i])
-           
+
         else:
-            np.save(self._name, np.array(v, dtype=object), allow_pickle=True)
+            self.info['type'] = 'pickle'
+            with open(self._name + '.pkl', 'wb') as f:
+                pickle.dump(v, f)
+            #np.save(self._name, np.array(v, dtype=object), allow_pickle=True)
             # pg.warn('ascii save of type', self.info['type'], 'might by dangerous')
             # v.save(self._name)
 
+        self.updateCacheInfo()
         self._value = v
         pg.info('Cache stored:', self._name)
 
@@ -170,7 +174,7 @@ class Cache(object):
 
     def restore(self):
         """Read data from json infos"""
-        
+
         if os.path.exists(self._name + '.json'):
 
             # Fricking mpl kills locale setting to system default .. this went
@@ -185,7 +189,7 @@ class Cache(object):
                 #     pg.error('only single return caches supported for now.')
 
                 #pg._y(pg.pf(self.info))
-                
+
                 if self.info['type'] == 'DataContainerERT':
                     self._value = pg.DataContainerERT(self.info['file'],
                                                       removeInvalid=False)
@@ -213,8 +217,8 @@ class Cache(object):
                     self._value = (*r,)
 
                 else:
-                    self._value = np.load(self.info['file'] + '.npy',
-                                          allow_pickle=True)
+                    with open(self.info['file'] + '.pkl', 'rb') as f:
+                        self._value = pickle.load(f)
 
                 if self.value is not None:
                     self.info['restored'] = self.info['restored'] + 1
@@ -288,7 +292,7 @@ class CacheManager(object):
                 argHash = argHash ^ (valHash(k + str(v)))
             else:
                 argHash = argHash ^ valHash(k) ^ valHash(v)
-            
+
         #pg._g(funcHash, versionHash, codeHash, argHash)
         pg.debug("Hashing took:", pg.dur(), "s")
         return funcHash ^ versionHash ^ codeHash ^ argHash
@@ -306,7 +310,7 @@ class CacheManager(object):
         kw = dict(kwargs)
         for k, v in kw.items():
             if isinstance(v, np.ndarray):
-                kw[k] = 'ndarray' 
+                kw[k] = 'ndarray'
         cached.info['kwargs'] = str(kw)
 
         return cached
@@ -317,7 +321,7 @@ def cache(funct):
     def wrapper(*args, **kwargs):
 
         nc = kwargs.pop('skipCache', False)
-        
+
         if any(('--noCache' in sys.argv, '--skipCache' in sys.argv,
                 os.getenv('SKIP_CACHE'),
                 '-N' in sys.argv, nc is True, __NO_CACHE__)):

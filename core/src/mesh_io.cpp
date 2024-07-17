@@ -29,7 +29,6 @@
 namespace GIMLI{
 
 void Mesh::load(const std::string & fbody, bool createNeighbors, IOFormat format){
-    __MS(fbody)
     if (fbody.find(".mod") != std::string::npos){
         importMod(fbody);
     } else if (fbody.find(".vtk") != std::string::npos){
@@ -55,7 +54,6 @@ void Mesh::loadAscii(const std::string & fbody){
 }
 
 int Mesh::save(const std::string & fbody, IOFormat format) const {
-    __MS(fbody)
     if (format == Binary || fbody.find(MESHBINSUFFIX) != std::string::npos) {
         saveBinaryV2(fbody);
     } else return saveAscii(fbody);
@@ -401,6 +399,11 @@ ByteBuffer Mesh::serialize() const{
     // __MS("++++serialize")
     outbuf buf;
     std::ostream out(&buf);
+    if (!out){
+        throw std::system_error(errno, std::system_category(),
+                                "failed to serialize.");
+    }
+
     this->writeToStream(out);
 
     // std::cout << "hexdump"<< std::endl;
@@ -438,6 +441,10 @@ void Mesh::deserialize(const ByteBuffer & s){
 
     inbuf buf(s);
     std::istream in(&buf);
+    if (!in){
+        throw std::system_error(errno, std::system_category(),
+                                "failed to deserialize.");
+    }
 
     // in.seekg (0, in.end);
     // int length = in.tellg();
@@ -455,6 +462,10 @@ void Mesh::saveBinaryV2(const std::string & fbody) const {
                          MESHBINSUFFIX);
 
     std::ofstream out(fileName, std::ios::binary | std::ios::out);
+    if (!out){
+        throw std::system_error(errno, std::system_category(),
+                                "failed to open " + fileName);
+    }
     this->writeToStream(out);
     out.flush();
     out.close();
@@ -465,6 +476,11 @@ void Mesh::loadBinaryV2(const std::string & fbody) {
     std::string fileName(fbody.substr(0, fbody.rfind(MESHBINSUFFIX)) +
                          MESHBINSUFFIX);
     std::ifstream in(fileName, std::ios::binary | std::ios::in);
+    if (!in){
+        throw std::system_error(errno, std::system_category(),
+                                "failed to open " + fileName);
+    }
+
     this->readFromStream(in);
     in.close();
 }

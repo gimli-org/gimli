@@ -631,7 +631,7 @@ const std::vector< ElementMatrix < double > > & ElementMatrixMap::mats() const {
 void ElementMatrixMap::collectQuadraturePoints() const {
     // FIXME: oscar-workspace/debug/segfault-omp.py
     // __MS(this->quadrPnts_.size(), this->mats_.size(), threadCount())
-
+// __M
     if (!this->mats_[0].valid()){
         log(Critical, "uninitialized element map matrix. ");
         return;
@@ -640,9 +640,11 @@ void ElementMatrixMap::collectQuadraturePoints() const {
     this->quadrPnts_.clear();
     this->quadrPnts_.resize(this->mats_.size());
 
-    #pragma omp parallel if (useOMP())
+
+    // print("1");
+    // #pragma omp parallel if (useOMP())
     {
-// __MS(omp_get_thread_num())
+    // print("A:", omp_get_thread_num());
 
         #pragma omp for schedule(runtime)
         for (auto &m: this->mats_){
@@ -655,7 +657,7 @@ void ElementMatrixMap::collectQuadraturePoints() const {
             const auto &x = *m.x();
             const Index cId = m.entity()->id();
 
-            const auto &s = m.entity()->shape();
+            const auto &s = *m.entity();
             const auto &N = ShapeFunctionCache::instance().shapeFunctions(s);
 
             for (Index i = 0; i < x.size(); i ++){
@@ -664,8 +666,9 @@ void ElementMatrixMap::collectQuadraturePoints() const {
                 }
             }
         }
+        // print("E");
     }
-
+// __M
 }
 
 std::vector < PosVector > & ElementMatrixMap::quadraturePoints() const {
