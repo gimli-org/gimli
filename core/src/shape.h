@@ -22,17 +22,13 @@
 #include "gimli.h"
 #include "polynomial.h"
 #include "curvefitting.h"
-#include <omp.h>
 
 #ifndef PYGIMLI_CAST // fails because of boost threads and clang problems
-    #if USE_BOOST_THREAD
-        #include <boost/thread.hpp>
-        extern boost::mutex ShapeFunctionWriteCacheMutex__;
-        //#error AVOID BOOST
-    #else
-        #include <mutex>
-        extern std::mutex ShapeFunctionWriteCacheMutex__;
-    #endif
+
+#include <omp.h>
+#include <mutex>
+extern std::mutex ShapeFunctionWriteCacheMutex__;
+
 #endif
 
 namespace GIMLI{
