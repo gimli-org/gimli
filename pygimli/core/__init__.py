@@ -914,10 +914,8 @@ def __stdVectorRVector__array_ufunc__(self, ufunc, method, *inputs, **kwargs):
     if ufunc == np.power:
         vRv = inputs[0]
         exp = inputs[1]
-
         # print('*'*80, vRv)
         # print('-'*80, exp)
-
         return vRv ** exp
 
     ### rmul

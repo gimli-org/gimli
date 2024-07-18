@@ -2765,7 +2765,7 @@ ElementMatrix < double >::integrate(const RVector & f,
 template < >
 void ElementMatrix < double >::integrate(const PosVector & f,
                                          RVector & R, double scale) const {
-    //__MS("** M.integrate(rv, ->R)", this->_ent->size(), " ", scale)
+    // __MS("** M.integrate(rv, ->R)", this->_ent->size(), " ", scale)
     // __MS("** M.integrate(rv, ->R): ", R)
     ASSERT_VEC_SIZE(f, this->_w->size())
     INTEGRATE_LINFORM(*f[q][k]) // #orig

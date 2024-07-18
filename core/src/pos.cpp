@@ -143,6 +143,20 @@ void dot(const std::vector < PosVector > & a,
         dot(a[i], b[i], r[i]);
     }
 }
+DLLEXPORT void sum(const PosVector & a,
+                   RVector & r){
+    r.resize(a.size());
+    for (Index i = 0; i < a.size(); i ++ ){
+        r[i] = a[i].sum();
+    }
+}
+void sum(const std::vector < PosVector > & a,
+         std::vector < RVector > & r){
+    r.resize(a.size());
+    for (Index i = 0; i < a.size(); i ++ ){
+        sum(a[i], r[i]);
+    }
+}
 
 void saveRVector3(const std::vector < Pos > l, const std::string & fileName){
     std::fstream file; openOutFile(fileName, & file);

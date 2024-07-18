@@ -70,6 +70,12 @@ DLLEXPORT void dot(const std::vector < PosVector > & a,
                    const std::vector < PosVector > & b,
                    std::vector < RVector > & r);
 
+DLLEXPORT void sum(const PosVector & a,
+                   RVector & r);
+
+DLLEXPORT void sum(const std::vector < PosVector > & a,
+                   std::vector < RVector > & r);
+
 DLLEXPORT RVector absR3(const R3Vector & vPos);
 
 //DLLEXPORT std::Vector< RVector > fabs(const std::vector < R3Vector > & v);
