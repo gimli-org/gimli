@@ -25,7 +25,9 @@ class DEM:
         -----------------
         toLatLon: callable(x, y) [None]
             Custom coordinate translator. If set to None then
-            `lambda x_, y_: utm.to_latlon(x_, y_, 32, 'N')` is taken.
+            `lambda x_, y_: utm.to_latlon(x_, y_, zone, 'N')` is taken.
+        zone: int [32]
+            UTM zone to be chosen
         """
         from scipy.interpolate import RegularGridInterpolator, LinearNDInterpolator
 
@@ -55,15 +57,18 @@ class DEM:
         else:
             raise Exception("Either DEM file or z with x and y must be given!")
 
-        self._toLatLon = kwargs.pop('toLatLon', None)
-        if self._toLatLon is None:
-            import utm
-            self._toLatLon = lambda x_, y_: utm.to_latlon(x_, y_, 32, 'N')
+        if self.latlon:
+            self._toLatLon = kwargs.pop('toLatLon', None)
+            if self._toLatLon is None:
+                import utm
+                zone = kwargs.pop('zone', 32)
+                self._toLatLon = lambda x_, y_: utm.to_latlon(x_, y_, zone, 'N')
 
 
     def __call__(self, x, y=None):
         """Interpolation function."""
-        y, x = self._toLatLon(x, y)
+        if self.latlon:
+            y, x = self._toLatLon(x, y)
 
         if y is None:
             return self.dem(x)
