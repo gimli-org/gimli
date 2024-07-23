@@ -50,13 +50,16 @@ class TimelapseERT():
         self.ERR = kwargs.pop("ERR", [])
         self.times = kwargs.pop("times", [])
         self.mesh = kwargs.pop("mesh", None)
+        self.pd = None
         self.name = "new"
         self.models = []
         self.responses = []
         self.chi2s = []
         self.model = None
         self.mgr = ert.ERTManager()
-        self.pd = None
+        if self.mesh is not None:
+            self.mgr.setMesh(self.mesh)
+
         if filename is not None:
             if isinstance(filename, str):
                 self.load(filename, **kwargs)
