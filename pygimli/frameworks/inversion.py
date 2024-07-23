@@ -838,6 +838,19 @@ class Inversion(object):
 
         pg.plt.pause(0.05)
 
+    def jacobianMatrix(self, error_weighted=False):
+        """Compute jacobian matrix of the inverse problem.
+
+        Whereas the forward operator holds the jacobian matrix of the forward,
+        i.e. the intrinsic (untransformed) problem, this function returns the
+        jacobian of the (transformed) inverse problem, i.e. taking model and
+        data transformations into account by using their inner derivatives.
+        """
+        tData = self.dataTrans.deriv(self.response)
+        tModel = 1 / self.modelTrans.deriv(self.model)
+        return pg.matrix.MultLeftRightMatrix(self.fop.jacobian(),
+                                             tData, tModel)
+
 
 class MarquardtInversion(Inversion):
     """Marquardt scheme, i.e. local damping with decreasing strength."""
