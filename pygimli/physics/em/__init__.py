@@ -5,5 +5,7 @@ from .vmd import VMDTimeDomainModelling
 
 from .fdem import FDEM
 from .tdem import TDEM, rhoafromB, rhoafromU
+from .tdem import VMDTimeDomainModelling, TDEMOccamModelling
+TDEMBlockModelling = VMDTimeDomainModelling
 from .hemmodelling import HEMmodelling
 from .io import readusffile, importMaxminData

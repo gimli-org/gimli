@@ -213,7 +213,7 @@ class VMDTimeDomainModelling(VMDModelling):
     def __init__(self, times, txArea, rxArea=None, **kwargs):
         """
         """
-        super(VMDTimeDomainModelling, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         self.t = times
         self.txArea = txArea

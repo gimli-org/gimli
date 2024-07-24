@@ -516,9 +516,10 @@ class TDEMOccamModelling(MeshModelling):
     """Occam-style (smooth) inversion."""
     def __init__(self, thk, **kwargs):
         super().__init__()
-        self.core = VMDTimeDomainModelling(**kwargs)
         self.thk_ = thk
-        self.mesh_ = pg.meshtools.createMesh1D(len(thk)+1)
+        self.nlay_ = len(thk)+1
+        self.core = VMDTimeDomainModelling(**kwargs, nLayers=self.nlay_)
+        self.mesh_ = pg.meshtools.createMesh1D(self.nlay_)
         self.setMesh(self.mesh_)
 
     def response(self, par):
