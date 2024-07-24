@@ -110,7 +110,7 @@ extensions = [
     # "sphinxcontrib.spelling"
     #'sphinx.ext.pngmath',   # for breath
     #'sphinx.ext.todo',      # for breath
-    'breathe',              # doxgen to sphinx api docu
+    #'breathe',              # doxgen to sphinx api docu
 ]
 
 extensions += [dep.replace("-", ".") for dep in deps]
@@ -669,8 +669,8 @@ bibtex_reference_style = "author_year"
 # -- Options for breath
 ################################################################################
 
-breathe_projects = {"gimli":
-                        os.path.abspath(join(DOC_BUILD_DIR, "../../doxygen/xml")),
-                    }
-
-breathe_default_project = "gimli"
+# breathe_projects = {"gimli":
+#                         os.path.abspath(join(DOC_BUILD_DIR, "../../doxygen/xml")),
+#                     }
+# 
+# breathe_default_project = "gimli"
