@@ -4,9 +4,6 @@
 import numpy as np
 from packaging import version
 
-# from matplotlib.colors import LogNorm, Normalize
-# from matplotlib.colorbar import ColorbarBase
-
 import pygimli as pg
 from . import saveFigure, updateAxes
 from . utils import prettyFloat
@@ -339,8 +336,6 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
                        ax=None, **kwargs):
     """Create figure with a colorbar.
 
-    Create figure with a colorbar.
-
     Parameters
     ----------
     **kwargs:
@@ -362,6 +357,8 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     >>> #                   orientation='horizontal')
     >>> # pg.wait()
     """
+    from matplotlib.colors import LogNorm, Normalize
+    from matplotlib.colorbar import ColorbarBase
     if ax is None:
         fig = pg.plt.figure()
         if orientation == 'horizontal':
@@ -404,8 +401,7 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
 
 
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
-    """Set colorbar levels given a number of levels and min/max values.
-    """
+    """Set colorbar levels given a number of levels and min/max values."""
     import matplotlib as mpl
     import matplotlib.ticker as ticker
 
