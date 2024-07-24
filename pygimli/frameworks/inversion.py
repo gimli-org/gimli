@@ -838,18 +838,34 @@ class Inversion(object):
 
         pg.plt.pause(0.05)
 
-    def jacobianMatrix(self, error_weighted=False):
+    def jacobianMatrix(self, error_weighted=False, numpy_matrix=False):
         """Compute jacobian matrix of the inverse problem.
 
         Whereas the forward operator holds the jacobian matrix of the forward,
         i.e. the intrinsic (untransformed) problem, this function returns the
         jacobian of the (transformed) inverse problem, i.e. taking model and
         data transformations into account by using their inner derivatives.
+
+        Parameters
+        ----------
+        self : pg.Inversion
+            inversion instance with model, response and fop.jacobian
+        error_weighted : bool
+            add error weighting according to data transform
+        numpy_matrix : bool
+            return numpy matrix instead of MultLeftRightMatrix
         """
         tData = self.dataTrans.deriv(self.response)
         tModel = 1 / self.modelTrans.deriv(self.model)
-        return pg.matrix.MultLeftRightMatrix(self.fop.jacobian(),
-                                             tData, tModel)
+        if error_weighted:
+            tData *= self.dataTrans.error(self.response, self.errorVals)
+        if numpy_matrix:
+            return np.reshape(tData, [-1, 1]) * \
+                pg.utils.gmat2numpy(self.fop.jacobian()) * \
+                np.reshape(tModel, [1, -1])
+        else:
+            return pg.matrix.MultLeftRightMatrix(self.fop.jacobian(),
+                                                tData, tModel)
 
 
 class MarquardtInversion(Inversion):
