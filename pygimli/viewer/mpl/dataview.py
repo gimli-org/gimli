@@ -147,7 +147,7 @@ def drawValMapPatches(ax, vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
                     #     ax.text(x, y, str(i))
                     # pg.wait()
         else:
-            raise("Implementme")
+            raise BaseException("Not implemented")
     else:
         if dy is None:  # map y values to unique
             ymap = {xy: ii for ii, xy in enumerate(np.unique(yVec))}
@@ -163,14 +163,14 @@ def drawValMapPatches(ax, vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
 
     pp = PatchCollection(recs)
     pp.set_edgecolor(None)
-    pp.set_linewidths(0.0)
+    pp.set_linewidth(0.0)
     pp.set_array(vals)
 
     gci = ax.add_collection(pp)
 
     if circular:
         pp.set_edgecolor('black')
-        pp.set_linewidths(0.1)
+        pp.set_linewidth(0.1)
 
     return gci, ymap
 
@@ -260,7 +260,7 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
                                     width=dR,
                                     zorder=1+r)
         else:
-            raise("Implementme")
+            raise BaseException("Implementme")
     else:
         if dy is None:  # map y values to unique
             ymap = {xy: ii for ii, xy in enumerate(np.unique(yvec))}
@@ -278,13 +278,13 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     # ax.clear()
     col = ax.add_collection(pp)
     pp.set_edgecolor(None)
-    pp.set_linewidths(0.0)
+    pp.set_linewidth(0.0)
     if 'alpha' in kwargs:
         pp.set_alpha(kwargs['alpha'])
 
     if circular:
         pp.set_edgecolor('black')
-        pp.set_linewidths(0.1)
+        pp.set_linewidth(0.1)
 
     cmap = pg.viewer.mpl.cmapFromName(**kwargs)
     if kwargs.pop('markOutside', False):
@@ -372,7 +372,7 @@ def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     pp = PatchCollection(recs)
     col = ax.add_collection(pp)
     pp.set_edgecolor(None)
-    pp.set_linewidths(0.0)
+    pp.set_linewidth(0.0)
     if 'cmap' in kwargs:
         pp.set_cmap(kwargs.pop('cmap'))
     if 'cMap' in kwargs:

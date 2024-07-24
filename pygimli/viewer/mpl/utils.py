@@ -228,7 +228,8 @@ def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0, fontsize=9,
         'lines.markersize': 6 * scale,
         'lines.linewidth': 0.6 * scale
     }
-    plt.rcParams.update(params)
+    import matplotlib
+    matplotlib.rcParams.update(params)
 
 
 def setPlotStuff(fontsize=7, dpi=None):
@@ -271,8 +272,8 @@ def createAnimation(fig, animate, nFrames, dpi, out):
 
     Until I know a better place.
     """
-    from matplotlib.animation import animation
-    anim = animation.FuncAnimation(fig, animate, frames=nFrames,
+    from matplotlib.animation import FuncAnimation
+    anim = FuncAnimation(fig, animate, frames=nFrames,
                                    interval=0.001, repeat=False)
     anim.save(out + ".mp4", writer=None, fps=20, dpi=dpi, codec=None,
               bitrate=24 * 1024, extra_args=None, metadata=None,
@@ -291,6 +292,8 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
 
     Until I know a better place.
     """
+    import matplotlib.pyplot as plt
+
     dpi = 92
     scale = 1
     fig = pg.plt.figure(facecolor='white',
