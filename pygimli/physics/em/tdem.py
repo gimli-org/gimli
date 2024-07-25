@@ -512,7 +512,7 @@ class TDEM():
         return tem
 
 
-class TDEMOccamModelling(MeshModelling):
+class TDEMSmoothModelling(MeshModelling):
     """Occam-style (smooth) inversion."""
     def __init__(self, thk, **kwargs):
         super().__init__()
@@ -523,6 +523,7 @@ class TDEMOccamModelling(MeshModelling):
         self.setMesh(self.mesh_)
 
     def response(self, par):
+        """Model response (forward modelling)."""
         return self.core.response(pg.cat(self.thk_, par))
 
 if __name__ == '__main__':
