@@ -3,7 +3,6 @@
 from math import sqrt
 import numpy as np
 import pygimli as pg
-
 from pygimli.solver.leastsquares import lsqr as lssolver
 
 
@@ -95,15 +94,15 @@ class LSQRInversion(pg.Inversion):
         self.inv.setModel(self.model)
         return True
 
-    def lineSearchInter(self, dM, nTau=100):
+    def lineSearchInter(self, dM, nTau=100, maxTau=1.0):
         """Optimizes line search parameter by linear response interpolation."""
         tD = self.dataTrans
         tM = self.modelTrans
         model = self.model
         response = self.response
-        modelLS = tM.update(model, dM)
+        modelLS = tM.update(model, dM * maxTau)
         responseLS = self.fop.response(modelLS)
-        taus = np.arange(1, nTau+1) / nTau
+        taus = np.arange(1, nTau+1) / nTau * maxTau
         phi = np.ones_like(taus) * self.phi()
         phi[-1] = self.phi(modelLS, responseLS)
         t0 = tD.fwd(response)
