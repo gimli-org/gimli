@@ -867,6 +867,11 @@ class Inversion(object):
             return pg.matrix.MultLeftRightMatrix(self.fop.jacobian(),
                                                 tData, tModel)
 
+    def residual(self):
+        """Return residual vector (data-reponse)/error using data transform."""
+        return (self.dataTrans(self.dataVals) - self.dataTrans(self.response)) / \
+            self.dataTrans.error(self.response, self.errorVals)
+
 
 class MarquardtInversion(Inversion):
     """Marquardt scheme, i.e. local damping with decreasing strength."""
