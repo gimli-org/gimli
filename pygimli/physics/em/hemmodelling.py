@@ -97,8 +97,8 @@ class HEMmodelling(Block1DModelling):
     def response(self, model):
         """Compute response vector by pasting in-phase and out-phase data."""
         ip, op = self.vmd_hem(self.height,
-                              model[self.nlay-1:self.nlay*2-1],
-                              model[:self.nlay-1])
+                              np.asarray(model[self.nlay-1:self.nlay*2-1]),
+                              np.asarray(model[:self.nlay-1]))
         return pg.cat(ip, op)
 
     def response_mt(self, par, i=0):
