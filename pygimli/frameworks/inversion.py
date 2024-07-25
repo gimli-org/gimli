@@ -839,7 +839,7 @@ class Inversion(object):
         pg.plt.pause(0.05)
 
     def jacobianMatrix(self, error_weighted=False, numpy_matrix=False):
-        """Compute jacobian matrix of the inverse problem.
+        """Jacobian matrix of the inverse (data/model-transformed) problem.
 
         Whereas the forward operator holds the jacobian matrix of the forward,
         i.e. the intrinsic (untransformed) problem, this function returns the
@@ -868,10 +868,24 @@ class Inversion(object):
                                                 tData, tModel)
 
     def residual(self):
-        """Return residual vector (data-reponse)/error using data transform."""
+        """Residual vector (data-reponse)/error using data transform."""
         return (self.dataTrans(self.dataVals) - self.dataTrans(self.response)) / \
             self.dataTrans.error(self.response, self.errorVals)
 
+    def dataGradient(self):
+        """Data gradient from jacobian and residual, i.e. J^T * dData."""
+        return self.jacobianMatrix().transMult(self.residual())
+
+    def modelGradient(self):
+        """Model gradient, i.e. C^T * C * (m - m0)."""
+        self.inv.checkConstraints()
+        C = pg.matrix.MultLeftMatrix(self.fop.constraints(),
+                                     self.inv.cWeight())
+        return C.transMult(C.mult(self.dataTrans(self.model)))
+
+    def gradient(self):
+        """Gradient of the objective function."""
+        return self.dataGradient() + self.modelGradient() * self.lam
 
 class MarquardtInversion(Inversion):
     """Marquardt scheme, i.e. local damping with decreasing strength."""
