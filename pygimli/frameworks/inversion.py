@@ -874,14 +874,14 @@ class Inversion(object):
 
     def dataGradient(self):
         """Data gradient from jacobian and residual, i.e. J^T * dData."""
-        return self.jacobianMatrix().transMult(self.residual())
+        return self.jacobianMatrix(error_weighted=True).transMult(self.residual())
 
     def modelGradient(self):
         """Model gradient, i.e. C^T * C * (m - m0)."""
-        self.inv.checkConstraints()
+        # self.inv.checkConstraints() # not necessary?
         C = pg.matrix.MultLeftMatrix(self.fop.constraints(),
                                      self.inv.cWeight())
-        return C.transMult(C.mult(self.dataTrans(self.model)))
+        return -C.transMult(C.mult(self.dataTrans(self.model)))
 
     def gradient(self):
         """Gradient of the objective function."""
