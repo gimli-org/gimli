@@ -789,6 +789,8 @@ def __Mesh__submesh__(self, relation="=", **kwargs):
             isk = self[key] > val
         elif relation == "<":
             isk = self[key] < val
+        elif relation == "!=":
+            isk = self[key] != val
         else:
             isk = self[key] == val
 
