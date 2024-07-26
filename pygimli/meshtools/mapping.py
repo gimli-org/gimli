@@ -702,6 +702,8 @@ def extract2dSlice(mesh, origin=None, normal=None, angle=0, dip=0, **kwargs):
         elif "x" in kwargs:
             origin = [kwargs["x"], 0, 0]
             normal = "x"
+        else:
+            normal = "y"
 
     if origin == "center":
         bb = mesh.boundingBox()
