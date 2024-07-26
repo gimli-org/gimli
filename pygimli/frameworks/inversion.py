@@ -878,10 +878,10 @@ class Inversion(object):
 
     def modelGradient(self):
         """Model gradient, i.e. C^T * C * (m - m0)."""
-        # self.inv.checkConstraints() # not necessary?
+        self.inv.checkConstraints() # not necessary?
         C = pg.matrix.MultLeftMatrix(self.fop.constraints(),
                                      self.inv.cWeight())
-        return -C.transMult(C.mult(self.dataTrans(self.model)))
+        return C.transMult(C.mult(self.modelTrans(self.model)))
 
     def gradient(self):
         """Gradient of the objective function."""
