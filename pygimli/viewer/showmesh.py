@@ -336,23 +336,15 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         if hasattr(data[0], '__len__') and not \
                 isinstance(data, np.ma.core.MaskedArray) and not \
                 isinstance(data[0], str):
-
-            # [u,v] x N
-            if len(data) == 2:
+            if len(data) == 2:  # [u,v] x N
                 data = np.array(data).T
-
-            # N x [u,v]
-            if data.shape[1] == 2:
+            if data.shape[1] == 2:  # N x [u,v]
                 drawStreams(ax, mesh, data, **kwargs)
-
-            # N x [u,v,w]
-            elif data.shape[1] == 3:
+            elif data.shape[1] == 3:  # N x [u,v,w]
                 # if sum(data[:, 0]) != sum(data[:, 1]):
                 # drawStreams(ax, mesh, data, **kwargs)
                 drawStreams(ax, mesh, data[:, :2], **kwargs)
-            else:
-
-                # Try animation frames x N
+            else:  # Try animation frames x N
                 data = np.asarray(data)
                 if data.ndim == 2:
                     if data.shape[1] == mesh.cellCount() or \
@@ -371,11 +363,15 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             if bool(colorBar) is not False:
                 colorBar = True
 
+            if kwargs.pop("contour", False):
+                data = pg.meshtools.cellDataToNodeData(mesh, data)
+                kwargs.setdefault("nLevs", 11)
+
             if len(data) == mesh.cellCount():
                 if showBoundary is None:
                     showBoundary = True
 
-            def _drawField(ax, mesh, data, kwargs):
+            def _drawField(ax, mesh, data, kwargs):  # like view.mpl.drawField?
                 # kwargs as reference here to set defaults valid outside too
                 validData = True
                 if len(data) == mesh.cellCount():
@@ -415,20 +411,20 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
                         updateAxes(ax, force=True)
                         return ax, gci.colorbar
                 else:
-
                     gci, validData = _drawField(ax, mesh, data, kwargs)
 
                 # Cache mesh and scalarmappable to make replaceData work
                 if not hasattr(mesh, 'gci'):
                     mesh.gci = {}
+
                 mesh.gci[ax] = gci
 
                 if cMap is not None and gci is not None:
                     gci.set_cmap(cmapFromName(cMap))
                     # gci.cmap.set_under('k')
 
-            except BaseException as e:
-                print(e)
+            except BaseException as ex:  # super ugly!
+                print(ex)
                 traceback.print_exc(file=sys.stdout)
 
     if mesh.cellCount() == 0:
