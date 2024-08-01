@@ -230,11 +230,11 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
 
     Keyword Arguments
     -----------------
-    xl: str ["x in m"]
-        Add label to the x axis. Default is 'x in m'
+    xl: str ["$x$ in m"]
+        Add label to the x axis. Default is '$x$ in m'
 
     yl: str [None]
-        Add label to the y axis. Default is 'y in m' or 'Depth in m' with
+        Add label to the y axis. Default is '$y$ in m' or 'Depth in m' with
         world boundary markers.
 
     fitView: bool
@@ -251,7 +251,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         working. You can change global hold with pg.hold(bool).
 
     axisLabels: bool [True]
-        Set x/yLabels for ax. X will be "x in m" and "y in m".
+        Set x/yLabels for ax. X will be "$x$ in m" and "$y$ in m".
         Y ticks change to depth values for a mesh with world
         boundary markers and the label becomes "Depth in m".
 
@@ -265,7 +265,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     >>> world = mt.createWorld(start=[-10, 0], end=[10, -10],
     ...                        layers=[-3, -7], worldMarker=True)
     >>> mesh = mt.createMesh(world, quality=32, area=0.2, smooth=[1, 10])
-    >>> _ = pg.viewer.showMesh(mesh, markers=True, xl='x-coordinate')
+    >>> _ = pg.viewer.showMesh(mesh, markers=True, xl='$x$-coordinate')
 
     Returns
     -------
@@ -279,7 +279,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     cBarOrientation = kwargs.pop('orientation', 'horizontal')
     replaceData = kwargs.pop('replaceData', False)
     axisLabels = kwargs.pop('axisLabels', True)
-    xl = kwargs.pop('xl', "x in m")
+    xl = kwargs.pop('xl', "$x$ in m")
     yl = kwargs.pop('yl', None)
 
     if ax is None:

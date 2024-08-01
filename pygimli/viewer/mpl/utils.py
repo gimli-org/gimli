@@ -149,7 +149,7 @@ def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
         ax.set_yticklabels(labels)
 
 
-def adjustWorldAxes(ax, useDepth:bool=True, xl:str='x in m', yl:str=None):
+def adjustWorldAxes(ax, useDepth:bool=True, xl:str='$x$ in m', yl:str=None):
     """Set some common default properties for an axe."""
     if yl is None:
         if useDepth is True:
