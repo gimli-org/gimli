@@ -149,14 +149,18 @@ def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
         ax.set_yticklabels(labels)
 
 
-def adjustWorldAxes(ax, useDepth:bool=True):
+def adjustWorldAxes(ax, useDepth:bool=True, xl:str='x in m', yl:str=None):
     """Set some common default properties for an axe."""
-    if useDepth is True:
-        ax.set_ylabel('Depth in m')
-        renameDepthTicks(ax)
+    if yl is None:
+        if useDepth is True:
+            ax.set_ylabel('Depth in m')
+            renameDepthTicks(ax)
+        else:
+            ax.set_ylabel('$y$ in m')
     else:
-        ax.set_ylabel('$y$ in m')
-    ax.set_xlabel('$x$ in m')
+        ax.set_ylabel(yl)
+
+    ax.set_xlabel(xl)
 
     ax.figure.tight_layout()
     updateAxes(ax)
