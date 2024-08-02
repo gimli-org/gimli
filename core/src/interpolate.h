@@ -99,7 +99,7 @@ void interpolateGradients(const Mesh & mesh,
 void interpolateGradients(const Mesh & mesh,
                           const stdVectorR3Vector & qp,
                           const R3Vector & u,
-                          stdVectorRMatrix & grad,
+                          stdVectorMatrixVector & grad,
                           Index dim=3);
 
 } // namespace GIMLI

@@ -283,6 +283,7 @@ void interpolateGradients(const Mesh & mesh,
                           const RVector & u,
                           stdVectorR3Vector & grad,
                           Index dim){
+    // __M
     ASSERT_VEC_SIZE(qp, mesh.cellCount())
 
     grad.resize(qp.size());
@@ -302,9 +303,23 @@ void interpolateGradients(const Mesh & mesh,
 void interpolateGradients(const Mesh & mesh,
                           const stdVectorR3Vector & qp,
                           const R3Vector & u,
-                          stdVectorRMatrix & grad,
+                          stdVectorMatrixVector & grad,
                           Index dim){
-    THROW_TO_IMPL
+    // Refactor with above!
+
+    grad.resize(qp.size());
+
+    Index i = 0;
+    for (auto &iqp: qp){
+        grad[i].resize(iqp.size());
+        const Cell &c = mesh.cell(i);
+        Index j = 0;
+        for (auto &p: iqp){
+            grad[i][j] = c.grad(p, u, dim);
+            j++;
+        }
+        i++;
+    }
 }
 
 

@@ -26,8 +26,8 @@ public:
         std::vector < GIMLI::Node * > n{nodes_[0], nodes_[1], nodes_[2]};
         GIMLI::Triangle tri(n);
 
-        GIMLI::ElementMatrix< double > E;
-        E.gradU2(tri, 1.0);
+        // GIMLI::ElementMatrix< double > E;
+        // E.gradU2(tri, 1.0);
 
 
     }

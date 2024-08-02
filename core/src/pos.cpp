@@ -143,20 +143,60 @@ void dot(const std::vector < PosVector > & a,
         dot(a[i], b[i], r[i]);
     }
 }
-DLLEXPORT void sum(const PosVector & a,
-                   RVector & r){
+
+void dot(const stdVectorRMatrix & a,
+         const stdVectorRMatrix & b,
+         RVector & r){
+
+    ASSERT_EQUAL_SIZES(a, b)
+    r.resize(a.size());
+    for (Index i = 0; i < a.size(); i ++ ){
+        r[i] = (a[i]*b[i]).sum();
+    }
+}
+
+void dot(const stdVectorMatrixVector & a,
+         const stdVectorMatrixVector & b,
+         std::vector < RVector > & r){
+
+    ASSERT_EQUAL_SIZES(a, b)
+    r.resize(a.size());
+
+    for (Index i = 0; i < a.size(); i ++ ){
+        dot(a[i], b[i], r[i]);
+    }
+}
+
+template < class Val > void _sum_vec_T(const Val & a, RVector & r){
     r.resize(a.size());
     for (Index i = 0; i < a.size(); i ++ ){
         r[i] = a[i].sum();
     }
 }
-void sum(const std::vector < PosVector > & a,
-         std::vector < RVector > & r){
+void sum(const PosVector & a, RVector & r){
+    _sum_vec_T(a, r);
+}
+void sum(const std::vector < RMatrix > & a, RVector & r){
+    _sum_vec_T(a, r);
+}
+
+template < class Val > void _sum_vec_vec_T(const std::vector < Val > & a,
+                                           std::vector < RVector > & r){
     r.resize(a.size());
     for (Index i = 0; i < a.size(); i ++ ){
         sum(a[i], r[i]);
     }
 }
+void sum(const std::vector < PosVector > & a,
+         std::vector < RVector > & r){
+    _sum_vec_vec_T(a, r);
+}
+
+void sum(const std::vector < std::vector< GIMLI::RMatrix > > & a,
+                   std::vector < RVector > & r){
+    _sum_vec_vec_T(a, r);
+}
+
 
 void saveRVector3(const std::vector < Pos > l, const std::string & fileName){
     std::fstream file; openOutFile(fileName, & file);

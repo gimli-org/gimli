@@ -976,6 +976,76 @@ for _OP in __BINOP__:
     setattr(pgcore.stdVectorR3Vector, _OP, _closure(_OP))
 
 
+def __stdVectorRMatrix_BINARY_OP__(self, b, OP):
+
+    ret = pgcore.stdVectorRMatrix()
+
+    if isScalar(b):
+        for i, ai in enumerate(self):
+            ret.append(getattr(ai, OP)(b))
+        return ret
+
+    elif len(self) == len(b):
+        for i, ai in enumerate(self):
+            ret.append(getattr(ai, OP)(b[i]))
+    else:
+        pg.critical(f'Cannot {OP} stdVectorRMatrix with different lengths:'
+                    f'{len(self)}{len(b)}')
+
+    return ret
+
+
+for _OP in __BINOP__:
+    def _closure(OP):
+        return lambda a, b: __stdVectorRMatrix_BINARY_OP__(a, b, OP)
+    setattr(pgcore.stdVectorRMatrix, _OP, _closure(_OP))
+
+
+def __stdVectorMatrixVector_BINARY_OP__(self, b, OP):
+
+    ret = pgcore.stdVectorMatrixVector()
+
+    if isScalar(b):
+        for i, ai in enumerate(self):
+            ret.append(getattr(ai, OP)(b))
+        return ret
+
+    elif len(self) == len(b):
+        for i, ai in enumerate(self):
+            ret.append(getattr(ai, OP)(b[i]))
+    else:
+        pg.critical(f'Cannot {OP} stdVectorMatrixVector with different lengths:'
+                    f'{len(self)}{len(b)}')
+
+    return ret
+
+
+for _OP in __BINOP__:
+    def _closure(OP):
+        return lambda a, b: __stdVectorMatrixVector_BINARY_OP__(a, b, OP)
+    setattr(pgcore.stdVectorMatrixVector, _OP, _closure(_OP))
+
+
+def __RMatrix_NEG__(self):
+    return pgcore.RMatrix(self*-1.0)
+pgcore.RMatrix.__neg__ = __RMatrix_NEG__
+
+def __stdVectorRMatrix_NEG__(self):
+    ret = pgcore.stdVectorRMatrix()
+    for i, ai in enumerate(self):
+        ret.append(-ai)
+    return ret
+pgcore.stdVectorRMatrix.__neg__ = __stdVectorRMatrix_NEG__
+
+
+def __stdVectorMatrixVector_NEG__(self):
+    ret = pgcore.stdVectorMatrixVector()
+    for i, ai in enumerate(self):
+        ret.append(-ai)
+    return ret
+pgcore.stdVectorMatrixVector.__neg__ = __stdVectorMatrixVector_NEG__
+
+
 ##################################
 # custom rvalues for special cases
 ##################################

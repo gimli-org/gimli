@@ -821,6 +821,10 @@ public:
         GIMLI::transMult((*this), B, C, alpha, beta);
     }
 
+    /*! Return sum of all values.*/
+    ValueType sum() const {
+        return std::accumulate(&_data[0], &_data[_rows*_cols], ValueType(0));
+    }
 
     /*! Round all values of this matrix to tol.*/
     void round(const ValueType & tol);
@@ -1311,6 +1315,13 @@ public:
     /*! Save matrix to file. */
     virtual void save(const std::string & filename) const {
         saveMatrix(*this, filename);
+    }
+
+    /*! Return sum of all values.*/
+    ValueType sum() const {
+        ValueType ret(0);
+        for (Index i = 0; i < mat_.size(); i ++) ret += GIMLI::sum(mat_[i]);
+        return ret;
     }
 
     /*! Round each matrix element to a given tolerance. */

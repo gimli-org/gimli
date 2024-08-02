@@ -522,6 +522,7 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     void test_Mv_sv(RVector & rhs, const GIMLI::RSparseMapMatrix & M, const RVector & v1,
                    const double s, const RVector & v2);
 
+    // extern template std::vector< std::vector< GIMLI::RMatrix > >;
 
 // inline void ___instantiation___(){
 //         sizeof(bool);
@@ -665,7 +666,7 @@ namespace pyplusplus{ namespace aliases{
     typedef std::vector< GIMLI::Vector< double > >      stdVectorRVector;
     typedef std::vector< GIMLI::Vector< bool > >        stdVectorBVector;
     typedef std::vector< GIMLI::Vector< GIMLI::SIndex > >      stdVectorSIndexVector;
-    typedef std::vector< GIMLI::Matrix< double > >      stdVectorRMatrix;
+    typedef std::vector< GIMLI::RMatrix >      stdVectorRMatrix;
     typedef std::vector< GIMLI::MatrixBase * >          stdpMatrixBase;
     typedef std::vector< GIMLI::R3Vector >              stdVectorR3Vector;
     typedef std::vector< GIMLI::RMatrix3 >              stdVectorMatrix3;
@@ -679,7 +680,7 @@ namespace pyplusplus{ namespace aliases{
     typedef std::vector< GIMLI::Trans < GIMLI::Vector < double > > * > stdVectorTrans;
     typedef std::vector< GIMLI::Vector< std::complex< double > > > stdVectorCVector;
     typedef std::vector< GIMLI::Vector< std::complex< double > > > stdVectorCVector;
-    typedef std::vector< std::vector< GIMLI::Matrix< double > > > stdVectorMatrixVector;
+    typedef std::vector< std::vector< GIMLI::RMatrix > > stdVectorMatrixVector;
 
     typedef std::vector< GIMLI::Boundary * >         stdVectorBounds;
     typedef std::vector< GIMLI::Cell * >             stdVectorCells;

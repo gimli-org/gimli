@@ -149,14 +149,19 @@ def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
         ax.set_yticklabels(labels)
 
 
-def adjustWorldAxes(ax, useDepth:bool=True):
+def adjustWorldAxes(ax, useDepth:bool=True,
+                    xl='$x$ in m', yl=None):
     """Set some common default properties for an axe."""
-    if useDepth is True:
-        ax.set_ylabel('Depth in m')
-        renameDepthTicks(ax)
+    if yl is None:
+        if useDepth is True:
+            ax.set_ylabel('Depth in m')
+            renameDepthTicks(ax)
+        else:
+            ax.set_ylabel('$y$ in m')
     else:
-        ax.set_ylabel('$y$ in m')
-    ax.set_xlabel('$x$ in m')
+        ax.set_ylabel(yl)
+
+    ax.set_xlabel(xl)
 
     ax.figure.tight_layout()
     updateAxes(ax)
@@ -230,25 +235,25 @@ def setPrettyTimeAxis(axis, unit=None):
                 base = '%s' % b
 
             if abs(fx) < min_exp:
-                
+
                 return r'$\mathdefault{%s%g}$' % (sign_string, x)
             elif not is_x_decade:
                 return self._non_decade_format(sign_string, base, fx, usetex)
             else:
                 return r'$\mathdefault{%s%s^{%d}}$' % (sign_string, base, fx)
 
-    
+
     @ticker.FuncFormatter
     def pfMajorFormatter(x, pos):
         return pg.utils.prettyTime(x) % x
-            
+
     # axis.set_major_formatter(pfMajorFormatter)
     # axis.set_major_formatter(pfMajorFormatter)
     #axis.set_major_formatter(ticker.LogFormatter())
     #axis.set_major_formatter(ticker.LogFormatterExponent())
     #axis.set_major_formatter(ticker.LogFormatterMathtext())
     #axis.set_major_formatter(ticker.LogFormatterSciNotation())
-    
+
     if unit == 'y':
         #pg._r(dir(axis))
         axis.set_major_formatter(MyLogFormatterMathtext(minExp=4))
@@ -270,7 +275,7 @@ def setPrettyTimeAxis(axis, unit=None):
 
         axis.set_major_formatter(major_formatter)
         axis._axes.set_xlabel('Zeit')
-        
+
 def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0, fontsize=9,
                    scale=1, usetex=True):
     """Set preferred output style."""

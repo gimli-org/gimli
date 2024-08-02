@@ -461,6 +461,8 @@ public:
         A[1].fill(2);
         CPPUNIT_ASSERT(sum(A.row(1)) == A.cols()*2);
         CPPUNIT_ASSERT(sum(A.col(1)) == A.rows()*2);
+
+        CPPUNIT_ASSERT(A.sum() == 24);
     }
 
     void testMatrix(){
@@ -470,14 +472,14 @@ public:
         testMatrix_< GIMLI::DenseMatrix < double >, double >();
 
         testMatrixResizes< GIMLI::Matrix < double > > ();
-        
+
         GIMLI::setNoCBlas(true);
         testMatrixMV< GIMLI::Matrix < double > >();
         testMatrixMV< GIMLI::DenseMatrix < double > >();
         GIMLI::setNoCBlas(false);
         testMatrixMV< GIMLI::Matrix < double > >();
         testMatrixMV< GIMLI::DenseMatrix < double > >();
-        
+
         testMatrixMV< GIMLI::RSparseMapMatrix >();
         testMatrixMV< GIMLI::RSparseMatrix >();
 
@@ -492,11 +494,11 @@ public:
     void testSparseMatrixRowCol(){
         Index m = 2;
         Index n = 3;
-        
+
         double *_A = new double[m * n];
         for (Index i = 0; i < m*n; i ++ ) _A[i] = i+1;
         GIMLI::Matrix A_(m, n, _A);
-        
+
         GIMLI::RSparseMatrix AS(A_);
 
         CPPUNIT_ASSERT(AS.row(0) == AS.transMult(GIMLI::RVector({1, 0})));
@@ -512,7 +514,7 @@ public:
         CPPUNIT_ASSERT(AM.col(0) == AM.mult(GIMLI::RVector({1, 0, 0})));
         CPPUNIT_ASSERT(AM.col(1) == AM.mult(GIMLI::RVector({0, 1, 0})));
         CPPUNIT_ASSERT(AM.col(2) == AM.mult(GIMLI::RVector({0, 0, 1})));
-    
+
     }
 
     void testSparseMatrixBasics(){
@@ -521,14 +523,10 @@ public:
         double *_A = new double[m * n];
         for (Index i = 0; i < m*n; i ++ ) _A[i] = i+1;
         GIMLI::Matrix A_(m, n, _A);
-        
         GIMLI::RSparseMatrix A(A_);
-        
         GIMLI::RSparseMatrix B(A + 2.0 * A);
         GIMLI::RSparseMatrix C(A + A * 2.0);
-        
         CPPUNIT_ASSERT(B.values() == C.values());
-
     }
 
     void testSmallMatrix(){
@@ -541,7 +539,7 @@ public:
     void testMatrixMV(){
         Index m = 2;
         Index n = 3;
-        
+
         double *_A = new double[m * n];
         for (Index i = 0; i < m*n; i ++ ) _A[i] = i+1;
         GIMLI::Matrix A_(m, n, _A);
@@ -569,7 +567,7 @@ public:
         GIMLI::Matrix B_(n, m, _A);
 
         Mat B(B_);
-        
+
         CPPUNIT_ASSERT(B.mult(GIMLI::range(1, m+1))==GIMLI::RVector({5, 11, 17}));
         CPPUNIT_ASSERT(B.transMult(GIMLI::range(1, n+1))==GIMLI::RVector({22,28}));
     }

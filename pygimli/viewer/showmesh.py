@@ -260,14 +260,18 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
 
     Keyword Arguments
     -----------------
-    xlabel: str [None]
-            Add label to the x axis
-    ylabel: str [None]
-            Add label to the y axis
+    xl: str [None]
+        Add label to the x axis. Default is '$x$ in m'
+
+    yl: str [None]
+        Add label to the y axis. Default is '$y$ in m' or 'Depth in m' with
+        world boundary markers.
+
     fitView: bool
-            Fit the axes limits to the all content of the axes. Default True.
+        Fit the axes limits to the all content of the axes. Default True.
+
     boundaryProps: dict
-            Arguments for plotboundar
+        Arguments for plotboundar
 
     hold: bool [pg.hold()]
         Holds back the opening of the Figure.
@@ -306,6 +310,8 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     cBarOrientation = kwargs.pop('orientation', 'horizontal')
     replaceData = kwargs.pop('replaceData', False)
     axisLabels = kwargs.pop('axisLabels', True)
+    xl = kwargs.pop('xl', '$x$ in m')
+    yl = kwargs.pop('yl', None)
 
     if ax is None:
         ax, _ = pg.show(figsize=kwargs.pop('figsize', None), **kwargs)
@@ -596,16 +602,15 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     if axisLabels == True and mesh.dim() == 2:
 
         try:
-            pg.viewer.mpl.adjustWorldAxes(ax, useDepth=min(mesh.boundaryMarkers()) < 0)
+            pg.viewer.mpl.adjustWorldAxes(ax,
+                                    useDepth=min(mesh.boundaryMarkers()) < 0,
+                                    xl=xl, yl=yl)
         except BaseException:
             pass
     else:
         pg.viewer.mpl.updateAxes(ax)
 
     pg.viewer.mpl.hold(val=lastHoldStatus)
-
-    if kwargs.get('depth', False):
-        pg.viewer.mpl.adjustWorldAxes(ax)
 
     if savefig:
         print('saving: ' + savefig + ' ...', end="")
@@ -687,6 +692,11 @@ def show1D(mesh, obj, **kwargs):
     if hasattr(obj, 'eval'):
         x = pg.sort(pg.x(mesh))
         v = obj(x)
+
+        if hasattr(v, 'ndim') and v.ndim == 2 and v.shape[0] == mesh.nodeCount():
+        # Vector Field -- show x--component
+            v = v[:,0]
+
     elif hasattr(obj, 'values'):
         pg._r(kwargs)
         pg._r(mesh)
@@ -696,13 +706,16 @@ def show1D(mesh, obj, **kwargs):
         x = pg.sort(pg.x(mesh))
         v = obj
     elif isinstance(obj, list):
-        return show1D(mesh, np.array(obj),  ax=ax, **kwargs)
+        return show1D(mesh, np.array(obj), ax=ax, **kwargs)
+
     elif hasattr(obj, 'ndim') and obj.ndim == 2 and pg.isArray(obj[0], mesh.nodeCount()):
+        # list of values for animation
         return showAnimation(mesh, obj, ax=ax, **kwargs)
     else:
         pg._r(kwargs)
         pg._r(mesh)
         pg._r(obj)
+        pg._r(obj.shape)
         pg.critical('implementme')
 
     swapAxes = kwargs.pop('swapAxes', False)

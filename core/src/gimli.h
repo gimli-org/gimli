@@ -347,6 +347,7 @@ typedef std::vector < SIndex > SIndexArray;
 typedef std::vector< GIMLI::Vector< double > >      stdVectorRVector;
 typedef std::vector< GIMLI::R3Vector >              stdVectorR3Vector;
 typedef std::vector< GIMLI::Matrix< double > >      stdVectorRMatrix;
+typedef std::vector< stdVectorRMatrix >             stdVectorMatrixVector;
 
 typedef Matrix < double > RMatrix;
 typedef Matrix < Complex > CMatrix;

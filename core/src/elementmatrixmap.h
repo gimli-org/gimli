@@ -71,7 +71,7 @@ public:
 
     #define DEFINE_INTEGRATOR_LF_NODE(A_TYPE, varname)                         \
         /*! R = \int_mesh this * f \d d mesh and R = RVector(dof) and          \
-            f = A_TYPE                                                         \        
+            f = A_TYPE                                                         \
         */                                                                     \
         void integrate_n(const A_TYPE & varname, RVector & R,                  \
                          const double & alpha=1.0) const;                      \
@@ -82,7 +82,7 @@ public:
                          const RVector & alpha) const;                         \
         /*! Integrate into linear form R = alpha[cellID]*\int_mesh             \
         this * f * R \d d mesh and R = RVector(dof) and f = A_TYPE             \
-        */ 
+        */
     DEFINE_INTEGRATOR_LF_NODE(RVector, rv)      // const scalar for each node
     DEFINE_INTEGRATOR_LF_NODE(PosVector, pv)    // const vector for each node
     DEFINE_INTEGRATOR_LF_NODE(std::vector< RSmallMatrix >, vrm)// const matrix for each node
@@ -157,7 +157,7 @@ public:
 
     #undef DEFINE_ASSEMBLER
 
-    /*!Performance issues here. Don't use in python until 
+    /*!Performance issues here. Don't use in python until
     return_value_policy< bp::copy_const_reference > has been changed. */
     const std::vector< ElementMatrix < double > > & mats() const;
 
@@ -166,7 +166,7 @@ public:
     void collectQuadraturePoints() const;
 
     std::vector < PosVector > & quadraturePoints() const;
-    
+
     std::vector < PosVector > * quadraturePointsRef(){
         return &quadrPnts_;
     }
@@ -222,7 +222,6 @@ protected:
     std::vector< IndexArray > _ids;
     std::vector< Index > row_;
 
-    
     Index rows_;
     Index cols_;
 
