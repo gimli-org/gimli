@@ -21,6 +21,8 @@ from .methodManager import (fit, MethodManager, MethodManager1d,
 
 from .timelapse import MultiFrameModelling
 
+from .linesearch import lineSearch
+
 # from .resolution import computeR
 
 from .harmfit import HarmFunctor, harmfit, harmfitNative
