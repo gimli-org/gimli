@@ -153,6 +153,14 @@ class Inversion(object):
     @dataTrans.setter
     def dataTrans(self, dt):
         """Set data transformation."""
+        if isinstance(dt, str):
+            if dt.lower().startswith("lin"):
+                dt = pg.trans.Trans()
+            elif dt.lower().startswith("log"):
+                dt = pg.trans.TransLog()
+            else:  # check for LU values, e.g. "Log1-1000" or "Cot0-1"
+                raise KeyError("Transformation string unknown!")
+
         self._dataTrans = dt
         self.inv.setTransData(self._dataTrans)
 
@@ -164,6 +172,14 @@ class Inversion(object):
     @modelTrans.setter
     def modelTrans(self, mt):
         """Set model transformation."""
+        if isinstance(mt, str):
+            if mt.lower().startswith("lin"):
+                mt = pg.trans.Trans()
+            elif mt.lower().startswith("log"):
+                mt = pg.trans.TransLog()
+            else:  # check for LU values, e.g. "Log1-1000" or "Cot0-1"
+                raise KeyError("Transformation string unknown!")
+
         self.fop.modelTrans = mt  # self._modelTrans # ????
 
     @property
@@ -384,6 +400,7 @@ class Inversion(object):
     def lam(self, lam):
         """Set regularization strength."""
         self._lam = lam
+        self.inv.setLambda(lam)
 
     def setDeltaPhiStop(self, it):
         """Define minimum relative decrease in objective function to stop."""
@@ -874,11 +891,11 @@ class Inversion(object):
 
     def dataGradient(self):
         """Data gradient from jacobian and residual, i.e. J^T * dData."""
-        return self.jacobianMatrix(error_weighted=True).transMult(self.residual())
+        return -self.jacobianMatrix(error_weighted=True).transMult(self.residual())
 
     def modelGradient(self):
         """Model gradient, i.e. C^T * C * (m - m0)."""
-        self.inv.checkConstraints() # not necessary?
+        # self.inv.checkConstraints() # not necessary?
         C = pg.matrix.MultLeftMatrix(self.fop.constraints(),
                                      self.inv.cWeight())
         return C.transMult(C.mult(self.modelTrans(self.model)))
