@@ -230,14 +230,18 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
 
     Keyword Arguments
     -----------------
-    xlabel: str [None]
-            Add label to the x axis
-    ylabel: str [None]
-            Add label to the y axis
+    xl: str ["$x$ in m"]
+        Add label to the x axis. Default is '$x$ in m'
+
+    yl: str [None]
+        Add label to the y axis. Default is '$y$ in m' or 'Depth in m' with
+        world boundary markers.
+
     fitView: bool
-            Fit the axes limits to the all content of the axes. Default True.
+        Fit the axes limits to the all content of the axes. Default True.
+
     boundaryProps: dict
-            Arguments for plotboundar
+        Arguments for plotboundar
 
     hold: bool [pg.hold()]
         Holds back the opening of the Figure.
@@ -247,13 +251,12 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         working. You can change global hold with pg.hold(bool).
 
     axisLabels: bool [True]
-        Set x/yLabels for ax. X will be "x in m" and "y in m".
+        Set x/yLabels for ax. X will be "$x$ in m" and "$y$ in m".
         Y ticks change to depth values for a mesh with world
         boundary markers and the label becomes "Depth in m".
 
     All remaining will be forwarded to the draw functions
     and matplotlib methods, respectively.
-
 
     Examples
     --------
@@ -262,7 +265,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     >>> world = mt.createWorld(start=[-10, 0], end=[10, -10],
     ...                        layers=[-3, -7], worldMarker=True)
     >>> mesh = mt.createMesh(world, quality=32, area=0.2, smooth=[1, 10])
-    >>> _ = pg.viewer.showMesh(mesh, markers=True)
+    >>> _ = pg.viewer.showMesh(mesh, markers=True, xl='$x$-coordinate')
 
     Returns
     -------
@@ -276,6 +279,8 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     cBarOrientation = kwargs.pop('orientation', 'horizontal')
     replaceData = kwargs.pop('replaceData', False)
     axisLabels = kwargs.pop('axisLabels', True)
+    xl = kwargs.pop('xl', "$x$ in m")
+    yl = kwargs.pop('yl', None)
 
     if ax is None:
         ax, _ = pg.show(figsize=kwargs.pop('figsize', None), **kwargs)
@@ -533,11 +538,14 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     if axisLabels == True and mesh.dim() == 2:
 
         try:
-            pg.viewer.mpl.adjustWorldAxes(ax, useDepth=min(mesh.boundaryMarkers()) < 0)
+            pg.viewer.mpl.adjustWorldAxes(ax,
+                                       useDepth=min(mesh.boundaryMarkers()) < 0,
+                                       xl=xl, yl=yl)
         except BaseException:
             pass
     else:
         pg.viewer.mpl.updateAxes(ax)
+
     pg.viewer.mpl.hold(val=lastHoldStatus)
 
     if savefig:
