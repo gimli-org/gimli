@@ -73,7 +73,7 @@ class Inversion(object):
         else:
             self._inv = pg.core.RInversion(self._verbose, self._debug)
 
-        self._dataTrans = pg.trans.TransLin()
+        self.dataTrans = kwargs.pop('dataTrans', pg.trans.TransLin())
         self.axs = None  # for showProgress only
         self.maxIter = kwargs.pop('maxIter', 20)
 

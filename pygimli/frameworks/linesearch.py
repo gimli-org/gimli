@@ -79,7 +79,11 @@ def lineSearchInter(inv, dM, taus=None, show=False, **kwargs):
         phis[i] = inv.inv.getPhi(newModel, newResponse)
 
     if show:
-        pg.plt.semilogx(taus, phis)
+        if kwargs.get("logScale", False):
+            pg.plt.semilogx(taus, phis)
+        else:
+            pg.plt.plot(taus, phis)
+
 
     return taus[np.argmin(phis)], newResponse
 
@@ -104,9 +108,34 @@ def lineSearchInterOld(inv, dM, nTau=100, maxTau=1.0):
 
     return taus[np.argmin(phi)], responseLS
 
-def lineSearchQuad(inv, dM, tau05=0.3, tau1=1):
+def lineSearchQuad(inv, dm, tautest=0.3, tau1=1, show=False):
     """Optimize line search by fitting parabola by Phi(tau) curve."""
-    return 0.1, None
+    y0 = inv.inv.getPhi()
+    x1 = tau1
+    fullModel = np.exp(dm*x1)*inv.model
+    fullResponse = inv.fop.response(fullModel)
+    xt = tautest
+    testModel = np.exp(dm*xt)*inv.model
+    testResponse = inv.fop.response(testModel)
+    y1 = inv.inv.getPhi(fullModel, fullResponse)
+    yt = inv.inv.getPhi(testModel, testResponse)
+    rt = (yt-y0) / xt
+    r1 = (y1-y0) / x1
+    a = (rt - r1) / (xt - x1)
+    b = (-rt*x1 + r1*xt) / (xt - x1)
+    xopt = -b/a/2
+    if show:
+        taus = np.arange(0, 1.001, 0.01)
+        ax = pg.plt.subplots()[1]
+        ax.plot(taus, taus**2*a+taus*b+y0, label="parabola")
+        ax.plot(0, y0, "*", label="start")
+        ax.plot(xt, yt, "*", label="test")
+        ax.plot(x1, y1, "*", label="full")
+        ax.plot(xopt, a*xopt**2+b*xopt+y0, "*", label="min")
+        ax.grid()
+        ax.legend()
+
+    return xopt, None
 
 def lineSearch(inv, dm, method=None, **kwargs):
     """Carry out line search."""
