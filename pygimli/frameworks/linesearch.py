@@ -43,7 +43,10 @@ def lineSearchExact(inv, dM, taus=None, show=False, **kwargs):
         phis[i] = inv.inv.getPhi(newModel, newResponse)
 
     if show:
-        pg.plt.semilogx(taus, phis)
+        if kwargs.get("logScale", False):
+            pg.plt.semilogx(taus, phis)
+        else:
+            pg.plt.plot(taus, phis)
 
     return taus[np.argmin(phis)], newResponse
 
@@ -84,7 +87,6 @@ def lineSearchInter(inv, dM, taus=None, show=False, **kwargs):
         else:
             pg.plt.plot(taus, phis)
 
-
     return taus[np.argmin(phis)], newResponse
 
 
@@ -124,6 +126,7 @@ def lineSearchQuad(inv, dm, tautest=0.3, tau1=1, show=False):
     a = (rt - r1) / (xt - x1)
     b = (-rt*x1 + r1*xt) / (xt - x1)
     xopt = -b/a/2
+    # xopt = (rt*x1 - r1*xt) / (rt - r1) / 2
     if show:
         taus = np.arange(0, 1.001, 0.01)
         ax = pg.plt.subplots()[1]
@@ -138,7 +141,35 @@ def lineSearchQuad(inv, dm, tautest=0.3, tau1=1, show=False):
     return xopt, None
 
 def lineSearch(inv, dm, method=None, **kwargs):
-    """Carry out line search."""
+    """Carry out line search.
+
+    Optimize step length s such that
+    m + s*dm
+    is minimized.
+
+    Parameter
+    ---------
+    inv : pg.Inversion
+        Inversion instance
+    dm : iterable
+        model update direction
+    method : str ['auto']
+        Method to be used:
+        'exact' : function evaluation for every step
+        'interp' : linear interpolation of response
+        'quad' : fitting a parabola through 3 points
+        'auto': first try 'inter', then 'quad', else 0.1
+    taus : array [None]
+        array containing the tau values to test, alternatively:
+    taumin : float [0.01]
+        minimum value
+    taumax : float [1]
+        maximum value
+    logScale : bool [False]
+        use logarithmic scaling, otherwise linear
+    show : bool [False]
+        show line search curve
+    """
     if method.lower().startswith("exact"):
         return lineSearchExact(inv, dm, **kwargs)
     elif method.lower().startswith("int"):
