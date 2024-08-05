@@ -140,7 +140,7 @@ def lineSearchQuad(inv, dm, tautest=0.3, tau1=1, show=False):
 
     return xopt, None
 
-def lineSearch(inv, dm, method=None, **kwargs):
+def lineSearch(inv, dm, method='auto', **kwargs):
     """Carry out line search.
 
     Optimize step length s such that

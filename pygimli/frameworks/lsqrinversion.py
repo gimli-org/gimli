@@ -4,6 +4,7 @@ from math import sqrt
 import numpy as np
 import pygimli as pg
 from pygimli.solver.leastsquares import lsqr as lssolver
+from pygimli.frameworks import lineSearch
 
 
 class LSQRInversion(pg.Inversion):
@@ -75,15 +76,8 @@ class LSQRInversion(pg.Inversion):
             rhs = pg.cat(pg.cat(deltaD, deltaC), deltaG)
 
         dM = lssolver(self.A, rhs, maxiter=self.LSQRiter, verbose=self.verbose)
-        tau, responseLS = self.lineSearchInter(dM)
+        tau, responseLS = lineSearch(inv, dM)
         pg.debug(f"tau={tau}")
-        if tau < 0.1:  # did not work out
-            tau = self.lineSearchQuad(dM, responseLS)
-        if tau > 0.9:  # save time and take 1
-            tau = 1.0
-        elif tau < 0.1:  # still not working
-            tau = 0.1  # tra a small value
-
         self.model = tM.update(self.model, dM*tau)
         if tau == 1.0:
             self.inv.setResponse(responseLS)
@@ -93,30 +87,6 @@ class LSQRInversion(pg.Inversion):
         # self.inv.setLambda(self.lam * self.inv.lambdaFactor())
         self.inv.setModel(self.model)
         return True
-
-    def lineSearchInter(self, dM, nTau=100, maxTau=1.0):
-        """Optimizes line search parameter by linear response interpolation."""
-        tD = self.dataTrans
-        tM = self.modelTrans
-        model = self.model
-        response = self.response
-        modelLS = tM.update(model, dM * maxTau)
-        responseLS = self.fop.response(modelLS)
-        taus = np.arange(1, nTau+1) / nTau * maxTau
-        phi = np.ones_like(taus) * self.phi()
-        phi[-1] = self.phi(modelLS, responseLS)
-        t0 = tD.fwd(response)
-        t1 = tD.fwd(responseLS)
-        for i, tau in enumerate(taus):
-            modelI = tM.update(model, dM*tau)
-            responseI = tD.inv(t1*tau+t0*(1.0-tau))
-            phi[i] = self.phi(modelI, responseI)
-
-        return taus[np.argmin(phi)], responseLS
-
-    def lineSearchQuad(self, dM, responseLS):
-        """Optimize line search by fitting parabola by Phi(tau) curve."""
-        return 0.1
 
 
 if __name__ == '__main__':
