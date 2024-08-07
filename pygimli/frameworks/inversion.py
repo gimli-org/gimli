@@ -5,12 +5,12 @@ Basic inversion frameworks that usually needs a forward operator to run.
 """
 import numpy as np
 import pygimli as pg
-
+from pygimli.core.trans import str2Trans
 from pygimli.utils import prettyFloat as pf
 
 
 class Inversion(object):
-    """Basic inversion framework.
+    """Basic Gauss-Newton based inversion framework (to be removed).
 
     Changes to prior Versions (remove me)
 
@@ -154,12 +154,7 @@ class Inversion(object):
     def dataTrans(self, dt):
         """Set data transformation."""
         if isinstance(dt, str):
-            if dt.lower().startswith("lin"):
-                dt = pg.trans.Trans()
-            elif dt.lower().startswith("log"):
-                dt = pg.trans.TransLog()
-            else:  # check for LU values, e.g. "Log1-1000" or "Cot0-1"
-                raise KeyError("Transformation string unknown!")
+            dt = str2Trans(dt)
 
         self._dataTrans = dt
         self.inv.setTransData(self._dataTrans)
@@ -173,12 +168,7 @@ class Inversion(object):
     def modelTrans(self, mt):
         """Set model transformation."""
         if isinstance(mt, str):
-            if mt.lower().startswith("lin"):
-                mt = pg.trans.Trans()
-            elif mt.lower().startswith("log"):
-                mt = pg.trans.TransLog()
-            else:  # check for LU values, e.g. "Log1-1000" or "Cot0-1"
-                raise KeyError("Transformation string unknown!")
+            mt = str2Trans(mt)
 
         self.fop.modelTrans = mt  # self._modelTrans # ????
 
@@ -908,7 +898,7 @@ class MarquardtInversion(Inversion):
     """Marquardt scheme, i.e. local damping with decreasing strength."""
 
     def __init__(self, fop=None, **kwargs):
-        super(MarquardtInversion, self).__init__(fop, **kwargs)
+        super().__init__(fop, **kwargs)
         self.stopAtChi1 = False
         self.inv.setLocalRegularization(True)
         self.inv.setLambdaFactor(0.8)
