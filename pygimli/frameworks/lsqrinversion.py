@@ -76,7 +76,7 @@ class LSQRInversion(pg.Inversion):
             rhs = pg.cat(pg.cat(deltaD, deltaC), deltaG)
 
         dM = lssolver(self.A, rhs, maxiter=self.LSQRiter, verbose=self.verbose)
-        tau, responseLS = lineSearch(inv, dM)
+        tau, responseLS = lineSearch(self, dM)
         pg.debug(f"tau={tau}")
         self.model = tM.update(self.model, dM*tau)
         if tau == 1.0:
