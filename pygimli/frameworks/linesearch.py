@@ -40,7 +40,7 @@ def lineSearchExact(inv, dM, taus=None, show=False, **kwargs):
     for i, tau in enumerate(taus):
         newModel = inv.modelTrans.update(inv.model, dM*tau)
         newResponse = inv.fop.response(newModel)
-        phis[i] = inv.inv.getPhi(newModel, newResponse)
+        phis[i] = inv.phi(newModel, newResponse)
 
     if show:
         if kwargs.get("logScale", False):
@@ -79,7 +79,7 @@ def lineSearchInter(inv, dM, taus=None, show=False, **kwargs):
     for i, tau in enumerate(taus):
         newModel = inv.modelTrans.update(inv.model, dM*tau)
         newResponse = dT.inv(oldResponse + (fullResponse - oldResponse) * tau)
-        phis[i] = inv.inv.getPhi(newModel, newResponse)
+        phis[i] = inv.phi(newModel, newResponse)
 
     if show:
         if kwargs.get("logScale", False):
@@ -112,15 +112,15 @@ def lineSearchInterOld(inv, dM, nTau=100, maxTau=1.0):
 
 def lineSearchQuad(inv, dm, tautest=0.3, tau1=1, show=False):
     """Optimize line search by fitting parabola by Phi(tau) curve."""
-    y0 = inv.inv.getPhi()
+    y0 = inv.phi()
     x1 = tau1
     fullModel = np.exp(dm*x1)*inv.model
     fullResponse = inv.fop.response(fullModel)
     xt = tautest
     testModel = np.exp(dm*xt)*inv.model
     testResponse = inv.fop.response(testModel)
-    y1 = inv.inv.getPhi(fullModel, fullResponse)
-    yt = inv.inv.getPhi(testModel, testResponse)
+    y1 = inv.phi(fullModel, fullResponse)
+    yt = inv.phi(testModel, testResponse)
     rt = (yt-y0) / xt
     r1 = (y1-y0) / x1
     a = (rt - r1) / (xt - x1)
