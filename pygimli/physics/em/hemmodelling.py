@@ -4,9 +4,9 @@
 from math import sqrt, pi
 import numpy as np
 
-
 import pygimli as pg
-from pygimli.frameworks import Block1DModelling
+from pygimli.physics.constants import Constants
+from pygimli.frameworks import Block1DModelling, MeshModelling
 
 
 def registerDAEROcmap():
@@ -22,7 +22,7 @@ def registerDAEROcmap():
     """
     from matplotlib.colors import LinearSegmentedColormap
     import matplotlib as mpl
-        
+
     CMY = np.array([
         [127, 255, 31], [111, 255, 47], [95, 255, 63], [79, 255, 79],
         [63, 255, 95], [47, 255, 111], [31, 255, 127], [16, 255, 159],
@@ -41,9 +41,6 @@ def registerDAEROcmap():
 # class HEMmodelling(pg.Modelling):
 class HEMmodelling(Block1DModelling):
     """HEM Airborne modelling class based on the BGR RESOLVE system."""
-
-    from pygimli.physics.constants import Constants
-
     ep0 = Constants.e0
     mu0 = Constants.mu0
     c0 = sqrt(1. / ep0 / mu0)
@@ -97,11 +94,11 @@ class HEMmodelling(Block1DModelling):
         super().__init__()
         self.setMesh(mesh)
 
-    def response(self, par):
+    def response(self, model):
         """Compute response vector by pasting in-phase and out-phase data."""
         ip, op = self.vmd_hem(self.height,
-                              np.asarray(par)[self.nlay-1:self.nlay*2-1],
-                              np.asarray(par)[:self.nlay-1])
+                              np.asarray(model[self.nlay-1:self.nlay*2-1]),
+                              np.asarray(model[:self.nlay-1]))
         return pg.cat(ip, op)
 
     def response_mt(self, par, i=0):
@@ -270,7 +267,7 @@ class HEMmodelling(Block1DModelling):
                 lam[:, :, index]**2 - np.tile(self.wem[index], (1, nc, 1)) +
                 np.tile(self.iwm[index], (1, nc, 1)) / 1e9)  # (1, 100 , nfreq)
         # Admittanzen an der Oberfläche eines geschichteten Halbraums
-        b1, _, aap = self.downward(rho, d, 0.0, epr, mur, lam)
+        b1, _, _ = self.downward(rho, d, 0.0, epr, mur, lam)
         # Kernel functions
         e = np.exp(-2.0 * h * alpha0)  # (1, 100, nfreq)
         delta0 = (b1 - alpha0 * mur[0]) / (b1 + alpha0 * mur[0]) * e
@@ -485,9 +482,9 @@ class HEMRhoModelling(HEMmodelling):
         self.mymesh = pg.meshtools.createMesh1D(nlay)
         self.setMesh(self.mymesh)  # only for inversion
 
-    def response(self, res):
+    def response(self, model):
         """Forward response as combined in-phase and out-of-phase."""
-        ip, op = self.vmd_hem(self.height, rho=np.asarray(res), d=self.dvec)
+        ip, op = self.vmd_hem(self.height, rho=model, d=self.dvec)
         return pg.cat(ip, op)
 
 
@@ -502,11 +499,11 @@ class FDEMResSusModelling(HEMmodelling):
         self.setMesh(self.mymesh)  # only for inversion
         # pg.core.ModellingBase.__init__(self, self.mymesh)
 
-    def response(self, par):
+    def response(self, model):
         """Response vector as combined in-phase and out-phase data."""
-        thk = np.asarray(par[:self.nlay-1], dtype=float)
-        res = np.asarray(par[self.nlay-1:2*self.nlay-1], dtype=float)
-        mur = np.asarray(par[2*self.nlay-1:3*self.nlay-1], dtype=float) + 1
+        thk = np.asarray(model[:self.nlay-1], dtype=float)
+        res = np.asarray(model[self.nlay-1:2*self.nlay-1], dtype=float)
+        mur = np.asarray(model[2*self.nlay-1:3*self.nlay-1], dtype=float) + 1
         ip, op = self.vmd_hem(self.height, rho=res, d=thk, mur=mur)
         return pg.cat(ip, op)
 
@@ -613,11 +610,26 @@ class FDEM2dFOP(pg.core.ModellingBase):
             self.FOP1d[i].createJacobian(modA[i])
 
 
+class FDEMSmoothModelling(MeshModelling):
+    """Occam-style (smooth) inversion."""
+    def __init__(self, thk, **kwargs):
+        super().__init__()
+        self.thk_ = thk
+        self.nlay_ = len(thk)+1
+        self.core = HEMmodelling(**kwargs, nLayers=self.nlay_)
+        self.mesh_ = pg.meshtools.createMesh1D(self.nlay_)
+        self.setMesh(self.mesh_)
+
+    def response(self, par):
+        """Model response (forward modelling)."""
+        return self.core.response(pg.cat(self.thk_, par))
+
+
 if __name__ == '__main__':
     numlay = 3
-    height = float(30.0)
+    elevation = float(30.0)
     resistivity = np.array([1000.0, 100.0, 1000.0], float)
     thickness = np.array([22.0, 29.0], float)
-    f = HEMmodelling(numlay, height, r=10)  # frequency, separation)
-    IP, OP = f.vmd_hem(height, resistivity, thickness)
-    print(IP, OP)
+    fop = HEMmodelling(numlay, elevation, r=10)  # frequency, separation)
+    IP, OP = fop.vmd_hem(elevation, resistivity, thickness)
+    pg.info(IP, OP)

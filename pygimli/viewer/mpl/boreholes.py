@@ -5,8 +5,9 @@ Created on Mon Feb 16 09:33:14 2015
 @author: Marcus Wennermark
 """
 import numpy as np
-import matplotlib.pyplot as plt
+
 from .modelview import draw1DColumn
+from .colorbar import cmapFromName
 
 
 def create_legend(ax, cmap, ids, classes):
@@ -52,15 +53,14 @@ class BoreHole(object):
     def _load(self):
         """Loads the data file."""
         self.data = np.genfromtxt(self._fname, dtype=None)
-        if self.data.size > 1:
-            header = self.data[0][2].split('_')
+        if len(self.data) > 1:
+            header = self.data[0][2].decode('UTF-8').split('_')
             self.borehole_id = header[0]
             self._textoffset = float(header[1])
             self.inline_pos = (self.data[0][0], self.data[0][1])
-            self.classes = [d[-1] for d in self.data[1:]]
-            self.unique_classes, rev_idx = np.unique(self.classes,
-                                                     return_inverse=True)
-            self.class_id = rev_idx
+            self.classes = [d[-1].decode('UTF-8') for d in self.data[1:]]
+            self.unique_classes, self.class_id = \
+                np.unique(self.classes, return_inverse=True)
         else:
             raise Warning('File "{}" contains no layers!'.format(self._fname))
 
@@ -76,12 +76,13 @@ class BoreHole(object):
             cmax = max(self.class_id)
 
         if cm is None:
-            cm = plt.get_cmap('jet', len(self.unique_classes))
+            cm = cmapFromName("Set3", len(self.unique_classes))
+            # cm = plt.get_cmap('jet', len(self.unique_classes))
 
         draw1DColumn(ax, self.inline_pos[0], self.class_id, thickness,
                      ztopo=self.inline_pos[1], width=plot_thickness, cMin=cmin,
                      cMax=cmax, name=self.borehole_id, cMap=cm,
-                     textoffset=self._textoffset)
+                     textoffset=self._textoffset, logScale=False)
 
         if do_legend:
             self.add_legend(ax, cm, **legend_kwargs)
@@ -101,6 +102,10 @@ class BoreHoles(object):
 
     def __init__(self, fnames):
         """Load a list of bore hole from filenames."""
+        if isinstance(fnames, str):
+            if fnames.find("*") >= 0:
+                from glob import glob
+                fnames = glob(fnames)
         self._fnames = fnames
         if len(fnames) > 0:
             self.boreholes = [BoreHole(f) for f in fnames]
@@ -122,7 +127,7 @@ class BoreHoles(object):
 
         Such that a certain classification has the same color on all boreholes.
         """
-
+        import matplotlib.pyplot as plt
         self.common_unique, rev_idx = np.unique(
             np.hstack([b.classes for b in self.boreholes]),
             return_inverse=True)

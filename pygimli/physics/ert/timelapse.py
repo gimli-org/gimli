@@ -3,8 +3,6 @@ import os.path
 from glob import glob
 from datetime import datetime, timedelta
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
 import pygimli as pg
 from pygimli.physics import ert
 from .processing import combineMultipleData
@@ -52,13 +50,16 @@ class TimelapseERT():
         self.ERR = kwargs.pop("ERR", [])
         self.times = kwargs.pop("times", [])
         self.mesh = kwargs.pop("mesh", None)
+        self.pd = None
         self.name = "new"
         self.models = []
         self.responses = []
         self.chi2s = []
         self.model = None
         self.mgr = ert.ERTManager()
-        self.pd = None
+        if self.mesh is not None:
+            self.mgr.setMesh(self.mesh)
+
         if filename is not None:
             if isinstance(filename, str):
                 self.load(filename, **kwargs)
@@ -236,7 +237,7 @@ class TimelapseERT():
             tokens to extract data from
         """
         if ax is None:
-            _, ax = plt.subplots(figsize=[8, 5])
+            _, ax = pg.plt.subplots(figsize=[8, 5])
         good = np.ones(self.data.size(), dtype=bool)
         lab = kwargs.pop("label", "ABMN") + ": "
         for k, v in kwargs.items():
@@ -291,7 +292,7 @@ class TimelapseERT():
                 print("Could not get reciprocal model for timestep", i)
 
         if show:
-            _, ax = plt.subplots(nrows=2, sharex=True)
+            _, ax = pg.plt.subplots(nrows=2, sharex=True)
             ax[0].plot(self.times, p*100)
             ax[1].plot(self.times, a)
             ax[0].set_ylabel("relative error (%)")
@@ -307,8 +308,10 @@ class TimelapseERT():
         Iterates through times and calls showData into multi-page pdf
         """
         kwargs.setdefault("verbose", False)
+        from matplotlib.backends.backend_pdf import PdfPages
+
         with PdfPages(self.name+'-data.pdf') as pdf:
-            fig = plt.figure(figsize=kwargs.pop("figsize", [5, 5]))
+            fig = pg.plt.figure(figsize=kwargs.pop("figsize", [5, 5]))
             for i in range(self.DATA.shape[1]):
                 ax = fig.subplots()
                 self.showData(t=i, ax=ax, **kwargs)
@@ -422,7 +425,7 @@ class TimelapseERT():
 
     def showFit(self, **kwargs):
         """Show data, model response and misfit."""
-        _, ax = plt.subplots(nrows=3, figsize=(10, 6), sharex=True, sharey=True)
+        _, ax = pg.plt.subplots(nrows=3, figsize=(10, 6), sharex=True, sharey=True)
         kwargs.setdefault("verbose", False)
         _, cb = self.showData(ax=ax[0], **kwargs)
         self.showData(self.mgr.inv.response, ax=ax[1],
@@ -445,7 +448,7 @@ class TimelapseERT():
         nT = self.DATA.shape[1]
         showRatio = kwargs.pop("ratio", False)
         nrows = int(np.ceil(nT/ncols))
-        _, ax = plt.subplots(nrows=nrows, ncols=ncols,
+        _, ax = pg.plt.subplots(nrows=nrows, ncols=ncols,
                             figsize=kwargs.pop("figsize", [8, 5]))
         ratiokw = kwargs.copy()
         kwargs.setdefault("cMin", np.min(self.models))
@@ -479,8 +482,10 @@ class TimelapseERT():
         kwargs.setdefault('label', pg.unit('res'))
         kwargs.setdefault('cMap', pg.utils.cMap('res'))
         kwargs.setdefault('logScale', True)
+        from matplotlib.backends.backend_pdf import PdfPages
+
         with PdfPages(self.name+'-model.pdf') as pdf:
-            fig = plt.figure(figsize=kwargs.pop("figsize", [8, 5]))
+            fig = pg.plt.figure(figsize=kwargs.pop("figsize", [8, 5]))
             for i, model in enumerate(self.models):
                 ax = fig.subplots()
                 pg.show(self.pd, model, ax=ax, **kwargs)
@@ -511,8 +516,10 @@ class TimelapseERT():
         kwargs.setdefault("cMin", 1/kwargs["cMax"])
         basemodel = self.models[0]
         creep = kwargs.pop("creep", False)
+        from matplotlib.backends.backend_pdf import PdfPages
+
         with PdfPages(self.name+'-ratio.pdf') as pdf:
-            fig = plt.figure(figsize=kwargs.pop("figsize", [8, 5]))
+            fig = pg.plt.figure(figsize=kwargs.pop("figsize", [8, 5]))
             for i, model in enumerate(self.models[1:]):
                 ax = fig.subplots()
                 pg.show(self.pd, model/basemodel, ax=ax, **kwargs)

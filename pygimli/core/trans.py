@@ -55,3 +55,37 @@ class TransSymLog(pgcore.RTrans):
     def deriv(self, x):
         """Derivative of the transformation."""
         return 1. / (np.abs(x) / self.tol + 1) / self.tol
+
+
+def str2Trans(tr:str):
+    """Convert string to transformation.
+
+    Convention
+    ----------
+    lin : linear
+    log : logarithmic
+    logL : log with lower bound
+    logL-U : log with lower and upper bound
+    cotL-U : cotangent with lower and upper bound
+    symlogT : symlog with T as lin-threshold
+    """
+    low = tr.lower()
+    if low.startswith("lin"):
+        return Trans()
+    elif low.startswith("log"):
+        if "-" in low:  # lower/upper
+            sp = low[3:].split("-")
+            return TransLogLU(float(sp[0]), float(sp[1]))
+        elif len(low) > 3: # lower
+            return TransLog(float(low[3:]))
+        else: # just log
+            return TransLog()
+    elif low.startswith("cot") and "-" in low:
+        sp = low[3:].split("-")
+        return TransCotLU(float(sp[0]), float(sp[1]))
+    elif low.startswith("symlog"):
+        return TransSymLog(float(low[6:]))
+    else:  # check for LU values, e.g. "Log1-1000" or "Cot0-1"
+        raise KeyError("Transformation string unknown!")
+
+

@@ -230,14 +230,18 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
 
     Keyword Arguments
     -----------------
-    xlabel: str [None]
-            Add label to the x axis
-    ylabel: str [None]
-            Add label to the y axis
+    xl: str ["$x$ in m"]
+        Add label to the x axis. Default is '$x$ in m'
+
+    yl: str [None]
+        Add label to the y axis. Default is '$y$ in m' or 'Depth in m' with
+        world boundary markers.
+
     fitView: bool
-            Fit the axes limits to the all content of the axes. Default True.
+        Fit the axes limits to the all content of the axes. Default True.
+
     boundaryProps: dict
-            Arguments for plotboundar
+        Arguments for plotboundar
 
     hold: bool [pg.hold()]
         Holds back the opening of the Figure.
@@ -246,18 +250,22 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         If hold is set to False your script will open the figure and continue
         working. You can change global hold with pg.hold(bool).
 
+    axisLabels: bool [True]
+        Set x/yLabels for ax. X will be "$x$ in m" and "$y$ in m".
+        Y ticks change to depth values for a mesh with world
+        boundary markers and the label becomes "Depth in m".
+
     All remaining will be forwarded to the draw functions
     and matplotlib methods, respectively.
-
 
     Examples
     --------
     >>> import pygimli as pg
     >>> import pygimli.meshtools as mt
     >>> world = mt.createWorld(start=[-10, 0], end=[10, -10],
-    ...                        layers=[-3, -7], worldMarker=False)
+    ...                        layers=[-3, -7], worldMarker=True)
     >>> mesh = mt.createMesh(world, quality=32, area=0.2, smooth=[1, 10])
-    >>> _ = pg.viewer.showMesh(mesh, markers=True)
+    >>> _ = pg.viewer.showMesh(mesh, markers=True, xl='$x$-coordinate')
 
     Returns
     -------
@@ -270,6 +278,9 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     cMap = kwargs.pop('cMap', 'viridis')
     cBarOrientation = kwargs.pop('orientation', 'horizontal')
     replaceData = kwargs.pop('replaceData', False)
+    axisLabels = kwargs.pop('axisLabels', True)
+    xl = kwargs.pop('xl', "$x$ in m")
+    yl = kwargs.pop('yl', None)
 
     if ax is None:
         ax, _ = pg.show(figsize=kwargs.pop('figsize', None), **kwargs)
@@ -330,23 +341,15 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         if hasattr(data[0], '__len__') and not \
                 isinstance(data, np.ma.core.MaskedArray) and not \
                 isinstance(data[0], str):
-
-            # [u,v] x N
-            if len(data) == 2:
+            if len(data) == 2:  # [u,v] x N
                 data = np.array(data).T
-
-            # N x [u,v]
-            if data.shape[1] == 2:
+            if data.shape[1] == 2:  # N x [u,v]
                 drawStreams(ax, mesh, data, **kwargs)
-
-            # N x [u,v,w]
-            elif data.shape[1] == 3:
+            elif data.shape[1] == 3:  # N x [u,v,w]
                 # if sum(data[:, 0]) != sum(data[:, 1]):
                 # drawStreams(ax, mesh, data, **kwargs)
                 drawStreams(ax, mesh, data[:, :2], **kwargs)
-            else:
-
-                # Try animation frames x N
+            else:  # Try animation frames x N
                 data = np.asarray(data)
                 if data.ndim == 2:
                     if data.shape[1] == mesh.cellCount() or \
@@ -365,11 +368,15 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             if bool(colorBar) is not False:
                 colorBar = True
 
+            if kwargs.pop("contour", False):
+                data = pg.meshtools.cellDataToNodeData(mesh, data)
+                kwargs.setdefault("nLevs", 11)
+
             if len(data) == mesh.cellCount():
                 if showBoundary is None:
                     showBoundary = True
 
-            def _drawField(ax, mesh, data, kwargs):
+            def _drawField(ax, mesh, data, kwargs):  # like view.mpl.drawField?
                 # kwargs as reference here to set defaults valid outside too
                 validData = True
                 if len(data) == mesh.cellCount():
@@ -409,20 +416,20 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
                         updateAxes(ax, force=True)
                         return ax, gci.colorbar
                 else:
-
                     gci, validData = _drawField(ax, mesh, data, kwargs)
 
                 # Cache mesh and scalarmappable to make replaceData work
                 if not hasattr(mesh, 'gci'):
                     mesh.gci = {}
+
                 mesh.gci[ax] = gci
 
                 if cMap is not None and gci is not None:
                     gci.set_cmap(cmapFromName(cMap))
                     # gci.cmap.set_under('k')
 
-            except BaseException as e:
-                print(e)
+            except BaseException as ex:  # super ugly!
+                print(ex)
                 traceback.print_exc(file=sys.stdout)
 
     if mesh.cellCount() == 0:
@@ -446,8 +453,8 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             #drawMesh(ax, mesh, lw=0.3, **kwargs)
         #else:
         drawMesh(ax, mesh, lw=0.3, **kwargs)
-        # pg.viewer.mpl.drawSelectedMeshBoundaries(ax, 
-        #         mesh.boundaries(), 
+        # pg.viewer.mpl.drawSelectedMeshBoundaries(ax,
+        #         mesh.boundaries(),
         #         color=kwargs.pop('color', "0.1"),
         #         linewidth=kwargs.pop('lw', 0.3))
 
@@ -528,7 +535,16 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         except BaseException:
             pass
 
-    pg.viewer.mpl.updateAxes(ax)
+    if axisLabels == True and mesh.dim() == 2:
+
+        try:
+            pg.viewer.mpl.adjustWorldAxes(ax,
+                                       useDepth=min(mesh.boundaryMarkers()) < 0,
+                                       xl=xl, yl=yl)
+        except BaseException:
+            pass
+    else:
+        pg.viewer.mpl.updateAxes(ax)
 
     pg.viewer.mpl.hold(val=lastHoldStatus)
 

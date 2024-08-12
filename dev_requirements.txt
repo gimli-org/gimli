@@ -1,12 +1,15 @@
 # recommand to create a suitable virtual environment first:
-# python -m venv $ENVNAME
-# source $ENVNAME/bin/activate
+# python -m venv .venv --prompt=gimli
+# source .venv/bin/activate
 # python -m pip install -r dev_requirements.txt
 # python -m pip list
 # python -m pip install package==version
 
-# needed to build
+# needed
+setuptools
 numpy>=1.25
+matplotlib
+pyqt5 #pyqtagg backend
 pyplusplus==1.8.4
 pygccxml==2.0.0
 
@@ -18,7 +21,7 @@ ipython
 jupytext
 
 # optional, but strongly recommended
-scipy>=1.11 
+scipy>=1.11
 scooby
 pyvista[all]>=0.42
 pyqt5

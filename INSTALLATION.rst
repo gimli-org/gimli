@@ -126,11 +126,17 @@ retrieve the source code by git
     git clone https://github.com/gimli-org/gimli
     cd gimli
 
-and install pygimli as a development package
+and install pygimli as a development package using conda
 
 .. code-block:: bash
 
     conda develop .
+
+or using pip
+
+.. code-block:: bash
+
+    pip install --no-build-isolation --no-deps -e .
 
 Alternatively you could set the PYTHONPATH variable but you would have to care
 for dependencies by yourself.

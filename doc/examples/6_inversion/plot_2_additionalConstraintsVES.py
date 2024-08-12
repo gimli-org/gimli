@@ -18,6 +18,7 @@ constrain the sum of water, ice, air and rock fraction to be 1.
 
 # sphinx_gallery_thumbnail_number = 2
 import numpy as np
+import matplotlib.pyplot as plt
 import pygimli as pg
 from pygimli.frameworks.lsqrinversion import LSQRInversion
 from pygimli.physics.ves import VESModelling
@@ -38,8 +39,8 @@ synres = [100., 500., 20., 800.]  # synthetic resistivity
 synthk = [0.5, 3.5, 6.]  # synthetic thickness (nlay-th layer is infinite)
 rhoa = f(synthk+synres)
 rhoa = rhoa * (pg.randn(len(rhoa)) * errPerc / 100. + 1.)
-pg.plt.loglog(rhoa, ab2, "x-")
-pg.plt.grid(True)
+plt.loglog(rhoa, ab2, "x-")
+plt.grid(True)
 
 # %%%
 # Next, we set up an inversion instance with log transformation on data and
@@ -84,11 +85,10 @@ print(inv.chi2(), inv.relrms(), pg.sum(inv.model[:nlay-1]))
 # Due to the additional constraints, the model is much closer to the synthetic.
 #
 
-fig, ax = pg.plt.subplots()
-drawModel1D(ax, synthk, synres, plot="semilogx", label="synth")
-drawModel1D(ax, model=model1, label="unconstrained")
-drawModel1D(ax, model=model2, label="constrained")
-ax.set_ylim(15, 0)
+fig, ax = plt.subplots()
+drawModel1D(ax, synthk, synres, plot="semilogx", label="synth", zmax=18)
+drawModel1D(ax, model=model1, label="unconstrained", zmax=18)
+drawModel1D(ax, model=model2, label="constrained", zmax=18)
 ax.grid(True)
 ax.legend()
 

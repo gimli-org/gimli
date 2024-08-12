@@ -95,6 +95,7 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX OR ${CMAKE_CXX_COMPILE
 
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -ansi -pedantic -fno-omit-frame-pointer -Wall")
     #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -std=c++11 -ansi -pedantic -fno-omit-frame-pointer -Wall")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fopenmp")
 
     ### debug settings
     # run with -DCMAKE_BUILD_TYPE=Debug
@@ -652,31 +653,55 @@ find_package(Sphinx 3.1)
 
 if (SPHINX_FOUND AND NOT SKIP_SPHINX)
     add_subdirectory(doc EXCLUDE_FROM_ALL)
-    message(STATUS "Search recursive for *.rst from here: " ${CMAKE_SOURCE_DIR})
-    file(GLOB_RECURSE DOCFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.rst")
+    message(STATUS "Search recursive for related doc files from here: " ${CMAKE_SOURCE_DIR})
+
+    file(GLOB DOCFILES LIST_DIRECTORIES false
+            RELATIVE "${CMAKE_SOURCE_DIR}"
+        "*.rst")
     message(STATUS "DOCFILES: " ${DOCFILES})
 
-    file(GLOB_RECURSE PNGFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.png")
-    list(APPEND DOCFILES ${PNGFILES})
+    file(GLOB DFILES LIST_DIRECTORIES false
+            RELATIVE "${CMAKE_SOURCE_DIR}"
+        "*.md")
+    message(STATUS "MDFILES: " ${DFILES})
+    list(APPEND DOCFILES ${DFILES})
 
-    message(STATUS "PNGFILES: " ${PNGFILES})
+    set (RECDOCTYPES "*.rst" "*.md" "*.png" "*.svg" "*.bib" "paper/*.py")
 
-    file(GLOB_RECURSE BIBFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.bib")
-    list(APPEND DOCFILES ${BIBFILES})
+    foreach (DTYPE ${RECDOCTYPES})
+        file(GLOB_RECURSE DFILES
+                LIST_DIRECTORIES false
+                RELATIVE "${CMAKE_SOURCE_DIR}"
+            "./doc/${DTYPE}")
+        message(STATUS "Append DOC files: (${DTYPE}) " ${DFILES})
+        list(APPEND DOCFILES ${DFILES})
+    endforeach()
+    # message(STATUS "RSTFILES: " ${DFILES})
 
-    message(STATUS "BIBFILES: " ${BIBFILES})
+    # file(GLOB_RECURSE DFILES LIST_DIRECTORIES false
+    # RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "./doc/*.md")
+    # message(STATUS "MDFILES: " ${DFILES})
+    # list(APPEND DOCFILES ${DFILES})
 
-    file(GLOB_RECURSE PYFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "doc/paper/*.py")
-    message(STATUS "PYFILES: " ${PYFILES})
+    # file(GLOB_RECURSE DFILES LIST_DIRECTORIES false
+    # RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "./doc/*.png")
+    # message(STATUS "PNGFILES: " ${DFILES})
+    # list(APPEND DOCFILES ${DFILES})
 
-    list(APPEND DOCFILES ${PYFILES})
+    # file(GLOB_RECURSE DFILES LIST_DIRECTORIES false
+    # RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "./doc/*.bib")
+    # message(STATUS "BIBFILES: " ${DFILES})
+    # list(APPEND DOCFILES ${DFILES})
+
+    # file(GLOB_RECURSE PYFILES LIST_DIRECTORIES false
+    #     RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "doc/paper/*.py")
+    # message(STATUS "PYFILES: " ${PYFILES})
+    # list(APPEND DOCFILES ${PYFILES})
 
     set(RSTFILES ${DOCFILES} CACHE INTERNAL "RST source file that we need to copy")
 
-    set(RSTFILES ${DOCFILES} CACHE INTERNAL "RST source file that we need to copy")
-    execute_process(
-        COMMAND ${SPHINX_EXECUTABLE} --version
-        OUTPUT_VARIABLE SPHINX_VERSION
+    execute_process(COMMAND ${SPHINX_EXECUTABLE} --version
+                    OUTPUT_VARIABLE SPHINX_VERSION
     )
 
     add_custom_target(removedoc

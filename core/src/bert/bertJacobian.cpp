@@ -299,7 +299,7 @@ MEMINFO
     std::sort(cells.begin(), cells.end(), lessCellMarker);
 
     double maxMemSize = max(0.0, getEnvironment("SENSMATMAXMEM", 0.0, verbose));
-    double maxSizeNeeded = mByte((double)nData * nModel * sizeof(double));
+    double maxSizeNeeded = MByte(nData * nModel * sizeof(double));
 
     if (maxMemSize > 0 && verbose){
         std::cout << "Size of S: " << maxSizeNeeded << " MB" << std::endl;
@@ -329,7 +329,7 @@ MEMINFO
             throwError(WHERE_AM_I + " sorry, size of single sensitivity-row exceeds memory limitations.");
         }
 
-        std::cout << "Size of S cluster: " << mByte((double)nData * modelCluster * sizeof(ValueType)) << " MB" << std::endl;
+        std::cout << "Size of S cluster: " << MByte(nData * modelCluster * sizeof(ValueType)) << " MB" << std::endl;
         std::cout << "Using model cluster " << nModel << " x " << modelCluster << std::endl;
 
         S.resize(nData, modelCluster);

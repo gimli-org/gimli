@@ -2,9 +2,6 @@
 # -*- coding: utf-8 -*-
 """Define special colorbar behavior."""
 import numpy as np
-from matplotlib.colors import LogNorm, Normalize
-from matplotlib.colorbar import ColorbarBase
-
 from packaging import version
 
 import pygimli as pg
@@ -84,7 +81,7 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
     """
     if not isinstance(cmapname, str):
         return cmapname
-    
+
     import matplotlib as mpl
     if not bad:
         bad = [1.0, 1.0, 1.0, 0.0]
@@ -277,6 +274,7 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
         Forwarded to updateColorBar
 
     """
+    #pg._y('createColorBar', kwargs)
     from mpl_toolkits.axes_grid1 import make_axes_locatable
     cbarTarget = pg.plt
     cax = None
@@ -300,7 +298,7 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
 
     if hasattr(ax, '__cBar__'):
         cbar = ax.__cBar__
-        # pg._y('update', kwargs)
+        #pg._y('update', kwargs)
         updateColorBar(cbar, gci, **kwargs)
     else:
 
@@ -326,6 +324,7 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
             ax.__cBar__ = cbar
             updateColorBar(cbar, **kwargs)
         else:
+            #pg._y('update', kwargs)
             updateColorBar(None, gci=gci, **kwargs)
 
 
@@ -336,8 +335,6 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
                        label=None, orientation='horizontal', savefig=None,
                        ax=None, **kwargs):
     """Create figure with a colorbar.
-
-    Create figure with a colorbar.
 
     Parameters
     ----------
@@ -360,6 +357,8 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     >>> #                   orientation='horizontal')
     >>> # pg.wait()
     """
+    from matplotlib.colors import LogNorm, Normalize
+    from matplotlib.colorbar import ColorbarBase
     if ax is None:
         fig = pg.plt.figure()
         if orientation == 'horizontal':
@@ -402,8 +401,7 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
 
 
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
-    """Set colorbar levels given a number of levels and min/max values.
-    """
+    """Set colorbar levels given a number of levels and min/max values."""
     import matplotlib as mpl
     import matplotlib.ticker as ticker
 
@@ -576,6 +574,7 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
 #    else:
 #        print('taking the values directly')
     import matplotlib as mpl
+
     if version.parse(mpl.__version__) >= version.parse("3.4"):
         patches.set_alpha(C)
         patches.set_snap(True)

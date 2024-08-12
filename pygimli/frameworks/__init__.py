@@ -11,6 +11,8 @@ from .inversion import (Inversion, MarquardtInversion,
                         Block1DInversion,
                         LCInversion)
 
+# from .lsqrinversion import LSQRInversion  # circular import, why?
+
 from .methodManager import (fit, MethodManager, MethodManager1d,
                             ParameterInversionManager,
                             MeshMethodManager,
@@ -18,6 +20,8 @@ from .methodManager import (fit, MethodManager, MethodManager1d,
                             JointPetroInversionManager)
 
 from .timelapse import MultiFrameModelling
+
+from .linesearch import lineSearch
 
 # from .resolution import computeR
 

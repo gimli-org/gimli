@@ -1,4 +1,5 @@
-# CODING=Utf-8
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Plotting utilities used throughout the viewer.mpl package."""
 import sys
 import os
@@ -74,14 +75,14 @@ __registeredShowPendingFigsAtExit__ = False
 def registerShowPendingFigsAtExit():
     """If called it register a closing function that will ensure all pending MPL figures are shown.
 
-    Its only set on demand by pg.show() since we only need it if matplotlib is used. 
+    Its only set on demand by pg.show() since we only need it if matplotlib is used.
     """
     global __registeredShowPendingFigsAtExit__
     if __registeredShowPendingFigsAtExit__ == False:
         import atexit
 
         #pg._y('register wait on exit')
-        ## first  call one empty show to initial QtManager before register 
+        ## first  call one empty show to initial QtManager before register
         # onExit to avoid RuntimeError: wrapped C/C++ object of type MainWindow has been deleted
         if 'matplotlib.pyplot' in sys.modules:
             import matplotlib.pyplot as plt
@@ -108,7 +109,7 @@ def registerShowPendingFigsAtExit():
                             pg.info(f'Showing pending widgets ({backend}) on exit. '
                                         'Close all figures or Ctrl-C to quit the programm')
                             pg.wait()
-                
+
     __registeredShowPendingFigsAtExit__ = True
 
 
@@ -148,12 +149,19 @@ def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
         ax.set_yticklabels(labels)
 
 
-def adjustWorldAxes(ax):
+def adjustWorldAxes(ax, useDepth:bool=True, xl:str='$x$ in m', yl:str=None):
     """Set some common default properties for an axe."""
-    ax.set_ylabel('Depth (m)')
-    ax.set_xlabel('$x$ (m)')
+    if yl is None:
+        if useDepth is True:
+            ax.set_ylabel('Depth in m')
+            renameDepthTicks(ax)
+        else:
+            ax.set_ylabel('$y$ in m')
+    else:
+        ax.set_ylabel(yl)
 
-    renameDepthTicks(ax)
+    ax.set_xlabel(xl)
+
     ax.figure.tight_layout()
     updateAxes(ax)
 
@@ -224,7 +232,8 @@ def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0, fontsize=9,
         'lines.markersize': 6 * scale,
         'lines.linewidth': 0.6 * scale
     }
-    plt.rcParams.update(params)
+    import matplotlib
+    matplotlib.rcParams.update(params)
 
 
 def setPlotStuff(fontsize=7, dpi=None):
@@ -267,8 +276,8 @@ def createAnimation(fig, animate, nFrames, dpi, out):
 
     Until I know a better place.
     """
-    from matplotlib.animation import animation
-    anim = animation.FuncAnimation(fig, animate, frames=nFrames,
+    from matplotlib.animation import FuncAnimation
+    anim = FuncAnimation(fig, animate, frames=nFrames,
                                    interval=0.001, repeat=False)
     anim.save(out + ".mp4", writer=None, fps=20, dpi=dpi, codec=None,
               bitrate=24 * 1024, extra_args=None, metadata=None,
@@ -287,6 +296,8 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
 
     Until I know a better place.
     """
+    import matplotlib.pyplot as plt
+
     dpi = 92
     scale = 1
     fig = pg.plt.figure(facecolor='white',
