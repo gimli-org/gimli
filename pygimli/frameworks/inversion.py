@@ -623,14 +623,16 @@ class InversionBase(object):
     def modelGradient(self):
         """Model gradient, i.e. C^T * C * (m - m0)."""
         # self.inv.checkConstraints() # not necessary?
-        C = pg.matrix.MultLeftMatrix(self.fop.constraints(),
-                                     self.inv.cWeight())
+        if isinstance(self.cWeight, (float, int)):
+            C = pg.matrix.ScaledMatrix(self.fop.constraints(), self.cWeight)
+        else:
+            C = pg.matrix.MultLeftMatrix(self.fop.constraints(), self.cWeight)
+
         return C.transMult(C.mult(self.modelTrans(self.model)))
 
     def gradient(self):
         """Gradient of the objective function."""
         return self.dataGradient() + self.modelGradient() * self.lam
-
 
 
 class GaussNewtonInversion(InversionBase):
@@ -687,32 +689,41 @@ class GaussNewtonInversion(InversionBase):
         return dM
 
 
+class DescentInversion(InversionBase):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def modelUpdate(self):
+        """The negative gradient of  objective function as search direction."""
+        return -self.gradient()
+
 
 class NLCGInversion(InversionBase):
-    def __init__(self, fop=None, **kwargs):
-        super().__init__(fop=fop, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def modelUpdate(self):
         return None
+
 
 class LBFGSInversion(InversionBase):
-    def __init__(self, fop=None, **kwargs):
-        super().__init__(fop=fop, **kwargs)
+    """Limited-memory BFGS minimization."""
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def modelUpdate(self):
         return None
 
-# Inversion = GaussNewtonInversion # upon removal of old
-# next one to be renamed and removed eventually
-class Inversion(object):
 
+# Note that there is a lot of redundancy but this class is to be removed upon
+# thorough testing of the purely Python Gauss-NewtonInversion class.
+class ClassicInversion(object):
     """Basic Gauss-Newton based inversion framework (to be removed).
 
     Changes to prior Versions (remove me)
 
         * holds the starting model itself, forward operator only provides a
-        method to create the starting model
-        fop.createStartModel(dataValues)
+        method to create it: fop.createStartModel(dataValues)
 
     Attributes
     ----------
@@ -1590,6 +1601,13 @@ class Inversion(object):
         """Gradient of the objective function."""
         return self.dataGradient() + self.modelGradient() * self.lam
 
+# END OF REMOVAL upon pg 1.6
+
+Inversion = ClassicInversion  # pg<1.6
+# Inversion = GaussNewtonInversion  # pg>=1.6
+# maybe even an inversion chooser
+
+
 class MarquardtInversion(Inversion):
     """Marquardt scheme, i.e. local damping with decreasing strength."""
 
@@ -1887,3 +1905,5 @@ class LCInversion(Inversion):
         print(kwargs)
         print('#'*50)
         return super(LCInversion, self).run(dataVec, errVec, lam=lam, **kwargs)
+
+
