@@ -427,13 +427,13 @@ struct PySequence2CVector{
                             npy_creal(PyArrayScalar_VAL(element.ptr(), Complex128)),
                             npy_cimag(PyArrayScalar_VAL(element.ptr(), Complex128)));
 #endif
-                    //                     (*vec)[i] = PyArrayScalar_VAL(element.ptr(),
-//                     __DC(i, " a ", element);
-//                     __DC(i, " a "
-//                        , bp::extract< double >(element.attr('real')));
-//                     __DC(i, " a "
-//                    , bp::extract< double >(bp::extract<bp::tuple>(element)));
-//                     __DC(i, " a ", element.ptr()->ob_type->tp_name);
+//                     (*vec)[i] = PyArrayScalar_VAL(element.ptr(),
+//                     __DC(i << " a " << element);
+//                     __DC(i << " a "
+//                         << bp::extract< double >(element.attr('real')));
+//                     __DC(i << " a "
+//                     << bp::extract< double >(bp::extract<bp::tuple>(element)));
+//                     __DC(i << " a " << element.ptr()->ob_type->tp_name);
 //                     PyArrayScalar_VAL(element.ptr(), Complex128).real;
 //                     PyArrayScalar_VAL(element.ptr(), Complex128).imag;
 //                     __DC(i, " d ",  PyArrayScalar_VAL(element.ptr(),

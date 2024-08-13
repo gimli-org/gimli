@@ -173,9 +173,9 @@ class CellBrowser(object):
         self.removeHighlightCell()
         self.highLight = mpl.collections.PolyCollection(
             [_createCellPolygon(cell)])
-        self.highLight.set_edgecolors('0')
-        self.highLight.set_linewidths(1.5)
-        self.highLight.set_facecolors([0.9, 0.9, 0.9, 0.4])
+        self.highLight.set_edgecolor('0')
+        self.highLight.set_linewidth(1.5)
+        self.highLight.set_facecolor([0.9, 0.9, 0.9, 0.4])
         self.ax.add_collection(self.highLight)
 
     def onPick(self, event):
@@ -748,10 +748,10 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True,
                 cbar = createColorBar(gci, orientation=orient,
                                       label="Region markers")
 
-                updateColorBar(cbar, 
-                               cMap=cmapFromName("Set3", 
+                updateColorBar(cbar,
+                               cMap=cmapFromName("Set3",
                                                  ncols=len(uniquemarkers)),
-                               cMin=-0.5, 
+                               cMin=-0.5,
                                cMax=len(uniquemarkers) - 0.5)
                 ticks = np.arange(len(uniquemarkers))
 
@@ -1360,7 +1360,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
         Additional kwargs forwarded to mpl.PatchCollection, mpl.Circle
 
     sensorMarker:
-        Also 'sm'. Set marker style: 'o' Circle, 'v' Triangle pointing down. 
+        Also 'sm'. Set marker style: 'o' Circle, 'v' Triangle pointing down.
 
     Examples
     --------
@@ -1393,13 +1393,13 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
         x = e[coords[0]]
         y = e[coords[1]]
         if sm == 'o':
-            eSensors.append(mpl.patches.Circle((x,y), diam/2, 
+            eSensors.append(mpl.patches.Circle((x,y), diam/2,
                                                **kwargs))
         else:
             eSensors.append(mpl.patches.Polygon(([x, y],
                                                  [x+diam/1.5/1.4, y+diam/1.5],
                                                  [x-diam/1.5/1.4, y+diam/1.5]
-                                                 ), 
+                                                 ),
                                                 closed=True,
                                                 **kwargs))
 

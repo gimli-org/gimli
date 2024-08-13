@@ -10,16 +10,18 @@ from .core.decorators import (renamed, singleton, moduleProperty,
                               )
 
 # Import everything that should be accessible through main namespace.
-from .core import (BVector, CVector, DataContainer, DataContainerERT,
-                   IVector, Line, Mesh, Plane, Pos, PosVector,
-                   Vector, PosList, abs, cat, center, exp, find,
-                   interpolate, log, log10, logDropTol, max,
-                   mean, median, min, search, setThreadCount, sort,
+from .core import (BVector, CVector, IVector, RVector, Vector)
+
+from .core import (DataContainer, DataContainerERT,
+                   Line, Mesh, Plane, Pos, PosList, PosVector,
                    Stopwatch, Swatches,
-                   sum, trans, unique, versionStr, x, y, z, zero)
+                   abs, cat, center, exp, find, interpolate,
+                   log, log10, logDropTol, max, mean, median, min,
+                   search, setThreadCount, sort, sum,
+                   trans, unique, versionStr, x, y, z, zero)
 
 from .core import (isInt, isScalar, isIterable, isArray, isPos,
-                  isR3Array, isPosList, isVecField, isComplex, isMatrix)
+                   isR3Array, isPosList, isVecField, isComplex, isMatrix)
 
 from .core import math # alias all from .core.math.* to pg.math.*
 # from .core import matrix # alias all from .core.matrix.* to pg.matrix.*

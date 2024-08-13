@@ -42,10 +42,6 @@ bibtexparser
 pyvista[all,trame]>=0.42
 breathe
 
-# optional, but strongly recommended
-scipy<1.12
-scooby
-
 # useful
 ipython
 

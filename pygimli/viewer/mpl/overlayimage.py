@@ -5,7 +5,6 @@ import os
 import math
 
 import numpy as np
-import matplotlib.image as mpimg
 
 import pygimli as pg
 
@@ -15,9 +14,10 @@ class OverlayImageMPL(object):
 
     def __init__(self, imageFileName, ax):
         """Constructor."""
+        import matplotlib.image as mpimg
         self.ax = ax
         self.imAxes = None
-        self.image = mpimg.open(imageFileName)
+        self.image = mpimg.imread(imageFileName)
         self.figure = self.ax.get_figure()
         self.dx = 0
         self.dy = 0
@@ -181,6 +181,7 @@ def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
     verbose : bool [false]
         be verbose
     """
+    import matplotlib.image as mpimg
     imagename = str(zoom) + '/' + str(xtile) + '/' + str(ytile)
 
     if vendor == 'OSM' or vendor == 'Open Street Map':
@@ -408,6 +409,7 @@ def underlayBKGMap(ax, mode='MAP', utmzone=32, epsg=0, imsize=2500, uuid='',
     box : (float, float, float, float)
         (if imname given) specify bounding box (otherwise take from imname)
     """
+    import matplotlib.image as mpimg
     if imname is not None:  # use predefined image
         box = box or imname[3:-4]
         # bb = np.array(imname[3:-4].split(","),

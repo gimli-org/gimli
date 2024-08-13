@@ -260,7 +260,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
 
     Keyword Arguments
     -----------------
-    xl: str [None]
+    xl: str ["$x$ in m"]
         Add label to the x axis. Default is '$x$ in m'
 
     yl: str [None]
@@ -281,13 +281,12 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         working. You can change global hold with pg.hold(bool).
 
     axisLabels: bool [True]
-        Set x/yLabels for ax. X will be "x in m" and "y in m".
+        Set x/yLabels for ax. X will be "$x$ in m" and "$y$ in m".
         Y ticks change to depth values for a mesh with world
         boundary markers and the label becomes "Depth in m".
 
     All remaining will be forwarded to the draw functions
     and matplotlib methods, respectively.
-
 
     Examples
     --------
@@ -296,7 +295,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     >>> world = mt.createWorld(start=[-10, 0], end=[10, -10],
     ...                        layers=[-3, -7], worldMarker=True)
     >>> mesh = mt.createMesh(world, quality=32, area=0.2, smooth=[1, 10])
-    >>> _ = pg.viewer.showMesh(mesh, markers=True)
+    >>> _ = pg.viewer.showMesh(mesh, markers=True, xl='$x$-coordinate')
 
     Returns
     -------
@@ -310,7 +309,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     cBarOrientation = kwargs.pop('orientation', 'horizontal')
     replaceData = kwargs.pop('replaceData', False)
     axisLabels = kwargs.pop('axisLabels', True)
-    xl = kwargs.pop('xl', '$x$ in m')
+    xl = kwargs.pop('xl', "$x$ in m")
     yl = kwargs.pop('yl', None)
 
     if ax is None:
@@ -406,13 +405,9 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             ### [u,v] x N
             if len(data) == 2:
                 data = np.array(data).T
-
-            # N x [u,v]
-            if data.shape[1] == 2:
+            if data.shape[1] == 2:  # N x [u,v]
                 drawStreams(ax, mesh, data, **kwargs)
-
-            # N x [u,v,w]
-            elif data.shape[1] == 3:
+            elif data.shape[1] == 3:  # N x [u,v,w]
                 # if sum(data[:, 0]) != sum(data[:, 1]):
                 # drawStreams(ax, mesh, data, **kwargs)
                 drawStreams(ax, mesh, data[:, :2], **kwargs)
@@ -436,11 +431,15 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             if bool(colorBar) is not False:
                 colorBar = True
 
+            if kwargs.pop("contour", False):
+                data = pg.meshtools.cellDataToNodeData(mesh, data)
+                kwargs.setdefault("nLevs", 11)
+
             if len(data) == mesh.cellCount():
                 if showBoundary is None:
                     showBoundary = True
 
-            def _drawField(ax, mesh, data, kwargs):
+            def _drawField(ax, mesh, data, kwargs):  # like view.mpl.drawField?
                 # kwargs as reference here to set defaults valid outside too
                 validData = True
                 if len(data) == mesh.cellCount():
@@ -480,20 +479,20 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
                         updateAxes(ax, force=True)
                         return ax, gci.colorbar
                 else:
-
                     gci, validData = _drawField(ax, mesh, data, kwargs)
 
                 # Cache mesh and scalarmappable to make replaceData work
                 if not hasattr(mesh, 'gci'):
                     mesh.gci = {}
+
                 mesh.gci[ax] = gci
 
                 if cMap is not None and gci is not None:
                     gci.set_cmap(cmapFromName(cMap))
                     # gci.cmap.set_under('k')
 
-            except BaseException as e:
-                print(e)
+            except BaseException as ex:  # super ugly!
+                print(ex)
                 traceback.print_exc(file=sys.stdout)
 
     if mesh.cellCount() == 0:
@@ -603,8 +602,8 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
 
         try:
             pg.viewer.mpl.adjustWorldAxes(ax,
-                                    useDepth=min(mesh.boundaryMarkers()) < 0,
-                                    xl=xl, yl=yl)
+                                       useDepth=min(mesh.boundaryMarkers()) < 0,
+                                       xl=xl, yl=yl)
         except BaseException:
             pass
     else:

@@ -684,7 +684,7 @@ def interpolate(*args, **kwargs):
         return interpolateAlongCurve(curve, t, **kwargs)
 
 
-def extract2dSlice(mesh, origin=None, normal=[0, 1, 0], angle=0, dip=0):
+def extract2dSlice(mesh, origin=None, normal=None, angle=0, dip=0, **kwargs):
     """Extract slice from 3D mesh as triangle mesh.
 
     Parameters
@@ -701,14 +701,35 @@ def extract2dSlice(mesh, origin=None, normal=[0, 1, 0], angle=0, dip=0):
     dip : float [0]
         angle to be tilted into the x'z plane (0=vertical)
 
+    Optional keywords
+    -----------------
+    x,y,z : float [None]
+        axis-parallel flices, determines normal and origin
+
     Returns
     -------
     2d triangular pygimli mesh with all data fields
     """
     from pygimli.viewer.pv import pgMesh2pvMesh
     # from pygimli.meshtools import convertPVPolyData  # to be written yet
-
     meshtmp = pg.Mesh(mesh)
+    if origin is None and normal is None:  # use x/y/z
+        if "z" in kwargs:
+            origin = [0, 0, kwargs["z"]]
+            normal = "z"
+        elif "y" in kwargs:
+            origin = [0, kwargs["y"], 0]
+            normal = "y"
+        elif "x" in kwargs:
+            origin = [kwargs["x"], 0, 0]
+            normal = "x"
+        else:
+            normal = "y"
+
+    if origin == "center":
+        bb = mesh.boundingBox()
+        origin = [(bb.xMin()+bb.xMax())/2, (bb.yMin()+bb.yMax())/2, 0]
+
     if origin is not None:
         meshtmp.translate(-pg.Pos(origin))
 

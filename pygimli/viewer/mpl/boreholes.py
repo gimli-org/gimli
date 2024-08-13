@@ -102,6 +102,10 @@ class BoreHoles(object):
 
     def __init__(self, fnames):
         """Load a list of bore hole from filenames."""
+        if isinstance(fnames, str):
+            if fnames.find("*") >= 0:
+                from glob import glob
+                fnames = glob(fnames)
         self._fnames = fnames
         if len(fnames) > 0:
             self.boreholes = [BoreHole(f) for f in fnames]
@@ -123,7 +127,7 @@ class BoreHoles(object):
 
         Such that a certain classification has the same color on all boreholes.
         """
-
+        import matplotlib.pyplot as plt
         self.common_unique, rev_idx = np.unique(
             np.hstack([b.classes for b in self.boreholes]),
             return_inverse=True)
@@ -138,7 +142,7 @@ class BoreHoles(object):
             b.unique_classes = self.common_unique
             start_idx += diff_idx
 
-        self.cm = pg.plt.get_cmap('jet', len(self.common_unique))
+        self.cm = plt.get_cmap('jet', len(self.common_unique))
         self.cmin = min(self.class_id)
         self.cmax = max(self.class_id)
 

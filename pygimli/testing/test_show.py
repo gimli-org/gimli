@@ -332,7 +332,7 @@ if __name__ == '__main__':
     else:
         pass
         #testShowVariants()
-        #testColorbar()
+        testColorbar()
         #testColorBarFalse()
         #testShowPV()
         #testCBarLevels()

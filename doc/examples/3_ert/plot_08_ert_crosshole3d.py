@@ -103,7 +103,7 @@ for c in mesh.cells():
         c.setMarker(1)
 
 mesh["region"] = pg.Vector(mesh.cellMarkers())
-sli = mt.extract2dSlice(mesh)
+sli = mt.extract2dSlice(mesh, y=2.5)
 ax, cb = pg.show(sli, "region", showMesh=True)
 _ = ax.plot(pg.x(data), pg.z(data), "mo", markersize=1)
 

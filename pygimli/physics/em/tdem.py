@@ -6,6 +6,7 @@ from math import pi
 import numpy as np
 #import matplotlib.pyplot as plt
 import pygimli as pg
+from pygimli.frameworks.modelling import MeshModelling
 from . vmd import VMDTimeDomainModelling
 
 
@@ -510,6 +511,20 @@ class TDEM():
         tem.DATA = [snd]
         return tem
 
+
+class TDEMSmoothModelling(MeshModelling):
+    """Occam-style (smooth) inversion."""
+    def __init__(self, thk, **kwargs):
+        super().__init__()
+        self.thk_ = thk
+        self.nlay_ = len(thk)+1
+        self.core = VMDTimeDomainModelling(**kwargs, nLayers=self.nlay_)
+        self.mesh_ = pg.meshtools.createMesh1D(self.nlay_)
+        self.setMesh(self.mesh_)
+
+    def response(self, par):
+        """Model response (forward modelling)."""
+        return self.core.response(pg.cat(self.thk_, par))
 
 if __name__ == '__main__':
     print("do some tests here")
