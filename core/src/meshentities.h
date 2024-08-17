@@ -286,7 +286,7 @@ public:
      * All neighboring relationships have to be initialized ones by calling
      * \ref Mesh::createNeighborInfos().
      * If no cell can be found NULL is returned. */
-    inline Cell * neighborCell(uint i){ return neighborCells_[i]; }
+    inline Cell * neighborCell(uint i){ return neighborCells_.at(i); }
 
     /*! Find neighbor cell regarding to the i-th Boundary and store them
      * in neighborCells_. */

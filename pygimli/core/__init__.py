@@ -1551,5 +1551,6 @@ from .matrix import (convertCRSIndex2Map, sparseMatrix2Array,
                      sparseMatrix2Dense, sparseMatrix2csc,
                      toSparseMatrix, toSparseMapMatrix,
                      toCSC, toCSR, toCOO,
+                     asCSC, asCSR, asCOO, asSparseMapMatrix, asSparseMatrix,
                      toDense, reduceEntries, removeEntries,
                      )

@@ -518,6 +518,23 @@ def toCSC(A):
 def toCOO(A):
     return sparseMatrix2coo(A)
 
+
+def asCSR(A):
+    return sparseMatrix2csr(A)
+
+def asCSC(A):
+    return sparseMatrix2csc(A)
+
+def asCOO(A):
+    return sparseMatrix2coo(A)
+
+def asSparseMapMatrix(A):
+    return toSparseMapMatrix(A)
+
+def asSparseMatrix(A):
+    return toSparseMatrix(A)
+
+
 def sparseMatrix2csr(A):
     """Convert SparseMatrix to scipy.csr_matrix.
 
