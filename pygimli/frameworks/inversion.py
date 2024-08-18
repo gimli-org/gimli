@@ -32,6 +32,7 @@ class InversionBase(object):
         self.robustData = False
         self.blockyModel = False
         self.chi2History = []
+        self.modelHistory = []
         self.deltaPhiPercent = 1
         self.minDPhi = 1
         self.localRegularization = False
@@ -347,6 +348,22 @@ class InversionBase(object):
         self._dataVals = None
         self._errorVals = None
 
+    def oneStep(self):
+        """Carry out one iteration step (e.g. good for coupling etc.)."""
+        dModel = self.modelUpdate()
+        print("dM: ", dModel)
+        tau, responseLS = lineSearch(self, dModel)
+        print("tau: ", tau)
+        pg.debug(f"tau={tau}")
+        if tau >= 0.95:  # practically 1
+            tau = 1
+
+        self.model = self.modelTrans.update(self.model, dModel*tau)
+        if tau == 1.0:
+            self.response = responseLS
+        else:  # compute new response
+            self.response = self.fop.response(self.model)
+
     def run(self, dataVals, errorVals=None, **kwargs):
         """Run inversion.
 
@@ -509,20 +526,7 @@ class InversionBase(object):
                 print("-" * 80)
                 print("inv.iter", i, "... ", end='')
 
-            dModel = self.modelUpdate()
-            print("dM: ", dModel)
-            tau, responseLS = lineSearch(self, dModel)
-            print("tau: ", tau)
-            pg.debug(f"tau={tau}")
-            if tau >= 0.95:  # practically 1
-                tau = 1
-
-            self.model = self.modelTrans.update(self.model, dModel*tau)
-            if tau == 1.0:
-                self.response = responseLS
-            else:  # compute new response
-                self.response = self.fop.response(self.model)
-
+            self.oneStep()
             if np.isnan(self.model).any():
                 pg.info(self.model)
                 pg.critical('invalid model')
