@@ -20,7 +20,6 @@ class InversionBase(object):
     def __init__(self, fop=None, **kwargs):
         self._debug = kwargs.pop('debug', False)
         self._verbose = kwargs.pop('verbose', False)
-        self._stopAtChi1 = True
         self._preStep = None
         self._postStep = None
         self._fop = fop
@@ -436,8 +435,7 @@ class InversionBase(object):
         self.verbose = kwargs.pop('verbose', self.verbose)
         self.debug = kwargs.pop('debug', self.debug)
         self.robustData = kwargs.pop('robustData', False)
-        if "stopAtChi1" in kwargs:
-            self._stopAtChi1 = kwargs["stopAtChi1"]
+        self.stopAtChi1 = kwargs.pop("stopAtChi1", True)
 
         self.lam = kwargs.pop('lam', self.lam)
         self.lambdaFactor = kwargs.pop('lambdaFactor', 1.0)
