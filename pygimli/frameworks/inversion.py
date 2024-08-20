@@ -462,22 +462,8 @@ class InversionBase(object):
         if self.verbose:
             pg.info('Starting inversion.')
             print("fop:", self.fop)
-            if isinstance(self._dataTrans, pg.trans.TransCumulative):
-                print("Data transformation (cumulative):")
-                for i in range(self._dataTrans.size()):
-                    print("\t", i, self._dataTrans.at(i))
-            else:
-                print("Data transformation:", self._dataTrans)
-
-            if isinstance(self.modelTrans, pg.trans.TransCumulative):
-                print("Model transformation (cumulative):")
-                for i in range(self.modelTrans.size()):
-                    if i < 10:
-                        print("\t", i, self.modelTrans.at(i))
-                    else:
-                        print(".", end='')
-            else:
-                print("Model transformation:", self.modelTrans)
+            print("Data transformation:", self.dataTrans)
+            print("Model transformation:", self.modelTrans)
 
             print("min/max (data): {0}/{1}".format(pf(min(self._dataVals)),
                                                    pf(max(self._dataVals))))
@@ -699,6 +685,7 @@ class DescentInversion(InversionBase):
 
     def modelUpdate(self):
         """The negative gradient of  objective function as search direction."""
+        self.fop.createJacobian(self.model)
         return -self.gradient()
 
 
