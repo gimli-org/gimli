@@ -8,36 +8,37 @@ from .logger import info
 
 # pyGIMLi default configuration
 rc = {
-    'lang': 'eng', # 'eng', 'german', 'de', 'ger'
-    'unitStyle': 2,
+    "lang": "eng",  # 'eng', 'german', 'de', 'ger'
+    "unitStyle": 2,
     # 1: german style: 'value in unit'
     # 2: default style: 'value (unit)'
-    'view3D': 'auto',
+    "view3D": "auto",
     # auto: Use pyvista if installed or set it to 'fallback' to force fallback mode
-    'globalCache': True,
-    # call pg.wait() before the terminal script ends if there are pending 
+    "globalCache": True,
+    # call pg.wait() before the terminal script ends if there are pending
     # mpl widgets and your backend this supports
-    'waitOnExit': True,
+    "waitOnExit": True,
 }
+
 
 def getCPUCount():
     """Return number of processors on multiple platoforms."""
     # Windows
-    if os.name == 'nt':
-        return int(os.getenv('NUMBER_OF_PROCESSORS'))
+    if os.name == "nt":
+        return int(os.getenv("NUMBER_OF_PROCESSORS"))
     # Linux
-    elif sys.platform == 'linux2':
+    elif sys.platform == "linux2":
         retv = 0
-        with open('/proc/cpuinfo', 'rt') as cpuinfo:
+        with open("/proc/cpuinfo", "rt") as cpuinfo:
             for line in cpuinfo:
-                if line[:9] == 'processor':
+                if line[:9] == "processor":
                     retv += 1
         return retv
 
     # Please add similar hacks for MacOSX, Solaris, Irix,
     # FreeBSD, HPUX, etc.
     else:
-        raise RuntimeError('unknown platform')
+        raise RuntimeError("unknown platform")
 
 
 def getConfigPath():
@@ -55,11 +56,11 @@ def getConfigPath():
     system = sys.platform
 
     if system == "win32":
-        path = os.path.join(os.environ['APPDATA'])
+        path = os.path.join(os.environ["APPDATA"])
     elif system == "darwin":
-        path = os.path.expanduser('~/Library/Preferences/')
+        path = os.path.expanduser("~/Library/Preferences/")
     else:
-        path = os.getenv('XDG_CONFIG_HOME', os.path.expanduser("~/.config"))
+        path = os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
 
     return os.path.join(path, appname)
 

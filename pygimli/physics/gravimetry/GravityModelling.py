@@ -31,17 +31,19 @@ class GravityModelling(pg.frameworks.MeshModelling):
 
     def createKernel(self):
         """Create computational kernel."""
-        self.kernel = SolveGravMagHolstein(self.mesh_,
-                                           pnts=self.sensorPositions,
-                                           cmp=self.components,
-                                           foot=self.footprint)
+        self.kernel = SolveGravMagHolstein(
+            self.mesh_,
+            pnts=self.sensorPositions,
+            cmp=self.components,
+            foot=self.footprint,
+        )
         self.J = pg.matrix.BlockMatrix()
         self.Ki = []
         self.Ji = []
         for iC in range(self.kernel.shape[1]):
             self.Ki.append(np.squeeze(self.kernel[:, iC, :]))
             self.Ji.append(pg.matrix.NumpyMatrix(self.Ki[-1]))
-            self.J.addMatrix(self.Ji[-1], iC*self.kernel.shape[0], 0)
+            self.J.addMatrix(self.Ji[-1], iC * self.kernel.shape[0], 0)
 
         self.J.recalcMatrixSize()
         self.setJacobian(self.J)

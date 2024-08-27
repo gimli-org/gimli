@@ -44,8 +44,10 @@ class TravelTimeDijkstraModelling(MeshModelling):
         This is called automatic when accesing self.mesh() so it ensures any
         effect of changing region properties (background, single).
         """
-        pg.info("Creating refined mesh (secnodes: {0}) to "
-                "solve forward task.".format(self._refineSecNodes))
+        pg.info(
+            "Creating refined mesh (secnodes: {0}) to "
+            "solve forward task.".format(self._refineSecNodes)
+        )
         self.meshNoSec = pg.Mesh(mesh)
         m = mesh.createMeshWithSecondaryNodes(self._refineSecNodes)
         pg.verbose(m)
@@ -69,19 +71,15 @@ class TravelTimeDijkstraModelling(MeshModelling):
 
         if self._useGradient is not None:
             [vTop, vBot] = self._useGradient  # something strange here!!!
-            pg.info('Create gradient starting model. {0}: {1}'.format(vTop,
-                                                                      vBot))
-            sm = createGradientModel2D(self.data,
-                                       self.paraDomain,
-                                       vTop, vBot)
+            pg.info("Create gradient starting model. {0}: {1}".format(vTop, vBot))
+            sm = createGradientModel2D(self.data, self.paraDomain, vTop, vBot)
         else:
             dists = shotReceiverDistances(self.data, full=True)
-            aSlow = 1. / (dists / dataVals)
+            aSlow = 1.0 / (dists / dataVals)
 
             # pg._r(self.regionManager().parameterCount())
-            sm = pg.Vector(self.regionManager().parameterCount(),
-                           pg.math.median(aSlow))
-            pg.info('Create constant starting model:', sm[0])
+            sm = pg.Vector(self.regionManager().parameterCount(), pg.math.median(aSlow))
+            pg.info("Create constant starting model:", sm[0])
 
         return sm
 
@@ -107,12 +105,12 @@ class TravelTimeDijkstraModelling(MeshModelling):
 
     def drawModel(self, ax, model, **kwargs):
         """Draw the model."""
-        kwargs.setdefault('label', pg.unit('vel'))
-        kwargs.setdefault('cMap', pg.utils.cMap('vel'))
+        kwargs.setdefault("label", pg.unit("vel"))
+        kwargs.setdefault("cMap", pg.utils.cMap("vel"))
 
-        return super().drawModel(ax=ax, model=model,
-                                 logScale=kwargs.pop('logScale', True),
-                                 **kwargs)
+        return super().drawModel(
+            ax=ax, model=model, logScale=kwargs.pop("logScale", True), **kwargs
+        )
 
     def drawData(self, ax, data=None, **kwargs):
         """Draw the data (as apparent velocity crossplot by default).
@@ -121,18 +119,18 @@ class TravelTimeDijkstraModelling(MeshModelling):
         ----------
         data: pg.DataContainer
         """
-        if hasattr(data, '__iter__'):
-            kwargs['vals'] = data
+        if hasattr(data, "__iter__"):
+            kwargs["vals"] = data
             data = self.data
         elif data is None:
             data = self.data
 
-        if kwargs.pop('firstPicks', False):
+        if kwargs.pop("firstPicks", False):
             pg.physics.traveltime.drawFirstPicks(ax, data, **kwargs)
             return ax
         else:
-            kwargs.setdefault('label', pg.unit('va'))
-            kwargs.setdefault('cMap', pg.utils.cMap('va'))
+            kwargs.setdefault("label", pg.unit("va"))
+            kwargs.setdefault("cMap", pg.utils.cMap("va"))
             gci = drawVA(ax, data, usePos=False, **kwargs)
             cBar = createColorBar(gci, **kwargs)
 
@@ -142,7 +140,7 @@ class TravelTimeDijkstraModelling(MeshModelling):
 class FatrayDijkstraModellingInterpolate(TravelTimeDijkstraModelling):
     """Shortest-path (Dijkstra) based travel time with fat ray jacobian."""
 
-    def __init__(self, frequency=100., **kwargs):
+    def __init__(self, frequency=100.0, **kwargs):
         super().__init__(**kwargs)
         self.frequency = frequency
         self.iMat = pg.matrix.SparseMapMatrix()
@@ -156,10 +154,10 @@ class FatrayDijkstraModellingInterpolate(TravelTimeDijkstraModelling):
         # mesh = self.mesh()
         mesh = self.meshNoSec  # change back with pgcore=1.5
         self.J.resize(self.data.size(), mesh.cellCount())
-        self.sensorNodes = [mesh.findNearestNode(pos)
-                            for pos in self.data.sensorPositions()]
-        if (self.iMat.cols() != mesh.nodeCount() or
-                self.iMat.rows() != mesh.cellCount()):
+        self.sensorNodes = [
+            mesh.findNearestNode(pos) for pos in self.data.sensorPositions()
+        ]
+        if self.iMat.cols() != mesh.nodeCount() or self.iMat.rows() != mesh.cellCount():
             self.iMat = mesh.interpolationMatrix(mesh.cellCenters())
 
         Di = self.dijkstra
@@ -196,7 +194,7 @@ class FatrayDijkstraModellingInterpolate(TravelTimeDijkstraModelling):
 class FatrayDijkstraModellingMidpoint(TravelTimeDijkstraModelling):
     """Shortest-path (Dijkstra) based travel time with fat ray jacobian."""
 
-    def __init__(self, frequency=100., verbose=False):
+    def __init__(self, frequency=100.0, verbose=False):
         super().__init__(verbose)
         self.frequency = frequency
         self.mids = None
@@ -220,8 +218,9 @@ class FatrayDijkstraModellingMidpoint(TravelTimeDijkstraModelling):
     def createJacobian(self, slowness):
         """Generate Jacobian matrix using fat-ray after Jordi et al. (2016)."""
         self.J.resize(self.data.size(), self.mesh().cellCount())
-        self.sensorNodes = [self.mesh.findNearestNode(pos)
-                            for pos in self.data.sensorPositions()]
+        self.sensorNodes = [
+            self.mesh.findNearestNode(pos) for pos in self.data.sensorPositions()
+        ]
         Di = self.dijkstra()
         slowPerCell = self.createMappedModel(slowness, 1e16)
         Di.setGraph(self.createGraph(slowPerCell))

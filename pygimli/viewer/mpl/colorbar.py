@@ -6,7 +6,7 @@ from packaging import version
 
 import pygimli as pg
 from . import saveFigure, updateAxes
-from . utils import prettyFloat
+from .utils import prettyFloat
 from pygimli.core.logger import renameKwarg
 
 
@@ -25,6 +25,7 @@ def autolevel(z, nLevs, logScale=None, zMin=None, zMax=None):
     array([   1.,   10.,  100., 1000.])
     """
     import matplotlib.ticker as ticker
+
     locator = None
 
     if logScale:
@@ -49,11 +50,11 @@ def autolevel(z, nLevs, logScale=None, zMin=None, zMax=None):
         levs = np.geomspace(zMin, zMax, nLevs)
     else:
         levs = locator.tick_values(zMin, zMax)
-    #print(levs)
+    # print(levs)
     return levs
 
 
-def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
+def cmapFromName(cmapname="jet", ncols=256, bad=None, **kwargs):
     """Get a colormap either from name or from keyworld list.
 
     See http://matplotlib.org/examples/color/colormaps_reference.html
@@ -83,23 +84,25 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
         return cmapname
 
     import matplotlib as mpl
+
     if not bad:
         bad = [1.0, 1.0, 1.0, 0.0]
 
-    renameKwarg('cmap', 'cMap', kwargs)
+    renameKwarg("cmap", "cMap", kwargs)
 
-    cMapName = kwargs.pop('cMap', cmapname)
+    cMapName = kwargs.pop("cMap", cmapname)
 
     cMap = None
     if cMapName is None:
-        cMapName = 'viridis'
+        cMapName = "viridis"
 
-    if cMapName == 'b2r':
+    if cMapName == "b2r":
         pg.warn("Don't use manual b2r cMap, use MPL internal 'RdBu' instead.")
         cMap = "RdBu_r"
     else:
         try:
             import copy
+
             cMap = copy.copy(mpl.colormaps.get_cmap(cMapName).resampled(ncols))
         except BaseException as e:
             pg.warn("Could not retrieve colormap ", cMapName, e)
@@ -108,8 +111,9 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
     return cMap
 
 
-def findAndMaskBestClim(dataIn, cMin=None, cMax=None, dropColLimitsPerc=5,
-                        logScale=False):
+def findAndMaskBestClim(
+    dataIn, cMin=None, cMax=None, dropColLimitsPerc=5, logScale=False
+):
     """TODO Documentme."""
     data = np.asarray(dataIn)
 
@@ -139,9 +143,19 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None, dropColLimitsPerc=5,
     return data, cMin, cMax
 
 
-def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
-                   logScale=None, nCols=256, nLevs=5, levels=None,
-                   label=None, **kwargs):
+def updateColorBar(
+    cbar,
+    gci=None,
+    cMin=None,
+    cMax=None,
+    cMap=None,
+    logScale=None,
+    nCols=256,
+    nLevs=5,
+    levels=None,
+    label=None,
+    **kwargs
+):
     """Update colorbar values.
 
     Update limits and label of a given colorbar.
@@ -171,17 +185,19 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
         Colorbar name.
     """
     import matplotlib as mpl
+
     # pg._g('update colorbar: ', cbar, gci, cMin, cMax, cMap,
     #        logScale, ', nCols:', nCols, nLevs, ', label:', label, levels)
 
     if gci is not None:
         if min(gci.get_array()) < 1e12:
-            norm = mpl.colors.Normalize(vmin=min(gci.get_array()),
-                                        vmax=max(gci.get_array()))
+            norm = mpl.colors.Normalize(
+                vmin=min(gci.get_array()), vmax=max(gci.get_array())
+            )
             gci.set_norm(norm)
 
         if cbar is not None:
-            #cbar.on_mappable_changed(gci)
+            # cbar.on_mappable_changed(gci)
             cbar.update_normal(gci)
 
         mappable = gci
@@ -196,9 +212,7 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
             if nCols is None:
                 nCols = nLevs
 
-            cMap = cmapFromName(cMap, ncols=nCols,
-                                bad=[1.0, 1.0, 1.0, 0.0]
-                                )
+            cMap = cmapFromName(cMap, ncols=nCols, bad=[1.0, 1.0, 1.0, 0.0])
             # does not work. why??
             # cMap.set_under('yellow')
             # cMap.set_over('cyan')
@@ -226,15 +240,13 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
 
         if logScale:
             if cMin < 1e-12:
-                cMin = min(filter(lambda _x: _x > 0.0,
-                                  mappable.get_array()))
+                cMin = min(filter(lambda _x: _x > 0.0, mappable.get_array()))
 
             norm = mpl.colors.LogNorm(vmin=cMin, vmax=cMax)
         else:
             norm = mpl.colors.Normalize(vmin=cMin, vmax=cMax)
 
         mappable.set_norm(norm)
-
 
     if needLevelUpdate is True:
         if cbar is not None:
@@ -244,12 +256,10 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
         else:
             setCbarLevels(mappable, cMin, cMax, nLevs, levels)
 
-
     return cbar
 
 
-def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
-                   **kwargs):
+def createColorBar(gci, orientation="horizontal", size=0.2, pad=None, **kwargs):
     """Create a Colorbar.
 
     Shortcut to create a matplotlib colorbar within the ax for a given
@@ -274,41 +284,42 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
         Forwarded to updateColorBar
 
     """
-    #pg._y('createColorBar', kwargs)
+    # pg._y('createColorBar', kwargs)
     from mpl_toolkits.axes_grid1 import make_axes_locatable
+
     cbarTarget = pg.plt
     cax = None
     divider = None
     #    if hasattr(patches, 'figure'):
     #       cbarTarget = patches.figure
 
-    ax = kwargs.pop('ax', None)
+    ax = kwargs.pop("ax", None)
     if ax is None:
         try:
-            if hasattr(gci, 'axes'):
+            if hasattr(gci, "axes"):
                 ax = gci.axes
-            elif hasattr(gci, 'get_axes'):
+            elif hasattr(gci, "get_axes"):
                 ax = gci.get_axes()
-            elif hasattr(gci, 'ax'):  # deprecated since MPL 3.3
+            elif hasattr(gci, "ax"):  # deprecated since MPL 3.3
                 ax = gci.ax
         except:
             pass
 
     cbar = None
 
-    if hasattr(ax, '__cBar__'):
+    if hasattr(ax, "__cBar__"):
         cbar = ax.__cBar__
-        #pg._y('update', kwargs)
+        # pg._y('update', kwargs)
         updateColorBar(cbar, gci, **kwargs)
     else:
 
-        if kwargs.pop('onlyColorSet', False) == False:
+        if kwargs.pop("onlyColorSet", False) == False:
             # pg._y(kwargs)
 
             divider = make_axes_locatable(ax)
 
             if divider:
-                if orientation == 'horizontal':
+                if orientation == "horizontal":
                     if pad is None:
                         pad = 0.5
                     cax = divider.append_axes("bottom", size=size, pad=pad)
@@ -320,20 +331,28 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
 
             cbar = cbarTarget.colorbar(gci, cax=cax, orientation=orientation)
 
-            #store the cbar into the axes to reuse it on the next call
+            # store the cbar into the axes to reuse it on the next call
             ax.__cBar__ = cbar
             updateColorBar(cbar, **kwargs)
         else:
-            #pg._y('update', kwargs)
+            # pg._y('update', kwargs)
             updateColorBar(None, gci=gci, **kwargs)
-
 
     return cbar
 
 
-def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
-                       label=None, orientation='horizontal', savefig=None,
-                       ax=None, **kwargs):
+def createColorBarOnly(
+    cMin=1,
+    cMax=100,
+    logScale=False,
+    cMap=None,
+    nLevs=5,
+    label=None,
+    orientation="horizontal",
+    savefig=None,
+    ax=None,
+    **kwargs
+):
     """Create figure with a colorbar.
 
     Parameters
@@ -359,9 +378,10 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     """
     from matplotlib.colors import LogNorm, Normalize
     from matplotlib.colorbar import ColorbarBase
+
     if ax is None:
         fig = pg.plt.figure()
-        if orientation == 'horizontal':
+        if orientation == "horizontal":
             ax = fig.add_axes([0.035, 0.6, 0.93, 0.05])
         else:
             ax = fig.add_axes([0.30, 0.02, 0.22, 0.96])
@@ -373,24 +393,22 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
         norm = Normalize(vmin=cMin, vmax=cMax)
 
     cmap = cmapFromName(cMap)
-    kwargs.pop('colorBar', False)  # often False for multiple plots
-    kwargs.pop('xlabel', False)
-    kwargs.pop('ylabel', False)
-    aspect = kwargs.pop('aspect', None)
-    levels = kwargs.pop('levels', None)
-    cbar = ColorbarBase(ax, norm=norm, cmap=cmap,
-                        orientation=orientation, **kwargs)
+    kwargs.pop("colorBar", False)  # often False for multiple plots
+    kwargs.pop("xlabel", False)
+    kwargs.pop("ylabel", False)
+    aspect = kwargs.pop("aspect", None)
+    levels = kwargs.pop("levels", None)
+    cbar = ColorbarBase(ax, norm=norm, cmap=cmap, orientation=orientation, **kwargs)
 
     #        cbar.labelpad = -20
     #        cbar.ax.yaxis.set_label_position('left')
     if levels is not None:
-        kwargs['levels'] = levels
+        kwargs["levels"] = levels
 
     if aspect is not None:
         ax.set_aspect(aspect)
 
-    updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label,
-                   **kwargs)
+    updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label, **kwargs)
 
     # updateColorBar(cbar, **kwargs)
 
@@ -405,7 +423,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
     import matplotlib as mpl
     import matplotlib.ticker as ticker
 
-    if hasattr(cbar, 'mappable'):
+    if hasattr(cbar, "mappable"):
         mappable = cbar.mappable
     else:
         # cbar might be a mappable itself
@@ -423,9 +441,9 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
         cMax *= 1.001
 
     norm = None
-    if hasattr(mappable, 'mappable'):
+    if hasattr(mappable, "mappable"):
         norm = mappable.norm
-    elif hasattr(mappable, 'norm'):
+    elif hasattr(mappable, "norm"):
         norm = mappable.norm
 
     # norm.clip = True
@@ -453,15 +471,15 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
 
     mappable.set_clim(vmin=cMin, vmax=cMax)
 
-    if hasattr(cbar, 'set_ticks'):
+    if hasattr(cbar, "set_ticks"):
         # cbar is a ColorBar with ticks
         cbar.set_ticks(cbarLevels)
         # cbar.set_ticklabels(cbarLevelsString)
         try:
             cbar.ax.figure.draw_without_rendering()
-            #cbar._draw_all() # work but dunno how long this will exists
+            # cbar._draw_all() # work but dunno how long this will exists
         except:
-            cbar.draw_all() # removed by mpl-3.8
+            cbar.draw_all()  # removed by mpl-3.8
 
         # necessary since mpl 3.0
         cbar.ax.minorticks_off()
@@ -471,7 +489,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
             return prettyFloat(x) % x
 
         try:  # mpl 3.5
-            if cbar.orientation == 'horizontal':
+            if cbar.orientation == "horizontal":
                 cbar.ax.xaxis.set_major_formatter(pfMajorFormatter)
             else:
                 cbar.ax.yaxis.set_major_formatter(pfMajorFormatter)
@@ -479,10 +497,10 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
             pg.warn(e)
 
 
-def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
-                    **kwargs):
+def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None, **kwargs):
     """Change the data values for a given mappable."""
     import matplotlib as mpl
+
     data = dataIn
     if not isinstance(data, np.ma.core.MaskedArray):
         data = np.array(dataIn)
@@ -491,6 +509,7 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
     if mappable.get_cmap() is not None:
         try:
             import copy
+
             # from mpl 3.3
             # cm_ = copy.copy(mappable.get_cmap()).set_bad([1.0, 1.0, 1.0, 0.])
             # mappable.set_cmap(cm_)
@@ -513,8 +532,9 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
                 data = np.ma.masked_array(data, data <= 0.0)
             else:
                 # if all data are negative switch to lin scale
-                return setMappableData(mappable, dataIn, cMin, cMax,
-                                       logScale=False, **kwargs)
+                return setMappableData(
+                    mappable, dataIn, cMin, cMax, logScale=False, **kwargs
+                )
 
     if logScale is True:
         mappable.set_norm(mpl.colors.LogNorm(vmin=cMin, vmax=cMax))
@@ -552,7 +572,7 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     C = np.asarray(coverage)
     #    print(np.min(C), np.max(C))
 
-    if (np.min(C) < 0.) | (np.max(C) > 1.) | (np.max(C) < 0.5):
+    if (np.min(C) < 0.0) | (np.max(C) > 1.0) | (np.max(C) < 0.5):
 
         nn, hh = np.histogram(C, 50)
         nnn = nn.cumsum(axis=0) / float(len(C))
@@ -564,15 +584,15 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
             ma = np.max(C)
         else:
             ma = hh[np.max(np.where(nnn < dropThreshold)[0])]
-#            mi = hh[min(np.where(nnn > 0.2)[0])]
-#            ma = hh[max(np.where(nnn < 0.7)[0])]
+        #            mi = hh[min(np.where(nnn > 0.2)[0])]
+        #            ma = hh[max(np.where(nnn < 0.7)[0])]
 
         C = (C - mi) / (ma - mi)
-        C[np.where(C < 0.)] = 0.0
+        C[np.where(C < 0.0)] = 0.0
         C[np.where(C > 0.95)] = 1.0
 
-#    else:
-#        print('taking the values directly')
+    #    else:
+    #        print('taking the values directly')
     import matplotlib as mpl
 
     if version.parse(mpl.__version__) >= version.parse("3.4"):
@@ -582,7 +602,7 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
         cols[:, 3] = C
         patches.set_facecolors(cols)
 
-    if hasattr(patches, 'ax'):
+    if hasattr(patches, "ax"):
         updateAxes(patches.ax)
-    elif hasattr(patches, 'get_axes'):
+    elif hasattr(patches, "get_axes"):
         updateAxes(patches.get_axes())

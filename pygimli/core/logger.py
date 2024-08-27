@@ -13,25 +13,25 @@ import logging
 import inspect
 import traceback
 
-from . core import pgcore
+from .core import pgcore
 
 __ANSICOLORS__ = {
-    'r': '\033[0;31;49m',  # normal, #FG red; #BG black
-    'g': '\033[0;32;49m',
-    'y': '\033[0;33;49m',
-    'b': '\033[0;34;49m',
-    'm': '\033[0;35;49m',
-    'DARK_GREY': '\033[1;30m',
-    'NC': '\033[0m',  # No Color
+    "r": "\033[0;31;49m",  # normal, #FG red; #BG black
+    "g": "\033[0;32;49m",
+    "y": "\033[0;33;49m",
+    "b": "\033[0;34;49m",
+    "m": "\033[0;35;49m",
+    "DARK_GREY": "\033[1;30m",
+    "NC": "\033[0m",  # No Color
 }
 
 
 def _msg(*args):
-    msg = ''
+    msg = ""
     for i, arg in enumerate(args):
         msg += str(arg)
-        if i < len(args)-1:
-            msg += ' '
+        if i < len(args) - 1:
+            msg += " "
     return msg
 
 
@@ -39,91 +39,100 @@ def _(*args, c=None):
     # will probably only for linux or any msys like shell
     if c is None:
         return _msg(*args)
-    elif '\033' in c:
-        return c + _msg(*args) + __ANSICOLORS__['NC']
+    elif "\033" in c:
+        return c + _msg(*args) + __ANSICOLORS__["NC"]
     try:
-        return __ANSICOLORS__[c] + _msg(*args) + __ANSICOLORS__['NC']
+        return __ANSICOLORS__[c] + _msg(*args) + __ANSICOLORS__["NC"]
     except Exception:
-        return '\033[' + c + 'm' + _msg(*args) + __ANSICOLORS__['NC']
+        return "\033[" + c + "m" + _msg(*args) + __ANSICOLORS__["NC"]
 
 
 def _get_class_from_frame(fr):
     args, _, _, value_dict = inspect.getargvalues(fr)
-    if len(args) and args[0] == 'self':
-        instance = value_dict.get('self', None)
+    if len(args) and args[0] == "self":
+        instance = value_dict.get("self", None)
         if instance is not None:
-            return getattr(instance, '__class__', None)
+            return getattr(instance, "__class__", None)
     return None
 
 
 def whereAmI(nr=3):
-    nr = min(len(inspect.stack())-1, nr)
+    nr = min(len(inspect.stack()) - 1, nr)
     clsName = _get_class_from_frame(inspect.stack()[nr][0])
     method = inspect.stack()[nr].function
-    fileN = inspect.stack()[nr].filename.split('/')[-1]
+    fileN = inspect.stack()[nr].filename.split("/")[-1]
     line = inspect.stack()[nr].lineno
     # print(inspect.stack()[nr])
     # print('{0}:{1}'.format(fileN, line))
-    return str(clsName) + '.' + method + '({0}:{1})'.format(fileN, line)
+    return str(clsName) + "." + method + "({0}:{1})".format(fileN, line)
 
 
-def p(*args, c='y'):
-    deprecated(hint='use _d instead')
+def p(*args, c="y"):
+    deprecated(hint="use _d instead")
     print(_(*args, c=c))
 
 
 def _g(*args):
-    _d(*args, c='g')
+    _d(*args, c="g")
 
 
 def _y(*args):
-    _d(*args, c='y')
+    _d(*args, c="y")
 
 
 def _r(*args):
-    _d(*args, c='r')
+    _d(*args, c="r")
 
 
 def _b(*args):
-    _d(*args, c='b')
+    _d(*args, c="b")
 
 
-def _d(*args, c='y'):
+def _d(*args, c="y"):
     """Simplistic colored debug msg"""
-    print(_(whereAmI(), ':', *args, c=c))
+    print(_(whereAmI(), ":", *args, c=c))
 
 
 class ColorFormatter(logging.Formatter):
-    def __init__(self,
-                 fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s'):
+    def __init__(self, fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s"):
         logging.Formatter.__init__(self, fmt, "%d/%m/%y - %H:%M:%S")
         self._formatter = {
             logging.INFO: logging.PercentStyle(
-                '%(asctime)s - %(name)s - ' + _('%(levelname)s', c='g') +
-                ' - %(message)s'),
+                "%(asctime)s - %(name)s - "
+                + _("%(levelname)s", c="g")
+                + " - %(message)s"
+            ),
             logging.ERROR: logging.PercentStyle(
-                '%(asctime)s - %(name)s - ' + _('%(levelname)s', c='r') +
-                ' - %(message)s'),
+                "%(asctime)s - %(name)s - "
+                + _("%(levelname)s", c="r")
+                + " - %(message)s"
+            ),
             logging.WARNING: logging.PercentStyle(
-                '%(asctime)s - %(name)s - ' + _('%(levelname)s', c='y') +
-                ' - %(message)s'),
+                "%(asctime)s - %(name)s - "
+                + _("%(levelname)s", c="y")
+                + " - %(message)s"
+            ),
             logging.CRITICAL: logging.PercentStyle(
-                '%(asctime)s - %(name)s - ' +
-                _('%(levelname)s', c='5;31;1;49') + ' - %(message)s'),
+                "%(asctime)s - %(name)s - "
+                + _("%(levelname)s", c="5;31;1;49")
+                + " - %(message)s"
+            ),
             logging.DEBUG: logging.PercentStyle(
-                '%(asctime)s - %(name)s - ' + _('%(levelname)s', c='m') +
-                ' - %(message)s'),
-            'DEFAULT': logging.PercentStyle(
-                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'),
+                "%(asctime)s - %(name)s - "
+                + _("%(levelname)s", c="m")
+                + " - %(message)s"
+            ),
+            "DEFAULT": logging.PercentStyle(
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            ),
         }
 
     def format(self, record):
-        self._style = self._formatter.get(record.levelno,
-                                          self._formatter['DEFAULT'])
+        self._style = self._formatter.get(record.levelno, self._formatter["DEFAULT"])
         return logging.Formatter.format(self, record)
 
 
-logger = logging.getLogger('pyGIMLi')
+logger = logging.getLogger("pyGIMLi")
 streamHandler = logging.StreamHandler()
 streamHandler.setFormatter(ColorFormatter())
 logger.root.addHandler(streamHandler)
@@ -155,7 +164,7 @@ def addLogLevel(value, name):
 VERBOSE = 15
 # DEBUG = 10
 # NOTSET = 0
-addLogLevel(VERBOSE, 'VERBOSE')
+addLogLevel(VERBOSE, "VERBOSE")
 
 
 def __logVerbose(msg, *args, **kwargs):
@@ -214,12 +223,14 @@ def v(funct):
     >>> pg.setVerbose(0)
     >>> pg.v(bar)('verbose should be on (2)')
     """
+
     def wrapper(*args, **kwargs):
         o = logger.level
         logger.setLevel(logging.VERBOSE)
         rv = funct(*args, **kwargs)
         logger.setLevel(o)
         return rv
+
     return wrapper
 
 
@@ -241,12 +252,14 @@ def d(funct):
     >>> pg.setDebug(0)
     >>> pg.d(bar)('debug should be on (2)')
     """
+
     def wrapper(*args, **kwargs):
         o = logger.level
         logger.setLevel(logging.DEBUG)
         rv = funct(*args, **kwargs)
         logger.setLevel(o)
         return rv
+
     return wrapper
 
 
@@ -264,9 +277,9 @@ def setDebug(d):
         level = logging.INFO
 
     logger.setLevel(level)
-    logging.getLogger('Core').setLevel(level)
-    fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    logging.basicConfig(level=level, format=fmt, datefmt='%m/%d/%Y %H:%M:%S')
+    logging.getLogger("Core").setLevel(level)
+    fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    logging.basicConfig(level=level, format=fmt, datefmt="%m/%d/%Y %H:%M:%S")
     # filename='pygimli.log'
 
 
@@ -292,7 +305,7 @@ def debug(*args, withTrace=False):
     logger.debug(_msg(*args))
 
 
-def verbose(*args):   # isn't this a refinition of line 253?
+def verbose(*args):  # isn't this a refinition of line 253?
     logger.verbose(_msg(*args))
 
 
@@ -301,7 +314,7 @@ def critical(*args):
     raise Exception(_msg(*args))
 
 
-def deprecated(msg='', hint=''):
+def deprecated(msg="", hint=""):
     logger.warning("Deprecated code usage at:")
     logger.warning(whereAmI() + "\n" + msg + " " + hint)
 
@@ -315,15 +328,21 @@ def deprecated(msg='', hint=''):
 #     return newFunc(**inspect.stack()[1].frame.f_locals)
 
 
-def renameKwarg(old, new, kwargs, ver=''):
+def renameKwarg(old, new, kwargs, ver=""):
     if old in kwargs:
-        logger.warning("Keyword argument changed from '" + old +
-                       "' to '" + new + "' and will be removed in v " + ver)
+        logger.warning(
+            "Keyword argument changed from '"
+            + old
+            + "' to '"
+            + new
+            + "' and will be removed in v "
+            + ver
+        )
         kwargs[new] = kwargs.pop(old)
 
 
 def warnNonEmptyArgs(kwargs):
     if len(kwargs) > 0:
-        logger.warning(whereAmI() +
-                       "Unrecognized keyword arguments for method:" +
-                       _msg(kwargs))
+        logger.warning(
+            whereAmI() + "Unrecognized keyword arguments for method:" + _msg(kwargs)
+        )

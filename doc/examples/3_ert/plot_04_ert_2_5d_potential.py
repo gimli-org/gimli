@@ -40,6 +40,7 @@ import pygimli as pg
 
 from pygimli.viewer.mpl import drawStreams
 
+
 ###############################################################################
 # We know the exact solution by analytical formulas:
 #
@@ -74,13 +75,19 @@ def uAnalytical(p, sourcePos, k, sigma=1):
     """
     r1A = (p - sourcePos).abs()
     # Mirror on surface at depth=0
-    r2A = (p - pg.Pos([1.0, -1.0])*sourcePos).abs()
+    r2A = (p - pg.Pos([1.0, -1.0]) * sourcePos).abs()
 
     if r1A > 1e-12 and r2A > 1e-12:
-        return  1 / (2.0 * np.pi) * 1/sigma * \
-            (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k))
+        return (
+            1
+            / (2.0 * np.pi)
+            * 1
+            / sigma
+            * (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k))
+        )
     else:
-        return 0.
+        return 0.0
+
 
 ###############################################################################
 # We assume the so-called mixed boundary conditions (Dey & Morrison, 1979).
@@ -102,9 +109,9 @@ def mixedBC(boundary, userData):
     if boundary.norm()[1] == 1.0:
         return 0
 
-    sourcePos = userData['sourcePos']
-    k = userData['k']
-    sigma = userData['s']
+    sourcePos = userData["sourcePos"]
+    k = userData["k"]
+    sigma = userData["s"]
     r1 = boundary.center() - sourcePos
 
     # Mirror on surface at depth=0
@@ -114,18 +121,25 @@ def mixedBC(boundary, userData):
 
     n = boundary.norm()
     if r1A > 1e-12 and r2A > 1e-12:
-        alpha = sigma * k * ((r1.dot(n)) / r1A * pg.math.besselK1(r1A * k) +
-                            (r2.dot(n)) / r2A * pg.math.besselK1(r2A * k)) / \
-            (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k)) 
-        
+        alpha = (
+            sigma
+            * k
+            * (
+                (r1.dot(n)) / r1A * pg.math.besselK1(r1A * k)
+                + (r2.dot(n)) / r2A * pg.math.besselK1(r2A * k)
+            )
+            / (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k))
+        )
+
         return alpha
-        
+
         # Note, the above is the same like:
         beta = 1.0
         return [alpha, beta, 0.0]
-            
+
     else:
         return 0.0
+
 
 ###############################################################################
 # We assemble the right-hand side (rhs) for the singular current term by hand
@@ -145,12 +159,12 @@ def rhsPointSource(mesh, source):
     rhs.setVal(cell.N(cell.shape().rst(source)), cell.ids())
     return rhs
 
+
 ###############################################################################
 # Now we create a suitable mesh and solve the equation with `pg.solve`.
 # Note that we use a mesh with quadratic shape functions by calling `createP2`.
 #
-mesh = pg.createGrid(x=np.linspace(-10.0, 10.0, 41),
-                     y=np.linspace(-15.0,  0.0, 31))
+mesh = pg.createGrid(x=np.linspace(-10.0, 10.0, 41), y=np.linspace(-15.0, 0.0, 31))
 mesh = mesh.createP2()
 
 sourcePosA = [-5.25, -3.75]
@@ -158,22 +172,41 @@ sourcePosB = [+5.25, -3.75]
 
 k = 1e-2
 sigma = 1.0
-bc={'Robin': {'1,2,3': mixedBC}}
-u = pg.solve(mesh, a=sigma, b=-sigma * k*k,
-             rhs=rhsPointSource(mesh, sourcePosA),
-             bc=bc, userData={'sourcePos': sourcePosA, 'k': k, 's':sigma},
-             verbose=True)
+bc = {"Robin": {"1,2,3": mixedBC}}
+u = pg.solve(
+    mesh,
+    a=sigma,
+    b=-sigma * k * k,
+    rhs=rhsPointSource(mesh, sourcePosA),
+    bc=bc,
+    userData={"sourcePos": sourcePosA, "k": k, "s": sigma},
+    verbose=True,
+)
 
-u -= pg.solve(mesh, a=sigma, b=-sigma * k*k,
-              rhs=rhsPointSource(mesh, sourcePosB),
-              bc=bc, userData={'sourcePos': sourcePosB, 'k': k, 's':sigma},
-              verbose=True)
+u -= pg.solve(
+    mesh,
+    a=sigma,
+    b=-sigma * k * k,
+    rhs=rhsPointSource(mesh, sourcePosB),
+    bc=bc,
+    userData={"sourcePos": sourcePosB, "k": k, "s": sigma},
+    verbose=True,
+)
 
 # The solution is shown by calling
 
-ax = pg.show(mesh, data=u, cMap="RdBu_r", cMin=-1, cMax=1,
-             orientation='horizontal', label='Potential $u$',
-             nCols=16, nLevs=9, showMesh=True)[0]
+ax = pg.show(
+    mesh,
+    data=u,
+    cMap="RdBu_r",
+    cMin=-1,
+    cMax=1,
+    orientation="horizontal",
+    label="Potential $u$",
+    nCols=16,
+    nLevs=9,
+    showMesh=True,
+)[0]
 
 # Additionally to the image of the potential we want to see the current flow.
 # The current flows along the gradient of our solution and can be plotted as
@@ -181,9 +214,10 @@ ax = pg.show(mesh, data=u, cMap="RdBu_r", cMin=-1, cMax=1,
 # stream line per cell of the mesh. This can be a little confusing for dense
 # meshes so we can give a second (coarse) mesh as a new cell base to draw the
 # streams. If `drawStreams` gets scalar data, the gradients will be calculated.
-gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 20),
-                           y=np.linspace(-15.0,   .0, 20))
-drawStreams(ax, mesh, u, coarseMesh=gridCoarse, color='Black')
+gridCoarse = pg.createGrid(
+    x=np.linspace(-10.0, 10.0, 20), y=np.linspace(-15.0, 0.0, 20)
+)
+drawStreams(ax, mesh, u, coarseMesh=gridCoarse, color="Black")
 
 
 ###############################################################################
@@ -192,21 +226,29 @@ drawStreams(ax, mesh, u, coarseMesh=gridCoarse, color='Black')
 # measure for the accuracy of the resulting field so we just look for the
 # differences.
 #
-uAna = pg.Vector(list(map(lambda p__: uAnalytical(p__, sourcePosA, k, sigma),
-                      mesh.positions())))
-uAna -= pg.Vector(list(map(lambda p__: uAnalytical(p__, sourcePosB, k, sigma),
-                       mesh.positions())))
+uAna = pg.Vector(
+    list(map(lambda p__: uAnalytical(p__, sourcePosA, k, sigma), mesh.positions()))
+)
+uAna -= pg.Vector(
+    list(map(lambda p__: uAnalytical(p__, sourcePosB, k, sigma), mesh.positions()))
+)
 
-ax = pg.show(mesh, data=pg.abs(uAna-u), cMap="Reds",
-          orientation='horizontal', label='|$u_{exact}$ -$u$|',
-          logScale=True, cMin=1e-7, cMax=1e-1,
-          contourLines=False,
-          nCols=12, nLevs=7,
-          showMesh=True)[0]
+ax = pg.show(
+    mesh,
+    data=pg.abs(uAna - u),
+    cMap="Reds",
+    orientation="horizontal",
+    label="|$u_{exact}$ -$u$|",
+    logScale=True,
+    cMin=1e-7,
+    cMax=1e-1,
+    contourLines=False,
+    nCols=12,
+    nLevs=7,
+    showMesh=True,
+)[0]
 
-#print('l2:', pg.pf(pg.solver.normL2(uAna-u)))
-print('L2:', pg.pf(pg.solver.normL2(uAna-u, mesh)))
-print('H1:', pg.pf(pg.solver.normH1(uAna-u, mesh)))
-np.testing.assert_approx_equal(pg.solver.normL2(uAna-u, mesh),
-                               0.02415, significant=3)
-
+# print('l2:', pg.pf(pg.solver.normL2(uAna-u)))
+print("L2:", pg.pf(pg.solver.normL2(uAna - u, mesh)))
+print("H1:", pg.pf(pg.solver.normH1(uAna - u, mesh)))
+np.testing.assert_approx_equal(pg.solver.normL2(uAna - u, mesh), 0.02415, significant=3)

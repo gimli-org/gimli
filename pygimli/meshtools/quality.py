@@ -15,8 +15,7 @@ import numpy as np
 # Helper functions
 def _boundaryLengths(cell):
     """Return boundary lengths of a given cell."""
-    return np.array(
-        [cell.boundary(i).size() for i in range(cell.boundaryCount())])
+    return np.array([cell.boundary(i).size() for i in range(cell.boundaryCount())])
 
 
 def _unitVector(vector):
@@ -83,12 +82,12 @@ def eta(cell):
 
         \eta = \frac{4\sqrt{3}a}{l_1^2 + l_2^2 + l_3^2}
     """
-    return 4 * np.sqrt(3) * cell.size() / np.sum(_boundaryLengths(cell)**2)
+    return 4 * np.sqrt(3) * cell.size() / np.sum(_boundaryLengths(cell) ** 2)
 
 
 def minimumAngle(cell):
     """Return the normalized minimum angle of a given cell."""
-    return np.min(_cellAngles(cell)) / 60.
+    return np.min(_cellAngles(cell)) / 60.0
 
 
 def nsr(cell):

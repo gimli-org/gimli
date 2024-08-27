@@ -184,8 +184,7 @@ from pygimli.meshtools import readGmsh
 filename = pg.getExampleFile("gmsh/2d_tutorial.geo")
 
 try:
-    subprocess.call(
-        ["gmsh", "-format", "msh2", "-2", "-o", "mesh.msh", filename])
+    subprocess.call(["gmsh", "-format", "msh2", "-2", "-o", "mesh.msh", filename])
     gmsh = True
 except OSError:
     print("Gmsh needs to be installed for this example.")

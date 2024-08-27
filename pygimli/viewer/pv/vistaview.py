@@ -118,8 +118,8 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         )
     elif pg.viewer.mpl.isInteractive():
         plotter.__show = plotter.show
-        plotter.show = (
-            lambda *args, **kwargs: plotter.__show(*args, **kwargs)
+        plotter.show = lambda *args, **kwargs: (
+            plotter.__show(*args, **kwargs)
             if pg.viewer.mpl.isInteractive() or pyvista.BUILDING_GALLERY
             else False
         )

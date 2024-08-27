@@ -31,15 +31,13 @@ import pygimli.meshtools as mt
 # depth. Additionally, we add a circle into the middle layer.
 #
 
-world = mt.createWorld(start=[-50, 0], end=[50, -50],
-                       layers=[-1, -5], worldMarker=True)
-scheme = ert.createData(elecs=pg.utils.grange(start=-10, end=10, n=21),
-                        schemeName='dd')
+world = mt.createWorld(start=[-50, 0], end=[50, -50], layers=[-1, -5], worldMarker=True)
+scheme = ert.createData(elecs=pg.utils.grange(start=-10, end=10, n=21), schemeName="dd")
 circle = mt.createCircle(pos=[0, -3], radius=1, marker=4)
 world += circle
 for pos in scheme.sensorPositions():
-    _= world.createNode(pos)
-    _= world.createNode(pos + [0.0, -0.1])
+    _ = world.createNode(pos)
+    _ = world.createNode(pos + [0.0, -0.1])
 mesh = mt.createMesh(world, quality=34.4)
 ax, cb = pg.show(mesh, markers=True, showMesh=True, boundaryMarkers=False)
 ax.plot(pg.x(scheme), pg.y(scheme), "mo")
@@ -51,14 +49,11 @@ ax.set_xlim(-15, 15)
 # -------------
 # We associate different resistivities for the three layers and
 # the identical resistivity for the circle, which is the only
-# body with an imaginary component. 
+# body with an imaginary component.
 # First we create an FD data set for comparison using the normal simulate.
 #
 
-rhomap = [[1, 100. + 0j],
-          [2, 50. + 0j],
-          [3, 10.+ 0j],
-          [4, 50.+ 1j]]
+rhomap = [[1, 100.0 + 0j], [2, 50.0 + 0j], [3, 10.0 + 0j], [4, 50.0 + 1j]]
 
 dataFD = ert.simulate(mesh, res=rhomap, scheme=scheme, verbose=True)
 dataFD.show("phia", label="-apparent phase (mrad)")
@@ -73,7 +68,7 @@ dataFD.show("phia", label="-apparent phase (mrad)")
 # The results are stored in the rhoa and ma/ip data fields.
 #
 
-res = np.array([0, 100, 50, 10, 50.])
+res = np.array([0, 100, 50, 10, 50.0])
 m = np.array([0, 0, 0, 0, 0.1])
 mgr = ert.ERTIPManager()
 dataTD = mgr.simulate(mesh=mesh, scheme=scheme, res=res, m=m)

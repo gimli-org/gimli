@@ -23,10 +23,12 @@ class HarmFunctor(object):
         nc = len(self.coeff_) / 2
         A = np.ones(nc * 2) * 0.5  # ... and generating one on the fly here?
         A[1] = x
-        A[2::2] = np.sin(2.0 * np.pi * np.arange(1, nc) *
-                         (x - self.xmin_) / self.xSpan_)
-        A[3::2] = np.cos(2.0 * np.pi * np.arange(1, nc) *
-                         (x - self.xmin_) / self.xSpan_)
+        A[2::2] = np.sin(
+            2.0 * np.pi * np.arange(1, nc) * (x - self.xmin_) / self.xSpan_
+        )
+        A[3::2] = np.cos(
+            2.0 * np.pi * np.arange(1, nc) * (x - self.xmin_) / self.xSpan_
+        )
         return sum(A * self.coeff_)
 
 
@@ -43,8 +45,8 @@ class HarmonicModelling(Modelling):
         self.A = np.ones((len(x), nc * 2 + 2))
         self.A[:, 1] = self.xs
         for i in range(nc):
-            self.A[:, i*2+2] = np.sin(2.0 * np.pi * (i+1) * self.xs)
-            self.A[:, i*2+3] = np.cos(2.0 * np.pi * (i+1) * self.xs)
+            self.A[:, i * 2 + 2] = np.sin(2.0 * np.pi * (i + 1) * self.xs)
+            self.A[:, i * 2 + 3] = np.cos(2.0 * np.pi * (i + 1) * self.xs)
 
     def response(self, par):
         """Forward response."""
@@ -55,15 +57,15 @@ class HarmonicModelling(Modelling):
         xrs = (xr - self.xmin) / self.xspread
         out = par[0] + par[1] * xrs
         for i in range(self.nc):
-            out += np.sin(2.0 * np.pi * (i+1) * xrs)
-            out += np.cos(2.0 * np.pi * (i+1) * xrs)
+            out += np.sin(2.0 * np.pi * (i + 1) * xrs)
+            out += np.cos(2.0 * np.pi * (i + 1) * xrs)
 
         return out
 
     def createStartModel(self, dataVals):
         """Starting model."""
         mv = np.mean(dataVals)
-        model = pg.Vector(self.nc*2+2, mv/10)
+        model = pg.Vector(self.nc * 2 + 2, mv / 10)
         model[0] = mv
         return model
 
@@ -130,15 +132,25 @@ def harmfitNative(y, x=None, nc=None, xc=None, error=None, err=None):
     # coeff=(spdiags(w,0,length(w),length(w))*A)\(y.*w)
     # WA = np.diag(w, 0).dot(A)
     # coeff, res, rank, s = np.linalg.lstsq(WA, y * w, rcond=None)
-    coeff, res, rank, s = np.linalg.lstsq(np.diag(w, 0) * A, (y * w)[0, :],
-                                          rcond=None)
+    coeff, res, rank, s = np.linalg.lstsq(np.diag(w, 0) * A, (y * w)[0, :], rcond=None)
 
     return sum((B * coeff).T), HarmFunctor(A, coeff, xmi, xspan)
 
 
-def harmfitCore(y, x=None, error=None, nc=42, resample=None, lam=0.1,
-                window=None, verbose=False, dosave=False,
-                lineSearch=True, robust=False, maxiter=20):
+def harmfitCore(
+    y,
+    x=None,
+    error=None,
+    nc=42,
+    resample=None,
+    lam=0.1,
+    window=None,
+    verbose=False,
+    dosave=False,
+    lineSearch=True,
+    robust=False,
+    maxiter=20,
+):
     """GIMLi-based curve-fit by harmonic functions.
 
     Parameters
@@ -162,7 +174,7 @@ def harmfitCore(y, x=None, error=None, nc=42, resample=None, lam=0.1,
 
     if window is not None:
         idx = pg.find((x >= window[0]) & (x < window[1]))
-#        idx = getIndex(x , lambda v: v > window[0] and v < window[1])
+        #        idx = getIndex(x , lambda v: v > window[0] and v < window[1])
 
         xToFit = x(idx)
         yToFit = y(idx)
@@ -197,15 +209,22 @@ def harmfitCore(y, x=None, error=None, nc=42, resample=None, lam=0.1,
         ret = fop.response(coeff, resample)
 
         if window is not None:
-            ret.setVal(0.0, pg.find((resample < window[0]) |
-                                    (resample >= window[1])))
+            ret.setVal(0.0, pg.find((resample < window[0]) | (resample >= window[1])))
         return ret, coeff
     else:
         return inv.response(), coeff
 
 
-def harmfit(y, x=None, error=None, nc=42, resample=None,  # lam=0.1,
-            window=None, verbose=False, **kwargs):
+def harmfit(
+    y,
+    x=None,
+    error=None,
+    nc=42,
+    resample=None,  # lam=0.1,
+    window=None,
+    verbose=False,
+    **kwargs
+):
     """GIMLi-based curve-fit by harmonic functions.
 
     Parameters
@@ -257,8 +276,7 @@ def harmfit(y, x=None, error=None, nc=42, resample=None,  # lam=0.1,
     if resample is not None:
         ret = fop.resample(coeff, resample)
         if window is not None:
-            ret.setVal(0.0, pg.find((resample < window[0]) |
-                                    (resample >= window[1])))
+            ret.setVal(0.0, pg.find((resample < window[0]) | (resample >= window[1])))
 
         return ret, inv
     else:

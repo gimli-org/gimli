@@ -30,8 +30,11 @@ class MagManager(MeshMethodManager):
             self.x = self.DATA["x"]
             self.y = self.DATA["y"]
             self.z = np.abs(self.DATA["z"])
-            self.cmp = [t for t in self.DATA.dtype.names
-                        if t.startswith("B") or t.startswith("T")]
+            self.cmp = [
+                t
+                for t in self.DATA.dtype.names
+                if t.startswith("B") or t.startswith("T")
+            ]
 
         self.cmp = kwargs.pop("cmp", ["TFA"])
         super().__init__()
@@ -42,16 +45,21 @@ class MagManager(MeshMethodManager):
         """Show data."""
         cmp = cmp or self.cmp
         nc = 2 if len(cmp) > 1 else 1
-        nr = (len(cmp)+1) // 2
-        fig, ax = plt.subplots(nr, nc, sharex=True, sharey=True, squeeze=False,
-                               figsize=(7, len(self.cmp)*1+3))
+        nr = (len(cmp) + 1) // 2
+        fig, ax = plt.subplots(
+            nr,
+            nc,
+            sharex=True,
+            sharey=True,
+            squeeze=False,
+            figsize=(7, len(self.cmp) * 1 + 3),
+        )
         axs = np.atleast_1d(ax.flat)
         kwargs.setdefault("cmap", "bwr")
         for i, c in enumerate(cmp):
             fld = self.DATA[c]
-            vv = max(-np.min(fld)*1., np.max(fld)*1.)
-            sc = axs[i].scatter(self.x, self.y, c=fld,
-                                vmin=-vv, vmax=vv, **kwargs)
+            vv = max(-np.min(fld) * 1.0, np.max(fld) * 1.0)
+            sc = axs[i].scatter(self.x, self.y, c=fld, vmin=-vv, vmax=vv, **kwargs)
             axs[i].set_title(c)
             axs[i].set_aspect(1.0)
             fig.colorbar(sc, ax=ax.flat[i])
@@ -60,16 +68,21 @@ class MagManager(MeshMethodManager):
 
     def createGrid(self, dx=50, depth=800, bnd=0):
         """Create a grid."""
-        x = np.arange(min(self.x)-bnd, max(self.x)+bnd+.1, dx)
-        y = np.arange(min(self.y)-bnd, max(self.y)+bnd+.1, dx)
-        z = np.arange(-depth, .1, dx)
+        x = np.arange(min(self.x) - bnd, max(self.x) + bnd + 0.1, dx)
+        y = np.arange(min(self.y) - bnd, max(self.y) + bnd + 0.1, dx)
+        z = np.arange(-depth, 0.1, dx)
         self.mesh_ = mt.createGrid(x=x, y=y, z=z)
         self.fop.setMesh(self.mesh_)
         return self.mesh_
 
-    def createMesh(self, bnd=0, area=1e5, depth=800, quality=1.3, addPLC=None, addPoints=True):
+    def createMesh(
+        self, bnd=0, area=1e5, depth=800, quality=1.3, addPLC=None, addPoints=True
+    ):
         """Create an unstructured mesh."""
-        geo = mt.createCube(start=[min(self.x)-bnd, min(self.x)-bnd, -depth], end=[max(self.x)+bnd, max(self.y)+bnd, 0])
+        geo = mt.createCube(
+            start=[min(self.x) - bnd, min(self.x) - bnd, -depth],
+            end=[max(self.x) + bnd, max(self.y) + bnd, 0],
+        )
         if addPoints:
             for xi, yi in zip(self.x, self.y):
                 geo.createNode([xi, yi, 0])
@@ -83,8 +96,7 @@ class MagManager(MeshMethodManager):
     def createForwardOperator(self, **kwargs):
         """Create forward operator (computationally extensive!)."""
         points = np.column_stack([self.x, self.y, -np.abs(self.z)])
-        self.fwd = MagneticsModelling(points=points,
-                                      cmp=self.cmp, igrf=self.igrf)
+        self.fwd = MagneticsModelling(points=points, cmp=self.cmp, igrf=self.igrf)
         return self.fwd
 
     def inversion(self, noise_level=2, noisify=False, **kwargs):
@@ -156,7 +168,7 @@ class MagManager(MeshMethodManager):
         z0 = kwargs.pop("z0", 25)  # Oldenburg&Li(1996)
         if kwargs.pop("depthWeighting", True):
             cw = self.fwd.regionManager().constraintWeights()
-            dw = depthWeighting(self.mesh_, cell=not(cType==1), z0=z0)
+            dw = depthWeighting(self.mesh_, cell=not (cType == 1), z0=z0)
             if len(dw) == len(cw):
                 dw *= cw
                 print(min(dw), max(dw))
@@ -172,12 +184,19 @@ class MagManager(MeshMethodManager):
     def showDataFit(self):
         """Show data, model response and misfit."""
         nc = len(self.cmp)
-        _, ax = pg.plt.subplots(ncols=3, nrows=nc, figsize=(12, 3*nc), sharex=True, sharey=True, squeeze=False)
+        _, ax = pg.plt.subplots(
+            ncols=3,
+            nrows=nc,
+            figsize=(12, 3 * nc),
+            sharex=True,
+            sharey=True,
+            squeeze=False,
+        )
         vals = np.reshape(self.inv.dataVals, [nc, -1])
         mm = np.max(np.abs(vals))
         resp = np.reshape(self.inv.response, [nc, -1])
         errs = np.reshape(self.inv.errorVals, [nc, -1])  # relative!
-        misf = (vals - resp) / np.abs(errs *  vals)
+        misf = (vals - resp) / np.abs(errs * vals)
         fkw = dict(cmap="bwr", vmin=-mm, vmax=mm)
         mkw = dict(cmap="bwr", vmin=-3, vmax=3)
         for i in range(nc):
@@ -185,8 +204,18 @@ class MagManager(MeshMethodManager):
             ax[i, 1].scatter(self.x, self.y, c=resp[i], **fkw)
             ax[i, 2].scatter(self.x, self.y, c=misf[i], **mkw)
 
-    def show3DModel(self, label=None, trsh=0.025, synth=None, invert=False,
-                    position="yz", elevation=10, azimuth=25, zoom=1.2, **kwargs):
+    def show3DModel(
+        self,
+        label=None,
+        trsh=0.025,
+        synth=None,
+        invert=False,
+        position="yz",
+        elevation=10,
+        azimuth=25,
+        zoom=1.2,
+        **kwargs
+    ):
         """Standard 3D view."""
         if label is None:
             label = self.inv.model
@@ -199,16 +228,22 @@ class MagManager(MeshMethodManager):
         kwargs.setdefault("cMap", "Spectral_r")
         kwargs.setdefault("logScale", False)
         flt = None
-        pl, _ = pg.show(self.mesh_, style="wireframe", hold=True,
-                        alpha=0.1)
+        pl, _ = pg.show(self.mesh_, style="wireframe", hold=True, alpha=0.1)
         # mm = [min(self.mesh_[label]), min(self.mesh_[label])]
         if trsh > 0:
             flt = {"threshold": dict(value=trsh, scalars=label, invert=invert)}
-            pv.drawModel(pl, self.mesh_, label=label, style="surface",
-                        filter=flt, **kwargs)
+            pv.drawModel(
+                pl, self.mesh_, label=label, style="surface", filter=flt, **kwargs
+            )
 
-        pv.drawMesh(pl, self.mesh_, label=label, style="surface", **kwargs,
-                    filter={"slice": dict(normal=[-1, 0, 0], origin=[0, 0, 0])})
+        pv.drawMesh(
+            pl,
+            self.mesh_,
+            label=label,
+            style="surface",
+            **kwargs,
+            filter={"slice": dict(normal=[-1, 0, 0], origin=[0, 0, 0])}
+        )
 
         if synth:
             pv.drawModel(pl, synth, style="wireframe")

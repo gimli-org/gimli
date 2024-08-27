@@ -12,14 +12,12 @@ from .models import (
     modelColeColeSigmaDouble,
     modelColeColeEpsilon,
     modelColeDavidson,
-
     ColeColeRho,
     ColeColeRhoDouble,
     ColeColeSigma,
     ColeColeEpsilon,
     ColeCole,
     ColeDavidson,
-
     ColeColePhi,
     DoubleColeColePhi,
     ColeColeAbs,
@@ -28,11 +26,10 @@ from .models import (
     PeltonPhiEM,
     DebyePhi,
     DebyeComplex,
-
-    tauRhoToTauSigma
+    tauRhoToTauSigma,
 )
 
 from .plotting import showSpectrum, drawPhaseSpectrum, drawAmplitudeSpectrum
 
-#__all__ = [name for name in dir() if '_' not in name]
-#__all__ = [SIPSpectrum, ColeColeRho, ColeColePhi, DoubleColeColePhi]
+# __all__ = [name for name in dir() if '_' not in name]
+# __all__ = [SIPSpectrum, ColeColeRho, ColeColePhi, DoubleColeColePhi]

@@ -40,7 +40,7 @@ def iterateBounds(inv, dchi2=0.5, maxiter=100, change=1.02):
 
     for im in range(nm):
         model1 = pg.Vector(model)
-        chi2 = .0
+        chi2 = 0.0
         it = 0
 
         while (chi2 < maxchi2) & (it < maxiter):
@@ -65,6 +65,7 @@ def iterateBounds(inv, dchi2=0.5, maxiter=100, change=1.02):
 
     return modelL, modelU
 
+
 def scaledJacobianMatrix(inv):
     """Return error-weighted transformation-scaled Jacobian.
 
@@ -77,7 +78,7 @@ def scaledJacobianMatrix(inv):
     DJ : numpy full matrix
     """
     J = inv.fop.jacobian()  # sensitivity matrix
-    d = 1. / inv.dataTrans.error(inv.response, inv.errorVals)
+    d = 1.0 / inv.dataTrans.error(inv.response, inv.errorVals)
     left = np.reshape(inv.dataTrans.deriv(inv.response) / d, [-1, 1])
     right = np.reshape(1 / inv.modelTrans.deriv(inv.model), [1, -1])
     if isinstance(J, pg.Matrix):  # e.g. ERT
@@ -86,7 +87,6 @@ def scaledJacobianMatrix(inv):
         return left * pg.utils.sparseMat2Numpy.sparseMatrix2Dense(J) * right
     else:
         raise TypeError("Matrix type cannot be converted")
-
 
 
 def modelResolutionMatrix(inv):
@@ -133,10 +133,10 @@ def modelCovariance(inv):
     DJ = scaledJacobianMatrix(inv)
     JTJ = DJ.T.dot(DJ)
     try:
-        MCM = np.linalg.inv(JTJ)   # model covariance matrix
+        MCM = np.linalg.inv(JTJ)  # model covariance matrix
 
         varVG = np.sqrt(np.diag(MCM))  # standard deviations from main diagonal
-        di = (1.0 / varVG)  # variances as column vector
+        di = 1.0 / varVG  # variances as column vector
 
         # scaled model covariance (=correlation) matrix
         MCMs = di.reshape(len(di), 1) * MCM * di
@@ -148,7 +148,13 @@ def modelCovariance(inv):
         import sys
 
         traceback.print_exc(file=sys.stdout)
-        return np.zeros(len(inv.model()),), 0
+        return (
+            np.zeros(
+                len(inv.model()),
+            ),
+            0,
+        )
+
 
 def modCovarCoreInv(inv):
     """Formal model covariance matrix (MCM) from inversion.
@@ -179,17 +185,20 @@ def modCovarCoreInv(inv):
     td = np.asarray(inv.transData().deriv(inv.response()))
     tm = np.asarray(inv.transModel().deriv(inv.model()))
 
-    J = td.reshape(len(td), 1) * \
-        gmat2numpy(inv.forwardOperator().jacobian()) * (1. / tm)
-    d = 1. / np.asarray(inv.transData().error(inv.response(), inv.error()))
+    J = (
+        td.reshape(len(td), 1)
+        * gmat2numpy(inv.forwardOperator().jacobian())
+        * (1.0 / tm)
+    )
+    d = 1.0 / np.asarray(inv.transData().error(inv.response(), inv.error()))
 
     DJ = d.reshape(len(d), 1) * J
     JTJ = DJ.T.dot(DJ)
     try:
-        MCM = np.linalg.inv(JTJ)   # model covariance matrix
+        MCM = np.linalg.inv(JTJ)  # model covariance matrix
 
         varVG = np.sqrt(np.diag(MCM))  # standard deviations from main diagonal
-        di = (1.0 / varVG)  # variances as column vector
+        di = 1.0 / varVG  # variances as column vector
 
         # scaled model covariance (=correlation) matrix
         MCMs = di.reshape(len(di), 1) * MCM * di
@@ -201,4 +210,9 @@ def modCovarCoreInv(inv):
         import sys
 
         traceback.print_exc(file=sys.stdout)
-        return np.zeros(len(inv.model()),), 0
+        return (
+            np.zeros(
+                len(inv.model()),
+            ),
+            0,
+        )

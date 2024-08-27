@@ -27,7 +27,7 @@ from pygimli.physics import ert
 # We create a data container using the dipole-dipole array on 41 electrodes.
 #
 
-scheme = ert.createData(elecs=41, spacing=1, schemeName='dd', maxSeparation=15)
+scheme = ert.createData(elecs=41, spacing=1, schemeName="dd", maxSeparation=15)
 print(scheme)
 
 # %%%
@@ -35,19 +35,21 @@ print(scheme)
 # which synthetic tracer is injected that is moving to the right.
 #
 
-world = mt.createWorld(start=[-50, 0], end=[100, -50], boundary=1,
-                       layers=[-1, -7], worldMarker=True)
+world = mt.createWorld(
+    start=[-50, 0], end=[100, -50], boundary=1, layers=[-1, -7], worldMarker=True
+)
 for pos in scheme.sensorPositions():
     world.createNode(pos, marker=-99)
-    world.createNode(pos+pg.RVector3(0, -0.2))
+    world.createNode(pos + pg.RVector3(0, -0.2))
 
 # Create some heterogeneous block
 plcs = [world]
 pos = [10, 12, 16, 26]
 nT = len(pos) - 1  # number of time steps
 for i in range(nT):
-    block = mt.createRectangle(start=[pos[i], -5], end=[pos[i+1], -3],
-                               area=0.1, marker=4+i)
+    block = mt.createRectangle(
+        start=[pos[i], -5], end=[pos[i + 1], -3], area=0.1, marker=4 + i
+    )
     plcs.append(block)
 
 geom = mt.mergePLC(plcs)
@@ -68,29 +70,30 @@ noise = dict(noiseLevel=0.01, noiseAbs=0, verbose=False)
 mgr = ert.Manager()
 data = ert.simulate(mesh=mesh, res=rhomap, scheme=scheme, **noise)
 rhoTracer = 10
-cDict = dict(colorBar=False, cMin=10, cMax=100, logScale=1, cMap='Spectral_r')
-fig, ax = plt.subplots(figsize=(10, 6), ncols=nT+1, nrows=3)
+cDict = dict(colorBar=False, cMin=10, cMax=100, logScale=1, cMap="Spectral_r")
+fig, ax = plt.subplots(figsize=(10, 6), ncols=nT + 1, nrows=3)
 DATA = []
-for i in range(nT+1):
+for i in range(nT + 1):
     pg.show(mesh, rhomap, ax=ax[0, i], **cDict)
     ax[0, i].set_xlim(0, 40)
     ax[0, i].set_ylim(-10, 0)
     data = ert.simulate(mesh, res=rhomap, scheme=scheme, **noise)
     DATA.append(data)
     ert.show(data, ax=ax[1, i], **cDict)
-    ratio = data('rhoa') / DATA[0]('rhoa')
+    ratio = data("rhoa") / DATA[0]("rhoa")
     if i > 0:
-        ert.show(data, ratio, ax=ax[2, i],
-                cMap='bwr', cMin=1/1.5, cMax=1.5, colorBar=False)
+        ert.show(
+            data, ratio, ax=ax[2, i], cMap="bwr", cMin=1 / 1.5, cMax=1.5, colorBar=False
+        )
     if i < nT:
-        rhomap[3+i][1] = rhoTracer
+        rhomap[3 + i][1] = rhoTracer
 
 for i in range(nT):
     for j in range(3):
-        ax[j, i+1].set_yticklabels([])
+        ax[j, i + 1].set_yticklabels([])
 
-cDict.pop('colorBar')
-cDict['label'] = r'$\rho$ [$\Omega$m]'
+cDict.pop("colorBar")
+cDict["label"] = r"$\rho$ [$\Omega$m]"
 pg.viewer.mpl.colorbar.createColorBarOnly(ax=ax[2, 0], **cDict)
 ax[2, 0].set_aspect(3)
 
@@ -144,7 +147,7 @@ print(tl.chi2s)
 # `pg.show(tl.pd, tl.models[i])`.
 #
 
-tl.showAllModels();
+tl.showAllModels()
 for a in ax.flat:
     pg.viewer.mpl.drawPLC(a, geom, fillRegion=False, fitView=False)
 

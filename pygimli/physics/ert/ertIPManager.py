@@ -1,4 +1,5 @@
 """ERT manager (derived) with FD or TD IP inversion."""
+
 import pygimli as pg
 from .ertManager import ERTManager
 from .ipModelling import DCIPMModelling
@@ -24,7 +25,7 @@ class ERTIPManager(ERTManager):
         self.isfd = kwargs.pop("fd", False)
         super().__init__(*args, **kwargs)
 
-    def invertTDIP(self, ipdata='ip', **kwargs):
+    def invertTDIP(self, ipdata="ip", **kwargs):
         """IP inversion in time domain."""
         if isinstance(ipdata, str):
             ipdata = self.data[ipdata]
@@ -49,7 +50,7 @@ class ERTIPManager(ERTManager):
         self.modelIP = None  # naive IP inversion
 
     def showIPModel(self, **kwargs):
-        """"Show IP model."""
+        """ "Show IP model."""
         kwargs.setdefault("logSpace", False)
         if self.isfd:
             kwargs.setdefault("label", r"$\phi$ (mrad)")
@@ -58,7 +59,7 @@ class ERTIPManager(ERTManager):
             kwargs.setdefault("label", r"$m$ (mV/V)")
             kwargs.setdefault("cMap", "magma_r")
 
-        return self.showModel(self.modelIP*1000, **kwargs)
+        return self.showModel(self.modelIP * 1000, **kwargs)
 
     def showResults(self, reskw={}, ipkw={}, **kwargs):
         """Show DC and IP results.
@@ -95,12 +96,13 @@ class ERTIPManager(ERTManager):
     def invertDC(self, *args, **kwargs):
         # Needed if we want to do ERT first without the IP and do IP later
         super().invert(*args, **kwargs)
-    
+
     def simulate(self, mesh, res, m, scheme=None, **kwargs):
         """."""
         from pygimli.physics.ert import ERTModelling
+
         data = scheme or pg.DataContainerERT(self.data)
-        if hasattr(res[0], '__iter__'):  # ndim == 2
+        if hasattr(res[0], "__iter__"):  # ndim == 2
             if len(res[0]) == 2:  # res seems to be a res map
                 resVec = pg.solver.parseArgToArray(res, mesh.cellCount(), mesh)
         elif len(res) == mesh.cellCount():
@@ -108,7 +110,7 @@ class ERTIPManager(ERTManager):
         else:
             resVec = res[mesh.cellMarkers()]
 
-        if hasattr(m[0], '__iter__'):  # ndim == 2
+        if hasattr(m[0], "__iter__"):  # ndim == 2
             if len(m[0]) == 2:  # res seems to be a res map
                 mVec = pg.solver.parseArgToArray(m, mesh.cellCount(), mesh)
         elif len(m) == mesh.cellCount():
@@ -131,4 +133,4 @@ class ERTIPManager(ERTManager):
 
     def saveResult(self, folder=None, *args, **kwargs):
         """Save all results in given or date-based folder."""
-        super().saveResult(folder=folder, **kwargs, ip=self.modelIP*1000)
+        super().saveResult(folder=folder, **kwargs, ip=self.modelIP * 1000)

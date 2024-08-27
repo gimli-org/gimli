@@ -15,6 +15,7 @@ from os.path import basename, dirname, join
 
 import pygimli as pg
 
+
 def make_gallery(src_path, out_path):
     """TODO DOCUMENTME."""
     pg.info(f"Creating gallery: {src_path} at: {out_path}")
@@ -23,17 +24,23 @@ def make_gallery(src_path, out_path):
     img_dir = "{{ pathto('_images', 1) }}"
 
     # Get examples/tutorials
-    examples = [fn for fn in glob(join(example_dir, "*/*plot*.py"))
-                if not join(example_dir, "dev") in fn]
-    tutorials = [fn for fn in glob(join(tutorial_dir, "*/*plot*.py"))
-                 if not join(tutorial_dir, "dev") in fn]
+    examples = [
+        fn
+        for fn in glob(join(example_dir, "*/*plot*.py"))
+        if not join(example_dir, "dev") in fn
+    ]
+    tutorials = [
+        fn
+        for fn in glob(join(tutorial_dir, "*/*plot*.py"))
+        if not join(tutorial_dir, "dev") in fn
+    ]
 
     # Get captions
     def readRSTSecTitles(fname, verbose=False):
-        """ Return list of section titles found in a given RST file. """
-        print('fname:', fname)
+        """Return list of section titles found in a given RST file."""
+        print("fname:", fname)
         rst_titles = re.compile(r"^(.+)\n[-=]+\n", flags=re.MULTILINE)
-        
+
         with open(fname, encoding="utf8") as f:
 
             titles = re.findall(rst_titles, f.read())
@@ -58,16 +65,17 @@ def make_gallery(src_path, out_path):
     titles = ex_titles + tut_titles
 
     # Adjust paths to output directory for html links
-    examples = [e.replace(example_dir, "{{ pathto('_examples_auto', 1) }}")
-                for e in examples]
+    examples = [
+        e.replace(example_dir, "{{ pathto('_examples_auto', 1) }}") for e in examples
+    ]
 
-    tutorials = [t.replace(tutorial_dir, "{{ pathto('_tutorials_auto', 1) }}")
-                 for t in tutorials]
+    tutorials = [
+        t.replace(tutorial_dir, "{{ pathto('_tutorials_auto', 1) }}") for t in tutorials
+    ]
 
     # Create HTML gallery for sidebar with random start item
     gallery = examples + tutorials
-    print(("\nAdding %d examples/tutorials to sidebar gallery.\n" %
-          len(gallery)))
+    print(("\nAdding %d examples/tutorials to sidebar gallery.\n" % len(gallery)))
     print(("\t{:40}{}\n\t".format("Title", "File") + "-" * 80))
     for line in zip(titles, gallery):
         print(("\t{:40}{}".format(*line)))
@@ -125,5 +133,5 @@ def make_gallery(src_path, out_path):
         file.write(html)
 
 
-if __name__ == '__main__':
-    make_gallery('.', '.')
+if __name__ == "__main__":
+    make_gallery(".", ".")

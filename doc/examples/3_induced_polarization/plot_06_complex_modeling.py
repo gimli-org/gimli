@@ -25,19 +25,13 @@ from pygimli.physics import ert
 
 ###############################################################################
 # Create a measurement scheme for 51 electrodes with a spacing of 1m
-scheme = ert.createData(
-    elecs=np.linspace(start=0, stop=50, num=51),
-    schemeName='dd'
-)
+scheme = ert.createData(elecs=np.linspace(start=0, stop=50, num=51), schemeName="dd")
 
 ###############################################################################
 # Mesh generation
-world = mt.createWorld(
-    start=[-55, 0], end=[105, -80], worldMarker=True)
+world = mt.createWorld(start=[-55, 0], end=[105, -80], worldMarker=True)
 
-polarizable_anomaly = mt.createCircle(
-    pos=[40, -7], radius=5, marker=2
-)
+polarizable_anomaly = mt.createCircle(pos=[40, -7], radius=5, marker=2)
 
 plc = world + polarizable_anomaly
 
@@ -74,8 +68,10 @@ pg.show(mesh, data=np.real(rho), ax=axes[0, 0], label=r"$\rho'$~[$\Omega$m]")
 pg.show(mesh, data=np.imag(rho), ax=axes[0, 1], label=r"$\rho''$~[$\Omega$m]")
 pg.show(mesh, data=np.abs(rho), ax=axes[1, 0], label=r"$|\rho$|~[$\Omega$m]")
 pg.show(
-    mesh, data=np.arctan2(np.imag(rho), np.real(rho))*1000,
-    ax=axes[1, 1], label=r"$\phi$ [mrad]"
+    mesh,
+    data=np.arctan2(np.imag(rho), np.real(rho)) * 1000,
+    ax=axes[1, 1],
+    label=r"$\phi$ [mrad]",
 )
 fig.tight_layout()
 fig.show()
@@ -93,22 +89,19 @@ data = ert.simulate(
 ###############################################################################
 # Visualize the modeled data
 # Convert magnitude and phase into a complex apparent resistivity
-rho_a_complex = data['rhoa'].array() * np.exp(1j * data['phia'].array())
+rho_a_complex = data["rhoa"].array() * np.exp(1j * data["phia"].array())
 
 # Please note the apparent negative (resistivity) phases!
 fig, axes = plt.subplots(2, 2, figsize=(16 / 2.54, 16 / 2.54))
-ert.showERTData(data, vals=data['rhoa'], ax=axes[0, 0])
+ert.showERTData(data, vals=data["rhoa"], ax=axes[0, 0])
 # phia is stored in radians, but usually plotted in milliradians
-ert.showERTData(
-    data, vals=data['phia'] * 1000, label=r'$\phi$ [mrad]', ax=axes[0, 1])
+ert.showERTData(data, vals=data["phia"] * 1000, label=r"$\phi$ [mrad]", ax=axes[0, 1])
 
 ert.showERTData(
-    data, vals=np.real(rho_a_complex), ax=axes[1, 0],
-    label=r"$\rho_a'$~[$\Omega$m]"
+    data, vals=np.real(rho_a_complex), ax=axes[1, 0], label=r"$\rho_a'$~[$\Omega$m]"
 )
 ert.showERTData(
-    data, vals=np.imag(rho_a_complex), ax=axes[1, 1],
-    label=r"$\rho_a''$~[$\Omega$m]"
+    data, vals=np.imag(rho_a_complex), ax=axes[1, 1], label=r"$\rho_a''$~[$\Omega$m]"
 )
 fig.tight_layout()
 fig.show()

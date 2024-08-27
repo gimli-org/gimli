@@ -60,9 +60,14 @@ print(grid)
 #
 # Or you can access them manually using different methods:
 #
-print('Mesh: Nodes:', grid.nodeCount(),
-      'Cells:', grid.cellCount(),
-      'Boundaries:', grid.boundaryCount())
+print(
+    "Mesh: Nodes:",
+    grid.nodeCount(),
+    "Cells:",
+    grid.cellCount(),
+    "Boundaries:",
+    grid.boundaryCount(),
+)
 
 ###############################################################################
 #
@@ -71,8 +76,14 @@ print('Mesh: Nodes:', grid.nodeCount(),
 # node ids per cell:
 
 for cell in grid.cells():
-    print("Cell", cell.id(), "has", cell.nodeCount(),
-          "nodes. Node IDs:", [n.id() for n in cell.nodes()])
+    print(
+        "Cell",
+        cell.id(),
+        "has",
+        cell.nodeCount(),
+        "nodes. Node IDs:",
+        [n.id() for n in cell.nodes()],
+    )
 
 print(type(grid.cell(0)))
 
@@ -84,8 +95,9 @@ print(type(grid.cell(0)))
 
 import numpy as np
 
-grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 10),
-                     y=1.0 - np.logspace(np.log10(1.0), np.log10(2.0), 10))
+grid = pg.createGrid(
+    x=np.linspace(-1.0, 1.0, 10), y=1.0 - np.logspace(np.log10(1.0), np.log10(2.0), 10)
+)
 
 ###############################################################################
 #
@@ -96,7 +108,7 @@ print(grid.cellCount())
 
 ###############################################################################
 # rectangles of type :gimliapi:`GIMLI::Quadrangle` derived from the
-# base type :gimliapi:`GIMLI::Cell`, edges of type :gimliapi:`GIMLI::Edge`, 
+# base type :gimliapi:`GIMLI::Cell`, edges of type :gimliapi:`GIMLI::Edge`,
 # which are boundaries of the general type :gimliapi:`GIMLI::Boundary`.
 #
 
@@ -120,5 +132,3 @@ pg.wait()
 ###############################################################################
 # For more control you can also use the appropriate draw methods
 # :py:mod:`pygimli.viewer.mpl.drawMesh`.
-
-

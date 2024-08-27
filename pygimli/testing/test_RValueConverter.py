@@ -9,13 +9,13 @@ import pygimli as pg
 class TestRVectorMethods(unittest.TestCase):
 
     def test_RVector(self):
-        """ implemented in custom_rvalue.cpp"""
+        """implemented in custom_rvalue.cpp"""
         a = pg.Vector(10)
         self.assertEqual(a.size(), 10.0)
         self.assertEqual(sum(a), 0.0)
 
     def test_ListToRVector3(self):
-        """ implemented in custom_rvalue.cpp"""
+        """implemented in custom_rvalue.cpp"""
         x = [0.0, 1.0, 0.0]
         p = pg.RVector3(x)
         self.assertEqual(p.dist(x), 0.0)
@@ -25,13 +25,13 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(p.dist([0.0, 1.0, 0.0]), 0.0)
 
     def test_ListToIndexArray(self):
-        """ implemented in custom_rvalue.cpp"""
+        """implemented in custom_rvalue.cpp"""
         idx = [0, 1, 1, 0]
 
         I = pg.core.IndexArray(idx)
         self.assertEqual(pg.sum(I), sum(idx))
 
-        bn = (np.array(idx) > 0)  # numpy bool
+        bn = np.array(idx) > 0  # numpy bool
         idx = np.nonzero(bn)[0]  # numpy int64
 
         # numyp int64 -> IndexArray
@@ -41,7 +41,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(pg.sum(I), sum(idx))
 
     def test_ListToRVector(self):
-        """ implemented in custom_rvalue.cpp"""
+        """implemented in custom_rvalue.cpp"""
         l = [1.0, 2.0, 3.0, 4.0]
         a = pg.Vector(l)
         self.assertEqual(a.size(), len(l))
@@ -56,7 +56,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(x.size(), len(l))
 
     def test_ListToR3Vector(self):
-        """ implemented in custom_rvalue.cpp"""
+        """implemented in custom_rvalue.cpp"""
         x = [0.0, 1.0, 0.0]
         p = pg.RVector3(x)
         pl = [p, p, p]
@@ -120,18 +120,18 @@ class TestRVectorMethods(unittest.TestCase):
     def test_NumpyToBVector(self):
         """Implemented in custom_rvalue.cpp."""
         x = np.array(range(-10, 10), dtype=float)
-        b = pg.BVector(x > 0.)
+        b = pg.BVector(x > 0.0)
         self.assertEqual(b[10], False)
         self.assertEqual(b[11], True)
 
     def test_NumpyToRVector(self):
         """Implemented in custom_rvalue.cpp."""
-        x = np.arange(0, 1., 0.2)
+        x = np.arange(0, 1.0, 0.2)
         a = pg.Vector(x)
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
 
-        x = np.arange(0, 1., 0.2, dtype=np.float64)
+        x = np.arange(0, 1.0, 0.2, dtype=np.float64)
         a = pg.Vector(x)
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
@@ -153,15 +153,15 @@ class TestRVectorMethods(unittest.TestCase):
         pass
         # will not work .. until an idea how to choose right api for function with and RVector and CVector, e.g. sum()
         #
-        #x = 1. + np.arange(0, 1., 0.1) * 1j
-        #a = pg.CVector(x)
+        # x = 1. + np.arange(0, 1., 0.1) * 1j
+        # a = pg.CVector(x)
 
-        #self.assertEqual(a.size(), len(x))
-        #self.assertEqual(pg.math.real(a), x.real)
-        #self.assertEqual(pg.math.imag(a), x.imag)
-        #self.assertEqual(pg.sum(a), sum(x))
+        # self.assertEqual(a.size(), len(x))
+        # self.assertEqual(pg.math.real(a), x.real)
+        # self.assertEqual(pg.math.imag(a), x.imag)
+        # self.assertEqual(pg.sum(a), sum(x))
 
-        #self.assertEqual(pg.sum(pg.math.real(a)), len(x))
+        # self.assertEqual(pg.sum(pg.math.real(a)), len(x))
 
     def test_NumpyToRMatrix(self):
         """Implemented in custom_rvalue.cpp."""
@@ -170,23 +170,23 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(A.rows(), M.shape[0])
         self.assertEqual(A.cols(), M.shape[1])
 
-        M = np.arange(20.).reshape((5, 4))
+        M = np.arange(20.0).reshape((5, 4))
         A = pg.Matrix(M)
         self.assertEqual(sum(A[0]), sum(M[0]))
         self.assertEqual(sum(A[1]), sum(M[1]))
         self.assertEqual(sum(A[2]), sum(M[2]))
         self.assertEqual(sum(A[3]), sum(M[3]))
 
-        M = np.zeros((6,2), dtype=float)
-        M[0:3,0] = 1
-        M[3:,1] = 1
+        M = np.zeros((6, 2), dtype=float)
+        M[0:3, 0] = 1
+        M[3:, 1] = 1
         A = pg.Matrix(M)
-        self.assertEqual(A.col(0), M[:,0])
-        self.assertEqual(A.col(1), M[:,1])
+        self.assertEqual(A.col(0), M[:, 0])
+        self.assertEqual(A.col(1), M[:, 1])
 
         A = pg.Matrix(M.T)
-        self.assertEqual(A.row(0), M[:,0])
-        self.assertEqual(A.row(1), M[:,1])
+        self.assertEqual(A.row(0), M[:, 0])
+        self.assertEqual(A.row(1), M[:, 1])
 
     def test_NumpyToRVector3(self):
         """Implemented in custom_rvalue.cpp."""
@@ -219,28 +219,28 @@ class TestRVectorMethods(unittest.TestCase):
     def test_CVectorToNumpy(self):
         """Implemented through hand_made_wrapper.py"""
         # check ob wirklich from array genommen wird!
-        v = pg.CVector(10, 1.1 + 1j*3)
+        v = pg.CVector(10, 1.1 + 1j * 3)
         a = np.array(v)
         self.assertEqual(type(a), np.ndarray)
         self.assertEqual(a.dtype, complex)
         self.assertEqual(len(a), 10)
-        self.assertEqual(a[0], 1.1 + 1j*3)
+        self.assertEqual(a[0], 1.1 + 1j * 3)
 
     def test_BVectorToNumpy(self):
         """Implemented through hand_made_wrapper.py"""
         # check ob wirklich from array genommen wird!
         # wird es noch nicht .. siehe __init__.py:__BVectorArrayCall__
         v = pg.Vector(10, 1)
-        b = (v == 1)
+        b = v == 1
         self.assertEqual(type(b), pg.BVector)
 
         v = pg.Vector(10, 1.1)
-        b = (v == 1.1)
+        b = v == 1.1
         self.assertEqual(type(b), pg.BVector)
 
         a = np.asarray(b)
         self.assertEqual(type(a), np.ndarray)
-        self.assertEqual(a.dtype, 'bool')
+        self.assertEqual(a.dtype, "bool")
         self.assertEqual(len(a), 10)
         self.assertEqual(sum(a), 10)
 
@@ -292,8 +292,8 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(mesh.positions()[0], v[0])
 
     def test_RMatrixToNumpy(self):
-        """Implemented through automatic iterator """
-        M = np.arange(20.).reshape((5, 4))
+        """Implemented through automatic iterator"""
+        M = np.arange(20.0).reshape((5, 4))
         A = pg.Matrix(M)
         N = np.array(A)
         self.assertEqual(A.rows(), N.shape[0])
@@ -303,14 +303,14 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(A[2]), sum(N[2]))
         self.assertEqual(sum(A[3]), sum(N[3]))
 
-        M = np.arange(16.).reshape((4,4))
+        M = np.arange(16.0).reshape((4, 4))
         A = pg.Matrix(M)
         M2 = np.array(A)
         np.testing.assert_equal(M, M2)
-        A = np.array(pg.Matrix(4,4))
+        A = np.array(pg.Matrix(4, 4))
 
     def test_NumpyToScalar(self):
-        """Implemented through automatic iterator """
+        """Implemented through automatic iterator"""
         x = pg.Vector(2)
         x3 = pg.core.R3Vector(2)
         w = pg.Vector()
@@ -338,11 +338,11 @@ class TestRVectorMethods(unittest.TestCase):
         x += np.float32(1)
 
         np.testing.assert_equal(x, pg.Pos(1.0, 1.0, 1.0))
-        np.testing.assert_equal(x -1 , pg.Pos(0.0, 0.0, 0.0))
+        np.testing.assert_equal(x - 1, pg.Pos(0.0, 0.0, 0.0))
         np.testing.assert_equal(x - np.float32(1), pg.Pos(0.0, 0.0, 0.0))
         np.testing.assert_equal(x - np.float64(1), pg.Pos(0.0, 0.0, 0.0))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pg.core.setDeepDebug(0)
     unittest.main()

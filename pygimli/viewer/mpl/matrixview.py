@@ -3,6 +3,7 @@
 """Functions to draw various pygimli matrices with matplotlib."""
 
 import numpy as np
+
 # try to avoid plt impoert #
 # import matplotlib.pyplot as plt
 
@@ -37,17 +38,18 @@ def drawSparseMatrix(ax, mat, **kwargs):
     >>> _ = drawSparseMatrix(ax1, A, colOffset=5, rowOffset=5, color='blue')
     >>> _ = drawSparseMatrix(ax2, SM, color='green')
     """
-    row = kwargs.pop('rowOffset', 0)
-    col = kwargs.pop('colOffset', 0)
-    color = kwargs.pop('color', None)
+    row = kwargs.pop("rowOffset", 0)
+    col = kwargs.pop("colOffset", 0)
+    color = kwargs.pop("color", None)
 
     mat = pg.utils.sparseMatrix2coo(mat)
     mat.row += row
     mat.col += col
     gci = ax.spy(mat, color=color, **kwargs)
 
-    ax.autoscale(enable=True, axis='both', tight=True)
+    ax.autoscale(enable=True, axis="both", tight=True)
     return gci
+
 
 def drawBlockMatrix(ax, mat, **kwargs):
     """Draw a view of a matrix into the axes.
@@ -89,7 +91,7 @@ def drawBlockMatrix(ax, mat, **kwargs):
     >>> _ = pg.show(B, ax=ax1)
     >>> _ = pg.show(B, spy=True, ax=ax2)
     """
-    if kwargs.pop('spy', False):
+    if kwargs.pop("spy", False):
         gci = []
         ids = pg.unique([e.matrixID for e in mat.entries()])
         cMap = cmapFromName("Set3", ncols=len(ids))
@@ -101,22 +103,30 @@ def drawBlockMatrix(ax, mat, **kwargs):
             if isinstance(mati, pg.matrix.IdentityMatrix):
                 mati = np.eye(mati.size())
 
-            gci.append(drawSparseMatrix(ax, mati,
-                                        rowOffset=e.rowStart,
-                                        colOffset=e.colStart,
-                                        color=cMap(mid)))
+            gci.append(
+                drawSparseMatrix(
+                    ax,
+                    mati,
+                    rowOffset=e.rowStart,
+                    colOffset=e.colStart,
+                    color=cMap(mid),
+                )
+            )
 
         return gci, None
     else:
         plcs = []
         for e in mat.entries():
             mid = e.matrixID
-            widthy = mat.mat(mid).rows() - 0.1 # to make sure non-matrix regions are not connected in the plot
+            widthy = (
+                mat.mat(mid).rows() - 0.1
+            )  # to make sure non-matrix regions are not connected in the plot
             widthx = mat.mat(mid).cols() - 0.1
             plc = pg.meshtools.createRectangle(
                 [e.colStart, e.rowStart],
                 [e.colStart + widthx, e.rowStart + widthy],
-                marker=mid)
+                marker=mid,
+            )
             plcs.append(plc)
 
         bm = pg.meshtools.mergePLC(plcs)

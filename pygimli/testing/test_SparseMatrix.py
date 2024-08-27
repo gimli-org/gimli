@@ -7,11 +7,11 @@ import unittest
 import pygimli as pg
 import numpy as np
 
+
 class TestSparseMatrix(unittest.TestCase):
 
     def test_Convert(self):
-        """
-        """
+        """ """
         colIds = range(10)
         rowIds = range(10)
         vals = np.ones(10)
@@ -37,10 +37,10 @@ class TestSparseMatrix(unittest.TestCase):
         v3 = pg.Vector(3)
         v15 = pg.Vector(15)
 
-        np.testing.assert_equal((MAP1*v15).size(), 3)
+        np.testing.assert_equal((MAP1 * v15).size(), 3)
         np.testing.assert_equal((MAP1.transMult(v3)).size(), 15)
 
-        np.testing.assert_equal((CSR*v15).size(), 3)
+        np.testing.assert_equal((CSR * v15).size(), 3)
         np.testing.assert_equal((CSR.transMult(v3)).size(), 15)
 
         np.testing.assert_equal(MAP1.cols(), MAP2.cols())
@@ -57,7 +57,7 @@ class TestSparseMatrix(unittest.TestCase):
         for i in range(len(check_rows)):
             mm.addVal(check_rows[i], check_cols[i], check_vals[i])
 
-        #pg.solver.showSparseMatrix(mm, full=True)
+        # pg.solver.showSparseMatrix(mm, full=True)
 
         check_csr_rows = [0, 1, 2, 3, 4]
         check_csr_colPtr = [0, 2, 3, 4, 5]
@@ -78,8 +78,9 @@ class TestSparseMatrix(unittest.TestCase):
         np.testing.assert_equal(sciA1.indices, check_csr_rows)
         np.testing.assert_equal(sciA1.indptr, check_csr_colPtr)
 
-        r2, c2, v2 = pg.utils.sparseMatrix2Array(pg.matrix.SparseMatrix(mm),
-                                                 getInCRS=False)
+        r2, c2, v2 = pg.utils.sparseMatrix2Array(
+            pg.matrix.SparseMatrix(mm), getInCRS=False
+        )
         np.testing.assert_allclose(r2, check_rows)
         np.testing.assert_allclose(c2, check_cols)
         np.testing.assert_allclose(v2, check_vals)
@@ -107,10 +108,8 @@ class TestSparseMatrix(unittest.TestCase):
         sciCSR = pg.utils.sparseMatrix2csr(pg.matrix.SparseMatrix(mm))
         np.testing.assert_equal(pg.utils.toSparseMatrix(sciCSR) == mm, True)
 
-
-
     def test_Access(self):
-        #addVal(0, 1, 1.2) kommt nach der konvertierung auch wieder [0], [1], [1.2]
+        # addVal(0, 1, 1.2) kommt nach der konvertierung auch wieder [0], [1], [1.2]
         pass
 
     def test_Operators(self):
@@ -127,27 +126,30 @@ class TestSparseMatrix(unittest.TestCase):
         grid = pg.createGrid(3, 3)
         # print(grid)
 
-        alpha = pg.math.toComplex(np.ones(grid.cellCount()),
-                                  np.ones(grid.cellCount())*1.0)
+        alpha = pg.math.toComplex(
+            np.ones(grid.cellCount()), np.ones(grid.cellCount()) * 1.0
+        )
 
         A = pg.solver.createStiffnessMatrix(grid, a=alpha)
         pg.solver.solver.applyDirichlet(A, None, [0], [0.0])
-        #pg.solver.showSparseMatrix(A)
-        #pg.solver.assembleDirichletBC(A, [[grid.boundary(0), 0.0]])
+        # pg.solver.showSparseMatrix(A)
+        # pg.solver.assembleDirichletBC(A, [[grid.boundary(0), 0.0]])
 
-        b = pg.math.toComplex(np.ones(A.rows()), np.ones(A.rows())*0.0)
-        x = pg.solver.linSolve(A, b, verbose=verbose, solver='pg')
+        b = pg.math.toComplex(np.ones(A.rows()), np.ones(A.rows()) * 0.0)
+        x = pg.solver.linSolve(A, b, verbose=verbose, solver="pg")
         np.testing.assert_allclose(A.mult(x), b, rtol=1e-10)
 
-        x2 = pg.solver.linSolve(A, b, verbose=verbose, solver='scipy')
+        x2 = pg.solver.linSolve(A, b, verbose=verbose, solver="scipy")
         np.testing.assert_allclose(x2, x, rtol=1e-10)
 
-        x3 = pg.solver.linSolve(pg.utils.squeezeComplex(A),
-                                pg.utils.squeezeComplex(b),
-                                verbose=verbose, solver='pg')
+        x3 = pg.solver.linSolve(
+            pg.utils.squeezeComplex(A),
+            pg.utils.squeezeComplex(b),
+            verbose=verbose,
+            solver="pg",
+        )
 
         np.testing.assert_allclose(pg.utils.toComplex(x3), x, rtol=1e-10)
-
 
     def test_BlockMatrix(self):
         A = pg.SparseMapMatrix(2, 2)
@@ -182,5 +184,5 @@ class TestSparseMatrix(unittest.TestCase):
         np.testing.assert_allclose(D.row(2), [1.0, 0.0, 1.0, 1.0])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

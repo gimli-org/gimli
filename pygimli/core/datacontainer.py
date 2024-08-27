@@ -1,16 +1,26 @@
 # -*- coding: utf-8 -*-
 """Extensions to the core DataContainer class[es]."""
 import numpy as np
-from . logger import critical, verbose
-from .core import (RVector, RVector3, DataContainer, DataContainerERT)
-from .core import (yVari, zVari, swapXY, swapYZ, x, y, z)
+from .logger import critical, verbose
+from .core import RVector, RVector3, DataContainer, DataContainerERT
+from .core import yVari, zVari, swapXY, swapYZ, x, y, z
 
 
 def __DataContainer_str(self):
-    return "Data: Sensors: " + str(self.sensorCount()) + " data: " + \
-        str(self.size()) + ", nonzero entries: " + \
-        str([d for d in self.dataMap().keys() if self.isSensorIndex(d) or
-             self.haveData(d)])
+    return (
+        "Data: Sensors: "
+        + str(self.sensorCount())
+        + " data: "
+        + str(self.size())
+        + ", nonzero entries: "
+        + str(
+            [
+                d
+                for d in self.dataMap().keys()
+                if self.isSensorIndex(d) or self.haveData(d)
+            ]
+        )
+    )
 
 
 DataContainer.__repr__ = __DataContainer_str
@@ -83,8 +93,9 @@ DataContainer.__getitem__ = __DC_getVal
 
 def __DataContainer_ensure2D(self):
     sen = self.sensors()
-    if ((zVari(sen) or max(abs(z(sen))) > 0) and
-            (not yVari(sen) and max(abs(y(sen))) < 1e-8)):
+    if (zVari(sen) or max(abs(z(sen))) > 0) and (
+        not yVari(sen) and max(abs(y(sen))) < 1e-8
+    ):
         swapYZ(sen)
         self.setSensorPositions(sen)
 
@@ -101,8 +112,7 @@ def __DataContainer_swapXY(self):
 DataContainer.swapXY = __DataContainer_swapXY
 
 
-def __DataContainerERT_addFourPointData(self, *args,
-                                        indexAsSensors=False, **kwargs):
+def __DataContainerERT_addFourPointData(self, *args, indexAsSensors=False, **kwargs):
     """Add a new data point to the end of the dataContainer.
 
     Add a new 4 point measurement to the end of the dataContainer and increase
@@ -163,10 +173,13 @@ def __DataContainerERT_addFourPointData(self, *args,
 
 DataContainerERT.addFourPointData = __DataContainerERT_addFourPointData
 
+
 def __DataContainer_show(self, *args, **kwargs):
     """Use data.show(**) instead of pg.show(data, *) syntactic sugar."""
     import pygimli as pg
+
     return pg.show(self, *args, **kwargs)
+
 
 DataContainer.show = __DataContainer_show
 
@@ -178,6 +191,7 @@ def __DataContainer_getIndices(self, **kwargs):
         good = np.bitwise_and(good, self[k] == v)
 
     return np.nonzero(good)[0]
+
 
 DataContainer.getIndices = __DataContainer_getIndices
 
@@ -208,8 +222,8 @@ def __DataContainer_subset(self, **kwargs):
             ex = eval(xyz)(new.sensorPositions())
             for key in new.dataMap().keys():
                 if new.isSensorIndex(key):
-                    new[xyz+key] = ex[new[key]]
-                    kwargs[xyz+key] = xx
+                    new[xyz + key] = ex[new[key]]
+                    kwargs[xyz + key] = xx
 
     new.markValid(new.getIndices(**kwargs))
     new.removeInvalid()
@@ -217,5 +231,6 @@ def __DataContainer_subset(self, **kwargs):
         new.removeUnusedSensors()
 
     return new
+
 
 DataContainer.subset = __DataContainer_subset

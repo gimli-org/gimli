@@ -1,4 +1,5 @@
 """Frequency sounding."""
+
 import numpy as np
 import pygimli as pg
 
@@ -49,24 +50,24 @@ class ComplexSpectrum(pg.DataContainer):
     @property
     def amp(self):
         """Amplitude."""
-        return np.sqrt(self["real"]**2+self["imag"]**2)
+        return np.sqrt(self["real"] ** 2 + self["imag"] ** 2)
 
     @amp.setter
     def amp(self, a):
         """Set amplitude (and keep phase)."""
-        phi = np.angle(self.real + self.imag*1j)
+        phi = np.angle(self.real + self.imag * 1j)
         self["real"] = np.cos(phi) * a
         self["imag"] = np.sin(phi) * a
 
     @property
     def phi(self):
         """Amplitude."""
-        return np.angle(self.real+self.imag*1j)
+        return np.angle(self.real + self.imag * 1j)
 
     @phi.setter
     def phi(self, p):
         """Set amplitude (and keep phase)."""
-        amp = np.sqrt(self["real"]**2+self["imag"]**2)
+        amp = np.sqrt(self["real"] ** 2 + self["imag"] ** 2)
         self["real"] = np.cos(p) * amp
         self["imag"] = np.sin(p) * amp
 
@@ -103,7 +104,7 @@ class ComplexSpectrum(pg.DataContainer):
 
 # %%
 if __name__ == "__main__":
-    f = 2.**np.arange(14)
-    self = ComplexSpectrum(f=f, real=1, imag=0.1+np.log10(f)/10)
+    f = 2.0 ** np.arange(14)
+    self = ComplexSpectrum(f=f, real=1, imag=0.1 + np.log10(f) / 10)
     self.show(vertical=0)
     self.show(aphi=True, vertical=True)

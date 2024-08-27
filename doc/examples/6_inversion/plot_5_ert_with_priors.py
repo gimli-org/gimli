@@ -76,14 +76,15 @@ mgr.invert(paraDepth=70, quality=34.2, paraMaxCellSize=1000, zWeight=0.15, lam=3
 # We plot the result with these and plot the DP points onto the mesh.
 #
 
-kw = dict(cMin=20, cMax=500, logScale=True, cMap="Spectral_r",
-          xlabel="x (m)", ylabel="y (m)")
+kw = dict(
+    cMin=20, cMax=500, logScale=True, cMap="Spectral_r", xlabel="x (m)", ylabel="y (m)"
+)
 ax, cb = mgr.showResult(**kw)
 zz = np.abs(z)
 iz = np.argsort(z)
 dz = np.diff(zz[iz])
 thk = np.hstack([dz, dz[-1]])
-ztop = -zz[iz[0]]-dz[0]/2
+ztop = -zz[iz[0]] - dz[0] / 2
 colkw = dict(x=x[0], val=r[iz], thk=thk, width=4, ztopo=ztop)
 draw1DColumn(ax, **colkw, **kw)
 ax.grid(True)
@@ -197,8 +198,8 @@ fopJoint.setData([data, pg.Vector(r)])  # needs to have .size() attribute!
 
 model = pg.Vector(para.cellCount(), 100)
 response = fopJoint(model)
-respERT = response[:data.size()]
-respDP = response[data.size():]
+respERT = response[: data.size()]
+respDP = response[data.size() :]
 print(respDP)
 
 # %%%
@@ -218,7 +219,7 @@ ax, cb = pg.show(J.mat(1), markersize=4)
 #
 
 dataVec = np.concatenate((data["rhoa"], r))
-errorVec = np.concatenate((data["err"], np.ones_like(r)*0.2))
+errorVec = np.concatenate((data["err"], np.ones_like(r) * 0.2))
 inv = pg.Inversion(fop=fopJoint, verbose=True)
 transLog = pg.trans.TransLog()
 inv.modelTrans = transLog
@@ -247,15 +248,15 @@ draw1DColumn(ax, **colkw, **kw)
 # is shown as misfit.
 #
 
-respERT = inv.response[:data.size()]
-misfit = - respERT / data["rhoa"] * 100 + 100
+respERT = inv.response[: data.size()]
+misfit = -respERT / data["rhoa"] * 100 + 100
 # ax, cb = ert.show(data, misfit, cMap="bwr", cMin=-5, cMax=5)
 
 # %%%
 # The second is shown as depth profile.
 #
 
-respDP = inv.response[data.size():]
+respDP = inv.response[data.size() :]
 fig, ax = plt.subplots()
 ax.semilogx(r, z, label="borehole")
 # resMesh = pg.interpolate(srcMesh=para, inVec=inv.model, destPos=posVec)

@@ -26,6 +26,6 @@ ax, cb = pg.show(circle, circle.cellMarkers(), label="Cell Markers")
 ###############################################################################
 # We now extrude this mesh to 3D given a *z* vector.
 
-z = np.geomspace(1, 5, 5)-1
+z = np.geomspace(1, 5, 5) - 1
 cylinder = pg.meshtools.extrudeMesh(circle, a=z)
 pg.show(cylinder, cylinder.cellMarkers(), label="Cell markers")

@@ -19,14 +19,14 @@ import pygimli.meshtools as mt
 
 ###############################################################################
 # We continue by building a regular grid and assign the marker 2 to all cells.
-xmin, xmax = 0., 50.
-zmin, zmax = -50., -25.
+xmin, xmax = 0.0, 50.0
+zmin, zmax = -50.0, -25.0
 
 xreg = np.linspace(xmin, xmax, 13)
 zreg = np.linspace(zmin, zmax, 13)
 
 mesh1 = mt.createGrid(xreg, zreg, marker=2)
-mesh1.setCellMarkers([2]*mesh1.cellCount())
+mesh1.setCellMarkers([2] * mesh1.cellCount())
 print(mesh1)
 
 ###############################################################################
@@ -42,7 +42,7 @@ for x in xreg[1:]:
     poly.createEdge(nA, nB)
     nA = nB
 
-z2 = 0.
+z2 = 0.0
 nA = poly.createNode(xmax, z2, 0.0)
 poly.createEdge(nB, nA)
 nB = poly.createNode(xmin, z2, 0.0)
@@ -50,7 +50,7 @@ poly.createEdge(nA, nB)
 poly.createEdge(nB, nStart)
 
 mesh2 = mt.createMesh(poly, quality=31)
-mesh2.setCellMarkers([1]*mesh2.cellCount())
+mesh2.setCellMarkers([1] * mesh2.cellCount())
 print(mesh2)
 
 ###############################################################################
@@ -63,7 +63,15 @@ mesh3 = mt.mergeMeshes([mesh1, mesh2])
 # triangle boundary for example with the function
 # :py:func:`pygimli.meshtools.grid.appendTriangleBoundary`.
 
-mesh = mt.appendTriangleBoundary(mesh3, xbound=100., ybound=100., quality=31, smooth=True,
-                                 marker=3, isSubSurface=True, addNodes=5)
+mesh = mt.appendTriangleBoundary(
+    mesh3,
+    xbound=100.0,
+    ybound=100.0,
+    quality=31,
+    smooth=True,
+    marker=3,
+    isSubSurface=True,
+    addNodes=5,
+)
 
 ax, cb = pg.show(mesh, markers=True, showMesh=True)

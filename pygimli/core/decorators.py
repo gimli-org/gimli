@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 """
 Useful utility decorators.
@@ -14,17 +13,24 @@ class renamed:
         pass
     ```
     """
-    def __init__(self, newFunc, removed=''):
+
+    def __init__(self, newFunc, removed=""):
         self.newFunc = newFunc
         self.removed = removed
 
     def __call__(self, func):
         def wrapper(*args, **kwargs):
             import pygimli as pg
-            pg.warning(func.__name__ + ' had been renamed to ' + \
-                       self.newFunc.__name__ + \
-                       ' and will be removed in: ' + self.removed)
+
+            pg.warning(
+                func.__name__
+                + " had been renamed to "
+                + self.newFunc.__name__
+                + " and will be removed in: "
+                + self.removed
+            )
             return self.newFunc(*args, **kwargs)
+
         return wrapper
 
 
@@ -36,6 +42,7 @@ def skipOnDefaultTest(func):
         pass
     ```
     """
+
     def wrapper(*args, **kwargs):
         import pygimli as pg
         from pygimli.testing import devTests
@@ -43,19 +50,23 @@ def skipOnDefaultTest(func):
         if devTests() == True:
             return func(*args, **kwargs)
         else:
-            pg.info('Skipped test:', func)
+            pg.info("Skipped test:", func)
 
     return wrapper
 
 
 import functools
+
+
 def singleton(cls):
     """Make a class a Singleton class (only one instance)"""
+
     @functools.wraps(cls)
     def wrapper(*args, **kwargs):
         if wrapper.instance is None:
             wrapper.instance = cls(*args, **kwargs)
         return wrapper.instance
+
     wrapper.instance = None
     return wrapper
 
@@ -87,10 +98,11 @@ def moduleProperty(func):
     """Decorator to turn module functions into properties.
     Function names must be prefixed with an underscore."""
     module = sys.modules[func.__module__]
+
     def base_getattr(name):
-        raise AttributeError(
-            f"module '{module.__name__}' has no attribute '{name}'")
-    ag = AttrGetter(getattr(module, '__getattr__', base_getattr))
+        raise AttributeError(f"module '{module.__name__}' has no attribute '{name}'")
+
+    ag = AttrGetter(getattr(module, "__getattr__", base_getattr))
     module.__getattr__ = ag
     ag.add(func)
     return func

@@ -37,17 +37,26 @@ def devTests():
     Returns True if pygimli is in testing mode.
     """
     import os
-    if os.getenv('DEVTESTS') == '1':
+
+    if os.getenv("DEVTESTS") == "1":
         return True
-    if os.getenv('DEVTESTS') == '0':
+    if os.getenv("DEVTESTS") == "0":
         return False
 
     global __devTests__
     return __devTests__
 
 
-def test(target=None, show=False, onlydoctests=False, coverage=False,
-         htmlreport=False, abort=False, verbose=True, devTests=False):
+def test(
+    target=None,
+    show=False,
+    onlydoctests=False,
+    coverage=False,
+    htmlreport=False,
+    abort=False,
+    verbose=True,
+    devTests=False,
+):
     """Run docstring examples and additional tests.
 
     Examples
@@ -89,24 +98,29 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     try:
         import pytest
     except ImportError:
-        raise ImportError("pytest is required to run test suite. "
-                          "Try 'pip install pytest'.")
+        raise ImportError(
+            "pytest is required to run test suite. " "Try 'pip install pytest'."
+        )
 
     # Remove figure warnings
     np.random.seed(1337)
     plt = pg.plt
     plt.rcParams["figure.max_open_warning"] = 1000
-    warnings.filterwarnings("ignore", category=UserWarning,
-                            message='Matplotlib is currently using agg, a '
-                                    'non-GUI backend, so cannot show figure.')
+    warnings.filterwarnings(
+        "ignore",
+        category=UserWarning,
+        message="Matplotlib is currently using agg, a "
+        "non-GUI backend, so cannot show figure.",
+    )
 
     printopt = np.get_printoptions()
 
-
     # Numpy compatibility (array string representation has changed)
     if np.__version__[:4] == "1.14":
-        pg.warn("Some doctests will fail due to old numpy version.",
-                "Consider upgrading to numpy >= 1.15")
+        pg.warn(
+            "Some doctests will fail due to old numpy version.",
+            "Consider upgrading to numpy >= 1.15",
+        )
 
     old_backend = plt.get_backend()
     # pg._r(old_backend, show)
@@ -115,16 +129,14 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     else:
         plt.ion()
 
-    cwd = join(realpath(__path__[0]), '..')
+    cwd = join(realpath(__path__[0]), "..")
 
-    excluded = [
-        "gui", "physics/traveltime/example.py", "physics/em/fdemexample.py"
-    ]
+    excluded = ["gui", "physics/traveltime/example.py", "physics/em/fdemexample.py"]
 
     if onlydoctests:
         excluded.append("testing")
 
-    cmd = (["--color", "yes", "--doctest-modules", "-p", "no:warnings"])
+    cmd = ["--color", "yes", "--doctest-modules", "-p", "no:warnings"]
 
     string = f"pygimli {pg.__version__}"
 
@@ -132,6 +144,7 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     if target:
         if not isinstance(target, str):
             import inspect
+
             target_source = inspect.getsourcefile(target)
             target = target.__name__
         else:
@@ -150,7 +163,6 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     if verbose:
         cmd.extend(["-v", "--durations", "5"])
         pg.boxprint(f"Testing {string}", sym="+", width=90)
-
 
     if coverage:
         pc = pg.optImport("pytest_cov", "create a code coverage report")

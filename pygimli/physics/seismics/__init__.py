@@ -2,4 +2,4 @@
 """
 Full wave form seismics utilities and simulations
 """
-from . seismics import *
+from .seismics import *

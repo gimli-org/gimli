@@ -28,9 +28,9 @@ class MRS1dBlockQTModelling(pg.core.ModellingBase):
     def response(self, par):
         """Yield model response cube as vector."""
         nl = self.nl_
-        thk = par[0:nl-1]  # (0, nl - 1)
-        wc = par[nl-1:2*nl-1]  # (nl - 1, 2 * nl - 1)
-        t2 = par[2*nl-1:3*nl-1]  # par(2 * nl - 1, 3 * nl - 1)
+        thk = par[0 : nl - 1]  # (0, nl - 1)
+        wc = par[nl - 1 : 2 * nl - 1]  # (nl - 1, 2 * nl - 1)
+        t2 = par[2 * nl - 1 : 3 * nl - 1]  # par(2 * nl - 1, 3 * nl - 1)
         zthk = np.cumsum(thk)
         zv = self.zv_
         lzv = len(zv)
@@ -46,7 +46,7 @@ class MRS1dBlockQTModelling(pg.core.ModellingBase):
         A = np.zeros((self.nq_, self.nt_), dtype=complex)
         for i in range(nl):
             wcvec = np.zeros(lzv - 1)
-            wcvec[izvec[i]:izvec[i + 1]] = wc[i]
+            wcvec[izvec[i] : izvec[i + 1]] = wc[i]
             if izvec[i + 1] < lzv:
                 wcvec[izvec[i + 1] - 1] = wc[i] * rzvec[i + 1]
             if izvec[i] > 0:
@@ -56,6 +56,7 @@ class MRS1dBlockQTModelling(pg.core.ModellingBase):
                 a += np.exp(-self.t_ / t2[i]) * amps[ii]
 
         return np.abs(A).ravel()  # formerly pg as vector
+
 
 if __name__ == "__main__":
     pass

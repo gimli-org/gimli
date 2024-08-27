@@ -14,7 +14,7 @@ import os
 from setuptools import setup, find_packages
 import versioneer
 
-apps = ["apps/" + app for app in os.listdir('apps') if not "template" in app]
+apps = ["apps/" + app for app in os.listdir("apps") if not "template" in app]
 
 try:
     # fails with py3 due to ascii encoding problem.
@@ -23,7 +23,8 @@ try:
 except:
     long_description = "Geophysical Inversion and Modelling Library"
 
-setup(name="pygimli",
+setup(
+    name="pygimli",
     ############################################################################
     # Do not edit next two lines, do "git tag v1.x.x; git push --tags" instead.
     version=versioneer.get_version(),
@@ -36,6 +37,6 @@ setup(name="pygimli",
     license="Apache 2.0",
     url="https://www.pygimli.org",
     packages=find_packages(),
-    package_data={'': ['*.so', '*.dll', '*.pyd']},
-    scripts=apps
-    )
+    package_data={"": ["*.so", "*.dll", "*.pyd"]},
+    scripts=apps,
+)

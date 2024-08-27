@@ -1,9 +1,12 @@
 """Crosshole ERT inversion."""
+
 import numpy as np
+
 # import matplotlib.pyplot as plt
 # from matplotlib.backends.backend_pdf import PdfPages
 import pygimli as pg
 import pygimli.meshtools as mt
+
 # from pygimli.physics import ert
 from .timelapse import TimelapseERT
 
@@ -45,16 +48,20 @@ class CrossholeERT(TimelapseERT):
 
     def __repr__(self):  # for print function
         """Return string representation of the class."""
-        mys = 'Crosshole '
+        mys = "Crosshole "
         if self.bhmap is not None:
-            mys += '({:d} boreholes) '.format(len(np.unique(self.bhmap)))
+            mys += "({:d} boreholes) ".format(len(np.unique(self.bhmap)))
         return mys + super().__repr__()
 
     def determineBHmap(self):  # XH-specific
         """Auto-determine borehole map from xy positions."""
-        xy = pg.x(self.data)*999+pg.y(self.data)*999  # maybe needs a data.sortX() first
-        d0 = np.diff(np.hstack([0, np.nonzero(np.diff(xy))[0]+1, len(xy)]))
-        self.bhmap = np.concatenate([np.ones(dd, dtype=int)*i for i, dd in enumerate(d0)])
+        xy = (
+            pg.x(self.data) * 999 + pg.y(self.data) * 999
+        )  # maybe needs a data.sortX() first
+        d0 = np.diff(np.hstack([0, np.nonzero(np.diff(xy))[0] + 1, len(xy)]))
+        self.bhmap = np.concatenate(
+            [np.ones(dd, dtype=int) * i for i, dd in enumerate(d0)]
+        )
 
     def load(self, filename, **kwargs):
         """Load or import data."""  # TL-ERT
@@ -64,7 +71,7 @@ class CrossholeERT(TimelapseERT):
             self.determineBHmap()
 
         for tok in "abmn":
-            self.data["n"+tok] = self.bhmap[self.data[tok]]
+            self.data["n" + tok] = self.bhmap[self.data[tok]]
 
     def showData(self, v="rhoa", x="a", y="m", t=None, **kwargs):
         """Show data.
@@ -90,7 +97,8 @@ class CrossholeERT(TimelapseERT):
             v[rhoa.mask] = np.nan
         if len(np.unique(self.bhmap)) > 1:
             ax, cb = pg.viewer.mpl.showDataContainerAsMatrix(
-                self.data, x, y, v, **kwargs)
+                self.data, x, y, v, **kwargs
+            )
             xx = np.nonzero(np.diff(self.bhmap))[0] + 1
             ax.set_xticks(xx)
             ax.set_yticks(xx)
@@ -120,7 +128,7 @@ class CrossholeERT(TimelapseERT):
         for tok in ["a", "b", "m", "n"]:
             bla = np.zeros(xh2.size(), dtype=bool)
             for nn in nbh:
-                bla = bla | (self.data["n"+tok] == nn)
+                bla = bla | (self.data["n" + tok] == nn)
 
             good = good & bla
 
@@ -131,18 +139,19 @@ class CrossholeERT(TimelapseERT):
         if plane is None:  # decide upon number
             plane = len(nbh) < 3
         if plane:
-            p0 = self.data.sensor(np.nonzero(self.bhmap==nbh[0]-1)[0][0])
-            dists = [p0.dist(self.data.sensor(np.nonzero(
-                self.bhmap==nn-1)[0][0])) for nn in nbh]
+            p0 = self.data.sensor(np.nonzero(self.bhmap == nbh[0] - 1)[0][0])
+            dists = [
+                p0.dist(self.data.sensor(np.nonzero(self.bhmap == nn - 1)[0][0]))
+                for nn in nbh
+            ]
             for i in range(xh2.sensorCount()):
-                xh2.setSensor(i, [dists[self.bhmap[i]], 0,
-                                  xh2.sensorPosition(i).z()])
+                xh2.setSensor(i, [dists[self.bhmap[i]], 0, xh2.sensorPosition(i).z()])
         name = name or self.name + "xh" + "".join([str(i) for i in nbh])
-        return CrossholeERT(data=xh2, DATA=self.DATA[good], times=self.times,
-                            name=name)
+        return CrossholeERT(data=xh2, DATA=self.DATA[good], times=self.times, name=name)
 
-    def createMesh(self, ibound=2, obound=10, quality=None, show=False,
-                   threeD=None, ref=0.25):
+    def createMesh(
+        self, ibound=2, obound=10, quality=None, show=False, threeD=None, ref=0.25
+    ):
         """Create a 2D mesh around boreholes.
 
         Parameters
@@ -165,29 +174,41 @@ class CrossholeERT(TimelapseERT):
         if threeD is None:
             threeD = (ymin != ymax) and (zmin != zmax)
 
-        ztop = np.minimum(0, zmax+ibound)
+        ztop = np.minimum(0, zmax + ibound)
         if threeD:
-            world = mt.createWorld(start=[xmin-obound, ymin-obound, zmin-obound],
-                                end=[xmax+obound, ymax+obound, 0], marker=1)
-            box = mt.createCube(start=[xmin-ibound, ymin-ibound, zmin-ibound],
-                                end=[xmax+ibound, ymax+ibound, ztop],
-                                marker=2, area=1)
+            world = mt.createWorld(
+                start=[xmin - obound, ymin - obound, zmin - obound],
+                end=[xmax + obound, ymax + obound, 0],
+                marker=1,
+            )
+            box = mt.createCube(
+                start=[xmin - ibound, ymin - ibound, zmin - ibound],
+                end=[xmax + ibound, ymax + ibound, ztop],
+                marker=2,
+                area=1,
+            )
             quality = quality or 1.3
         else:
-            world = mt.createWorld(start=[xmin-obound, zmin-obound],
-                                   end=[xmax+obound, 0.], marker=1)
-            box = mt.createRectangle(start=[xmin-ibound, zmin-ibound],
-                                    end=[xmax+ibound, ztop], marker=2)
+            world = mt.createWorld(
+                start=[xmin - obound, zmin - obound], end=[xmax + obound, 0.0], marker=1
+            )
+            box = mt.createRectangle(
+                start=[xmin - ibound, zmin - ibound],
+                end=[xmax + ibound, ztop],
+                marker=2,
+            )
             quality = quality or 34.4
 
         geo = world + box
         for pos in data.sensors():
             if threeD:
                 geo.createNode(pos, marker=-99)
-                geo.createNodeWithCheck(ProcessLookupError - pg.Pos(0, 0, ref))  # refinement
+                geo.createNodeWithCheck(
+                    ProcessLookupError - pg.Pos(0, 0, ref)
+                )  # refinement
             else:
                 geo.createNode([pos.x(), pos.z()], marker=-99)
-                geo.createNode([pos.x(), pos.z()-ref])
+                geo.createNode([pos.x(), pos.z() - ref])
 
         self.mesh = mt.createMesh(geo, quality=quality)
         self.mgr.setMesh(self.mesh)
@@ -203,7 +224,6 @@ class CrossholeERT(TimelapseERT):
     #     misfit = self.mgr.inv.response / self.data["rhoa"] * 100 - 100
     #     self.showData(misfit, ax=ax[2], cMin=-10, cMax=10, cMap="bwr", verbose=0)
     #     return ax
-
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 """Timelapse ERT manager class."""
+
 import os.path
 from glob import glob
 from datetime import datetime, timedelta
@@ -15,7 +16,7 @@ from .processing import combineMultipleData
 # class TimelapseERT(Timelapse)
 
 
-class TimelapseERT():
+class TimelapseERT:
     """Class for crosshole ERT data manipulation.
 
     Note that this class is to be split into a hierarchy of classes for general
@@ -79,7 +80,7 @@ class TimelapseERT():
 
     def __repr__(self):  # for print function
         """Return string representation of the class."""
-        out = ['Timelapse ERT data:', self.data.__str__()]
+        out = ["Timelapse ERT data:", self.data.__str__()]
         if np.any(self.DATA):
             out.append("{} time steps".format(self.DATA.shape[1]))
             if np.any(self.times):
@@ -92,12 +93,12 @@ class TimelapseERT():
         """Load or import data (or data files using *)."""
         if os.path.isfile(filename):
             self.data = ert.load(filename)
-            if os.path.isfile(filename[:-4]+".rhoa"):
-                self.DATA = np.loadtxt(filename[:-4]+".rhoa")
-            if os.path.isfile(filename[:-4]+".err"):
-                self.ERR = np.loadtxt(filename[:-4]+".err")
-            if os.path.isfile(filename[:-4]+".times"):
-                timestr = np.loadtxt(filename[:-4]+".times", dtype=str)
+            if os.path.isfile(filename[:-4] + ".rhoa"):
+                self.DATA = np.loadtxt(filename[:-4] + ".rhoa")
+            if os.path.isfile(filename[:-4] + ".err"):
+                self.ERR = np.loadtxt(filename[:-4] + ".err")
+            if os.path.isfile(filename[:-4] + ".times"):
+                timestr = np.loadtxt(filename[:-4] + ".times", dtype=str)
                 self.times = np.array([datetime.fromisoformat(s) for s in timestr])
         elif "*" in filename:
             DATA = [ert.load(fname) for fname in glob(filename)]
@@ -111,13 +112,13 @@ class TimelapseERT():
         if filename.endswith(".shm"):
             filename = filename[:-4]
 
-        self.data.save(filename+".shm", "a b m n k")
-        np.savetxt(filename+".rhoa", self.DATA, fmt="%6.2f")
+        self.data.save(filename + ".shm", "a b m n k")
+        np.savetxt(filename + ".rhoa", self.DATA, fmt="%6.2f")
         if np.any(self.ERR):
-            np.savetxt(filename+".err", self.ERR, fmt="%6.2f")
-        with open(filename+".times", "w", encoding="utf-8") as fid:
+            np.savetxt(filename + ".err", self.ERR, fmt="%6.2f")
+        with open(filename + ".times", "w", encoding="utf-8") as fid:
             for d in self.times:
-                fid.write(d.isoformat()+"\n")
+                fid.write(d.isoformat() + "\n")
         self.name = filename
 
     def timeIndex(self, t):  #
@@ -129,9 +130,9 @@ class TimelapseERT():
             datetime object or string
         """
         if isinstance(t, str):  # convert into datetime
-            t = datetime.fromisoformat(t) # check others
-        if isinstance(t, datetime): # detect closest point
-            return np.argmin(np.abs(self.times-t))
+            t = datetime.fromisoformat(t)  # check others
+        if isinstance(t, datetime):  # detect closest point
+            return np.argmin(np.abs(self.times - t))
         elif isinstance(t, (int, np.int32, np.int64)):
             return t
         elif hasattr(t, "__iter__"):
@@ -221,8 +222,7 @@ class TimelapseERT():
         if kwargs.pop("crossplot", "x" in kwargs and "y" in kwargs):
             x = kwargs.pop("x", ["a", "b"])
             y = kwargs.pop("y", ["m", "n"])
-            return pg.viewer.mpl.showDataContainerAsMatrix(
-                self.data, x, y, v, **kwargs)
+            return pg.viewer.mpl.showDataContainerAsMatrix(self.data, x, y, v, **kwargs)
         else:
             return self.data.show(v, **kwargs)
 
@@ -281,7 +281,7 @@ class TimelapseERT():
             if isinstance(rhoa, np.ma.MaskedArray):
                 rhoa = rhoa.data
 
-            data['rhoa'] = rhoa
+            data["rhoa"] = rhoa
             try:
                 pp, aa = ert.fitReciprocalErrorModel(data, **kwargs)
                 if not rel:
@@ -293,7 +293,7 @@ class TimelapseERT():
 
         if show:
             _, ax = pg.plt.subplots(nrows=2, sharex=True)
-            ax[0].plot(self.times, p*100)
+            ax[0].plot(self.times, p * 100)
             ax[1].plot(self.times, a)
             ax[0].set_ylabel("relative error (%)")
             ax[1].set_ylabel("absolute error (Ohm)")
@@ -310,13 +310,13 @@ class TimelapseERT():
         kwargs.setdefault("verbose", False)
         from matplotlib.backends.backend_pdf import PdfPages
 
-        with PdfPages(self.name+'-data.pdf') as pdf:
+        with PdfPages(self.name + "-data.pdf") as pdf:
             fig = pg.plt.figure(figsize=kwargs.pop("figsize", [5, 5]))
             for i in range(self.DATA.shape[1]):
                 ax = fig.subplots()
                 self.showData(t=i, ax=ax, **kwargs)
-                ax.set_title(str(i)+": "+ self.times[i].isoformat(" ", "minutes"))
-                fig.savefig(pdf, format='pdf')
+                ax.set_title(str(i) + ": " + self.times[i].isoformat(" ", "minutes"))
+                fig.savefig(pdf, format="pdf")
                 fig.clf()
 
     def chooseTime(self, t=None):
@@ -428,11 +428,11 @@ class TimelapseERT():
         _, ax = pg.plt.subplots(nrows=3, figsize=(10, 6), sharex=True, sharey=True)
         kwargs.setdefault("verbose", False)
         _, cb = self.showData(ax=ax[0], **kwargs)
-        self.showData(self.mgr.inv.response, ax=ax[1],
-                      cMin=cb.vmin, cMax=cb.vmax, **kwargs)
+        self.showData(
+            self.mgr.inv.response, ax=ax[1], cMin=cb.vmin, cMax=cb.vmax, **kwargs
+        )
         misfit = self.mgr.inv.response / self.data["rhoa"] * 100 - 100
-        self.showData(misfit, ax=ax[2], cMin=-10,
-                      cMax=10, cMap="bwr", **kwargs)
+        self.showData(misfit, ax=ax[2], cMin=-10, cMax=10, cMap="bwr", **kwargs)
         return ax
 
     def showAllModels(self, ncols=2, **kwargs):
@@ -447,9 +447,10 @@ class TimelapseERT():
         """
         nT = self.DATA.shape[1]
         showRatio = kwargs.pop("ratio", False)
-        nrows = int(np.ceil(nT/ncols))
-        _, ax = pg.plt.subplots(nrows=nrows, ncols=ncols,
-                            figsize=kwargs.pop("figsize", [8, 5]))
+        nrows = int(np.ceil(nT / ncols))
+        _, ax = pg.plt.subplots(
+            nrows=nrows, ncols=ncols, figsize=kwargs.pop("figsize", [8, 5])
+        )
         ratiokw = kwargs.copy()
         kwargs.setdefault("cMin", np.min(self.models))
         kwargs.setdefault("cMax", np.max(self.models))
@@ -458,7 +459,7 @@ class TimelapseERT():
         models = self.models.copy()
         if showRatio:
             models = self.models / self.models[0]
-            rmax = np.maximum(np.max(models), 1/np.min(models))
+            rmax = np.maximum(np.max(models), 1 / np.min(models))
             ratiokw["cMax"] = kwargs.pop("rMax", rmax)
             ratiokw["cMin"] = 1 / ratiokw["cMax"]
             ratiokw["cMap"] = "bwr"
@@ -479,18 +480,18 @@ class TimelapseERT():
         ----------
         **kwargs : keyword arguments passed to pg.show()
         """
-        kwargs.setdefault('label', pg.unit('res'))
-        kwargs.setdefault('cMap', pg.utils.cMap('res'))
-        kwargs.setdefault('logScale', True)
+        kwargs.setdefault("label", pg.unit("res"))
+        kwargs.setdefault("cMap", pg.utils.cMap("res"))
+        kwargs.setdefault("logScale", True)
         from matplotlib.backends.backend_pdf import PdfPages
 
-        with PdfPages(self.name+'-model.pdf') as pdf:
+        with PdfPages(self.name + "-model.pdf") as pdf:
             fig = pg.plt.figure(figsize=kwargs.pop("figsize", [8, 5]))
             for i, model in enumerate(self.models):
                 ax = fig.subplots()
                 pg.show(self.pd, model, ax=ax, **kwargs)
-                ax.set_title(str(i)+": " + self.times[i].isoformat(" ", "minutes"))
-                fig.savefig(pdf, format='pdf')
+                ax.set_title(str(i) + ": " + self.times[i].isoformat(" ", "minutes"))
+                fig.savefig(pdf, format="pdf")
                 fig.clf()
 
     def generateRatioPDF(self, **kwargs):
@@ -509,23 +510,28 @@ class TimelapseERT():
         cMap : str ['bwr']
             colormap
         """
-        kwargs.setdefault('label', 'ratio')
-        kwargs.setdefault('cMap', 'bwr')
-        kwargs.setdefault('logScale', True)
+        kwargs.setdefault("label", "ratio")
+        kwargs.setdefault("cMap", "bwr")
+        kwargs.setdefault("logScale", True)
         kwargs.setdefault("cMax", 2.0)
-        kwargs.setdefault("cMin", 1/kwargs["cMax"])
+        kwargs.setdefault("cMin", 1 / kwargs["cMax"])
         basemodel = self.models[0]
         creep = kwargs.pop("creep", False)
         from matplotlib.backends.backend_pdf import PdfPages
 
-        with PdfPages(self.name+'-ratio.pdf') as pdf:
+        with PdfPages(self.name + "-ratio.pdf") as pdf:
             fig = pg.plt.figure(figsize=kwargs.pop("figsize", [8, 5]))
             for i, model in enumerate(self.models[1:]):
                 ax = fig.subplots()
-                pg.show(self.pd, model/basemodel, ax=ax, **kwargs)
-                ax.set_title(str(i)+": " + self.times[i+1].isoformat(" ", "minutes") + "/" +
-                             self.times[i].isoformat(" ", "minutes"))
-                fig.savefig(pdf, format='pdf')
+                pg.show(self.pd, model / basemodel, ax=ax, **kwargs)
+                ax.set_title(
+                    str(i)
+                    + ": "
+                    + self.times[i + 1].isoformat(" ", "minutes")
+                    + "/"
+                    + self.times[i].isoformat(" ", "minutes")
+                )
+                fig.savefig(pdf, format="pdf")
                 fig.clf()
                 if creep:
                     basemodel = model
@@ -541,11 +547,12 @@ class TimelapseERT():
             for i, model in enumerate(self.models):
                 vtk[f"model{i}"] = model
 
-            vtk.exportVTK(name+"_results.vtk")
+            vtk.exportVTK(name + "_results.vtk")
         else:
             for i, model in enumerate(self.models):
                 vtk["resistivity"] = model
-                vtk.exportVTK(name+f"_result{i}.vtk")
+                vtk.exportVTK(name + f"_result{i}.vtk")
+
 
 if __name__ == "__main__":
     pass

@@ -4,9 +4,21 @@ Import and extensions of the core Mesh class.
 """
 import numpy as np
 from math import ceil
-from .core import (cat, HexahedronShape, Line, RSparseMapMatrix,
-                   Mesh, MeshEntity, Node, Boundary, RVector, RVector3,
-                   PolygonFace, TetrahedronShape, TriangleFace)
+from .core import (
+    cat,
+    HexahedronShape,
+    Line,
+    RSparseMapMatrix,
+    Mesh,
+    MeshEntity,
+    Node,
+    Boundary,
+    RVector,
+    RVector3,
+    PolygonFace,
+    TetrahedronShape,
+    TriangleFace,
+)
 from .logger import deprecated, error, info, warn, critical
 from .base import isScalar, isArray, isPos, isR3Array, isComplex
 from ..meshtools import mergePLC, exportPLC, interpolateAlongCurve
@@ -18,14 +30,14 @@ def __Mesh_unique_dataKeys(self):
     for d in self.dataMap().keys():
 
         uName = d
-        if '_x' in d:
-            uName = uName[0:d.find('_x')]
+        if "_x" in d:
+            uName = uName[0 : d.find("_x")]
 
-        if '_y' in d or '_z' in d:
+        if "_y" in d or "_z" in d:
             continue
 
-        if '#' in d:
-            uName = uName[0:d.find('#')]
+        if "#" in d:
+            uName = uName[0 : d.find("#")]
 
         if not uName in uniqueNames:
             uniqueNames[uName] = []
@@ -33,13 +45,21 @@ def __Mesh_unique_dataKeys(self):
         uniqueNames[uName].append(d)
     return uniqueNames
 
+
 Mesh.dataKeys = __Mesh_unique_dataKeys
 
-def __Mesh_str(self):
-    st = "Mesh: Nodes: " + str(self.nodeCount()) + " Cells: " + str(
-        self.cellCount()) + " Boundaries: " + str(self.boundaryCount())
 
-    if (self.secondaryNodeCount() > 0):
+def __Mesh_str(self):
+    st = (
+        "Mesh: Nodes: "
+        + str(self.nodeCount())
+        + " Cells: "
+        + str(self.cellCount())
+        + " Boundaries: "
+        + str(self.boundaryCount())
+    )
+
+    if self.secondaryNodeCount() > 0:
         st += " secNodes: " + str(self.secondaryNodeCount())
 
     if len(list(self.dataMap().keys())) > 0:
@@ -53,13 +73,14 @@ def __Mesh_str(self):
             else:
                 st += d
 
-            st += ', '
+            st += ", "
 
-        st = st.rstrip(', ')
+        st = st.rstrip(", ")
 
     return st
 
-Mesh.__repr__ =__Mesh_str
+
+Mesh.__repr__ = __Mesh_str
 
 
 def __addPLCs__(self, other):
@@ -73,33 +94,43 @@ def __addPLCs__(self, other):
     else:
         error("Addition is only supported for PLCs, i.e. meshs without cells.")
 
+
 Mesh.__add__ = __addPLCs__
 
 
 def __MeshEntity_str(self):
     """Give mesh entity infos."""
     s = self.__repr__()
-    s += '\tID: ' + str(self.id()) + \
-         ', Marker: ' + str(self.marker()) + \
-         ', Size: ' + str(self.size()) + '\n'
+    s += (
+        "\tID: "
+        + str(self.id())
+        + ", Marker: "
+        + str(self.marker())
+        + ", Size: "
+        + str(self.size())
+        + "\n"
+    )
 
     if isinstance(self, PolygonFace) and len(self.nodes()) > 5:
-        s += '\t' + str(self.nodeCount()) + " Nodes.\n"
+        s += "\t" + str(self.nodeCount()) + " Nodes.\n"
     else:
         for n in self.nodes():
-            s += '\t' + str(n.id()) + " " + str(n.pos()) + "\n"
+            s += "\t" + str(n.id()) + " " + str(n.pos()) + "\n"
     return s
 
-MeshEntity.__str__ =__MeshEntity_str
+
+MeshEntity.__str__ = __MeshEntity_str
 
 
 def __Node_str(self):
     """Give node infos."""
-    s = '\tID: ' + str(self.id()) + \
-         ', Marker: ' + str(self.marker())
-    s += '\t' + str(self.pos()) + '\n'
+    s = "\tID: " + str(self.id()) + ", Marker: " + str(self.marker())
+    s += "\t" + str(self.pos()) + "\n"
     return s
-Node.__repr__ =__Node_str
+
+
+Node.__repr__ = __Node_str
+
 
 def __Mesh_setVal(self, key, val):
     """Index access to the mesh data.
@@ -112,14 +143,17 @@ def __Mesh_setVal(self, key, val):
     if isR3Array(val):  # vectorial property
         return self.addData(key, val)
     # list of vectors
-    if isinstance(val, list) and isinstance(val[0], (RVector, np.ndarray)) or \
-        val.ndim == 2 or val.ndim == 3:
+    if (
+        isinstance(val, list)
+        and isinstance(val[0], (RVector, np.ndarray))
+        or val.ndim == 2
+        or val.ndim == 3
+    ):
 
         maxDigit = ceil(np.log10(len(val)))
 
         for i, v in enumerate(val):
-            self.addData('{}#{}'.format(key, str(i).zfill(maxDigit)),
-                         np.asarray(v))
+            self.addData("{}#{}".format(key, str(i).zfill(maxDigit)), np.asarray(v))
     else:
         try:
             if key == "marker":
@@ -127,8 +161,10 @@ def __Mesh_setVal(self, key, val):
             else:
                 self.addData(key, val)
         except:
-            ValueError('Could not add data with key ' + key +
-                     " of shape " + str(np.shape(val)))
+            ValueError(
+                "Could not add data with key " + key + " of shape " + str(np.shape(val))
+            )
+
 
 Mesh.__setitem__ = __Mesh_setVal
 
@@ -141,22 +177,22 @@ def __Mesh_getVal(self, key):
 
         uniqueNames = {}
         for d in self.dataMap().keys():
-            if '_y' in d or '_z' in d:
+            if "_y" in d or "_z" in d:
                 continue
 
             uName = d
 
-            if '_x' in uName:
-                uName = uName[0:uName.find('_x')]
+            if "_x" in uName:
+                uName = uName[0 : uName.find("_x")]
                 d1 = self.data(d)
-                d2 = self.data(d.replace('_x', '_y'))
-                d3 = self.data(d.replace('_x', '_z'))
+                d2 = self.data(d.replace("_x", "_y"))
+                d3 = self.data(d.replace("_x", "_z"))
                 dat = np.array([d1, d2, d3]).T
             else:
                 dat = self.data(d)
 
-            if '#' in uName:
-                uName = uName[0:uName.find('#')]
+            if "#" in uName:
+                uName = uName[0 : uName.find("#")]
 
             if not uName in uniqueNames:
                 uniqueNames[uName] = []
@@ -171,8 +207,13 @@ def __Mesh_getVal(self, key):
             except:
                 return uniqueNames[key]
 
-        critical(NameError, 'The mesh does not have the requested data:', key,
-                    '. Available:', uniqueNames)
+        critical(
+            NameError,
+            "The mesh does not have the requested data:",
+            key,
+            ". Available:",
+            uniqueNames,
+        )
 
 
 Mesh.__getitem__ = __Mesh_getVal
@@ -184,21 +225,23 @@ def __MeshBoundingBox__(self):
     ma = RVector3([bb.max()[i] for i in range(3)])
     return [mi, ma]
 
+
 Mesh.bb = __MeshBoundingBox__
 
 
 def __MeshGetCellMarker__(self):
-    deprecated(msg='Mesh::cellMarker()', hint='Mesh::cellMarkers()')
+    deprecated(msg="Mesh::cellMarker()", hint="Mesh::cellMarkers()")
     return self.cellMarkers()
 
 
 def __MeshSetCellMarker__(self, m):
-    deprecated(msg='Mesh::setCellMarker()', hint='Mesh::setCellMarkers()')
+    deprecated(msg="Mesh::setCellMarker()", hint="Mesh::setCellMarkers()")
     return self.setCellMarkers(m)
 
 
 def __MeshHoleMarkers__(self):
     return self.holeMarker()
+
 
 Mesh.cellMarker = __MeshGetCellMarker__
 Mesh.setCellMarker = __MeshSetCellMarker__
@@ -243,11 +286,9 @@ def __createSecondaryNodes__(self, n=3, verbose=False):
                         nMax = n - sx
                     for sy in range(nMax):
                         if isinstance(b, TriangleFace):
-                            pos = bs.xyz([(sx + 1) / (n + 2),
-                                          (sy + 1) / (n + 2)])
+                            pos = bs.xyz([(sx + 1) / (n + 2), (sy + 1) / (n + 2)])
                         else:
-                            pos = bs.xyz([(sx + 1) / (n + 1),
-                                          (sy + 1) / (n + 1)])
+                            pos = bs.xyz([(sx + 1) / (n + 1), (sy + 1) / (n + 1)])
 
                         sn = self.createSecondaryNode(pos)
                         b.addSecondaryNode(sn)
@@ -287,13 +328,14 @@ def __createSecondaryNodes__(self, n=3, verbose=False):
                     edges.append([c.shape().node(3), c.shape().node(1)])
                 else:
                     print(c)
-                    warn('cell type unknown')
+                    warn("cell type unknown")
 
                 for e in edges:
                     line = Line(e[0].pos(), e[1].pos())
                     for i in range(n):
-                        sn = self.createSecondaryNode(line.at((i+1)/(n+1)),
-                                                      tol=1e-6)
+                        sn = self.createSecondaryNode(
+                            line.at((i + 1) / (n + 1)), tol=1e-6
+                        )
                         c.addSecondaryNode(sn)
         else:
             warn("Unknown dimension. Don't know what to do.")
@@ -301,21 +343,25 @@ def __createSecondaryNodes__(self, n=3, verbose=False):
     if verbose:
         info("Added %d secondary nodes." % self.secondaryNodeCount())
 
+
 Mesh.createSecondaryNodes = __createSecondaryNodes__
+
 
 def __createMeshWithSecondaryNodes__(self, n=3, verbose=False):
     m = Mesh(self)
     m.createSecondaryNodes(n, verbose)
     return m
 
+
 Mesh.createMeshWithSecondaryNodes = __createMeshWithSecondaryNodes__
 
 __Mesh_deform__ = Mesh.deform
 
+
 def __deform__(self, eps, mag=1.0):
     v = None
     dof = self.nodeCount()
-    if hasattr(eps, 'ndim') and eps.ndim == 1:
+    if hasattr(eps, "ndim") and eps.ndim == 1:
         v = eps
     elif len(eps) == self.dim():
         if len(eps[0]) == dof:
@@ -328,11 +374,12 @@ def __deform__(self, eps, mag=1.0):
         else:
             print(self)
             print(len(eps), len(eps[0]))
-            error('Size of displacement does not match mesh nodes size.')
+            error("Size of displacement does not match mesh nodes size.")
     elif len(eps) == self.nodeCount() and eps.ndim == 2:
-        v = eps.reshape(self.nodeCount() * eps.shape[1], order='F')
+        v = eps.reshape(self.nodeCount() * eps.shape[1], order="F")
 
     return __Mesh_deform__(self, v, mag)
+
 
 Mesh.deform = __deform__
 
@@ -352,11 +399,13 @@ def __Boundary_outside__(self):
     """Is the boundary is on the outside of the mesh."""
     return self.leftCell() is not None and self.rightCell() is None
 
+
 Boundary.outside = __Boundary_outside__
 
 
 def __Mesh_h__(self):
     return np.array([c.shape().h() for c in self.cells()])
+
 
 Mesh.h = __Mesh_h__
 
@@ -370,8 +419,8 @@ def __Mesh_findPaths__(self, bounds):
     """
     import pygimli as pg
 
-    scipy = pg.optImport('scipy')
-    scipy.sparse = pg.optImport('scipy.sparse')
+    scipy = pg.optImport("scipy")
+    scipy.sparse = pg.optImport("scipy.sparse")
 
     S = pg.core.SparseMapMatrix()
     for b in bounds:
@@ -392,8 +441,8 @@ def __Mesh_findPaths__(self, bounds):
             # print('row', rID, 'col', cID)
             # print('add', cID)
             path.append(cID)
-            #try:
-            #print('pop-r', (rID, cID))
+            # try:
+            # print('pop-r', (rID, cID))
             del S[(rID, cID)]
             del S[(cID, rID)]
 
@@ -420,7 +469,7 @@ def __Mesh_findPaths__(self, bounds):
         row = S[rID]
 
         if len(row) == 1:
-            #single starting
+            # single starting
             path = []
             paths.append(path)
             # starting node
@@ -439,8 +488,8 @@ def __Mesh_findPaths__(self, bounds):
             path.append(rID)
             followPath(path, S, rID)
 
-
     return paths
+
 
 Mesh.findPaths = __Mesh_findPaths__
 
@@ -501,10 +550,12 @@ def __Mesh_cutBoundary__(self, marker, boundaryMarker=None):
     ...                     )
     """
     import pygimli as pg
+
     if boundaryMarker is None:
         boundaryMarker = marker
 
     mesh = self
+
     def replaceNode_(mesh, c, n1, n2, marker, lastC=None):
         if c is None or n1.id() not in c.ids():
             return
@@ -558,9 +609,9 @@ def __Mesh_cutBoundary__(self, marker, boundaryMarker=None):
         pg.error("did not found path for marker: {0}".format(marker))
 
     ## step 1 . fix direction along the path
-    for i in range(len(paths[0])-1):
+    for i in range(len(paths[0]) - 1):
         nA1 = mesh.node(paths[0][i])
-        nB1 = mesh.node(paths[0][i+1])
+        nB1 = mesh.node(paths[0][i + 1])
         b = pg.core.findBoundary(nA1, nB1)
 
         if b.node(0) != nA1:
@@ -569,15 +620,15 @@ def __Mesh_cutBoundary__(self, marker, boundaryMarker=None):
         lC = b.leftCell()
         rC = b.rightCell()
         if rC is None or lC is None:
-            pg.error('Path is not inside the mesh')
+            pg.error("Path is not inside the mesh")
             return
 
     ## add new nodes and decouple cells along the path
     rightCells = []
-    for i in range(len(paths[0])-1):
+    for i in range(len(paths[0]) - 1):
 
         nA1 = mesh.node(paths[0][i])
-        nB1 = mesh.node(paths[0][i+1])
+        nB1 = mesh.node(paths[0][i + 1])
         b = pg.core.findBoundary(nA1, nB1)
 
         lC = b.leftCell()
@@ -596,10 +647,12 @@ def __Mesh_cutBoundary__(self, marker, boundaryMarker=None):
             replaceNode_(mesh, rC, nA1, nA2, marker=b.marker())
 
     newNodes.append(mesh.node(paths[0][-1]))
-    for i in range(len(newNodes)-1):
-        b = mesh.createBoundary([newNodes[i+1].id(), newNodes[i].id()],
-                                marker=boundaryMarker)
+    for i in range(len(newNodes) - 1):
+        b = mesh.createBoundary(
+            [newNodes[i + 1].id(), newNodes[i].id()], marker=boundaryMarker
+        )
         b.setLeftCell(rightCells[i])
+
 
 Mesh.cutBoundary = __Mesh_cutBoundary__
 
@@ -633,9 +686,10 @@ def __Mesh__align__(self, pnts):
             A = np.zeros((pnts.shape[0], 3))
 
             from ..utils import cumDist
-            A[:,0] = cumDist(pnts[:,0:2])
-            A[:,1] = pnts[:,0]
-            A[:,2] = pnts[:,1]
+
+            A[:, 0] = cumDist(pnts[:, 0:2])
+            A[:, 1] = pnts[:, 0]
+            A[:, 2] = pnts[:, 1]
 
         elif pnts.shape[1] == 3:
             A = pnts
@@ -647,12 +701,13 @@ def __Mesh__align__(self, pnts):
     tn = [n.pos()[0] for n in self.nodes()]
     zn = [n.pos()[1] for n in self.nodes()]
 
-    p = interpolateAlongCurve(A[:,1:3], tn, tCurve=A[:,0])
+    p = interpolateAlongCurve(A[:, 1:3], tn, tCurve=A[:, 0])
 
     for i, n in enumerate(self.nodes()):
         n.setPos((p[i][0], p[i][1], zn[i]))
 
     self.geometryChanged()
+
 
 Mesh.align = __Mesh__align__
 
@@ -666,12 +721,14 @@ def __Mesh__swapOrientation__(self):
     self.swapCoordinates(0, 1)  # exchange x and y
     self.scale([1, 1, -1])  # revert z
 
+
 Mesh.swapOrientation = __Mesh__swapOrientation__
 
 
 def __Mesh__copy(self):
     """Return copy of a mesh."""
     return Mesh(self)
+
 
 Mesh.copy = __Mesh__copy
 
@@ -682,12 +739,14 @@ def __Mesh__NED__(self):
     newmesh.swapOrientation()
     return newmesh
 
+
 Mesh.NED = __Mesh__NED__
 
 
 def __Mesh__midpoint__(self):
     """Return midpoint."""
     return sum(self.bb()) / 2
+
 
 Mesh.midpoint = __Mesh__midpoint__
 
@@ -720,7 +779,7 @@ def __Mesh__extent__(self, axis=None):
     3.74
     """
     bb = self.bb()
-    dist = bb[1]- bb[0]
+    dist = bb[1] - bb[0]
     if isinstance(axis, str):
         sa0 = axis.lower()[0]
         if sa0 == "m":
@@ -735,10 +794,11 @@ def __Mesh__extent__(self, axis=None):
     else:
         return abs(dist[axis])
 
+
 Mesh.extent = __Mesh__extent__
 
 
-def __Mesh__populate__(self, prop:str, value):
+def __Mesh__populate__(self, prop: str, value):
     """Fill property of mesh with values from map or vector.
 
     Parameters
@@ -756,17 +816,19 @@ def __Mesh__populate__(self, prop:str, value):
     field : array (length cellCount)
     """
     from pygimli.solver import parseMapToCellArray
+
     if isinstance(value, dict):
-        self[prop] =  parseMapToCellArray(value, self)
-    elif hasattr(value, '__iter__'):
-        if hasattr(value[0], '__iter__'):
-            self[prop] =  parseMapToCellArray(value, self)
+        self[prop] = parseMapToCellArray(value, self)
+    elif hasattr(value, "__iter__"):
+        if hasattr(value[0], "__iter__"):
+            self[prop] = parseMapToCellArray(value, self)
         elif len(value) == self.cellCount():
             self[prop] = value
         else:
             raise Exception("Length mismatch!")
 
     return self[prop]
+
 
 Mesh.populate = __Mesh__populate__
 
@@ -798,11 +860,13 @@ def __Mesh__submesh__(self, relation="=", **kwargs):
 
     return self.createSubMesh(self.cells(np.nonzero(istrue)[0]))
 
+
 Mesh.submesh = __Mesh__submesh__
 
 
 def __Mesh__innerBoundaryCenters__(self):
     """Center of all inner boundaries (C1-constraints)."""
     return [b.center() for b in self.boundaries() if not b.outside()]
+
 
 Mesh.innerBoundaryCenters = __Mesh__innerBoundaryCenters__

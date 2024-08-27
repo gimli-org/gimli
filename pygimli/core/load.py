@@ -10,15 +10,15 @@ from urllib.request import urlopen
 
 import numpy as np
 import pygimli as pg
-from pygimli.meshtools import (readFenicsHDF5Mesh, readGmsh, readPLC, readSTL,
-                               readMeshIO)
+from pygimli.meshtools import readFenicsHDF5Mesh, readGmsh, readPLC, readSTL, readMeshIO
 from pygimli.utils import readGPX
+
 # from pygimli.utils import cache  # not used yet
 from pygimli.physics.traveltime import load as loadTT
 
 
-__gimliExampleDataRepo__ = 'gimli-org/example-data/'
-__gimliExampleDataBase__ = 'example-data'
+__gimliExampleDataRepo__ = "gimli-org/example-data/"
+__gimliExampleDataBase__ = "example-data"
 
 
 def optImport(module, requiredFor="use the full functionality"):
@@ -57,8 +57,10 @@ def optImport(module, requiredFor="use the full functionality"):
     try:
         mod = import_module(module)
     except ImportError:
-        msg = ("No module named \'%s\'.\nYou need to install this optional "
-               "dependency to %s.")
+        msg = (
+            "No module named '%s'.\nYou need to install this optional "
+            "dependency to %s."
+        )
         print(msg % (module, requiredFor))
         # exception would be better her but then the test fails
         # raise Exception(msg % (module, requiredFor))
@@ -159,7 +161,7 @@ def load(fname, verbose=False, testAll=True, realName=None):
         ".npz": np.load,  #
     }
 
-    if fname.startswith('https://') or fname.startswith('http://'):
+    if fname.startswith("https://") or fname.startswith("http://"):
         return getExampleData(fname)
 
     if not os.path.exists(fname):
@@ -193,15 +195,17 @@ def load(fname, verbose=False, testAll=True, realName=None):
                 if verbose or pg.core.debug():
                     import sys
                     import traceback
+
                     traceback.print_exc(file=sys.stdout)
                     pg.warn(e)
         if verbose:
-            pg.warn("File extension %s seems to be not correct. "
-                    "Trying auto-detect." % suffix)
+            pg.warn(
+                "File extension %s seems to be not correct. "
+                "Trying auto-detect." % suffix
+            )
     else:
         if verbose:
-            print("File extension {0} is unknown. Trying auto-detect.".format(
-                suffix))
+            print("File extension {0} is unknown. Trying auto-detect.".format(suffix))
 
     if testAll:
         for routine in ImportFilter.values():
@@ -211,13 +215,16 @@ def load(fname, verbose=False, testAll=True, realName=None):
                 # print(e)
                 pass
 
-    raise Exception("File type of {0} is unknown or file does not exist "
-                    "and could not be imported.".format(suffix))
+    raise Exception(
+        "File type of {0} is unknown or file does not exist "
+        "and could not be imported.".format(suffix)
+    )
 
 
 def getMD5(fileName):
     """Return md5 checksum for given fileName."""
     import hashlib
+
     md5 = hashlib.md5()
 
     with open(fileName, "rb") as fi:
@@ -230,12 +237,13 @@ def getMD5(fileName):
 def getUrlFile(url, fileName, timeout=10, verbose=False):
     """Write file from url. Path will be created."""
     import hashlib
+
     md5_hash = hashlib.md5()
 
     with contextlib.closing(urlopen(url, timeout=timeout)) as fp:
         header = dict(fp.getheaders())
         # print(pg.pf(header))
-        length = int(header['Content-Length'])
+        length = int(header["Content-Length"])
 
         if verbose:
             p = pg.utils.ProgressBar(length)
@@ -245,9 +253,9 @@ def getUrlFile(url, fileName, timeout=10, verbose=False):
         blockCounter = 1
         if block:
             os.makedirs(os.path.dirname(fileName), exist_ok=True)
-            with open(fileName, 'wb') as outFile:
+            with open(fileName, "wb") as outFile:
                 if verbose:
-                    p(min(length-1, blockCounter*blockSize))
+                    p(min(length - 1, blockCounter * blockSize))
 
                 md5_hash.update(block)
                 outFile.write(block)
@@ -257,14 +265,14 @@ def getUrlFile(url, fileName, timeout=10, verbose=False):
                     if not block:
                         break
                     if verbose:
-                        p(min(length-1, blockCounter*blockSize))
+                        p(min(length - 1, blockCounter * blockSize))
                     md5_hash.update(block)
                     outFile.write(block)
         else:
-            pg.critical('File or connection error:', url, fileName)
+            pg.critical("File or connection error:", url, fileName)
     if verbose:
         digest = md5_hash.hexdigest()
-        print('md5:', digest)
+        print("md5:", digest)
         # print('md5:', getMD5(fileName))
 
 
@@ -299,32 +307,34 @@ def getExampleFile(path, load=False, force=False, verbose=False, **kwargs):
     data: obj
         Content of the file if 'load' is set True.
     """
-    repo = kwargs.pop('githubRepo', __gimliExampleDataRepo__)
-    branch = kwargs.pop('branch', 'master')
+    repo = kwargs.pop("githubRepo", __gimliExampleDataRepo__)
+    branch = kwargs.pop("branch", "master")
 
-    fileName = ''
-    if not path.startswith('http://'):
-        url = '/'.join(('https://raw.githubusercontent.com/',  # RAW files
-                        repo, branch, path))
+    fileName = ""
+    if not path.startswith("http://"):
+        url = "/".join(
+            ("https://raw.githubusercontent.com/", repo, branch, path)  # RAW files
+        )
 
-        pg.info(f'Looking for {path} in {repo}')
+        pg.info(f"Looking for {path} in {repo}")
 
-        fileName = os.path.join(getCachePath(),
-                                __gimliExampleDataBase__,
-                                repo, branch, path)
+        fileName = os.path.join(
+            getCachePath(), __gimliExampleDataBase__, repo, branch, path
+        )
     else:
         url = path
-        fileName = os.path.join(getCachePath(),
-                                __gimliExampleDataBase__,
-                                *url.split('http://')[1].split('/'),
-                                )
+        fileName = os.path.join(
+            getCachePath(),
+            __gimliExampleDataBase__,
+            *url.split("http://")[1].split("/"),
+        )
 
         if verbose is True:
-            pg.info(f'Looking for {url}')
+            pg.info(f"Looking for {url}")
 
     if not os.path.exists(fileName) or force is True:
         if verbose:
-            pg.info(f'Getting: {fileName} from {url}')
+            pg.info(f"Getting: {fileName} from {url}")
 
         getUrlFile(url, fileName, verbose=verbose)
     else:

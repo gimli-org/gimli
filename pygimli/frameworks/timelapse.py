@@ -43,8 +43,7 @@ class MultiFrameModelling(MeshModelling):
         pg.info("Found {} regions.".format(len(regionIds)))
         if len(regionIds) > 1:
             bk = pg.sort(regionIds)[0]
-            pg.info("Region with smallest marker ({0}) "
-                    "set to background".format(bk))
+            pg.info("Region with smallest marker ({0}) " "set to background".format(bk))
             self.setRegionProperties(bk, background=True)
 
     @property
@@ -67,7 +66,7 @@ class MultiFrameModelling(MeshModelling):
         print(self.nm, "model cells")
         nd = 0
         for i, fop in enumerate(self.fops):
-            self.jac.addMatrix(fop.jacobian(), nd, i*self.nm)
+            self.jac.addMatrix(fop.jacobian(), nd, i * self.nm)
             nd += fop.data.size()
 
         self.jac.recalcMatrixSize()
@@ -83,9 +82,7 @@ class MultiFrameModelling(MeshModelling):
         else:
             self.C1 = self.constraints()
 
-        self.C = pg.matrix.FrameConstraintMatrix(self.C1,
-                                                 len(self.fops),
-                                                 self.scalef)
+        self.C = pg.matrix.FrameConstraintMatrix(self.C1, len(self.fops), self.scalef)
         self.setConstraints(self.C)
         # cw = self.regionManager().constraintWeights()
         # self.regionManager().setConstraintsWeights(np.tile(cw, self.nf))
@@ -96,8 +93,7 @@ class MultiFrameModelling(MeshModelling):
     def response(self, model):
         """Forward response."""
         mod = np.reshape(model, [len(self.fops), -1])
-        return np.concatenate([fop.response(mo) for fop, mo in
-                               zip(self.fops, mod)])
+        return np.concatenate([fop.response(mo) for fop, mo in zip(self.fops, mod)])
 
     def createJacobian(self, model):
         """Create Jacobian matrix."""
@@ -107,10 +103,10 @@ class MultiFrameModelling(MeshModelling):
 
     def createDefaultStartModel(self):  # , dataVals):
         """Create standard starting model."""
-        return pg.Vector(self.nm*self.nf, 10.0)  # look up in fop
+        return pg.Vector(self.nm * self.nf, 10.0)  # look up in fop
 
     def createStartModel(self, dataVals):
         """Create a starting model from mean data values."""
         # return np.concatenate([f.createStartModel() for f in self.fops])
         self.nm = self.regionManager().parameterCount()
-        return pg.Vector(self.nm*len(self.fops), np.median(dataVals))
+        return pg.Vector(self.nm * len(self.fops), np.median(dataVals))

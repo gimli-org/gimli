@@ -9,6 +9,7 @@ from pygimli.viewer.mpl import createColorBar
 from .TravelTimeManager import TravelTimeManager
 from .utils import createCrossholeData, createRAData
 from .plotting import drawTravelTimeData, drawVA, drawFirstPicks
+
 # Manager = TravelTimeManager  # convenience alias
 
 

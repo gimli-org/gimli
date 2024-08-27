@@ -127,6 +127,7 @@ In this example you will learn how to create a geometry in
 
 import numpy as np
 import pygimli as pg
+
 gmsh = pg.optImport("gmsh", "do this tutorial. Install by running: pip install gmsh")
 
 # Download all nessesary files
@@ -187,13 +188,14 @@ cl_elec = 0.1
 cl_dike = 0.6
 cl_outer = 30
 # Gmsh geometry tags of relevant parts. Find the tags in the Gmsh interface.
-tags = {"outer region": 2,
+tags = {
+    "outer region": 2,
     "dike": 3,
     "channel": 1,
-    "surface": [7, 11, 12, 13, 21, 23, 24,
-                25, 27, 29, 30, 31],
-    "boundary": [8, 14, 15, 16, 20],      # "Underground Box Boundary"
-    "electrodes": []}
+    "surface": [7, 11, 12, 13, 21, 23, 24, 25, 27, 29, 30, 31],
+    "boundary": [8, 14, 15, 16, 20],  # "Underground Box Boundary"
+    "electrodes": [],
+}
 
 if gmsh:
     # Syncronize CAD representation with the Gmsh model (t1.py)
@@ -201,14 +203,15 @@ if gmsh:
     gmsh.model.occ.synchronize()
     # Set mesh sizes for the dike and outer region.
     # The order, in which mesh sizes are set, matters. Big -> Small
-    gmsh.model.mesh.setSize(              # Especially t16.py, also t2; 15; 18; 21
-        gmsh.model.getBoundary(           # get dimTags of boundary elements of
-            [(3, tags["outer region"])],  # dimTag: (dim, tag)
-            recursive=True),              # recursive -> dimTags of points
-        cl_outer)
+    gmsh.model.mesh.setSize(  # Especially t16.py, also t2; 15; 18; 21
+        gmsh.model.getBoundary(  # get dimTags of boundary elements of
+            [(3, tags["outer region"])], recursive=True  # dimTag: (dim, tag)
+        ),  # recursive -> dimTags of points
+        cl_outer,
+    )
     gmsh.model.mesh.setSize(
-        gmsh.model.getBoundary([(3, tags["dike"])],recursive=True),
-        cl_dike)
+        gmsh.model.getBoundary([(3, tags["dike"])], recursive=True), cl_dike
+    )
 
 ###############################################################################
 # Now reload the script, mesh the geometry again and have a look how
@@ -223,7 +226,7 @@ if gmsh:
     pos = np.genfromtxt(elec_pos_filename, delimiter=",", skip_header=1)
     # Electrodes are put at 2 cm depth, such that they can be embeded in the volume of the dike.
     # Embeding the electrodes into the surface elements complicates meshing.
-    elec_depth = 0.02               # elec depth [m]
+    elec_depth = 0.02  # elec depth [m]
     pos[:, 3] = pos[:, 3] - elec_depth
     # Add the electrodes to the Gmsh model and put the tags into the Dict
     for xyz in pos:
@@ -278,8 +281,10 @@ if gmsh:
 
 if gmsh:
     # Physical Volumes, "Regions" in pyGIMLi
-    pgrp = gmsh.model.addPhysicalGroup(3, [tags["outer region"]], 1)  #(dim, tag, pgrp tag)
-    gmsh.model.setPhysicalName(3, pgrp, "Outer Region")     # Physical group name in Gmsh
+    pgrp = gmsh.model.addPhysicalGroup(
+        3, [tags["outer region"]], 1
+    )  # (dim, tag, pgrp tag)
+    gmsh.model.setPhysicalName(3, pgrp, "Outer Region")  # Physical group name in Gmsh
     pgrp = gmsh.model.addPhysicalGroup(3, [tags["dike"]], 2)
     gmsh.model.setPhysicalName(3, pgrp, "Dike")
     pgrp = gmsh.model.addPhysicalGroup(3, [tags["channel"]], 3)

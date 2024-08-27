@@ -28,7 +28,7 @@ from pygimli.viewer.mpl import drawModel1D
 t = np.logspace(-4, -2, 20)
 fopkw = dict(times=t, txArea=100**2)
 synth = [50, 100, 300, 30, 300]
-fopSynth = em.TDEMBlockModelling(nLayers=(len(synth)+1)//2, **fopkw)
+fopSynth = em.TDEMBlockModelling(nLayers=(len(synth) + 1) // 2, **fopkw)
 data = fopSynth(synth)
 plt.loglog(data, t, "x-")
 plt.grid()
@@ -54,7 +54,7 @@ model = inv.run(data, relativeError=0.03, verbose=True)
 fig, ax = plt.subplots()
 drawModel1D(ax, model=synth, label="synthetic")
 drawModel1D(ax, plot="semilogx", thickness=thk, values=model, label="inverted")
-ax.grid(which='minor')
+ax.grid(which="minor")
 _ = ax.legend()
 
 # %%%
@@ -63,8 +63,9 @@ _ = ax.legend()
 # and the data resolution matrices. For only one, there are the functions
 # `modelResolutionMatrix` and `dataResolutionMatrix`.
 from pygimli.frameworks.resolution import resolutionMatrix
+
 RM, RD = resolutionMatrix(inv, returnRD=True)
-z = np.hstack([np.cumsum(thk)-thk/2, sum(thk)])
+z = np.hstack([np.cumsum(thk) - thk / 2, sum(thk)])
 
 # %%%
 # We display the model resolution matrix using imshow.
@@ -94,6 +95,7 @@ drawModel1D(ax, plot="plot", thickness=thk, values=np.diag(RM), label="resolutio
 # solving an inverse problem using `modelResolutionKernel`.
 #
 from pygimli.frameworks.resolution import modelResolutionKernel
+
 fig, ax = plt.subplots()
 nr = 10
 drawModel1D(ax, plot="plot", thickness=thk, values=RM[:, nr], label="column")

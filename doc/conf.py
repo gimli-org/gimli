@@ -263,7 +263,9 @@ version = pg.__version__
 
 rst_epilog = """
 .. |version| replace:: pyGIMLi {versionnum}
-""".format(versionnum=version)
+""".format(
+    versionnum=version
+)
 
 # The full version, including alpha/beta/rc tags.
 release = pg.__version__
@@ -336,10 +338,13 @@ html_theme_options = {
 
 # Temp: SEG announcement
 import datetime
+
 today = datetime.datetime.now()
 webinar = datetime.datetime(2024, 3, 19)
 if today < webinar:
-    html_theme_options["announcement"] = "There will be a webinar on pyGIMLi hosted by SEG on March 19, 2024 at 4 pm CET. Register for free <a href='https://seg.org/calendar_events/open-source-software-webinar-pygimli/', target='_blank'>here</a>."
+    html_theme_options["announcement"] = (
+        "There will be a webinar on pyGIMLi hosted by SEG on March 19, 2024 at 4 pm CET. Register for free <a href='https://seg.org/calendar_events/open-source-software-webinar-pygimli/', target='_blank'>here</a>."
+    )
 
 html_css_files = [
     "css/custom.css",
@@ -463,7 +468,9 @@ latex_elements = {
 }
 
 if sphinx.__version__.startswith("1.3"):
-    latex_elements["preamble"] += "\\RequirePackage{fixltx2e}\n\
+    latex_elements[
+        "preamble"
+    ] += "\\RequirePackage{fixltx2e}\n\
      \\MakeRobust\\DUspan\n"
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -626,14 +633,16 @@ srclink_branch = "dev"
 # The monkeypatch detects draw or show commands
 from sphinx.ext.napoleon import NumpyDocstring
 
+
 def monkeypatch(self, section: str, use_admonition: bool):
     lines = self._strip_empty(self._consume_to_next_section())
     lines = self._dedent(lines)
     all_lines = " ".join(lines)
-    if (("show" in all_lines or "draw" in all_lines)
+    if (
+        ("show" in all_lines or "draw" in all_lines)
         and "Example" in section
         and ".. plot::" not in all_lines
-       ):
+    ):
         header = [f".. rubric:: {section}"]
         header.append(".. plot::\n\n")
         lines = self._indent(lines, 3)
@@ -644,6 +653,7 @@ def monkeypatch(self, section: str, use_admonition: bool):
         return header + [""] + lines + [""]
     else:
         return header + [""]
+
 
 NumpyDocstring._parse_generic_section = monkeypatch
 
@@ -672,5 +682,5 @@ bibtex_reference_style = "author_year"
 # breathe_projects = {"gimli":
 #                         os.path.abspath(join(DOC_BUILD_DIR, "../../doxygen/xml")),
 #                     }
-# 
+#
 # breathe_default_project = "gimli"

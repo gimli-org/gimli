@@ -99,13 +99,13 @@ class FunctionModelling(pg.Modelling):
 
     def createStartModel(self, data):
         """Create some starting model in the order of the data."""
-        return pg.Vector(self.nc_, np.mean(data)/self.nc_/3)
+        return pg.Vector(self.nc_, np.mean(data) / self.nc_ / 3)
 
 
 ###############################################################################
 # Let us create some synthetic data for some x values
 
-x = np.arange(0., 10., 0.5)
+x = np.arange(0.0, 10.0, 0.5)
 y = 1.1 + 2.1 * x - 0.2 * x**2
 error = 0.5
 np.random.seed(1337)  # make noise reproducible
@@ -138,7 +138,7 @@ coeff = inv.run(dataVals=y, absoluteError=noise, lam=0, verbose=True)
 ###############################################################################
 # The data and model response are plotted by
 
-plt.plot(x, y, 'x', x, inv.response, '-')
+plt.plot(x, y, "x", x, inv.response, "-")
 plt.show()
 
 ###############################################################################
@@ -154,7 +154,7 @@ inv = pg.frameworks.MarquardtInversion(fop=fop)
 inv.modelTrans = pg.trans.Trans()
 coeff = inv.run(dataVals=y, absoluteError=error, lam=0, verbose=True)
 print(coeff)
-plt.plot(x, y, 'x', x, inv.response, '-')
+plt.plot(x, y, "x", x, inv.response, "-")
 plt.show()
 
 ###############################################################################
@@ -198,9 +198,9 @@ print(np.sqrt(np.mean(absmisfit**2)))
 #     RRMS = \sqrt{\frac{1}{N} \sum_i^N \left(\frac{d_i-f_i(m)}{d_i}\right)^2}
 
 relmisfit = (y - inv.response) / y
-print(np.sqrt(np.mean(relmisfit**2))*100)  # in %
+print(np.sqrt(np.mean(relmisfit**2)) * 100)  # in %
 logmisfit = np.log(y) - np.log(inv.response)
-print(np.sqrt(np.mean(logmisfit**2))*100)
+print(np.sqrt(np.mean(logmisfit**2)) * 100)
 
 ###############################################################################
 # So the absolut logarithmic misfit is close to the relative misfit.

@@ -13,19 +13,19 @@ import pygimli as pg
 def rms(v, axis=None):
     """Compute the root mean square."""
     # abs for complex values
-    return np.sqrt(np.mean(np.abs(v)**2, axis))
+    return np.sqrt(np.mean(np.abs(v) ** 2, axis))
 
 
 def rrms(a, b, axis=None):
     """Compute the relative (regarding a) root mean square."""
     # abs for complex values
-    return rms(np.abs(a-b)/np.abs(a), axis)
+    return rms(np.abs(a - b) / np.abs(a), axis)
 
 
 def nanrms(v, axis=None):
     """Compute the root mean square excluding nan values."""
     # abs for complex values
-    return np.sqrt(np.nanmean(np.abs(v)**2, axis))
+    return np.sqrt(np.nanmean(np.abs(v) ** 2, axis))
 
 
 def rmsWithErr(a, b, err, errtol=1):
@@ -50,7 +50,7 @@ rmswitherr = rmsWithErr
 def rrmsWithErr(a, b, err, errtol=1):
     """Compute root mean square of values with error above a threshold."""
     fi = pg.find(err < errtol)
-    return rms((a[fi]-b[fi])/a[fi])
+    return rms((a[fi] - b[fi]) / a[fi])
 
 
 def gmat2numpy(mat):
@@ -83,7 +83,7 @@ def rndig(a, ndig=3):
         return np.around(a, ndig - int(np.ceil(np.log10(np.abs(a) + 1e-4))))
 
 
-def num2str(a, fmtstr='%g'):
+def num2str(a, fmtstr="%g"):
     """List of strings (deprecated, for backward-compatibility)."""
     return [fmtstr % rndig(ai) for ai in a]
 
@@ -100,7 +100,7 @@ def inthist(a, vals, bins=None, islog=False):
     else:
         hists, edges = np.histogram(a, bins=bins)
 
-    cums = np.cumsum(np.hstack((0., hists))) / np.sum(hists) * 100.
+    cums = np.cumsum(np.hstack((0.0, hists))) / np.sum(hists) * 100.0
     out = np.interp(vals, cums, edges)
     if islog:
         return np.exp(out)
@@ -113,40 +113,45 @@ def interperc(a, trimval=3.0, islog=False, bins=None):
 
     E.g. interperc(a, 3) returns range of inner 94% (3 to 97%)
     which is particularly useful for colorscales)."""
-    return inthist(a, np.array([trimval, 100. - trimval]),
-                   bins=bins, islog=islog)
+    return inthist(a, np.array([trimval, 100.0 - trimval]), bins=bins, islog=islog)
 
 
 def interpExtrap(x, xp, yp):
     """numpy.interp interpolation function extended by linear extrapolation."""
     y = np.interp(x, xp, yp)
-    y = np.where(x < xp[0], yp[0]+(x-xp[0])*(yp[0]-yp[1])/(xp[0]-xp[1]), y)
-    return np.where(x > xp[-1], yp[-1]+(x-xp[-1])*(yp[-1]-yp[-2]) /
-                    (xp[-1]-xp[-2]), y)
+    y = np.where(x < xp[0], yp[0] + (x - xp[0]) * (yp[0] - yp[1]) / (xp[0] - xp[1]), y)
+    return np.where(
+        x > xp[-1], yp[-1] + (x - xp[-1]) * (yp[-1] - yp[-2]) / (xp[-1] - xp[-2]), y
+    )
 
 
-def saveResult(fname, data, rrms=None, chi2=None, mode='w'):
+def saveResult(fname, data, rrms=None, chi2=None, mode="w"):
     """Save rms/chi2 results into filename."""
     pg.warn("utils.saveResult .. in use? (debug)")
     with open(fname, mode) as f:
         np.savetxt(f, data)
         if rrms is not None:
-            f.write('\nrrms:{}\n'.format(rrms))
+            f.write("\nrrms:{}\n".format(rrms))
         if chi2 is not None:
-            f.write('\nchi2:{}\n'.format(chi2))
+            f.write("\nchi2:{}\n".format(chi2))
 
 
 def createDateTimeString(now=None):
     """Return datetime as string (e.g. for saving results)."""
     if now is None:
         now = time.localtime()
-    return str(now.tm_year) + str(now.tm_mon).zfill(2) + \
-        str(now.tm_mday).zfill(2) + '-' + \
-        str(now.tm_hour).zfill(2) + '.' + \
-        str(now.tm_min).zfill(2)
+    return (
+        str(now.tm_year)
+        + str(now.tm_mon).zfill(2)
+        + str(now.tm_mday).zfill(2)
+        + "-"
+        + str(now.tm_hour).zfill(2)
+        + "."
+        + str(now.tm_min).zfill(2)
+    )
 
 
-def getSavePath(folder=None, subfolder='', now=None):
+def getSavePath(folder=None, subfolder="", now=None):
     """TODO."""
     if folder is None:
         path = createResultPath(subfolder, now=now)
@@ -158,7 +163,7 @@ def getSavePath(folder=None, subfolder='', now=None):
 def createResultPath(subfolder, now=None):
     """Create a result Folder."""
     result = createDateTimeString(now)
-    return createPath(['.', result, subfolder])
+    return createPath([".", result, subfolder])
 
 
 def createPath(pathList):
@@ -169,31 +174,31 @@ def createPath(pathList):
     pathList: str | list(str)
         Create Path with option subpaths
     """
-    if hasattr(pathList, '__iter__'):
-        path = os.path.join('', *pathList)
+    if hasattr(pathList, "__iter__"):
+        path = os.path.join("", *pathList)
     else:
-        path = os.path.join('', pathList)
+        path = os.path.join("", pathList)
 
     try:
         os.makedirs(path)
     except FileExistsError:
-        print(f'Path {path} already exists. Skipping')
+        print(f"Path {path} already exists. Skipping")
     except OSError as e:
         pg.error(f'Unable to create path "{path}".')
         raise e
     return path
 
 
-@pg.renamed(createResultPath, '1.2')  # 20200515
+@pg.renamed(createResultPath, "1.2")  # 20200515
 def createResultFolder(subfolder, now=None):
     pass
 
 
-@pg.renamed(createPath, '1.2')  # 20200515
+@pg.renamed(createPath, "1.2")  # 20200515
 def createfolders(foldername_list):
     pass
 
 
-@pg.renamed(createPath, '1.2')  # 20200515
+@pg.renamed(createPath, "1.2")  # 20200515
 def createFolders(pathList):
     pass

@@ -41,11 +41,11 @@ class ERTModellingBase(MeshModelling):
         Remaining kwargs are forwarded to
         :py:func:pygimli.pyhsics.ert.showERTData`
         """
-        kwargs['label'] = kwargs.pop('label', pg.unit('res'))
-        kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('res'))
+        kwargs["label"] = kwargs.pop("label", pg.unit("res"))
+        kwargs["cMap"] = kwargs.pop("cMap", pg.utils.cMap("res"))
 
         vals = None
-        if hasattr(data, '__iter__'):
+        if hasattr(data, "__iter__"):
             # show data values from array
             vals = data
             data = self.data
@@ -57,15 +57,15 @@ class ERTModellingBase(MeshModelling):
             data = self.data
 
         if vals is None:
-            vals = kwargs.pop('vals', data['rhoa'])
+            vals = kwargs.pop("vals", data["rhoa"])
 
         return showERTData(data, vals=vals, ax=ax, **kwargs)
 
     def drawModel(self, ax, model, **kwargs):
         """Draw the para domain with option model values."""
-        kwargs.setdefault('label', pg.unit('res'))
-        kwargs.setdefault('cMap', pg.utils.cMap('res'))
-        kwargs.setdefault('logScale', True)
+        kwargs.setdefault("label", pg.unit("res"))
+        kwargs.setdefault("cMap", pg.utils.cMap("res"))
+        kwargs.setdefault("logScale", True)
 
         return super().drawModel(ax=ax, model=model, **kwargs)
 
@@ -126,8 +126,10 @@ class ERTModelling(ERTModellingBase):
 
         if len(regionIds) > 1:
             bk = pg.sort(regionIds)[0]
-            pg.info(f"(ERTModelling) Region with smallest marker ({bk}) "
-                    "set to background.")
+            pg.info(
+                f"(ERTModelling) Region with smallest marker ({bk}) "
+                "set to background."
+            )
             self.setRegionProperties(bk, background=True)
 
     def createStartModel(self, dataVals):
@@ -153,17 +155,20 @@ class ERTModelling(ERTModellingBase):
     def flipImagPart(self, v):
         """Flip imaginary port (convention)."""
         z = pg.utils.toComplex(v)
-        pg.warn('pre min/max={0} / {1} im: {2} / {3}'.format(
-            pf(min(z.real)), pf(max(z.real)),
-            pf(min(z.imag)), pf(max(z.imag))))
+        pg.warn(
+            "pre min/max={0} / {1} im: {2} / {3}".format(
+                pf(min(z.real)), pf(max(z.real)), pf(min(z.imag)), pf(max(z.imag))
+            )
+        )
 
-        v = pg.utils.squeezeComplex(pg.utils.toComplex(v),
-                                    conj=self._conjImag)
+        v = pg.utils.squeezeComplex(pg.utils.toComplex(v), conj=self._conjImag)
 
         z = pg.utils.toComplex(v)
-        pg.warn('pos min/max={0} / {1} im: {2} / {3}'.format(
-            pf(min(z.real)), pf(max(z.real)),
-            pf(min(z.imag)), pf(max(z.imag))))
+        pg.warn(
+            "pos min/max={0} / {1} im: {2} / {3}".format(
+                pf(min(z.real)), pf(max(z.real)), pf(min(z.imag)), pf(max(z.imag))
+            )
+        )
         return v
 
     def response(self, mod):
@@ -172,13 +177,13 @@ class ERTModelling(ERTModellingBase):
         self.mesh()
 
         if self.complex() and self._conjImag:
-            pg.warn('flip imaginary part for response calc')
+            pg.warn("flip imaginary part for response calc")
             mod = self.flipImagPart(mod)
 
         resp = self._core.response(mod)
 
         if self.complex() and self._conjImag:
-            pg.warn('backflip imaginary part after response calc')
+            pg.warn("backflip imaginary part after response calc")
             resp = self.flipImagPart(resp)
 
         return resp
@@ -193,9 +198,9 @@ class ERTModelling(ERTModellingBase):
                 mod = self.flipImagPart(mod)
 
             self._core.createJacobian(mod)
-            self._J = pg.utils.squeezeComplex(self._core.jacobian(),
-                                              conj=self._conjImag
-                                              )
+            self._J = pg.utils.squeezeComplex(
+                self._core.jacobian(), conj=self._conjImag
+            )
             self.setJacobian(self._J)
             # pg._r("create Jacobian", self, self._J)
             return self._J
@@ -232,10 +237,10 @@ class ERTModellingReference(ERTModellingBase):
         # NOTE TODO can't be MT until mixed boundary condition depends on
         # self.resistivity
         pg.tic()
-        if not self.data.allNonZero('k'):
+        if not self.data.allNonZero("k"):
             pg.error('Need valid geometric factors: "k".')
             pg.warn('Fallback "k" values to -sign("rhoa")')
-            self.data.set('k', -pg.math.sign(self.data['rhoa']))
+            self.data.set("k", -pg.math.sign(self.data["rhoa"]))
 
         mesh = self.mesh()
 
@@ -268,10 +273,17 @@ class ERTModellingReference(ERTModellingBase):
         self.subPotentials = [pg.Matrix(nEle, nDof) for i in range(len(k))]
 
         for i, ki in enumerate(k):
-            uE = pg.solve(mesh, a=1./res, b=-(ki * ki)/res, f=rhs,
-                          bc={'Robin': ['*', self.mixedBC]},
-                          userData={'sourcePos': elecs, 'k': ki},
-                          verbose=False, stats=0, debug=False)
+            uE = pg.solve(
+                mesh,
+                a=1.0 / res,
+                b=-(ki * ki) / res,
+                f=rhs,
+                bc={"Robin": ["*", self.mixedBC]},
+                userData={"sourcePos": elecs, "k": ki},
+                verbose=False,
+                stats=0,
+                debug=False,
+            )
             self.subPotentials[i] = uE
             u += w[i] * uE
 
@@ -286,20 +298,22 @@ class ERTModellingReference(ERTModellingBase):
         r = np.zeros(nData)
 
         for i in range(nData):
-            iA = int(self.data['a'][i])
-            iB = int(self.data['b'][i])
-            iM = int(self.data['m'][i])
-            iN = int(self.data['n'][i])
+            iA = int(self.data["a"][i])
+            iB = int(self.data["b"][i])
+            iM = int(self.data["m"][i])
+            iN = int(self.data["n"][i])
 
             uAB = pM[iA] - pM[iB]
             r[i] = uAB[iM] - uAB[iN]
 
-        self.lastResponse = r * self.data['k']
+        self.lastResponse = r * self.data["k"]
 
         if self.verbose:
-            print("Resp min/max: {0} {1} {2}s".format(min(self.lastResponse),
-                                                      max(self.lastResponse),
-                                                      pg.dur()))
+            print(
+                "Resp min/max: {0} {1} {2}s".format(
+                    min(self.lastResponse), max(self.lastResponse), pg.dur()
+                )
+            )
 
         return self.lastResponse
 
@@ -319,8 +333,7 @@ class ERTModellingReference(ERTModellingBase):
 
         pg.tic()
         if self.verbose:
-            print("Calculate sensitivity matrix for model: ",
-                  min(model), max(model))
+            print("Calculate sensitivity matrix for model: ", min(model), max(model))
 
         Jt = pg.Matrix(self.data.size(), self.parameterCount)
 
@@ -328,7 +341,7 @@ class ERTModellingReference(ERTModellingBase):
             k = self.k[kIdx]
             w = self.w[kIdx]
 
-            Jt *= 0.
+            Jt *= 0.0
             A = pg.matrix.ElementMatrixMap()
 
             for i, c in enumerate(cells):
@@ -346,44 +359,57 @@ class ERTModellingReference(ERTModellingBase):
 
             for dataIdx in range(self.data.size()):
 
-                a = int(self.data['a'][dataIdx])
-                b = int(self.data['b'][dataIdx])
-                m = int(self.data['m'][dataIdx])
-                n = int(self.data['n'][dataIdx])
-                Jt[dataIdx] = A.mult(u[kIdx][a] - u[kIdx][b],
-                                     u[kIdx][m] - u[kIdx][n])
+                a = int(self.data["a"][dataIdx])
+                b = int(self.data["b"][dataIdx])
+                m = int(self.data["m"][dataIdx])
+                n = int(self.data["n"][dataIdx])
+                Jt[dataIdx] = A.mult(u[kIdx][a] - u[kIdx][b], u[kIdx][m] - u[kIdx][n])
 
             J += w * Jt
 
-        m2 = model*model
-        k = self.data['k']
+        m2 = model * model
+        k = self.data["k"]
 
         for i in range(J.rows()):
-            J[i] /= (m2 / k[i])
+            J[i] /= m2 / k[i]
 
         if self.verbose:
             sumsens = np.zeros(J.rows())
             for i in range(J.rows()):
                 sumsens[i] = pg.sum(J[i])
-            print("sens sum: median = ", pg.math.median(sumsens),
-                  " min = ", pg.min(sumsens),
-                  " max = ", pg.max(sumsens))
+            print(
+                "sens sum: median = ",
+                pg.math.median(sumsens),
+                " min = ",
+                pg.min(sumsens),
+                " max = ",
+                pg.max(sumsens),
+            )
 
     def calcGeometricFactor(self, data):
         """Calculate geometry factors for a given dataset."""
         if pg.y(data.sensorPositions()) == pg.z(data.sensorPositions()):
             k = np.zeros(data.size())
             for i in range(data.size()):
-                a = data.sensorPosition(data['a'][i])
-                b = data.sensorPosition(data['b'][i])
-                m = data.sensorPosition(data['m'][i])
-                n = data.sensorPosition(data['n'][i])
-                k[i] = 1./(2.*np.pi) * (1./a.dist(m) - 1./a.dist(n) -
-                                        1./b.dist(m) + 1./b.dist(n))
+                a = data.sensorPosition(data["a"][i])
+                b = data.sensorPosition(data["b"][i])
+                m = data.sensorPosition(data["m"][i])
+                n = data.sensorPosition(data["n"][i])
+                k[i] = (
+                    1.0
+                    / (2.0 * np.pi)
+                    * (
+                        1.0 / a.dist(m)
+                        - 1.0 / a.dist(n)
+                        - 1.0 / b.dist(m)
+                        + 1.0 / b.dist(n)
+                    )
+                )
             return k
         else:
-            raise BaseException("Please use BERT for non-standard "
-                                "data sets" + str(data))
+            raise BaseException(
+                "Please use BERT for non-standard " "data sets" + str(data)
+            )
 
     def uAnalytical(self, p, sourcePos, k):
         """
@@ -396,10 +422,11 @@ class ERTModellingReference(ERTModellingBase):
         r2A = (p - pg.RVector3(1.0, -1.0, 1.0) * sourcePos).abs()
 
         if r1A > 1e-12 and r2A > 1e-12:
-            return (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k)) / \
-                (2.0 * np.pi)
+            return (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k)) / (
+                2.0 * np.pi
+            )
         else:
-            return 0.
+            return 0.0
 
     def getIntegrationWeights(self, rMin, rMax):
         """TODO WRITEME."""
@@ -425,9 +452,9 @@ class ERTModellingReference(ERTModellingBase):
         if boundary.marker() != pg.core.MARKER_BOUND_MIXED:
             return 0
 
-        sourcePos = pg.center(userData['sourcePos'])
+        sourcePos = pg.center(userData["sourcePos"])
 
-        k = userData['k']
+        k = userData["k"]
         r1 = boundary.center() - sourcePos
 
         # Mirror on surface at depth=0
@@ -435,7 +462,7 @@ class ERTModellingReference(ERTModellingBase):
         r1A = r1.abs()
         r2A = r2.abs()
 
-        rho = 1.
+        rho = 1.0
 
         if self.resistivity is not None:
             rho = self.resistivity[boundary.leftCell().id()]
@@ -446,13 +473,19 @@ class ERTModellingReference(ERTModellingBase):
             # see mod-dc-2d example for robin like BC and the negative sign
             if (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k)) > 1e-12:
 
-                return k / rho * (r1.dot(n) / r1A * pg.math.besselK1(r1A * k) +
-                                  r2.dot(n) / r2A * pg.math.besselK1(r2A * k))\
+                return (
+                    k
+                    / rho
+                    * (
+                        r1.dot(n) / r1A * pg.math.besselK1(r1A * k)
+                        + r2.dot(n) / r2A * pg.math.besselK1(r2A * k)
+                    )
                     / (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k))
+                )
             else:
-                return 0.
+                return 0.0
         else:
-            return 0.
+            return 0.0
 
     def pointSource(self, cell, f, userData):
         r"""
@@ -461,8 +494,8 @@ class ERTModellingReference(ERTModellingBase):
         :math:`\delta(x-pos), \int f(x) \delta(x-pos)=f(pos)=N(pos)`
             Right hand side entries will be shape functions(pos)
         """
-        i = userData['i']
-        sourcePos = userData['sourcePos'][i]
+        i = userData["i"]
+        sourcePos = userData["sourcePos"][i]
 
         if cell.shape().isInside(sourcePos):
             f.setVal(cell.N(cell.shape().rst(sourcePos)), cell.ids())

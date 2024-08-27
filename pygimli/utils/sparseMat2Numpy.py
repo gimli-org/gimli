@@ -29,7 +29,7 @@ def toSparseMatrix(A):
 
     if isinstance(A, pg.matrix.SparseMatrix):
         return A
-        #return pg.matrix.SparseMatrix(A)
+        # return pg.matrix.SparseMatrix(A)
 
     if isinstance(A, pg.matrix.SparseMapMatrix):
         return pg.matrix.SparseMatrix(A)
@@ -40,8 +40,9 @@ def toSparseMatrix(A):
         return pg.SparseMatrix(A.indptr, A.indices, A.data)
 
     from scipy.sparse import coo_matrix
+
     if isinstance(A, coo_matrix):
-        pg.critical('implement me')
+        pg.critical("implement me")
         return pg.matrix.SparseMatrix(A)
 
     return toSparseMatrix(csr_matrix(A))
@@ -68,23 +69,28 @@ def toSparseMapMatrix(A):
         return pg.matrix.SparseMapMatrix(A)
 
     from scipy.sparse import csr_matrix
+
     if isinstance(A, csr_matrix):
-        pg.critical('implement me')
+        pg.critical("implement me")
 
         return pg.matrix.SparseMapMatrix(A)
 
     from scipy.sparse import coo_matrix
+
     if isinstance(A, coo_matrix):
-        pg.critical('implement me')
+        pg.critical("implement me")
         return pg.matrix.SparseMapMatrix(A)
 
     return toSparseMapMatrix(csr_matrix(A))
 
+
 def toCSR(A):
     return sparseMatrix2csr(A)
 
+
 def toCOO(A):
     return sparseMatrix2coo(A)
+
 
 def sparseMatrix2csr(A):
     """Convert SparseMatrix to scipy.csr_matrix.
@@ -101,26 +107,23 @@ def sparseMatrix2csr(A):
     mat: scipy.csr_matrix
         Matrix to convert into.
     """
-    #optImport(scipy.sparse, requiredFor="toCRS_matrix")
+    # optImport(scipy.sparse, requiredFor="toCRS_matrix")
     from scipy.sparse import csr_matrix
+
     if isinstance(A, pg.matrix.CSparseMapMatrix):
         C = pg.matrix.CSparseMatrix(A)
-        return csr_matrix((C.vecVals().array(),
-                           C.vecRowIdx(),
-                           C.vecColPtr()), dtype=complex)
+        return csr_matrix(
+            (C.vecVals().array(), C.vecRowIdx(), C.vecColPtr()), dtype=complex
+        )
     if isinstance(A, pg.matrix.SparseMapMatrix):
         C = pg.matrix.SparseMatrix(A)
-        return csr_matrix((C.vecVals().array(),
-                           C.vecRowIdx(),
-                           C.vecColPtr()))
+        return csr_matrix((C.vecVals().array(), C.vecRowIdx(), C.vecColPtr()))
     elif isinstance(A, pg.matrix.SparseMatrix):
-        return csr_matrix((A.vecVals().array(),
-                           A.vecRowIdx(),
-                           A.vecColPtr()))
+        return csr_matrix((A.vecVals().array(), A.vecRowIdx(), A.vecColPtr()))
     elif isinstance(A, pg.matrix.CSparseMatrix):
-        csr = csr_matrix((A.vecVals().array(),
-                           A.vecRowIdx(),
-                           A.vecColPtr()), dtype=complex)
+        csr = csr_matrix(
+            (A.vecVals().array(), A.vecRowIdx(), A.vecColPtr()), dtype=complex
+        )
         return csr
     elif isinstance(A, pg.matrix.BlockMatrix):
         M = A.sparseMapMatrix()
@@ -169,7 +172,7 @@ def convertCRSIndex2Map(rowIdx, colPtr):
     """Converts CRS indices to uncompressed indices (row, col)."""
     ii = []
     jj = []
-    for i in range(len(colPtr)-1):
+    for i in range(len(colPtr) - 1):
         for j in range(colPtr[i], colPtr[i + 1]):
             ii.append(i)
             jj.append(rowIdx[j])
@@ -208,10 +211,13 @@ def sparseMatrix2Array(matrix, indices=True, getInCRS=True):
         the matrix in the defined format.
 
     """
-    io_warn = 'Only working for pygimli.SparseMapMatrix or CSR shaped ' +\
-              'pygimli.Sparse matrices. Import type is {}'
-    assert isinstance(matrix, pg.matrix.SparseMapMatrix) or\
-        isinstance(matrix, pg.matrix.SparseMatrix), io_warn.format(type(matrix))
+    io_warn = (
+        "Only working for pygimli.SparseMapMatrix or CSR shaped "
+        + "pygimli.Sparse matrices. Import type is {}"
+    )
+    assert isinstance(matrix, pg.matrix.SparseMapMatrix) or isinstance(
+        matrix, pg.matrix.SparseMatrix
+    ), io_warn.format(type(matrix))
 
     if not isinstance(matrix, pg.matrix.SparseMatrix):
         matrix = pg.matrix.SparseMatrix(matrix)
@@ -228,6 +234,7 @@ def sparseMatrix2Array(matrix, indices=True, getInCRS=True):
     else:
         return vals
 
+
 def sparseMatrix2Dense(matrix):
     """Convert sparse matrix to dense ndarray"""
 
@@ -239,6 +246,7 @@ def sparseMatrix2Dense(matrix):
 
     return mat
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     pass
 # The End

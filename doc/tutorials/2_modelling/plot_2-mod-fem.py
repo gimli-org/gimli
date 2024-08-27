@@ -148,8 +148,9 @@ import pygimli as pg
 # The desired mesh of our domain will be a grid with equidistant spacing in
 # x and y directions.
 #
-domain = pg.createGrid(x=np.linspace(0.0, 2*np.pi, 25),
-                       y=np.linspace(0.0, 2*np.pi, 25))
+domain = pg.createGrid(
+    x=np.linspace(0.0, 2 * np.pi, 25), y=np.linspace(0.0, 2 * np.pi, 25)
+)
 
 uExact = lambda pos: np.sin(pos[0]) * np.sin(pos[1])
 f = lambda cell: 2.0 * np.sin(cell.center()[0]) * np.sin(cell.center()[1])
@@ -168,7 +169,7 @@ b = pg.solver.createLoadVector(domain, f)
 # To apply the boundary condition we first need to identify all boundary
 # elements. The default grid applies the following boundary marker on the
 # outermost boundaries: 1 (left), 2(right), 3(top), and 4(bottom).
-boundaries = pg.solver.parseArgToBoundaries({'1,2,3,4': 0.0}, domain)
+boundaries = pg.solver.parseArgToBoundaries({"1,2,3,4": 0.0}, domain)
 
 ###############################################################################
 # `parseArgToBoundaries` is a helper function to collect a list of
@@ -186,7 +187,7 @@ u = pg.solver.linSolve(A, b)
 ###############################################################################
 # The resulting scalar field can displayed with the `pg.show` shortcut.
 #
-ax, cb = pg.show(domain, u, label='Approximated solution $u$', nLevs=7)
+ax, cb = pg.show(domain, u, label="Approximated solution $u$", nLevs=7)
 
 ###############################################################################
 # For analyzing the accuracy for the approximation we apply the
@@ -195,24 +196,24 @@ ax, cb = pg.show(domain, u, label='Approximated solution $u$', nLevs=7)
 # the single assembling steps again, we apply our Finite Element shortcut function
 # :py:mod:`pygimli.solver.solve`.
 #
-domain = pg.createGrid(x=np.linspace(0.0, 2*np.pi, 3),
-                       y=np.linspace(0.0, 2*np.pi, 3))
+domain = pg.createGrid(
+    x=np.linspace(0.0, 2 * np.pi, 3), y=np.linspace(0.0, 2 * np.pi, 3)
+)
 
 h = []
 l2 = []
 for i in range(5):
     domain = domain.createH2()
-    u_h = pg.solve(domain, f=f, bc={'Dirichlet':{'1:5': 0}})
+    u_h = pg.solve(domain, f=f, bc={"Dirichlet": {"1:5": 0}})
     u = np.array([uExact(_) for _ in domain.positions()])
     l2.append(pg.solver.normL2(u - u_h, domain))
     h.append(min(domain.boundarySizes()))
-    print("NodeCount: {0}, h:{1}m, L2:{2}%".format(domain.nodeCount(),
-                                                   h[-1], l2[-1]))
+    print("NodeCount: {0}, h:{1}m, L2:{2}%".format(domain.nodeCount(), h[-1], l2[-1]))
 
-ax,_ = pg.show()
-ax.loglog(h, l2, 'o-')
-ax.set_ylabel('Approximation error: $L_2$ norm')
-ax.set_xlabel('Cell size $h$ (m)')
+ax, _ = pg.show()
+ax.loglog(h, l2, "o-")
+ax.set_ylabel("Approximation error: $L_2$ norm")
+ax.set_xlabel("Cell size $h$ (m)")
 ax.grid()
 
 ###############################################################################
@@ -226,14 +227,16 @@ ax.grid()
 # of the domain. Maybe we will find someday a more meaningful example. If you
 # have an idea please don't hesitate to share.
 #
-a = [None]*domain.cellCount()
+a = [None] * domain.cellCount()
 for c in domain.cells():
     if c.center()[0] < np.pi:
-        a[c.id()] = pg.solver.createAnisotropyMatrix(lon=1.0, trans=10.0,
-                                               theta=-45/180 * np.pi)
+        a[c.id()] = pg.solver.createAnisotropyMatrix(
+            lon=1.0, trans=10.0, theta=-45 / 180 * np.pi
+        )
     else:
-        a[c.id()] = pg.solver.createAnisotropyMatrix(lon=1.0, trans=10.0,
-                                               theta=45/180 * np.pi)
+        a[c.id()] = pg.solver.createAnisotropyMatrix(
+            lon=1.0, trans=10.0, theta=45 / 180 * np.pi
+        )
 
-u = pg.solve(domain, a=a, f=f, bc={'Dirichlet':{'*': 0}})
-ax, cb = pg.show(domain, u, label='Solution $u$ for anisotropic $a$', nLevs=7)
+u = pg.solve(domain, a=a, f=f, bc={"Dirichlet": {"*": 0}})
+ax, cb = pg.show(domain, u, label="Solution $u$ for anisotropic $a$", nLevs=7)

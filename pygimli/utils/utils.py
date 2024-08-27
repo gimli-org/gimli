@@ -13,6 +13,7 @@ import pygimli as pg
 try:
     from scooby import Report as ScoobyReport
 except ImportError:
+
     class ScoobyReport:
         """Local scooby reporting class."""
 
@@ -79,13 +80,16 @@ class ProgressBar(object):
 
         if pg.isNotebook():
             tqdm = pg.optImport(
-                'tqdm', requiredFor="use nice progressbar in jupyter notebook")
+                "tqdm", requiredFor="use nice progressbar in jupyter notebook"
+            )
             if tqdm is not None:
                 from tqdm.notebook import tqdm
+
                 fmt = kwargs.pop(
-                    'bar_format',
-                    '{desc} {percentage:3.0f}%|{bar}|{n_fmt}/{total_fmt}' +
-                    ' [{elapsed} < {remaining}]')
+                    "bar_format",
+                    "{desc} {percentage:3.0f}%|{bar}|{n_fmt}/{total_fmt}"
+                    + " [{elapsed} < {remaining}]",
+                )
                 self.nbProgress = tqdm(total=its, bar_format=fmt, **kwargs)
 
     def __call__(self, it, msg=""):
@@ -96,7 +100,7 @@ class ProgressBar(object):
         """Update by iteration number starting at 0 with optional message."""
         if self.nbProgress is not None:
             # TODO maybe catch if someone doesn't call with iteration steps=1
-            self.nbProgress.update(n=iteration-self._iter)
+            self.nbProgress.update(n=iteration - self._iter)
         else:
             self._setbar(iteration + 1)
             if len(msg) >= 1:
@@ -105,7 +109,7 @@ class ProgressBar(object):
             sys.stdout.flush()
 
         # last iteration here
-        if iteration == self.its-1:
+        if iteration == self.its - 1:
             if self.nbProgress is not None:
                 self.nbProgress.close()
             else:
@@ -123,12 +127,12 @@ class ProgressBar(object):
         pct_done = int(round((new_amount / 100.0) * 100.0))
         full_width = self.width - 2
         num_signs = int(round((pct_done / 100.0) * full_width))
-        self.pBar = "[" + self.sign * num_signs + \
-            " " * (full_width - num_signs) + "]"
+        self.pBar = "[" + self.sign * num_signs + " " * (full_width - num_signs) + "]"
         pct_place = (len(self.pBar) // 2) - len(str(pct_done))
         pct_string = " %d%% " % pct_done
-        self.pBar = self.pBar[0:pct_place] + \
-            (pct_string + self.pBar[pct_place + len(pct_string):])
+        self.pBar = self.pBar[0:pct_place] + (
+            pct_string + self.pBar[pct_place + len(pct_string) :]
+        )
 
 
 def boxprint(s, width=80, sym="#"):
@@ -160,7 +164,7 @@ def trimDocString(docstring):
     'This is a string without indention and whitespace.'
     """
     if not docstring:
-        return ''
+        return ""
     # Convert tabs to spaces (following the normal Python rules)
     # and split into a list of lines:
     lines = docstring.expandtabs().splitlines()
@@ -181,7 +185,7 @@ def trimDocString(docstring):
     while trimmed and not trimmed[0]:
         trimmed.pop(0)
     # Return a single string:
-    return '\n'.join(trimmed)
+    return "\n".join(trimmed)
 
 
 def unicodeToAscii(text):
@@ -216,6 +220,7 @@ def prettify(value, roundValue=False):
     """Return prettified string for value .. if possible."""
     if isinstance(value, dict):
         import json
+
         # class CustomEncoder(json.JSONEncoder):
         #     def __init__(self, *args, **kwargs):
         #         super().__init__(*args, **kwargs)
@@ -229,12 +234,11 @@ def prettify(value, roundValue=False):
         try:
             return json.dumps(value, indent=4)
         except Exception as e:
-            pg.warning('prettify fails:', e)
+            pg.warning("prettify fails:", e)
             return str(value)
     elif pg.isScalar(value):
         return prettyFloat(value, roundValue)
-    pg.warn("Don't know how to prettify the string representation for: ",
-            value)
+    pg.warn("Don't know how to prettify the string representation for: ", value)
     return value
 
 
@@ -248,9 +252,13 @@ def prettyFloat(value, roundValue=None):
     """
     # test-cases:
     # if change things her, look that they are still good (mod-dc-2d)
-        
-    if (isinstance(roundValue, int) and abs(round(value)-value) < 1e-4 and
-            abs(value) < 1e3 and 0):
+
+    if (
+        isinstance(roundValue, int)
+        and abs(round(value) - value) < 1e-4
+        and abs(value) < 1e3
+        and 0
+    ):
         string = str(int(round(value, roundValue)))
     elif abs(value) < 1e-14:
         string = "0"
@@ -277,11 +285,11 @@ def prettyFloat(value, roundValue=None):
         return string.replace(".0", "")
     elif string.endswith(".00"):
         return string.replace(".00", "")
-    elif '.' in string and 'e' not in string and string.endswith("00"):
-        return string[0:len(string)-2]
-    elif '.' in string and 'e' not in string and string.endswith("0"):
+    elif "." in string and "e" not in string and string.endswith("00"):
+        return string[0 : len(string) - 2]
+    elif "." in string and "e" not in string and string.endswith("0"):
         # pg._r(string[0:len(string)-1])
-        return string[0:len(string)-1]
+        return string[0 : len(string) - 1]
     else:
         return string
 
@@ -325,51 +333,51 @@ def prettyTime(t):
     """
     if abs(t) > 1:
         seconds = int(t)
-        years, seconds = divmod(seconds, 365*86400)
+        years, seconds = divmod(seconds, 365 * 86400)
         days, seconds = divmod(seconds, 86400)
         hours, seconds = divmod(seconds, 3600)
         minutes, seconds = divmod(seconds, 60)
         if years > 0:
             if days >= 1:
-                return '%dy%dd' % (years, days)
+                return "%dy%dd" % (years, days)
             else:
                 if years > 1:
-                    return '%d years' % (years,)
+                    return "%d years" % (years,)
                 else:
-                    return '%d year' % (years,)
+                    return "%d year" % (years,)
         elif days > 0:
             if hours >= 1:
-                return '%dd%dh' % (days, hours)
+                return "%dd%dh" % (days, hours)
             else:
                 if days > 1:
-                    return '%d days' % (days,)
+                    return "%d days" % (days,)
                 else:
-                    return '%d day' % (days,)
+                    return "%d day" % (days,)
         elif hours > 0:
             if minutes >= 1:
-                return '%dh%dm' % (hours, minutes)
+                return "%dh%dm" % (hours, minutes)
             else:
                 if hours > 1:
-                    return '%d hours' % (hours)
+                    return "%d hours" % (hours)
                 else:
-                    return '%d hour' % (hours)
+                    return "%d hour" % (hours)
         elif minutes > 0:
             if seconds >= 1:
-                return '%dm%ds' % (minutes, seconds)
+                return "%dm%ds" % (minutes, seconds)
             else:
                 if minutes > 1:
-                    return '%d minutes' % (minutes)
+                    return "%d minutes" % (minutes)
                 else:
-                    return '%d minute' % (minutes)
+                    return "%d minute" % (minutes)
         else:
-            return '%d s' % (seconds,)
+            return "%d s" % (seconds,)
     else:
         if abs(t) >= 1e-3 and abs(t) <= 0.1:
-            return prettyFloat(t*1e3) + " ms"
+            return prettyFloat(t * 1e3) + " ms"
         elif abs(t) >= 1e-6 and abs(t) <= 1e-3:
-            return prettyFloat(t*1e6) + " µs"
+            return prettyFloat(t * 1e6) + " µs"
         elif abs(t) >= 1e-9 and abs(t) <= 1e-6:
-            return prettyFloat(t*1e9) + " ns"
+            return prettyFloat(t * 1e9) + " ns"
         return prettyFloat(t) + " s"
 
 
@@ -405,19 +413,19 @@ def niceLogspace(vMin, vMax, nDec=10):
     """
     if vMin > vMax or vMin < 1e-12:
         print("vMin:", vMin, "vMax", vMax)
-        raise Exception('vMin > vMax or vMin <= 0.')
+        raise Exception("vMin > vMax or vMin <= 0.")
 
-    vMin = 10**np.floor(np.log10(vMin))
-    vMax = 10**np.ceil(np.log10(vMax))
+    vMin = 10 ** np.floor(np.log10(vMin))
+    vMax = 10 ** np.ceil(np.log10(vMax))
 
     if vMax == vMin:
         vMax *= 10
 
     n = np.log10(vMax / vMin) * nDec + 1
 
-    q = 10.**(1. / nDec)
+    q = 10.0 ** (1.0 / nDec)
 
-    return vMin * q**np.arange(n)
+    return vMin * q ** np.arange(n)
 
 
 def grange(start, end, dx=0, n=0, log=False):
@@ -481,7 +489,7 @@ def grange(start, end, dx=0, n=0, log=False):
         else:
             return pg.core.increasingRange(start, end, n)[1:]
     else:
-        raise Exception('Either dx or n have to be given.')
+        raise Exception("Either dx or n have to be given.")
 
 
 def diff(v):
@@ -629,8 +637,8 @@ def cumDist(p):
 def cut(v, n=2):
     """Cut array v into n parts."""
     N = len(v)
-    Nc = N//n
-    cv = [v[i*Nc:(i+1)*Nc] for i in range(n)]
+    Nc = N // n
+    cv = [v[i * Nc : (i + 1) * Nc] for i in range(n)]
     return cv
 
 
@@ -678,7 +686,7 @@ def rand(n, minVal=0.0, maxVal=1.0, seed=None):
 
 def getIndex(seq, f):
     """TODO DOCUMENTME."""
-    pg.error('getIndex in use?')
+    pg.error("getIndex in use?")
     # DEPRECATED_SLOW
     idx = []
     if isinstance(seq, pg.Vector):
@@ -695,7 +703,7 @@ def getIndex(seq, f):
 
 def filterIndex(seq, idx):
     """TODO DOCUMENTME."""
-    pg.error('filterIndex in use?')
+    pg.error("filterIndex in use?")
     if isinstance(seq, pg.Vector):
         # return seq(idx)
         ret = pg.Vector(len(idx))
@@ -714,8 +722,7 @@ def findNearest(x, y, xp, yp, radius=-1):
     minDist = 1e9
     startPointDist = pg.Vector(len(x))
     for i, _ in enumerate(x):
-        startPointDist[i] = sqrt((x[i] - xp) * (x[i] - xp) + (y[i] - yp) * (y[
-            i] - yp))
+        startPointDist[i] = sqrt((x[i] - xp) * (x[i] - xp) + (y[i] - yp) * (y[i] - yp))
 
         if startPointDist[i] < minDist and startPointDist[i] > radius:
             minDist = startPointDist[i]
@@ -796,8 +803,7 @@ def unique_rows(array):
     array([[1, 2, 3],
            [3, 2, 1]])
     """
-    b = array.ravel().view(
-        np.dtype((np.void, array.dtype.itemsize * array.shape[1])))
+    b = array.ravel().view(np.dtype((np.void, array.dtype.itemsize * array.shape[1])))
     _, unique_idx = np.unique(b, return_index=True)
 
     return array[np.sort(unique_idx)]
@@ -887,47 +893,49 @@ def uniqueAndSum(indices, to_sum, return_index=False, verbose=False):
     """
     flag_mult = len(indices) != indices.size
     if verbose:
-        print('Get {} indices for sorting'.format(np.shape(indices)))
+        print("Get {} indices for sorting".format(np.shape(indices)))
     if flag_mult:
-        ar = indices.ravel().view(
-            np.dtype((np.void,
-                      indices.dtype.itemsize * indices.shape[1]))).flatten()
+        ar = (
+            indices.ravel()
+            .view(np.dtype((np.void, indices.dtype.itemsize * indices.shape[1])))
+            .flatten()
+        )
     else:
         ar = np.asanyarray(indices).flatten()
 
     to_sum = np.asanyarray(to_sum)
 
     if ar.size == 0:
-        ret = (ar, )
-        ret += (to_sum)
+        ret = (ar,)
+        ret += to_sum
         if return_index:
-            ret += (np.empty(0, np.bool), )
+            ret += (np.empty(0, np.bool),)
         return ret
     if verbose:
-        print('Performing argsort...')
-    perm = ar.argsort(kind='mergesort')
+        print("Performing argsort...")
+    perm = ar.argsort(kind="mergesort")
     aux = ar[perm]
     flag = np.concatenate(([True], aux[1:] != aux[:-1]))
     if flag_mult:
-        ret = (indices[perm[flag]], )
+        ret = (indices[perm[flag]],)
 
     else:
-        ret = (aux[flag], )  # unique indices
+        ret = (aux[flag],)  # unique indices
     if verbose:
-        print('Identified {} unique indices'.format(np.shape(ret)))
+        print("Identified {} unique indices".format(np.shape(ret)))
     if verbose:
-        print('Performing reduceat...')
+        print("Performing reduceat...")
     summed = np.add.reduceat(to_sum[perm], np.nonzero(flag)[0])
 
-    ret += (summed, )  # summed values
+    ret += (summed,)  # summed values
 
     if return_index:
-        ret += (perm[flag], )  # optional: indices
+        ret += (perm[flag],)  # optional: indices
 
     return ret
 
 
-def filterLinesByCommentStr(lines, comment_str='#'):
+def filterLinesByCommentStr(lines, comment_str="#"):
     """Filter lines from file.readlines() beginning with symbols in comment."""
     comment_line_idx = []
     for i, line in enumerate(lines):
@@ -955,14 +963,14 @@ class Report(ScoobyReport):
     def __init__(self, additional=None, **kwargs):
         """Initialize a scooby.Report instance."""
         # Mandatory packages.
-        core = ['pygimli', 'pgcore', 'numpy', 'matplotlib']
+        core = ["pygimli", "pgcore", "numpy", "matplotlib"]
         # Optional packages.
-        optional = ['scipy', 'tqdm', 'IPython', 'meshio', 'tetgen', 'pyvista']
+        optional = ["scipy", "tqdm", "IPython", "meshio", "tetgen", "pyvista"]
         inp = {
-            'additional': additional,
-            'core': core,
-            'optional': optional,
-            **kwargs  # User input overwrites defaults.
+            "additional": additional,
+            "core": core,
+            "optional": optional,
+            **kwargs,  # User input overwrites defaults.
         }
 
         super().__init__(**inp)

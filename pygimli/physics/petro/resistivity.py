@@ -8,8 +8,19 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 import pygimli.meshtools as mt
 
-def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
-                      mesh=None, meshI=None, fill=None, show=False):
+
+def resistivityArchie(
+    rFluid,
+    porosity,
+    a=1.0,
+    m=2.0,
+    sat=1.0,
+    n=2.0,
+    mesh=None,
+    meshI=None,
+    fill=None,
+    show=False,
+):
     r"""Resistivity of rock for the petrophysical model from Archies law.
 
     Calculates resistivity of rock for the petrophysical model from
@@ -53,7 +64,7 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
         phi = np.array(porosity)
 
     if mesh is None:
-        return rFluid * a * phi**(-m) * sat**(-n)
+        return rFluid * a * phi ** (-m) * sat ** (-n)
 
     rB = None
 
@@ -65,11 +76,11 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
         rB = pg.Matrix(1, len(rFluid))
         rB[0] = pg.solver.parseArgToArray(rFluid, mesh.cellCount(), mesh)
 
-    elif hasattr(rFluid, 'ndim') and rFluid.ndim == 1:
+    elif hasattr(rFluid, "ndim") and rFluid.ndim == 1:
         rB = pg.Matrix(1, len(rFluid))
         rB[0] = pg.solver.parseArgToArray(rFluid, mesh.cellCount(), mesh)
 
-    elif hasattr(rFluid, 'ndim') and rFluid.ndim == 2:
+    elif hasattr(rFluid, "ndim") and rFluid.ndim == 2:
         rB = pg.Matrix(len(rFluid), len(rFluid[0]))
         for i, rFi in enumerate(rFluid):
             rB[i] = rFi
@@ -81,13 +92,13 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
     n = pg.solver.parseArgToArray(n, mesh.cellCount(), mesh)
 
     if show:
-        pg.show(mesh, S, label='S')
-        pg.show(mesh, phi, label='p')
+        pg.show(mesh, S, label="S")
+        pg.show(mesh, phi, label="p")
         pg.wait()
 
     r = pg.Matrix(len(rB), len(rB[0]))
     for i, _ in enumerate(r):
-        r[i] = rB[i] * a * phi**(-m) * S**(-n)
+        r[i] = rB[i] * a * phi ** (-m) * S ** (-n)
 
     r.round(1e-6)
 
@@ -146,7 +157,7 @@ def transFwdArchiePhi(rFluid=20, m=2):
     >>> print((r1-r2 < 1e-12)[0])
     True
     """
-    return pg.trans.TransPower(-m, rFluid**(1./m))
+    return pg.trans.TransPower(-m, rFluid ** (1.0 / m))
 
 
 def transInvArchiePhi(rFluid=20, m=2):  # phi(rho)
@@ -157,20 +168,20 @@ def transInvArchiePhi(rFluid=20, m=2):  # phi(rho)
     ---
     :py:mod:`pygimli.physics.petro.transFwdArchiePhi`
     """
-    return pg.trans.TransPower(-1/m, rFluid)
+    return pg.trans.TransPower(-1 / m, rFluid)
 
 
 def transFwdArchieS(rFluid=20, phi=0.4, m=2, n=2):  # rho(S)
     """Inverse Archie transformation function resistivity(saturation)."""
     # rho = rFluid * phi^(-m) S^(-n)
-    return pg.trans.TransPower(-n, (rFluid*phi**(-m))**(1/n))
+    return pg.trans.TransPower(-n, (rFluid * phi ** (-m)) ** (1 / n))
 
 
 def transInvArchieS(rFluid=20, phi=0.4, m=2, n=2):  # S(rho)
     """Inverse Archie transformation function saturation(resistivity)."""
     # rFluid/rho = phi^m S^n => S=(rFluid/rho/phi^m)^(1/n)
     # S = (rho/rFluid/phi^-m)^(-1/n)
-    return pg.trans.TransPower(-1/n, rFluid*phi**(-m))
+    return pg.trans.TransPower(-1 / n, rFluid * phi ** (-m))
 
 
 def test_Archie():
@@ -192,8 +203,8 @@ def test_Archie():
     # direct function
     rA = resistivityArchie(rFluid=rhow, porosity=phivec)
     rS = resistivityArchie(rFluid=rhow, porosity=phi0, sat=swvec)
-    ax.semilogy(phivec, rA, 'b-')
-    ax.semilogy(swvec, rS, 'r-')
+    ax.semilogy(phivec, rA, "b-")
+    ax.semilogy(swvec, rS, "r-")
 
     # forward transformation
     fA = tFAPhi.trans(phivec)
@@ -201,8 +212,8 @@ def test_Archie():
     np.testing.assert_allclose(rA, fA, rtol=1e-12)
     np.testing.assert_allclose(rS, fS, rtol=1e-12)
 
-    ax.semilogy(phivec, fA, 'bx', markersize=10)
-    ax.semilogy(swvec, fS, 'rx', markersize=10)
+    ax.semilogy(phivec, fA, "bx", markersize=10)
+    ax.semilogy(swvec, fS, "rx", markersize=10)
 
     # inverse transformation
     iA = tIAPhi.invTrans(phivec)
@@ -210,8 +221,8 @@ def test_Archie():
     np.testing.assert_allclose(rA, iA, rtol=1e-12)
     np.testing.assert_allclose(rS, iS, rtol=1e-12)
 
-    ax.semilogy(phivec, iA, 'bo')
-    ax.semilogy(swvec, iS, 'ro')
+    ax.semilogy(phivec, iA, "bo")
+    ax.semilogy(swvec, iS, "ro")
 
     plt.show()
 

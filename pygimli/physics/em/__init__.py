@@ -6,6 +6,7 @@ from .vmd import VMDTimeDomainModelling
 from .fdem import FDEM
 from .tdem import TDEM, rhoafromB, rhoafromU
 from .tdem import VMDTimeDomainModelling, TDEMSmoothModelling
+
 TDEMBlockModelling = VMDTimeDomainModelling  # better name
 TDEMOccamModelling = TDEMSmoothModelling  # alias
 from .hemmodelling import HEMmodelling

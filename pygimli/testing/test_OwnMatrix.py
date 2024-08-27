@@ -8,14 +8,17 @@ import pygimli as pg
 
 from pygimli.core.matrix import RVector, MatrixBase
 
+
 class Matrix(pg.core.MatrixBase):
 
     def __init__(self):
         pg.MatrixBase.__init__(self)
 
-    def rows(self): return 1
+    def rows(self):
+        return 1
 
-    def cols(self): return 1
+    def cols(self):
+        return 1
 
     def mult(self, b):
         ret = pg.Vector(self.rows())
@@ -54,17 +57,18 @@ class Modelling(pg.core.ModellingBase):
 class TestOwnMatrix(unittest.TestCase):
 
     def test_runFOP(self):
-        #F = TestModelling()
+        # F = TestModelling()
 
-        #dat = pg.Vector(1, 1)
-        #err = pg.Vector(1, 0.00001)
+        # dat = pg.Vector(1, 1)
+        # err = pg.Vector(1, 0.00001)
 
-        #inv = pg.Inversion(dat, F, True, True)
-        #inv.setError(err)
+        # inv = pg.Inversion(dat, F, True, True)
+        # inv.setError(err)
 
-        #inv.run()
+        # inv.run()
         pass
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
 
     unittest.main()

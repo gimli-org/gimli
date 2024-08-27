@@ -11,23 +11,39 @@ import sys
 
 import pygimli as pg
 import pygimli.viewer.pv
-#from .draw import drawMesh
-#from .utils import pgMesh2pvMesh
+
+# from .draw import drawMesh
+# from .utils import pgMesh2pvMesh
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import (
-    QMainWindow, QFrame, QVBoxLayout, QComboBox, QPushButton,
-    QFileDialog, QSplitter, QLabel, QAction, QDialog, QStatusBar
+    QMainWindow,
+    QFrame,
+    QVBoxLayout,
+    QComboBox,
+    QPushButton,
+    QFileDialog,
+    QSplitter,
+    QLabel,
+    QAction,
+    QDialog,
+    QStatusBar,
 )
 
 from gwidgets import (
-    GToolBar, GButton, GLineEdit, GComboBox, GSlider, GDoubleSpinBox, CMAPS
+    GToolBar,
+    GButton,
+    GLineEdit,
+    GComboBox,
+    GSlider,
+    GDoubleSpinBox,
+    CMAPS,
 )
 
-pv = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
+pv = pg.optImport("pyvista", requiredFor="properly visualize 3D data")
 
-__all__ = ['Show3D']
+__all__ = ["Show3D"]
 
 
 class Show3D(QMainWindow):
@@ -39,14 +55,14 @@ class Show3D(QMainWindow):
 
         Note
         ----
-        Everything pyvista.Plotter would accept: 
+        Everything pyvista.Plotter would accept:
         https://docs.pyvista.org/api/plotting/plotting.html
         """
         super(Show3D, self).__init__(None)
         # self.tmpMesh = tmpMesh
         # storage for the minima and maxima
         self.data = {}
-        self._ignore = ['_Attribute', '_Marker', 'glob_min', 'glob_max']
+        self._ignore = ["_Attribute", "_Marker", "glob_min", "glob_max"]
         self._app = application
         # setup the menubar
         self.setupMenu()
@@ -62,7 +78,7 @@ class Show3D(QMainWindow):
         Stop the GUI on CTRL-C, but not the script it was called from.
         from: https://stackoverflow.com/questions/1112343/how-do-i-capture-sigint-in-python
         """
-        sys.stderr.write('\r')
+        sys.stderr.write("\r")
         self._app.quit()
 
     def setupMenu(self):
@@ -82,19 +98,19 @@ class Show3D(QMainWindow):
     def showHotKeys(self):
         d = QDialog()
         textfield = QLabel(
-        "q - Close pyGIMLi 3D Viewer\n"
-        "v - Isometric camera view\n"
-        "w - Switch all datasets to a wireframe representation\n"
-        "s - Switch all datasets to a surface representation\n"
-        "r - Reset the camera to view all datasets\n"
-        "shift+click or middle-click - Pan the rendering scene\n"
-        "left click - Rotate the rendering scene in 3D\n"
-        "ctrl+click - Rotate the rendering scene in 2D (view-plane)\n"
-        "mouse-wheel or right-click - Continuously zoom the rendering scene\n"
+            "q - Close pyGIMLi 3D Viewer\n"
+            "v - Isometric camera view\n"
+            "w - Switch all datasets to a wireframe representation\n"
+            "s - Switch all datasets to a surface representation\n"
+            "r - Reset the camera to view all datasets\n"
+            "shift+click or middle-click - Pan the rendering scene\n"
+            "left click - Rotate the rendering scene in 3D\n"
+            "ctrl+click - Rotate the rendering scene in 2D (view-plane)\n"
+            "mouse-wheel or right-click - Continuously zoom the rendering scene\n"
         )
-        textfield.setFont(QFont('Courier'))
+        textfield.setFont(QFont("Courier"))
         lyt = QVBoxLayout()
-        btn_quit = QPushButton('quit')
+        btn_quit = QPushButton("quit")
         btn_quit.clicked.connect(d.done)
         lyt.addWidget(textfield)
         lyt.addWidget(btn_quit)
@@ -132,7 +148,7 @@ class Show3D(QMainWindow):
 
         # set the icon for the window
         ipath = os.path.dirname(__file__)
-        icon = os.path.join(ipath, 'favicon.ico')
+        icon = os.path.join(ipath, "favicon.ico")
         self.setWindowIcon(QIcon(icon))
 
     def wait(self):
@@ -162,16 +178,21 @@ class Show3D(QMainWindow):
             cmap: str
                 The MPL colormap that should be used to display parameters.
         """
-        self.mesh = pgMesh2pvMesh(mesh, data, kwargs.pop('label', None))
+        self.mesh = pgMesh2pvMesh(mesh, data, kwargs.pop("label", None))
 
-        cMap = kwargs.pop('cmap', 'viridis')
-        if 'alpha' in kwargs:
-            kwargs['opacity'] = kwargs.pop('alpha', 1)
+        cMap = kwargs.pop("cmap", "viridis")
+        if "alpha" in kwargs:
+            kwargs["opacity"] = kwargs.pop("alpha", 1)
         self.__kwargs = kwargs
 
         _, self._actor = drawMesh(
-            self.plotter, self.mesh, cmap=cMap, returnActor=True,
-            show_Edges=True, **self.__kwargs)
+            self.plotter,
+            self.mesh,
+            cmap=cMap,
+            returnActor=True,
+            show_Edges=True,
+            **self.__kwargs
+        )
 
         # self._actor = self.plotter.add_mesh(
         #     self.mesh, show_edges=True, cmap=cMap, **self.__kwargs)
@@ -179,7 +200,7 @@ class Show3D(QMainWindow):
         self.plotter.reset_camera()
 
         # set the correctly chosen colormap
-        if cMap.endswith('_r'):
+        if cMap.endswith("_r"):
             cMap = cMap[:-2]
             self.toolbar.btn_reverse.setChecked(2)
         # check if given cmap is in list and implement if it isn't
@@ -228,10 +249,10 @@ class Show3D(QMainWindow):
             _min = _mi if _mi < _min else _mi
             _max = _ma if _ma > _max else _ma
             self.data[label] = {
-                'orig': {'min': _mi, 'max': _ma},
-                'user': {'min': _mi, 'max': _ma},
-                'data_orig': data,
-                'data_user': None
+                "orig": {"min": _mi, "max": _ma},
+                "user": {"min": _mi, "max": _ma},
+                "data_orig": data,
+                "data_user": None,
             }
 
         for label, data in self.mesh.point_arrays.items():
@@ -240,23 +261,21 @@ class Show3D(QMainWindow):
             _min = _mi if _mi < _min else _mi
             _max = _ma if _ma > _max else _ma
             self.data[label] = {
-                'orig': {'min': _mi, 'max': _ma},
-                'user': {'min': _mi, 'max': _ma},
-                'data_orig': data,
-                'data_user': None
+                "orig": {"min": _mi, "max": _ma},
+                "user": {"min": _mi, "max": _ma},
+                "data_orig": data,
+                "data_user": None,
             }
 
-        self.data['glob_min'] = _min
-        self.data['glob_max'] = _max
+        self.data["glob_min"] = _min
+        self.data["glob_max"] = _max
         # supply the combobox with the names to choose from for display
         self.toolbar.cbbx_params.addItems(self.mesh.array_names)
         # get the current set parameter
         curr_param = self.toolbar.cbbx_params.currentText()
         # set the first cMin/cMax
-        self.toolbar.spbx_cmin.setValue(
-            self.data[curr_param]['orig']['min'])
-        self.toolbar.spbx_cmax.setValue(
-            self.data[curr_param]['orig']['max'])
+        self.toolbar.spbx_cmin.setValue(self.data[curr_param]["orig"]["min"])
+        self.toolbar.spbx_cmax.setValue(self.data[curr_param]["orig"]["max"])
         self.updateParameterView(curr_param)
 
     def updateParameterView(self, param=None):
@@ -281,8 +300,8 @@ class Show3D(QMainWindow):
             # NOTE: if the global limit button is checked, just don't change
             # the extrema labels to enable the user to set ones own limits.
             if not self.toolbar.btn_global_limits.isChecked():
-                _min = self.data[param]['user']['min']
-                _max = self.data[param]['user']['max']
+                _min = self.data[param]["user"]["min"]
+                _max = self.data[param]["user"]["max"]
                 self.toolbar.spbx_cmin.setRange(_min, _max)
                 self.toolbar.spbx_cmax.setRange(_min, _max)
                 self.toolbar.spbx_cmin.setValue(_min)
@@ -290,9 +309,12 @@ class Show3D(QMainWindow):
 
         cMap = self.toolbar.cbbx_cmap.currentText()
         if self.toolbar.btn_reverse.isChecked():
-            cMap += '_r'
+            cMap += "_r"
 
-        if self.toolbar.btn_slice_plane.isChecked() and not self.toolbar.btn_slice_volume.isChecked():
+        if (
+            self.toolbar.btn_slice_plane.isChecked()
+            and not self.toolbar.btn_slice_volume.isChecked()
+        ):
             x_val = self.toolbar.slice_x.value()
             y_val = self.toolbar.slice_y.value()
             z_val = self.toolbar.slice_z.value()
@@ -316,14 +338,19 @@ class Show3D(QMainWindow):
         self.camera_pos = self.plotter.camera_position[0]
 
         # add the modified one
-        if self.toolbar.btn_slice_volume.isChecked() and not self.toolbar.btn_slice_plane.isChecked():
+        if (
+            self.toolbar.btn_slice_volume.isChecked()
+            and not self.toolbar.btn_slice_plane.isChecked()
+        ):
             self._actor = self.plotter.add_mesh_clip_plane(
-                mesh, cmap=cMap, show_edges=True, **self.__kwargs)
+                mesh, cmap=cMap, show_edges=True, **self.__kwargs
+            )
         else:
             # in case the plane widget was on.. turn it off
             # self.plotter.disable_plane_widget()
             self._actor = self.plotter.add_mesh(
-            mesh, cmap=cMap, show_edges=True, **self.__kwargs)
+                mesh, cmap=cMap, show_edges=True, **self.__kwargs
+            )
 
         # update stuff in the toolbar
         self.updateScalarBar()
@@ -344,8 +371,8 @@ class Show3D(QMainWindow):
 
             # update the user extrema
             if not self.toolbar.btn_global_limits.isChecked():
-                self.data[param]['user']['min'] = cmin
-                self.data[param]['user']['max'] = cmax
+                self.data[param]["user"]["min"] = cmin
+                self.data[param]["user"]["max"] = cmax
             # NOTE: has no effect on the displayed vtk
             # pg._d("RESET SCALAR BAR LIMITS")
             self.plotter.update_scalar_bar_range([cmin, cmax])
@@ -368,7 +395,7 @@ class Show3D(QMainWindow):
                 show_zaxis=True,
                 show_xlabels=True,
                 show_ylabels=True,
-                show_zlabels=True
+                show_zlabels=True,
             )
         self.plotter.update()
 
@@ -382,22 +409,20 @@ class Show3D(QMainWindow):
         black/white background and white/black axis grid and so on
         """
         fname = QFileDialog.getSaveFileName(
-            self, 'Open File', None, "Image files (*.jpg *.png)"
+            self, "Open File", None, "Image files (*.jpg *.png)"
         )[0]
         if fname:
-            if not len(fname.split('.')) == 2:
-                fname += '.png'
+            if not len(fname.split(".")) == 2:
+                fname += ".png"
             self.plotter.screenshot(fname)
 
     def exportMesh(self):
         """
         Save the displayed data as VTK.
         """
-        f = QFileDialog.getSaveFileName(
-            self, 'Export VTK', None, "VTK file (*.vtk)"
-        )[0]
+        f = QFileDialog.getSaveFileName(self, "Export VTK", None, "VTK file (*.vtk)")[0]
         if f:
-            f = f + '.vtk' if not f.lower().endswith('.vtk') else f
+            f = f + ".vtk" if not f.lower().endswith(".vtk") else f
             copyfile(self.tmpMesh, f)
 
     def resetExtrema(self, _btn=False, fromGlobal=False):
@@ -417,8 +442,8 @@ class Show3D(QMainWindow):
             param = fromGlobal
         else:
             param = self.mesh.active_scalars_name
-        self.data[param]['user']['min'] = self.data[param]['orig']['min']
-        self.data[param]['user']['max'] = self.data[param]['orig']['max']
+        self.data[param]["user"]["min"] = self.data[param]["orig"]["min"]
+        self.data[param]["user"]["max"] = self.data[param]["orig"]["max"]
         if not fromGlobal:
             # display correctly
             self.updateParameterView(param)
@@ -428,8 +453,8 @@ class Show3D(QMainWindow):
         Manipulate the user limits of the dictionary storing all data.
         """
         if self.toolbar.btn_global_limits.isChecked():
-            _min = self.data['glob_min']
-            _max = self.data['glob_max']
+            _min = self.data["glob_min"]
+            _max = self.data["glob_max"]
             self.toolbar.spbx_cmin.setRange(_min, _max)
             self.toolbar.spbx_cmax.setRange(_min, _max)
             self.toolbar.spbx_cmin.setValue(_min)
@@ -454,10 +479,8 @@ class Show3D(QMainWindow):
 
     def _allowSignals(self):
         # connect signals
-        self.toolbar.cbbx_params.currentTextChanged.connect(
-            self.updateParameterView)
-        self.toolbar.cbbx_cmap.currentTextChanged.connect(
-            self.updateParameterView)
+        self.toolbar.cbbx_params.currentTextChanged.connect(self.updateParameterView)
+        self.toolbar.cbbx_cmap.currentTextChanged.connect(self.updateParameterView)
         self.toolbar.btn_reverse.clicked.connect(self.updateParameterView)
         self.toolbar.btn_bbox.pressed.connect(self.toggleBbox)
         self.toolbar.btn_global_limits.clicked.connect(self.setGlobalLimits)
@@ -494,5 +517,5 @@ class Show3D(QMainWindow):
             self.toolbar.btn_slice_volume.setChecked(False)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

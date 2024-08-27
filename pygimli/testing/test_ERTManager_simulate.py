@@ -8,15 +8,10 @@ import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.physics import ert
 
-world = mt.createWorld(
-    start=[-50, 0], end=[50, -50], layers=[-1, -5], worldMarker=True)
+world = mt.createWorld(start=[-50, 0], end=[50, -50], layers=[-1, -5], worldMarker=True)
 
 scheme = pg.DataContainerERT()
-elec_positions = [[-2, 0, 0],
-                  [-1, 0, 0],
-                  [+0, 0, 0],
-                  [+1, 0, 0],
-                  [+2, 0, 0]]
+elec_positions = [[-2, 0, 0], [-1, 0, 0], [+0, 0, 0], [+1, 0, 0], [+2, 0, 0]]
 for x, y, z in elec_positions:
     scheme.createSensor((x, y, z))
 
@@ -24,10 +19,10 @@ for x, y, z in elec_positions:
 scheme.resize(3)
 
 # first two measurements have reversed geometric factor!
-scheme.set('a', [0, 0, 3])
-scheme.set('b', [1, 1, 2])
-scheme.set('m', [3, 2, 1])
-scheme.set('n', [2, 3, 0])
+scheme.set("a", [0, 0, 3])
+scheme.set("b", [1, 1, 2])
+scheme.set("m", [3, 2, 1])
+scheme.set("n", [2, 3, 0])
 
 for pos in scheme.sensorPositions():
     world.createNode(pos)
@@ -35,14 +30,12 @@ for pos in scheme.sensorPositions():
 
 mesh = mt.createMesh(world, quality=34)
 
-rhomap = [[1, 99.595 + 8.987j],
-          [2, 99.595 + 8.987j],
-          [3, 59.595 + 8.987j]]
+rhomap = [[1, 99.595 + 8.987j], [2, 99.595 + 8.987j], [3, 59.595 + 8.987j]]
 
 # mgr = pg.physics.ERTManager()  # not necessary anymore
 data = ert.simulate(mesh, res=rhomap, scheme=scheme, verbose=True)
-rhoa = data.get('rhoa').array()
-phia = data.get('phia').array()
+rhoa = data.get("rhoa").array()
+phia = data.get("phia").array()
 
 # make sure all computed responses are equal, especially the first two, which
 # only differ in the sign of their geometrical factor

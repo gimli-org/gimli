@@ -1,4 +1,5 @@
 """Vertical electrical sounding (VES) manager class."""
+
 import numpy as np
 
 import pygimli as pg
@@ -49,45 +50,54 @@ class VESModelling(Block1DModelling):
         self.ab2 = ab2
         self.mn2 = mn2
 
-        if 'dataContainerERT' in kwargs or 'data' in kwargs:
-            if 'data' in kwargs:
-                data = kwargs['data']
+        if "dataContainerERT" in kwargs or "data" in kwargs:
+            if "data" in kwargs:
+                data = kwargs["data"]
             else:
-                data = kwargs['dataContainerERT']
+                data = kwargs["dataContainerERT"]
             if isinstance(data, pg.DataContainerERT):
-                kwargs['am'] = [data.sensorPosition(data('a')[i]).distance(
-                    data('m')[i]) for i in range(data.size())]
-                kwargs['an'] = [data.sensorPosition(data('a')[i]).distance(
-                    data('n')[i]) for i in range(data.size())]
-                kwargs['bm'] = [data.sensorPosition(data('b')[i]).distance(
-                    data('m')[i]) for i in range(data.size())]
-                kwargs['bn'] = [data.sensorPosition(data('b')[i]).distance(
-                    data('n')[i]) for i in range(data.size())]
+                kwargs["am"] = [
+                    data.sensorPosition(data("a")[i]).distance(data("m")[i])
+                    for i in range(data.size())
+                ]
+                kwargs["an"] = [
+                    data.sensorPosition(data("a")[i]).distance(data("n")[i])
+                    for i in range(data.size())
+                ]
+                kwargs["bm"] = [
+                    data.sensorPosition(data("b")[i]).distance(data("m")[i])
+                    for i in range(data.size())
+                ]
+                kwargs["bn"] = [
+                    data.sensorPosition(data("b")[i]).distance(data("n")[i])
+                    for i in range(data.size())
+                ]
 
-        self.setDataSpace(ab2=ab2, mn2=mn2,
-                          am=self.am, an=self.an, bm=self.bm, bn=self.bn)
+        self.setDataSpace(
+            ab2=ab2, mn2=mn2, am=self.am, an=self.an, bm=self.bm, bn=self.bn
+        )
 
     def createStartModel(self, rhoa):
         """Create starting model."""
         if self.nLayers == 0:
             pg.critical("Model space is not been initialized.")
 
-        startThicks = np.logspace(np.log10(min(self.mn2)/2),
-                                  np.log10(max(self.ab2)/5),
-                                  self.nLayers - 1)
+        startThicks = np.logspace(
+            np.log10(min(self.mn2) / 2), np.log10(max(self.ab2) / 5), self.nLayers - 1
+        )
         startThicks = pg.utils.diff(pg.cat([0.0], startThicks))
 
         # layer thickness properties
-        self.setRegionProperties(0, startModel=startThicks, trans='log')
+        self.setRegionProperties(0, startModel=startThicks, trans="log")
 
         # resistivity properties
-        self.setRegionProperties(1, startModel=np.median(rhoa), trans='log')
+        self.setRegionProperties(1, startModel=np.median(rhoa), trans="log")
 
         return super(VESModelling, self).createStartModel()
 
-    def setDataSpace(self, ab2=None, mn2=None,
-                     am=None, bm=None, an=None, bn=None,
-                     **kwargs):
+    def setDataSpace(
+        self, ab2=None, mn2=None, am=None, bm=None, an=None, bn=None, **kwargs
+    ):
         """Set data basis, i.e., arrays for all am, an, bm, bn distances.
 
         You can set either
@@ -111,7 +121,7 @@ class VESModelling(Block1DModelling):
                 mn2 = np.array(ab2) / 3
 
             if isinstance(mn2, float):
-                mn2 = np.ones(len(ab2))*mn2
+                mn2 = np.ones(len(ab2)) * mn2
 
             if len(ab2) != len(mn2):
                 print("ab2", ab2)
@@ -123,8 +133,7 @@ class VESModelling(Block1DModelling):
             self.bm = ab2 + mn2
             self.bn = ab2 - mn2
 
-        elif (am is not None and bm is not None and an is not None and
-              bn is not None):
+        elif am is not None and bm is not None and an is not None and bn is not None:
             self.am = am
             self.bm = bm
             self.an = an
@@ -134,8 +143,9 @@ class VESModelling(Block1DModelling):
             self.ab2 = (self.am + self.bm) / 2
             self.mn2 = abs(self.am - self.an) / 2
 
-            self.k = (2.0 * np.pi) / (1.0 / self.am - 1.0 / self.an -
-                                      1.0 / self.bm + 1.0 / self.bn)
+            self.k = (2.0 * np.pi) / (
+                1.0 / self.am - 1.0 / self.an - 1.0 / self.bm + 1.0 / self.bn
+            )
 
     def response(self, par):
         """Model response."""
@@ -144,9 +154,8 @@ class VESModelling(Block1DModelling):
     def response_mt(self, par, i=0):
         """Multi-threading model response."""
         if self.am is not None and self.bm is not None:
-            nLayers = (len(par)+1) // 2
-            fop = pg.core.DC1dModelling(nLayers,
-                                        self.am, self.bm, self.an, self.bn)
+            nLayers = (len(par) + 1) // 2
+            fop = pg.core.DC1dModelling(nLayers, self.am, self.bm, self.an, self.bn)
         else:
             pg.critical("No data space defined don't know what to calculate.")
 
@@ -154,12 +163,14 @@ class VESModelling(Block1DModelling):
 
     def drawModel(self, ax, model, **kwargs):
         """Draw model as 1D block model."""
-        pg.viewer.mpl.drawModel1D(ax=ax,
-                                  model=model,
-                                  plot=kwargs.pop('plot', 'loglog'),
-                                  xlabel=r'Resistivity ($\Omega$m)',
-                                  **kwargs)
-        ax.set_ylabel('Depth in (m)')
+        pg.viewer.mpl.drawModel1D(
+            ax=ax,
+            model=model,
+            plot=kwargs.pop("plot", "loglog"),
+            xlabel=r"Resistivity ($\Omega$m)",
+            **kwargs
+        )
+        ax.set_ylabel("Depth in (m)")
 
         return ax, None  # should return gci and not ax
 
@@ -189,19 +200,22 @@ class VESModelling(Block1DModelling):
         plot: function name
             Matplotlib plot function, e.g., plot, loglog, semilogx or semilogy
         """
-        ab2 = kwargs.pop('ab2', self.ab2)
+        ab2 = kwargs.pop("ab2", self.ab2)
         # mn2 = kwargs.pop('mn2', self.mn2)
-        plot = getattr(ax, kwargs.pop('plot', 'loglog'))
+        plot = getattr(ax, kwargs.pop("plot", "loglog"))
 
         ra = data
         raE = error
 
-        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(
-            label, pg.frameworks.modelling.DEFAULT_STYLES['Default']))
+        style = dict(
+            pg.frameworks.modelling.DEFAULT_STYLES.get(
+                label, pg.frameworks.modelling.DEFAULT_STYLES["Default"]
+            )
+        )
         style.update(kwargs)
 
         if label is None:
-            label = r'$\rho_a$'
+            label = r"$\rho_a$"
 
         plot(ra, ab2, label=label, **style)
 
@@ -209,15 +223,18 @@ class VESModelling(Block1DModelling):
             raErr = np.array(ra * raE)
 
             if pg.isArray(raErr, len(ra)):
-                ax.errorbar(ra, ab2,
-                            xerr=raErr, barsabove=True,
-                            **DEFAULT_STYLES.get('Error',
-                                                 DEFAULT_STYLES['Default']),
-                            label='_nolegend_')
+                ax.errorbar(
+                    ra,
+                    ab2,
+                    xerr=raErr,
+                    barsabove=True,
+                    **DEFAULT_STYLES.get("Error", DEFAULT_STYLES["Default"]),
+                    label="_nolegend_"
+                )
 
         ax.set_ylim(max(ab2), min(ab2))
-        ax.set_xlabel(r'Apparent resistivity ($\Omega$m)')
-        ax.set_ylabel(r'AB/2 (m)')
+        ax.set_xlabel(r"Apparent resistivity ($\Omega$m)")
+        ax.set_ylabel(r"AB/2 (m)")
         ax.grid(True)
         ax.legend()
         return ax, None  # should return gci and not ax&cb
@@ -237,30 +254,29 @@ class VESCModelling(VESModelling):
     def phaseModel(self, model):
         """Return the current phase model values."""
         nLay = (len(model) + 1) // 3
-        return pg.cat(model[0:nLay-1], 1000. * model[nLay*2-1::])
+        return pg.cat(model[0 : nLay - 1], 1000.0 * model[nLay * 2 - 1 : :])
 
     def resModel(self, model):
         """Return the resistivity model values."""
         nLay = (len(model) + 1) // 3
-        return model[0:nLay*2-1]
+        return model[0 : nLay * 2 - 1]
 
     def createStartModel(self, rhoa):
         """Create starting model of nlay-1 thicknesses & nlay resistivities."""
-        startDepths = np.logspace(np.log10(min(self.mn2)/2),
-                                  np.log10(max(self.ab2)/5),
-                                  self._nLayers-1)
+        startDepths = np.logspace(
+            np.log10(min(self.mn2) / 2), np.log10(max(self.ab2) / 5), self._nLayers - 1
+        )
         startThicks = pg.utils.diff(pg.cat([0.0], startDepths))
 
         # layer thickness properties
-        self.setRegionProperties(0, startModel=startThicks,
-                                 trans='log')
+        self.setRegionProperties(0, startModel=startThicks, trans="log")
 
         # resistivity properties
-        self.setRegionProperties(1, startModel=np.median(rhoa),
-                                 trans='log')
+        self.setRegionProperties(1, startModel=np.median(rhoa), trans="log")
 
-        self.setRegionProperties(2, startModel=np.median(rhoa[len(rhoa)//2::]),
-                                 trans='log')
+        self.setRegionProperties(
+            2, startModel=np.median(rhoa[len(rhoa) // 2 : :]), trans="log"
+        )
 
         sm = self.regionManager().createStartModel()
         return sm
@@ -275,8 +291,7 @@ class VESCModelling(VESModelling):
         """
         if self.am is not None and self.bm is not None:
             nLayers = (len(par) + 1) // 3
-            fop = pg.core.DC1dModellingC(nLayers,
-                                         self.am, self.bm, self.an, self.bn)
+            fop = pg.core.DC1dModellingC(nLayers, self.am, self.bm, self.an, self.bn)
         else:
             pg.critical("No data basis known.")
 
@@ -287,27 +302,26 @@ class VESCModelling(VESModelling):
         a1 = ax
         a2 = pg.viewer.mpl.createTwinY(ax)
 
-        super(VESCModelling, self).drawModel(a1,
-                                             model=self.resModel(model),
-                                             **kwargs)
+        super(VESCModelling, self).drawModel(a1, model=self.resModel(model), **kwargs)
 
-        plot = kwargs.pop('plot', 'semilogy')
-        if plot == 'loglog':
-            plot = 'semilogy'
-        elif plot == 'semilogx':
-            plot = 'plot'
+        plot = kwargs.pop("plot", "semilogy")
+        if plot == "loglog":
+            plot = "semilogy"
+        elif plot == "semilogx":
+            plot = "plot"
 
-        pg.viewer.mpl.drawModel1D(ax=a2,
-                                  model=self.phaseModel(model),
-                                  plot=plot,
-                                  color='C2',
-                                  xlabel='Phase (mrad)',
-                                  **kwargs)
+        pg.viewer.mpl.drawModel1D(
+            ax=a2,
+            model=self.phaseModel(model),
+            plot=plot,
+            color="C2",
+            xlabel="Phase (mrad)",
+            **kwargs
+        )
 
-        a2.set_xlabel('neg. phase (mRad)', color='C2')
+        a2.set_xlabel("neg. phase (mRad)", color="C2")
 
-    def drawData(self, ax, data, error=None, labels=None, ab2=None, mn2=None,
-                 **kwargs):
+    def drawData(self, ax, data, error=None, labels=None, ab2=None, mn2=None, **kwargs):
         r"""Draw modeled apparent resistivity and apparent phase data.
 
         Parameters
@@ -339,7 +353,7 @@ class VESCModelling(VESModelling):
         a1 = None
         a2 = None
 
-        if hasattr(ax, '__iter__'):
+        if hasattr(ax, "__iter__"):
             if len(ax) == 2:
                 a1 = ax[0]
                 a2 = ax[1]
@@ -350,48 +364,51 @@ class VESCModelling(VESModelling):
         if ab2 is not None and mn2 is not None:
             self.setDataSpace(ab2=ab2, mn2=mn2)
 
-        ra = data[0:len(data)//2]
-        phi = data[len(data)//2::] * 1000.  # mRad
+        ra = data[0 : len(data) // 2]
+        phi = data[len(data) // 2 : :] * 1000.0  # mRad
 
         phiE = None  # abs err
         raE = None  # rel err
 
         if error is not None:
             if type(error) is float:
-                raE = np.ones(len(data)//2) * error
-                phiE = np.ones(len(data)//2) * error
+                raE = np.ones(len(data) // 2) * error
+                phiE = np.ones(len(data) // 2) * error
             else:
-                raE = error[0:len(data)//2]
-                phiE = error[len(data)//2::]
+                raE = error[0 : len(data) // 2]
+                phiE = error[len(data) // 2 : :]
 
         if labels is None:
-            labels = [r'$\varrho_a$', r'$\varphi_a$']
+            labels = [r"$\varrho_a$", r"$\varphi_a$"]
 
-        label = kwargs.pop('label', 'Data')
+        label = kwargs.pop("label", "Data")
 
-        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(
-            label, pg.frameworks.modelling.DEFAULT_STYLES['Default']))
+        style = dict(
+            pg.frameworks.modelling.DEFAULT_STYLES.get(
+                label, pg.frameworks.modelling.DEFAULT_STYLES["Default"]
+            )
+        )
         style.update(kwargs)
 
-        super(VESCModelling, self).drawData(a1, ra, error=raE,
-                                            label=labels[0], **style)
+        super(VESCModelling, self).drawData(a1, ra, error=raE, label=labels[0], **style)
 
-        style['color'] = 'C2'
+        style["color"] = "C2"
 
         a2.semilogy(phi, self.ab2, label=labels[1], **style)
 
         if phiE is not None:
-            a2.errorbar(phi, self.ab2,
-                        xerr=phiE,
-                        **DEFAULT_STYLES.get('Error',
-                                             DEFAULT_STYLES['Default']),
-                        barsabove=True,
-                        label='_nolegend_'
-                        )
+            a2.errorbar(
+                phi,
+                self.ab2,
+                xerr=phiE,
+                **DEFAULT_STYLES.get("Error", DEFAULT_STYLES["Default"]),
+                barsabove=True,
+                label="_nolegend_"
+            )
 
         a2.set_ylim(max(self.ab2), min(self.ab2))
-        a2.set_xlabel('Apparent neg. phase (mRad)', color='C2')
-        a2.set_ylabel('AB/2 in (m)')
+        a2.set_xlabel("Apparent neg. phase (mRad)", color="C2")
+        a2.set_ylabel("AB/2 in (m)")
         a2.legend()
         a2.grid(True)
 
@@ -429,10 +446,10 @@ class VESRhoModelling(pg.frameworks.MeshModelling):
         # better do the following in a function like setDataSpace/setModelSpace
         self.bfop = VESModelling(**kwargs)
         self.thk = thk
-        self.fwd = pg.core.DC1dRhoModelling(thk, self.bfop.am, self.bfop.bm,
-                                            self.bfop.an, self.bfop.bn,
-                                            verbose=verbose)
-        self.mesh_ = pg.meshtools.createMesh1D(len(thk)+1)
+        self.fwd = pg.core.DC1dRhoModelling(
+            thk, self.bfop.am, self.bfop.bm, self.bfop.an, self.bfop.bn, verbose=verbose
+        )
+        self.mesh_ = pg.meshtools.createMesh1D(len(thk) + 1)
         self.setMesh(self.mesh_)
         # self.mesh = self.mesh_  # could work with MeshModelling parent
 
@@ -442,10 +459,11 @@ class VESRhoModelling(pg.frameworks.MeshModelling):
 
     def response_mt(self, par):
         """Forward response."""
-        fwd = pg.core.DC1dRhoModelling(self.thk, self.bfop.am, self.bfop.bm,
-                                       self.bfop.an, self.bfop.bn, False)
+        fwd = pg.core.DC1dRhoModelling(
+            self.thk, self.bfop.am, self.bfop.bm, self.bfop.an, self.bfop.bn, False
+        )
         return fwd.response(par)
 
     def createStartModel(self, rhoa):
         """Create starting model."""
-        return pg.Vector(len(self.thk)+1, np.median(rhoa))
+        return pg.Vector(len(self.thk) + 1, np.median(rhoa))

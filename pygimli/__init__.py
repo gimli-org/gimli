@@ -5,29 +5,95 @@ pyGIMLi - An open-source library for modelling and inversion in geophysics
 import sys
 import locale
 
-from .core.decorators import (renamed, singleton, moduleProperty,
-                              skipOnDefaultTest,
-                              )
+from .core.decorators import (
+    renamed,
+    singleton,
+    moduleProperty,
+    skipOnDefaultTest,
+)
 
 # Import everything that should be accessible through main namespace.
-from .core import (BVector, CVector, DataContainer, DataContainerERT,
-                   IVector, Line, Mesh, Plane, Pos, PosList, PosVector,
-                   RVector, RVector3, Vector, abs, cat, center, exp,
-                   find, interpolate, log, log10, logDropTol, max,
-                   mean, median, min, search, setDebug, setThreadCount, sort,
-                   Stopwatch, sum, trans, unique, versionStr, x, y, z, zero)
+from .core import (
+    BVector,
+    CVector,
+    DataContainer,
+    DataContainerERT,
+    IVector,
+    Line,
+    Mesh,
+    Plane,
+    Pos,
+    PosList,
+    PosVector,
+    RVector,
+    RVector3,
+    Vector,
+    abs,
+    cat,
+    center,
+    exp,
+    find,
+    interpolate,
+    log,
+    log10,
+    logDropTol,
+    max,
+    mean,
+    median,
+    min,
+    search,
+    setDebug,
+    setThreadCount,
+    sort,
+    Stopwatch,
+    sum,
+    trans,
+    unique,
+    versionStr,
+    x,
+    y,
+    z,
+    zero,
+)
 
-from .core import (isInt, isScalar, isIterable, isArray, isPos, isPosList,
-                   isR3Array, isComplex, isMatrix)
+from .core import (
+    isInt,
+    isScalar,
+    isIterable,
+    isArray,
+    isPos,
+    isPosList,
+    isR3Array,
+    isComplex,
+    isMatrix,
+)
 
-from .core import math # alias all from .core.math.* to pg.math.*
+from .core import math  # alias all from .core.math.* to pg.math.*
+
 # from .core import matrix # alias all from .core.matrix.* to pg.matrix.*
-from .core.matrix import (BlockMatrix, Matrix, SparseMapMatrix, SparseMatrix)
+from .core.matrix import BlockMatrix, Matrix, SparseMapMatrix, SparseMatrix
 
-from .core.logger import (_, _d, _g, _r, _y, _b, critical, d, debug,
-                          deprecated, renameKwarg,
-                          error, info, setDebug, setLogLevel, setVerbose, v,
-                          verbose, warn)
+from .core.logger import (
+    _,
+    _d,
+    _g,
+    _r,
+    _y,
+    _b,
+    critical,
+    d,
+    debug,
+    deprecated,
+    renameKwarg,
+    error,
+    info,
+    setDebug,
+    setLogLevel,
+    setVerbose,
+    v,
+    verbose,
+    warn,
+)
 
 warning = warn  # convenience
 
@@ -44,26 +110,25 @@ from .viewer import show, wait, noShow, hold
 from .frameworks import fit
 from .frameworks import Modelling
 from .frameworks import Inversion
-from .testing import test  #, setTestingMode, testingMode
+from .testing import test  # , setTestingMode, testingMode
 
 from .math import matrix  # alias all from .core.matrix.* to pg.matrix.*
-from .core.load import (load, optImport, getCachePath,
-                        getExampleFile, getExampleData)
+from .core.load import load, optImport, getCachePath, getExampleFile, getExampleData
 
 
 def checkAndFixLocaleDecimal_point(verbose=False):  # verbose overwritten
-    """
-    """
-    if locale.localeconv()['decimal_point'] == ',':
+    """ """
+    if locale.localeconv()["decimal_point"] == ",":
         if verbose:
-            print("Found locale decimal_point ',' "
-                  "and change it to: decimal point '.'")
+            print(
+                "Found locale decimal_point ',' " "and change it to: decimal point '.'"
+            )
     try:
-        locale.localeconv()['decimal_point']
-        locale.setlocale(locale.LC_NUMERIC, 'C')
+        locale.localeconv()["decimal_point"]
+        locale.setlocale(locale.LC_NUMERIC, "C")
     except Exception as e:
         print(e)
-        print('cannot set locale to decimal point')
+        print("cannot set locale to decimal point")
 
     # LC_CTYPE should be something with UTF-8
     # export LC_CTYPE="de_DE.UTF-8"
@@ -81,12 +146,12 @@ checkAndFixLocaleDecimal_point(verbose=True)
 #    print('cannot set locale to decimal point')
 
 
-if '--debug' in sys.argv or '-d' in sys.argv:
+if "--debug" in sys.argv or "-d" in sys.argv:
     setDebug(True)
 else:
     setDebug(False)
 
-if '--verbose' in sys.argv or '-v' in sys.argv:
+if "--verbose" in sys.argv or "-v" in sys.argv:
     setVerbose(True)
 else:
     setVerbose(False)
@@ -117,13 +182,14 @@ def findVersion(cache=True):  # careful: cache is already imported!
     to avoid extensive git systemcalls.
     """
     import os
+
     global __version__
 
     # setDebug(False)
     root = os.path.abspath(os.path.join(__file__, "../../"))
-    gitPath = os.path.join(root, '.git')
-    gitIndexFile = os.path.join(gitPath, 'index')
-    versionCacheFile = os.path.join(getCachePath(), 'VERSION')
+    gitPath = os.path.join(root, ".git")
+    gitIndexFile = os.path.join(gitPath, "index")
+    versionCacheFile = os.path.join(getCachePath(), "VERSION")
     versionPyFile = os.path.abspath(os.path.join(__file__, "_version.py"))
 
     loadCache = False
@@ -143,16 +209,16 @@ def findVersion(cache=True):  # careful: cache is already imported!
             loadCache = True
 
     if loadCache is True and cache is True:
-        with open(versionCacheFile, 'r') as fi:
+        with open(versionCacheFile, "r") as fi:
             __version__ = fi.read()
-            debug('Loaded version info from cache.',
-                  versionCacheFile, __version__)
+            debug("Loaded version info from cache.", versionCacheFile, __version__)
         return __version__
 
-    debug('Fetching version info.')
+    debug("Fetching version info.")
     from ._version import get_versions
+
     __versions__ = get_versions()
-    __version__ = __versions__['version']
+    __version__ = __versions__["version"]
 
     def _get_branch():
         """Get current git branch."""
@@ -160,8 +226,10 @@ def findVersion(cache=True):  # careful: cache is already imported!
 
         if exists(gitPath):
             from subprocess import check_output
-            out = check_output(["git", "--git-dir", gitPath, "rev-parse",
-                                "--abbrev-ref", "HEAD"]).decode("utf8")
+
+            out = check_output(
+                ["git", "--git-dir", gitPath, "rev-parse", "--abbrev-ref", "HEAD"]
+            ).decode("utf8")
 
             branch = out.split("\n")[0]
             if "HEAD" not in branch:
@@ -196,9 +264,9 @@ def findVersion(cache=True):  # careful: cache is already imported!
     if not os.path.exists(versionCacheFile):
         os.makedirs(os.path.dirname(versionCacheFile), exist_ok=True)
 
-    with open(versionCacheFile, 'w') as fi:
+    with open(versionCacheFile, "w") as fi:
         fi.write(__version__)
-        debug('Wrote version info to cache:', versionCacheFile, __version__)
+        debug("Wrote version info to cache:", versionCacheFile, __version__)
 
     return __version__
 
@@ -211,22 +279,24 @@ def version(cache=True):  # imported cach will be overwritten
     """Shortcut to show and return current version."""
     findVersion(cache=cache)
     if cache is True:
-        info('Version (cached): ' + __version__ + " core:" + versionStr())
+        info("Version (cached): " + __version__ + " core:" + versionStr())
     else:
-        info('Version: ' + __version__ + " core:" + versionStr())
+        info("Version: " + __version__ + " core:" + versionStr())
     return __version__
 
 
 def isNotebook():
     """Determine if run inside Jupyter notebook or Spyder."""
     import sys
-    return 'ipykernel_launcher.py' in sys.argv[0] or 'ipykernel' in sys.modules
+
+    return "ipykernel_launcher.py" in sys.argv[0] or "ipykernel" in sys.modules
 
 
 def isIPyTerminal():
     """Determine if run inside ipython terminal, e.g., sphinx-gallery."""
     import sys
-    return 'IPython' in sys.modules
+
+    return "IPython" in sys.modules
 
 
 __swatch__ = dict()
@@ -271,7 +341,7 @@ def toc(msg=None, box=False, reset=False, key=0):
         if box is True:
             boxprint(msg)
         else:
-            print(msg, end=' ')
+            print(msg, end=" ")
 
     seconds = dur(reset=reset, key=key)
     m, s = divmod(seconds, 60)
@@ -310,9 +380,11 @@ def _plt():
     # import time
     # t0 = time.time()
     import matplotlib.pyplot as plt
+
     # print('importing plt took ', time.time() - t0)
 
     from .viewer.mpl import registerShowPendingFigsAtExit, hold
+
     registerShowPendingFigsAtExit()
 
     # plt.subplots() resets locale setting to system default .. this went
@@ -326,7 +398,7 @@ def _plt():
     checkAndFixLocaleDecimal_point(verbose=False)
 
     # Set global hold if mpl inline backend is used (as in Jupyter Notebooks)
-    if 'inline' in plt.get_backend():
+    if "inline" in plt.get_backend():
         hold(True)
 
     return plt

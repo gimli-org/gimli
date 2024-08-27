@@ -7,9 +7,15 @@ import pygimli as pg
 import pygimli.core as pgcore
 
 
-from pygimli.core import (CMatrix, CSparseMapMatrix, CSparseMatrix,
-                          RSparseMapMatrix, RSparseMatrix, ElementMatrix,
-                          MatrixBase)
+from pygimli.core import (
+    CMatrix,
+    CSparseMapMatrix,
+    CSparseMatrix,
+    RSparseMapMatrix,
+    RSparseMatrix,
+    ElementMatrix,
+    MatrixBase,
+)
 
 IdentityMatrix = pgcore.IdentityMatrix
 Matrix = pgcore.RMatrix
@@ -255,7 +261,7 @@ class MultRightMatrix(MultMatrix):
 
     def mult(self, x):
         """Return M*x = A*(r*x)"""
-        if hasattr(x, '__len__') and hasattr(self.r, '__len__'):
+        if hasattr(x, "__len__") and hasattr(self.r, "__len__"):
             if len(x) != len(self.r):
                 # assuming A was complex
                 # warn('need to double x')
@@ -289,7 +295,7 @@ class MultLeftRightMatrix(MultMatrix):
             left and right side vectors to weight individual rows & columns
         """
         if A.cols() != len(right):
-                raise Exception("Matrix columns do not fit right vector length!")
+            raise Exception("Matrix columns do not fit right vector length!")
         if A.rows() != len(left):
             raise Exception("Matrix rows do not fit left vector length!")
 
@@ -328,11 +334,11 @@ LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
 class Add2Matrix(MatrixBase):
     """Matrix by addition of two matrices implicitly.
 
-        The matrix holds two matrices and distributes multiplication in 2 parts
+    The matrix holds two matrices and distributes multiplication in 2 parts
 
-        M = A + B
-        M * x = A * x + B * x
-        M.T * y = B^T * y + A.T^*y
+    M = A + B
+    M * x = A * x + B * x
+    M.T * y = B^T * y + A.T^*y
     """
 
     def __init__(self, A, B):
@@ -369,11 +375,11 @@ class Add2Matrix(MatrixBase):
 class Mult2Matrix(MatrixBase):
     """Matrix by multipication of two matrices implicitly.
 
-        The matrix holds two matrices and distributes multiplication in 2 parts
+    The matrix holds two matrices and distributes multiplication in 2 parts
 
-        M = A * B
-        M * x = A * (B*x)
-        M.T * y = B^T * (A.T^*y) = (y^T * A * B)^T
+    M = A * B
+    M * x = A * (B*x)
+    M.T * y = B^T * (A.T^*y) = (y^T * A * B)^T
     """
 
     def __init__(self, A, B):
@@ -468,7 +474,7 @@ class Cm05Matrix(MatrixBase):
                 raise Exception("Matrix must by square (and symmetric)!")
 
             if verbose:
-                pg.tic(key='init cm05')
+                pg.tic(key="init cm05")
 
             eigkw = {}
             trsh = self._trsh
@@ -482,14 +488,17 @@ class Cm05Matrix(MatrixBase):
                 self.ew = self.ew[self.ew > trsh]
 
             if verbose:
-                pg.info('(C) Time for eigenvalue decomposition {:.1f}s'.format(
-                        pg.dur(key='init cm05')))
+                pg.info(
+                    "(C) Time for eigenvalue decomposition {:.1f}s".format(
+                        pg.dur(key="init cm05")
+                    )
+                )
 
     @property
     def mul(self):
         """Scaling vector for A**(-0.5), 1/sqrt(eigenvalues)."""
         if self._mul is None:
-            self._mul = np.sqrt(1./self.ew)
+            self._mul = np.sqrt(1.0 / self.ew)
         return self._mul
 
     def save(self, fileName):
@@ -502,9 +511,9 @@ class Cm05Matrix(MatrixBase):
         """Load the content of this matrix.
 
         Used for caching until pickling is possible for this class"""
-        d = np.load(fileName + '.npy', allow_pickle=True).tolist()
-        self.ew = d['ew']
-        self.EV = d['EV']
+        d = np.load(fileName + ".npy", allow_pickle=True).tolist()
+        self.ew = d["ew"]
+        self.EV = d["EV"]
 
     def rows(self):
         """Return number of rows (using underlying matrix)."""
@@ -516,7 +525,7 @@ class Cm05Matrix(MatrixBase):
 
     def mult(self, x):
         """Multiplication from right-hand side (dot product)."""
-        return self.EV.dot(np.dot(np.transpose(x), self.EV).T*self.mul)
+        return self.EV.dot(np.dot(np.transpose(x), self.EV).T * self.mul)
 
     def transMult(self, x):
         """Multiplication from right-hand side (dot product)."""
@@ -526,9 +535,9 @@ class Cm05Matrix(MatrixBase):
 class RepeatVMatrix(BlockMatrix):
     """Matrix repeating a base matrix N times vertically. Only A is stored.
 
-        M = | A |
-            | A |
-            | A |
+    M = | A |
+        | A |
+        | A |
     """
 
     def __init__(self, A, num):
@@ -555,7 +564,7 @@ class RepeatVMatrix(BlockMatrix):
 class RepeatHMatrix(BlockMatrix):
     """Matrix repeating a base matrix N times horizontally. Only A is stored.
 
-        M = [ A A A ]
+    M = [ A A A ]
     """
 
     def __init__(self, A, num):
@@ -582,9 +591,9 @@ class RepeatHMatrix(BlockMatrix):
 class RepeatDMatrix(BlockMatrix):
     """Matrix repeating a base matrix N times diagonally. Only A is stored.
 
-        M = | A     |
-            |   A   |
-            |     A |
+    M = | A     |
+        |   A   |
+        |     A |
     """
 
     def __init__(self, A, num):
@@ -613,11 +622,11 @@ class RepeatDMatrix(BlockMatrix):
 class FrameConstraintMatrix(RepeatDMatrix):
     """Matrix constraining meshes inside and between frames of same mesh.
 
-        M = |  A        |
-            |     A     |
-            |        A  |
-            | -I +I     |
-            |    -I +I  |
+    M = |  A        |
+        |     A     |
+        |        A  |
+        | -I +I     |
+        |    -I +I  |
     """
 
     def __init__(self, A, num, scale=1.0):
@@ -640,12 +649,12 @@ class FrameConstraintMatrix(RepeatDMatrix):
             self.Im = self.addMatrix(self.Iminus_)
             self.Ip = self.addMatrix(self.Iplus_)
             nc = self.rows()
-            for i in range(num-1):
-                self.addMatrixEntry(self.Im, nc, i*self.nm)
-                self.addMatrixEntry(self.Ip, nc, (i+1)*self.nm)
+            for i in range(num - 1):
+                self.addMatrixEntry(self.Im, nc, i * self.nm)
+                self.addMatrixEntry(self.Ip, nc, (i + 1) * self.nm)
                 nc += self.nm
         elif hasattr(scale, "__iter__"):
-            assert len(scale) == self.nm-1, "scaling vector length != num-1"
+            assert len(scale) == self.nm - 1, "scaling vector length != num-1"
             self.diag_ = np.repeat(scale, self.nm)
             self.Iminus_ = pg.matrix.DiagonalMatrix(-self.diag_)
             self.Iplus_ = pg.matrix.DiagonalMatrix(self.diag_)
@@ -723,6 +732,7 @@ class KroneckerMatrix(MatrixBase):
 
         return yy.ravel()
 
+
 class GeostatisticConstraintsMatrix(MatrixBase):
     """Geostatistic constraints matrix
 
@@ -754,8 +764,8 @@ class GeostatisticConstraintsMatrix(MatrixBase):
         withRef : bool [False]
             neglect spur (reference model effect) that is otherwise corrected
         """
-        super().__init__(kwargs.pop('verbose', False))
-        self.withRef = kwargs.pop('withRef', False)
+        super().__init__(kwargs.pop("verbose", False))
+        self.withRef = kwargs.pop("withRef", False)
         self._spur = None
         self.Cm05 = None
 
@@ -770,7 +780,7 @@ class GeostatisticConstraintsMatrix(MatrixBase):
             if CM is None and mesh is not None:
                 CM = covarianceMatrix(mesh, **kwargs)
             else:
-                pg.critical('Give either CM or mesh')
+                pg.critical("Give either CM or mesh")
 
             self.Cm05 = createCm05(CM)
 
@@ -792,21 +802,24 @@ class GeostatisticConstraintsMatrix(MatrixBase):
 
         Used for caching until pickling is possible for this class
         """
-        self.Cm05.save(fileName + '-Cm05')
-        np.save(fileName, dict(verbose=self.verbose(),
-                               withRef=self.withRef,
-                               Cm05=fileName + '-Cm05'),
-                allow_pickle=True)
+        self.Cm05.save(fileName + "-Cm05")
+        np.save(
+            fileName,
+            dict(verbose=self.verbose(), withRef=self.withRef, Cm05=fileName + "-Cm05"),
+            allow_pickle=True,
+        )
 
     def load(self, fileName):
         """Load the content of this matrix.
 
         Used for caching until pickling is possible for this class
         """
-        d = np.load(fileName + '.npy', allow_pickle=True).tolist()
-        self.setVerbose(d['verbose'], )
-        self.withRef = d['withRef']
-        self.Cm05 = Cm05Matrix(d['Cm05'])
+        d = np.load(fileName + ".npy", allow_pickle=True).tolist()
+        self.setVerbose(
+            d["verbose"],
+        )
+        self.withRef = d["withRef"]
+        self.Cm05 = Cm05Matrix(d["Cm05"])
 
     def mult(self, x):
         return self.Cm05.mult(x) - self.spur * x
@@ -848,8 +861,9 @@ def hstack(mats):
     >>> print(H)
     pg.matrix.BlockMatrix of size 4 x 5 consisting of 2 submatrices.
     """
-    assert not np.any(np.diff([m.rows() for m in mats])), \
-        "Matrix row numbers do not match!"
+    assert not np.any(
+        np.diff([m.rows() for m in mats])
+    ), "Matrix row numbers do not match!"
     A = pgcore.BlockMatrix()
     icol = 0
     for mat in mats:
@@ -883,8 +897,9 @@ def vstack(mats):
     >>> print(V)
     pg.matrix.BlockMatrix of size 5 x 4 consisting of 2 submatrices.
     """
-    assert not np.any(np.diff([m.cols() for m in mats])), \
-        "Matrix column numbers do not match!"
+    assert not np.any(
+        np.diff([m.cols() for m in mats])
+    ), "Matrix column numbers do not match!"
     A = pgcore.BlockMatrix()
     irow = 0
     for mat in mats:
@@ -937,6 +952,7 @@ def matrixRow(A, n):
     one[n] = 1.0
     return A.transMult(one)
 
+
 def matrixColumn(A, n):
     """Return matrix column of arbitrary matrix."""
     assert n < A.cols(), "number exceeds number of columns in matrix"
@@ -949,7 +965,7 @@ if __name__ == "__main__":
     Amat = pg.Matrix(3, 4)
     Bmat = TransposedMatrix(Amat)
     xvec = pg.Vector(3, 1.0)
-    print(Bmat*xvec)
+    print(Bmat * xvec)
     yvec = pg.Vector(4, 1.0)
     Cmat = SquaredMatrix(Amat)
-    print(Cmat*yvec)
+    print(Cmat * yvec)

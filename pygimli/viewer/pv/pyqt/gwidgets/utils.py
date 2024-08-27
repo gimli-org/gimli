@@ -3,29 +3,45 @@ import numpy as np
 
 from PyQt5.QtCore import Qt, QPointF, QRect, QSize
 from PyQt5.QtGui import (
-    QPixmap, QPainter, QLinearGradient, QColor, QBrush, QDoubleValidator, QIcon
+    QPixmap,
+    QPainter,
+    QLinearGradient,
+    QColor,
+    QBrush,
+    QDoubleValidator,
+    QIcon,
 )
 from PyQt5.QtWidgets import (
-    QWidget, QPushButton, QLineEdit, QComboBox, QSlider, QDoubleSpinBox,
-    QVBoxLayout, QHBoxLayout, QGroupBox, QLabel, QCheckBox
+    QWidget,
+    QPushButton,
+    QLineEdit,
+    QComboBox,
+    QSlider,
+    QDoubleSpinBox,
+    QVBoxLayout,
+    QHBoxLayout,
+    QGroupBox,
+    QLabel,
+    QCheckBox,
 )
 
 # predefined color maps
-CMAPS = ['viridis',
-         'plasma',
-         'Greys',
-         'Blues',
-         'Greens',
-         'Reds',
-         'gray',
-         'hot',
-         'Spectral',
-         'seismic',
-         'Set3',
-         'terrain',
-         'rainbow',
-         'jet'
-         ]
+CMAPS = [
+    "viridis",
+    "plasma",
+    "Greys",
+    "Blues",
+    "Greens",
+    "Reds",
+    "gray",
+    "hot",
+    "Spectral",
+    "seismic",
+    "Set3",
+    "terrain",
+    "rainbow",
+    "jet",
+]
 
 
 class GToolBar(QWidget):
@@ -66,9 +82,7 @@ class GToolBar(QWidget):
 
         # button to make bounding box visible
         self.btn_bbox = GButton(
-            text="Toggle Axes",
-            tooltip="Toggle data axis grid",
-            checkable=True
+            text="Toggle Axes", tooltip="Toggle data axis grid", checkable=True
         )
         self.btn_bbox.setChecked(True)
 
@@ -79,17 +93,11 @@ class GToolBar(QWidget):
         self.spbx_cmax.setEnabled(False)
 
         # if not hit by key his button accepts changes to the color range
-        self.btn_apply = GButton(
-            text="Apply",
-            tooltip="Apply changes in color range"
-        )
+        self.btn_apply = GButton(text="Apply", tooltip="Apply changes in color range")
         self.btn_apply.setEnabled(False)
 
         # resets the color range to its original range
-        self.btn_reset = GButton(
-            text="Reset",
-            tooltip="Reset changes in color range"
-        )
+        self.btn_reset = GButton(text="Reset", tooltip="Reset changes in color range")
         self.btn_reset.setEnabled(False)
 
         # slider for slicing
@@ -102,13 +110,11 @@ class GToolBar(QWidget):
 
         # button to take a screenshot
         self.btn_screenshot = GButton(
-            text="Screenshot",
-            tooltip="Save screenshot of the current scene"
+            text="Screenshot", tooltip="Save screenshot of the current scene"
         )
 
         self.btn_exportVTK = GButton(
-            text="Export VTK",
-            tooltip="Save displayed mesh as VTK"
+            text="Export VTK", tooltip="Save displayed mesh as VTK"
         )
 
         # parameter choosing
@@ -144,7 +150,8 @@ class GToolBar(QWidget):
         self.btn_global_limits = GButton(
             text="Global Limits",
             tooltip="Check if gobal limits should be tried",
-            checkable=True)
+            checkable=True,
+        )
         # checkbox for thresholding parameter distribution
         lyt_thresh = QHBoxLayout()
         lyt_thresh.addWidget(QLabel("Threshold"))
@@ -244,10 +251,11 @@ class GToolBar(QWidget):
             p = QPainter(px)
             gradient = QLinearGradient(QPointF(0, 0), QPointF(w, 0))
 
-            for t in np.linspace(0., 1., 15):
+            for t in np.linspace(0.0, 1.0, 15):
                 rgba = cMap(t)
                 gradient.setColorAt(
-                    t, QColor(rgba[0]*255, rgba[1]*255, rgba[2]*255))
+                    t, QColor(rgba[0] * 255, rgba[1] * 255, rgba[2] * 255)
+                )
 
             brush = QBrush(gradient)
             p.fillRect(QRect(0, 0, w, h), brush)
@@ -292,7 +300,7 @@ class _GDoubleSlider(QSlider):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.decimals = 5
-        self._max_int = 10 ** self.decimals
+        self._max_int = 10**self.decimals
 
         super().setMinimum(0)
         super().setMaximum(self._max_int)
@@ -305,10 +313,14 @@ class _GDoubleSlider(QSlider):
         return self._max_value - self._min_value
 
     def value(self):
-        return float(super().value()) / self._max_int * self._value_range + self._min_value
+        return (
+            float(super().value()) / self._max_int * self._value_range + self._min_value
+        )
 
     def setValue(self, value):
-        super().setValue(int((value - self._min_value) / self._value_range * self._max_int))
+        super().setValue(
+            int((value - self._min_value) / self._value_range * self._max_int)
+        )
 
     def setMinimum(self, value):
         if value > self._max_value:

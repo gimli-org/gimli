@@ -59,5 +59,4 @@ def greenDiffusion1D(x, t=0, a=1, dim=1):
     >>> _ = ax.legend()
     >>> fig.show()
     """
-    return 1. / (4. * np.pi * a * t)**(dim / 2.0) * \
-            np.exp(-(x**2) / (4. * a * t))
+    return 1.0 / (4.0 * np.pi * a * t) ** (dim / 2.0) * np.exp(-(x**2) / (4.0 * a * t))

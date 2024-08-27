@@ -50,8 +50,8 @@ class ERTManager(MeshMethodManager):
             will be calculated numerical using a p2 refined mesh or
             you provide primary potentials with setPrimPot.
         """
-        self.useBert = kwargs.pop('useBert', True)
-        self.sr = kwargs.pop('sr', True)
+        self.useBert = kwargs.pop("useBert", True)
+        self.sr = kwargs.pop("sr", True)
 
         super().__init__(data=data, **kwargs)
         self.inv.dataTrans = pg.trans.TransLogLU()
@@ -62,14 +62,14 @@ class ERTManager(MeshMethodManager):
 
     def createForwardOperator(self, **kwargs):
         """Create and choose forward operator."""
-        verbose = kwargs.pop('verbose', False)
-        self.useBert = kwargs.pop('useBert', self.useBert)
-        self.sr = kwargs.pop('sr', self.sr)
+        verbose = kwargs.pop("verbose", False)
+        self.useBert = kwargs.pop("useBert", self.useBert)
+        self.sr = kwargs.pop("sr", self.sr)
         if self.useBert:
-            pg.verbose('Create ERTModelling FOP')
+            pg.verbose("Create ERTModelling FOP")
             fop = ERTModelling(sr=self.sr, verbose=verbose)
         else:
-            pg.verbose('Create ERTModellingReference FOP')
+            pg.verbose("Create ERTModellingReference FOP")
             fop = ERTModellingReference(**kwargs)
 
         return fop
@@ -99,14 +99,14 @@ class ERTManager(MeshMethodManager):
         data = data or self.data
 
         if data is None:
-            pg.critical('Please provide a data file for mesh generation')
+            pg.critical("Please provide a data file for mesh generation")
 
         mesh = createInversionMesh(data, **kwargs)
         self.setMesh(mesh)
         return mesh
 
     def simulate(self, *args, **kwargs):
-    # def simulate(self, mesh, scheme, res, **kwargs):
+        # def simulate(self, mesh, scheme, res, **kwargs):
         """Simulate an ERT measurement.
 
         Perform the forward task for a given mesh, resistivity distribution &
@@ -211,7 +211,7 @@ class ERTManager(MeshMethodManager):
         # topo = min(pg.z(data)) != max(pg.z(data))  # not used!!
 
         if isinstance(data, pg.DataContainer):
-            if not data.allNonZero('k'):
+            if not data.allNonZero("k"):
                 pg.critical("Data contains no geometric factors data['k'].")
                 # numeric = min(pg.z(data)) != max(pg.z(data))
                 # data['k'] = createGeometricFactors(data,
@@ -220,49 +220,58 @@ class ERTManager(MeshMethodManager):
                 #                                 verbose=self.verbose)
 
             if self.fop.complex():
-                if not data.haveData('rhoa'):
+                if not data.haveData("rhoa"):
                     pg.critical('Datacontainer have no "rhoa" values.')
-                if not data.haveData('ip'):
+                if not data.haveData("ip"):
                     pg.critical('Datacontainer have no "ip" values.')
 
                 # pg.warn('check sign of phases')
-                rhoa = data['rhoa']
-                phia = -data['ip']/1000  # 'ip' is defined for neg mrad.
+                rhoa = data["rhoa"]
+                phia = -data["ip"] / 1000  # 'ip' is defined for neg mrad.
                 # we should think about some 'phia' in rad
 
                 return pg.utils.squeezeComplex(pg.utils.toComplex(rhoa, phia))
 
             else:
-                if not data.haveData('rhoa'):
+                if not data.haveData("rhoa"):
 
-                    if data.allNonZero('r'):
-                        pg.info("Creating apparent resistivies from "
-                                "impedences rhoa = r * k")
-                        data['rhoa'] = data['r'] * data['k']
+                    if data.allNonZero("r"):
+                        pg.info(
+                            "Creating apparent resistivies from "
+                            "impedences rhoa = r * k"
+                        )
+                        data["rhoa"] = data["r"] * data["k"]
 
-                    elif data.allNonZero('u') and data.allNonZero('i'):
+                    elif data.allNonZero("u") and data.allNonZero("i"):
 
-                        pg.info("Creating apparent resistivies from "
-                                "voltage and currrent rhoa = u/i * k")
-                        data['rhoa'] = data['u']/data['i'] * data['k']
+                        pg.info(
+                            "Creating apparent resistivies from "
+                            "voltage and currrent rhoa = u/i * k"
+                        )
+                        data["rhoa"] = data["u"] / data["i"] * data["k"]
 
                     else:
-                        pg.critical("Datacontainer have neither: "
-                                    "apparent resistivies 'rhoa', "
-                                    "or impedances 'r', "
-                                    "or voltage 'u' along with current 'i'.")
+                        pg.critical(
+                            "Datacontainer have neither: "
+                            "apparent resistivies 'rhoa', "
+                            "or impedances 'r', "
+                            "or voltage 'u' along with current 'i'."
+                        )
 
-                if any(data['rhoa'] < 0) and \
-                        isinstance(self.inv.dataTrans, pg.trans.TransLog):
+                if any(data["rhoa"] < 0) and isinstance(
+                    self.inv.dataTrans, pg.trans.TransLog
+                ):
                     # print(pg.find(data['rhoa'] < 0))
                     # print(data['rhoa'][data['rhoa'] < 0])
-                    pg.warning("Found negative apparent resistivities. "
-                               "These can't be processed with logarithmic "
-                               "data transformation. You should consider to "
-                               "filter them out using "
-                               "data.remove(data['rhoa'] < 0).")
+                    pg.warning(
+                        "Found negative apparent resistivities. "
+                        "These can't be processed with logarithmic "
+                        "data transformation. You should consider to "
+                        "filter them out using "
+                        "data.remove(data['rhoa'] < 0)."
+                    )
 
-                return data['rhoa']
+                return data["rhoa"]
 
         return data
 
@@ -274,25 +283,27 @@ class ERTManager(MeshMethodManager):
         if isinstance(err, pg.DataContainer):
             rae = None
 
-            if not err.allNonZero('err'):
-                pg.warn("Datacontainer have no 'err' values. "
-                        "Fallback of 1mV + 3% using "
-                        "ERTManager.estimateError(...) ")
-                rae = self.estimateError(err, absoluteError=0.001,
-                                         relativeError=0.03)
+            if not err.allNonZero("err"):
+                pg.warn(
+                    "Datacontainer have no 'err' values. "
+                    "Fallback of 1mV + 3% using "
+                    "ERTManager.estimateError(...) "
+                )
+                rae = self.estimateError(err, absoluteError=0.001, relativeError=0.03)
             else:
-                rae = err['err']
+                rae = err["err"]
 
             if self.fop.complex():
                 ipe = None
 
-                if err.haveData('iperr'):
+                if err.haveData("iperr"):
                     _, phi = pg.utils.toPolar(dataVals)
                     # assuming ipErr are absolute dPhi in mrad
-                    ipe = err['iperr'] / abs((phi*1000))
+                    ipe = err["iperr"] / abs((phi * 1000))
                 else:
-                    pg.warn("Datacontainer have no 'iperr' values. "
-                            "Fallback set to 0.01")
+                    pg.warn(
+                        "Datacontainer have no 'iperr' values. " "Fallback set to 0.01"
+                    )
                     ipe = np.ones(err.size()) * 0.01
 
                 return pg.cat(rae, ipe)
@@ -332,9 +343,9 @@ class ERTManager(MeshMethodManager):
 
     def coverage(self):
         """Coverage vector considering the logarithmic transformation."""
-        covTrans = pg.core.coverageDCtrans(self.fop.jacobian(),
-                                           1.0 / self.inv.response,
-                                           1.0 / self.inv.model)
+        covTrans = pg.core.coverageDCtrans(
+            self.fop.jacobian(), 1.0 / self.inv.response, 1.0 / self.inv.model
+        )
 
         paramSizes = np.zeros(len(self.inv.model))
         for c in self.fop.paraDomain.cells():
@@ -345,16 +356,17 @@ class ERTManager(MeshMethodManager):
 
     def standardizedCoverage(self, threshold=0.01):
         """Return standardized coverage vector (0|1) using thresholding."""
-        return 1.0*(self.coverage() > threshold)
+        return 1.0 * (self.coverage() > threshold)
 
     def showMisfit(self, errorWeighted=False, **kwargs):
         """Show relative or error-weighted data misfit."""
         if errorWeighted:
-            misfit = (np.log(self.data["rhoa"]) - np.log(self.inv.response)) /\
-                self.data["err"]
+            misfit = (
+                np.log(self.data["rhoa"]) - np.log(self.inv.response)
+            ) / self.data["err"]
             kwargs.setdefault("label", "error-weighted misfit")
         else:
-            misfit = - self.inv.response / self.data["rhoa"] * 100 + 100
+            misfit = -self.inv.response / self.data["rhoa"] * 100 + 100
             kwargs.setdefault("label", "relative misfit (%)")
 
         kwargs.setdefault("cMax", np.max(np.abs(misfit)))
@@ -409,35 +421,35 @@ class ERTManager(MeshMethodManager):
         subfolder = self.__class__.__name__
         path = getSavePath(folder, subfolder)
 
-        pg.info('Saving inversion results to: {}'.format(path))
+        pg.info("Saving inversion results to: {}".format(path))
 
-        np.savetxt(path + '/resistivity.vector', self.model)
-        np.savetxt(path + '/resistivity-cov.vector', self.coverage())
-        np.savetxt(path + '/resistivity-scov.vector',
-                   self.standardizedCoverage())
+        np.savetxt(path + "/resistivity.vector", self.model)
+        np.savetxt(path + "/resistivity-cov.vector", self.coverage())
+        np.savetxt(path + "/resistivity-scov.vector", self.standardizedCoverage())
 
-        self.fop.data.save(os.path.join(path, 'data.dat'),
-                           'a b m n rhoa k err ip iperr')
-        self.mesh.save(os.path.join(path, 'mesh'))
+        self.fop.data.save(
+            os.path.join(path, "data.dat"), "a b m n rhoa k err ip iperr"
+        )
+        self.mesh.save(os.path.join(path, "mesh"))
 
         m = pg.Mesh(self.paraDomain)
-        m['Resistivity'] = self.paraModel(self.model)
-        m['Resistivity (log10)'] = np.log10(m['Resistivity'])
-        m['Coverage'] = self.coverage()
-        m['S_Coverage'] = self.standardizedCoverage()
+        m["Resistivity"] = self.paraModel(self.model)
+        m["Resistivity (log10)"] = np.log10(m["Resistivity"])
+        m["Coverage"] = self.coverage()
+        m["S_Coverage"] = self.standardizedCoverage()
         nM = m.cellCount()
         for k, v in kwargs.items():
             if hasattr(v, "__iter__") and len(v) == nM:
                 m[k] = v
 
-        m.exportVTK(os.path.join(path, 'resistivity'))
-        m.saveBinaryV2(os.path.join(path, 'resistivity-pd'))
-        self.fop.mesh().save(os.path.join(path, 'resistivity-mesh'))
+        m.exportVTK(os.path.join(path, "resistivity"))
+        m.saveBinaryV2(os.path.join(path, "resistivity-pd"))
+        self.fop.mesh().save(os.path.join(path, "resistivity-mesh"))
 
         if self.paraDomain.dim() == 2:
             fig, ax = pg.plt.subplots(figsize=size)
             self.showModel(ax=ax, **kwargs)
-            fig.savefig(path + '/resistivity.pdf', bbox_inches="tight")
+            fig.savefig(path + "/resistivity.pdf", bbox_inches="tight")
             return path, fig, ax
         return path
 

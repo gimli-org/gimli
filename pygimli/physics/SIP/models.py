@@ -72,9 +72,9 @@ def modelColeColeRho(f, rho, m, tau, c, a=1):
     >>> _ = ax4.set_ylim(-0.2, 0)
     >>> pg.plt.show()
     """
-    z = (1. - m * (1. - relaxationTerm(f, tau, c, a))) * rho
+    z = (1.0 - m * (1.0 - relaxationTerm(f, tau, c, a))) * rho
     if np.isnan(z).any():
-        print(f, 'rho', rho, 'm', m, 'tau', tau, 'c', c)
+        print(f, "rho", rho, "m", m, "tau", tau, "c", c)
         pg.critical(z)
     return z
 
@@ -106,25 +106,24 @@ def ColeColeSigma(f, sigma, m, tau, c, a=1):
 
 def modelColeColeSigma(f, sigma, m, tau, c, a=1):
     """Complex-valued conductivity (admittance) Cole-Cole model."""
-    return (1. + m / (1-m) * (1. - relaxationTerm(f, tau, c, a))) * sigma
+    return (1.0 + m / (1 - m) * (1.0 - relaxationTerm(f, tau, c, a))) * sigma
 
 
 def modelColeColeSigmaTauRho(f, sigma, m, tau, c, a=1):
     """Complex-valued conductivity (admittance) Cole-Cole model."""
-    return (1. + m / (1-m) * (1. - relaxationTerm(f, tau, c, a)*(1-m))) * sigma
+    return (1.0 + m / (1 - m) * (1.0 - relaxationTerm(f, tau, c, a) * (1 - m))) * sigma
 
 
-def modelColeColeSigmaDouble(f, sigma, m1, t1, c1, m2, t2, c2, a=1,
-                             tauRho=True):
+def modelColeColeSigmaDouble(f, sigma, m1, t1, c1, m2, t2, c2, a=1, tauRho=True):
     """Complex-valued double added conductivity (admittance) model."""
     if tauRho:
-        R1 = 1. - relaxationTerm(f, tau=t1, c=c1, a=a, p=1-m1)
-        R2 = 1. - relaxationTerm(f, tau=t2, c=c2, a=a, p=1-m2)
-        return sigma * (1. + m1 / (1 - m1) * R1 + m2 / (1 - m2) * R2)
+        R1 = 1.0 - relaxationTerm(f, tau=t1, c=c1, a=a, p=1 - m1)
+        R2 = 1.0 - relaxationTerm(f, tau=t2, c=c2, a=a, p=1 - m2)
+        return sigma * (1.0 + m1 / (1 - m1) * R1 + m2 / (1 - m2) * R2)
     else:
         A1 = modelColeColeSigma(f, sigma=1, m=m1, tau=t1, c=c1, a=a)
         A2 = modelColeColeSigma(f, sigma=1, m=m2, tau=t2, c=c2, a=a)
-        return (A1 + A2 - 1.) * sigma
+        return (A1 + A2 - 1.0) * sigma
 
 
 def tauRhoToTauSigma(tRho, m, c):
@@ -149,10 +148,10 @@ def tauRhoToTauSigma(tRho, m, c):
     >>> np.angle(1.0/S / Z) < 1e-12
     True
     """
-    return tRho * (1-m) ** (1/c)
+    return tRho * (1 - m) ** (1 / c)
 
 
-def relaxationTerm(f, tau, c=1., a=1., p=1.):
+def relaxationTerm(f, tau, c=1.0, a=1.0, p=1.0):
     r"""Auxiliary function for Debye type relaxation term of the basic type.
 
     .. math::
@@ -168,7 +167,7 @@ def relaxationTerm(f, tau, c=1., a=1., p=1.):
     With c=1 and a one yields the Cole-Davidson model.
     With p=(1-m) one can account for the difference of sigma and rho tau.
     """
-    return 1. / ((f * 2. * pi * tau * 1j)**c * p + 1.)**a
+    return 1.0 / ((f * 2.0 * pi * tau * 1j) ** c * p + 1.0) ** a
 
 
 def DebyeRelaxation(f, tau, m):
@@ -178,7 +177,7 @@ def DebyeRelaxation(f, tau, m):
 
 def relaxationDebye(f, tau, m):
     """Complex-valued single Debye relaxation term with chargeability."""
-    return 1. - (1. - relaxationTerm(f, tau)) * m
+    return 1.0 - (1.0 - relaxationTerm(f, tau)) * m
 
 
 def WarbugRelaxation(f, tau, m):
@@ -188,7 +187,7 @@ def WarbugRelaxation(f, tau, m):
 
 def relaxationWarbug(f, tau, m):
     """Complex-valued single Debye relaxation term with chargeability."""
-    return 1. - (1. - relaxationTerm(f, tau, c=0.5)) * m
+    return 1.0 - (1.0 - relaxationTerm(f, tau, c=0.5)) * m
 
 
 def ColeColeEpsilon(f, e0, eInf, tau, alpha):
@@ -198,7 +197,7 @@ def ColeColeEpsilon(f, e0, eInf, tau, alpha):
 
 def modelColeColeEpsilon(f, e0, eInf, tau, alpha):
     """Original complex-valued permittivity formulation (Cole&Cole, 1941)."""
-    return (e0 - eInf) * relaxationTerm(f, tau, c=1./alpha) + eInf
+    return (e0 - eInf) * relaxationTerm(f, tau, c=1.0 / alpha) + eInf
 
 
 def ColeCole(f, R, m, tau, c, a=1):
@@ -269,8 +268,7 @@ class DoubleColeCole(pg.Modelling):
 
     """
 
-    def __init__(self, f, rho=True, tauRho=True, mult=False, aphi=True,
-                 verbose=False):
+    def __init__(self, f, rho=True, tauRho=True, mult=False, aphi=True, verbose=False):
         """Setup class by specifying the frequency."""
         super().__init__(verbose=verbose)
         self.f_ = f  # save frequencies
@@ -285,8 +283,7 @@ class DoubleColeCole(pg.Modelling):
         if self.rho:
             out = modelColeColeRhoDouble(self.f_, *par, a=1, mult=self.mult)
         else:
-            out = modelColeColeSigmaDouble(self.f_, *par, a=1,
-                                           tauRho=self.tauRho)
+            out = modelColeColeSigmaDouble(self.f_, *par, a=1, tauRho=self.tauRho)
 
         if self.aphi:
             return np.hstack((np.abs(out), np.abs(np.angle(out))))
@@ -382,8 +379,9 @@ class PeltonPhiEM(pg.core.ModellingBase):
 
     def response(self, par):
         """Phase angle of the model."""
-        spec = modelColeColeRho(self.f_, 1.0, par[0], par[1], par[2]) * \
-            relaxationTerm(self.f_, par[3])  # pure EM has c=1
+        spec = modelColeColeRho(self.f_, 1.0, par[0], par[1], par[2]) * relaxationTerm(
+            self.f_, par[3]
+        )  # pure EM has c=1
         return -np.angle(spec)
 
 
@@ -402,8 +400,8 @@ class DebyePhi(pg.Modelling):
     def response(self, par):
         """amplitude/phase spectra as function of spectral chargeabilities."""
         y = np.ones(self.nf_, dtype=np.complex)  # 1 -
-        for (tau, mk) in zip(self.t_, par):
-            y -= (1. - relaxationTerm(self.f_, tau)) * mk
+        for tau, mk in zip(self.t_, par):
+            y -= (1.0 - relaxationTerm(self.f_, tau)) * mk
 
         return -np.angle(y)
 
@@ -419,17 +417,17 @@ class DebyeComplex(pg.Modelling):
         self.nt = len(tvec)
         mesh = pg.meshtools.createMesh1D(len(tvec))  # standard 1d mesh
         super(DebyeComplex, self).__init__(mesh=mesh, verbose=verbose)
-        T, W = np.meshgrid(tvec, fvec * 2. * pi)
-        WT = W*T
+        T, W = np.meshgrid(tvec, fvec * 2.0 * pi)
+        WT = W * T
         self.A = WT**2 / (WT**2 + 1)
-        self.B = WT / (WT**2+1)
+        self.B = WT / (WT**2 + 1)
         self.J = pg.Matrix()
-        self.J.resize(len(fvec)*2, len(tvec))
+        self.J.resize(len(fvec) * 2, len(tvec))
         for i in range(self.nf):
             wt = fvec[i] * 2.0 * pi * tvec
             wt2 = wt**2
             self.J[i] = wt2 / (wt2 + 1.0)
-            self.J[i+self.nf] = wt / (wt2 + 1.0)
+            self.J[i + self.nf] = wt / (wt2 + 1.0)
 
         self.setJacobian(self.J)
 

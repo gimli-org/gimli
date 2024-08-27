@@ -55,7 +55,7 @@ from pygimli.physics import ert
 # After importing the necessary libraries, we load the RCP data from the paper
 # of Udphuay et al. (2011).
 #
-data = pg.getExampleData('ert/reciprocal.ohm')
+data = pg.getExampleData("ert/reciprocal.ohm")
 print(data)
 
 ###############################################################################
@@ -65,7 +65,10 @@ print(data)
 # at a later processing stage. We show the electrode positions resembling
 # Fig. 8 of Udphuay et al. (2011), however rotated.
 #
-fig, ax, = plt.subplots()
+(
+    fig,
+    ax,
+) = plt.subplots()
 ax.plot(pg.x(data), pg.y(data), ".", label="electrodes")
 ax.set_xlabel("x (m)")
 ax.set_ylabel("y (m)")
@@ -81,9 +84,9 @@ ax.set_aspect(1.0)
 # analyses, plus 4190 single data.
 #
 iF, iB = ert.reciprocalIndices(data, True)
-print(len(iF), data.size()-len(iF)-len(iB))
+print(len(iF), data.size() - len(iF) - len(iB))
 fig, ax = plt.subplots()
-ax.loglog(data['r'][iF], data['r'][iB], '.', markersize=2)
+ax.loglog(data["r"][iF], data["r"][iB], ".", markersize=2)
 ax.set_xlabel("R normal (Ohmm)")
 ax.set_ylabel("R reciprocal (Ohmm)")
 ax.grid()
@@ -94,13 +97,13 @@ ax.grid()
 # increased (relative as indicated by the logarithmic axis) errors.
 # We look at reciprocal errors a bit more in detail:
 #
-R = data['r']
+R = data["r"]
 Rmean = abs(R[iF] + R[iB]) / 2
 dR = abs(R[iF] - R[iB])
 fig, ax = plt.subplots()
-ax.loglog(Rmean, dR, '.', markersize=2)
-ax.set_xlabel('R (Ohm)')
-ax.set_ylabel('dR(Ohm)')
+ax.loglog(Rmean, dR, ".", markersize=2)
+ax.set_xlabel("R (Ohm)")
+ax.set_ylabel("dR(Ohm)")
 ax.grid()
 
 ###############################################################################
@@ -115,9 +118,9 @@ ax.grid()
 #
 dRbyR = dR / Rmean
 fig, ax = plt.subplots()
-ax.loglog(Rmean, dRbyR, '.', markersize=2)
-ax.set_xlabel('R (Ohm)')
-ax.set_ylabel('dR / R')
+ax.loglog(Rmean, dRbyR, ".", markersize=2)
+ax.set_xlabel("R (Ohm)")
+ax.set_ylabel("dR / R")
 ax.grid()
 
 ###############################################################################
@@ -145,16 +148,16 @@ ax.set_yscale("symlog", linthresh=0.001)
 # We plot the two models against each other.
 #
 
-relerr1 = ab1[1] +  ab1[0] / data['r']
-relerr2 = ab2[0] +  ab2[1] / data['r']
+relerr1 = ab1[1] + ab1[0] / data["r"]
+relerr2 = ab2[0] + ab2[1] / data["r"]
 fig, ax = plt.subplots()
-ax.loglog(relerr1*100, relerr2*100, ".", markersize=2)
+ax.loglog(relerr1 * 100, relerr2 * 100, ".", markersize=2)
 ax.set_aspect(1.0)
-ax.set_xlabel('model 1 error (%)')
-ax.set_ylabel('model 2 error (%)')
+ax.set_xlabel("model 1 error (%)")
+ax.set_ylabel("model 2 error (%)")
 ax.set_xlim(1, 200)
 ax.set_ylim(1, 100)
-ax.grid(which='both')
+ax.grid(which="both")
 
 ###############################################################################
 # In this case, the second error model (2.3-40% relative error) based on

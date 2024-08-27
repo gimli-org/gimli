@@ -6,6 +6,7 @@ import pygimli as pg
 
 from pygimli.physics import TravelTimeManager
 
+
 class TestTT(unittest.TestCase):
 
     def setUp(self):
@@ -20,54 +21,56 @@ class TestTT(unittest.TestCase):
         self.data.registerSensorIndex("g")
 
         # Without secondary nodes
-        self.mesh = pg.createGrid([0,1,2],[0,1,2])
+        self.mesh = pg.createGrid([0, 1, 2], [0, 1, 2])
 
         # Slowness
-        self.slo = [1,2,1,4]
-        
+        self.slo = [1, 2, 1, 4]
+
         self.mgr = TravelTimeManager()
 
     def test_withoutSecNodes(self):
         fop = self.mgr.fop
         fop.setData(self.data)
-        fop.setMesh(self.mesh, 
-                    ignoreRegionManager=True)
+        fop.setMesh(self.mesh, ignoreRegionManager=True)
         t = fop.response(self.slo)
         np.testing.assert_allclose(t, 1 + np.sqrt(2))
 
         pg.show(self.mesh)
-        data = self.mgr.simulate(slowness=self.slo, scheme=self.data, 
-                                 mesh=self.mesh, secNodes=0)
-        np.testing.assert_allclose(data['t'], 1 + np.sqrt(2))
-        
+        data = self.mgr.simulate(
+            slowness=self.slo, scheme=self.data, mesh=self.mesh, secNodes=0
+        )
+        np.testing.assert_allclose(data["t"], 1 + np.sqrt(2))
 
     def test_withSecNodes(self):
         fop = self.mgr.fop
         fop.setData(self.data)
-        fop.setMesh(self.mesh.createMeshWithSecondaryNodes(n=3), 
-                    ignoreRegionManager=True)
+        fop.setMesh(
+            self.mesh.createMeshWithSecondaryNodes(n=3), ignoreRegionManager=True
+        )
 
         t = fop.response(self.slo)
-        np.testing.assert_allclose(t, np.sqrt(5)) # only works for odd secNodes
-        
-        data = self.mgr.simulate(slowness=self.slo, scheme=self.data, 
-                                 mesh=self.mesh, secNodes=3)
-        np.testing.assert_allclose(data['t'], np.sqrt(5)) # only works for odd secNodes
+        np.testing.assert_allclose(t, np.sqrt(5))  # only works for odd secNodes
 
+        data = self.mgr.simulate(
+            slowness=self.slo, scheme=self.data, mesh=self.mesh, secNodes=3
+        )
+        np.testing.assert_allclose(data["t"], np.sqrt(5))  # only works for odd secNodes
 
     def test_Jacobian(self):
         fop = self.mgr.fop
         fop.setData(self.data)
-        fop.setMesh(self.mesh.createMeshWithSecondaryNodes(n=5), 
-                    ignoreRegionManager=True)
+        fop.setMesh(
+            self.mesh.createMeshWithSecondaryNodes(n=5), ignoreRegionManager=True
+        )
 
         fop.createJacobian(self.slo)
         J = fop.jacobian()
         np.testing.assert_allclose(J * self.slo, np.sqrt(5))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
 
     # fop  = TestTT()
     # fop.test_MT()
-    
+
     unittest.main()

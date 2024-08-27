@@ -12,7 +12,7 @@ def createGrid(x=None, y=None, z=None, **kwargs):
     Generate simple grid with defined node positions for each dimension.
     The resulting grid depends on the amount of given coordinate arguments
     and consists out of edges (1D - x), quads (2D- x and y), or
-    hexahedrons(3D- x, y, and z). For grids with world boundary markers 
+    hexahedrons(3D- x, y, and z). For grids with world boundary markers
     (-1 surface and -2 subsurface) the y or z array need to be in increasing
     order.
 
@@ -54,21 +54,21 @@ def createGrid(x=None, y=None, z=None, **kwargs):
     >>> _ = pg.show(mesh, markers=True, showBoundaries=True,
     ...             showMesh=True, ax=axs[1])
     """
-    if 'degree' in kwargs:
+    if "degree" in kwargs:
         return createGridPieShaped(x, **kwargs)
 
     if x is not None:
         if isinstance(x, int):
             x = list(range(x))
-        kwargs['x'] = x
+        kwargs["x"] = x
     if y is not None:
         if isinstance(y, int):
             y = list(range(y))
-        kwargs['y'] = y
+        kwargs["y"] = y
     if z is not None:
         if isinstance(z, int):
             z = list(range(z))
-        kwargs['z'] = z
+        kwargs["z"] = z
 
     return pg.core.createGrid(**kwargs)
 
@@ -119,19 +119,20 @@ def createGridPieShaped(x, degree=10.0, h=2, marker=0):
     for i in range(0, len(x)):
         mesh.createNodeWithCheck([x[i], 0.0])
 
-        mesh.createNodeWithCheck([x[i]*np.cos(degree*np.pi/180),
-                                  x[i]*np.sin(degree*np.pi/180)])
+        mesh.createNodeWithCheck(
+            [x[i] * np.cos(degree * np.pi / 180), x[i] * np.sin(degree * np.pi / 180)]
+        )
 
     if abs(x[0]) < 1e-6:
         mesh.createCell([0, 1, 2])
-        for i in range(0, (len(x)-2)*2-1, 2):
-            c = mesh.createCell([i+1, i+3, i+4, i+2])
+        for i in range(0, (len(x) - 2) * 2 - 1, 2):
+            c = mesh.createCell([i + 1, i + 3, i + 4, i + 2])
     else:
-        for i in range(0, len(x)*2-2, 2):
-            c = mesh.createCell([i, i+2, i+3, i+1])
+        for i in range(0, len(x) * 2 - 2, 2):
+            c = mesh.createCell([i, i + 2, i + 3, i + 1])
         mesh.createBoundary([0, 1], marker=1)
 
-    mesh.createBoundary([mesh.nodeCount()-2, mesh.nodeCount()-1], marker=2)
+    mesh.createBoundary([mesh.nodeCount() - 2, mesh.nodeCount() - 1], marker=2)
 
     for i in range(h):
         mesh = mesh.createH2()
@@ -153,10 +154,9 @@ def createGridPieShaped(x, degree=10.0, h=2, marker=0):
         rSoll = line.intersect([0.0, 0.0], [1.0, 0.0])[0]
         if rSoll > 1e-4:
             for n in b.nodes():
-                scale = rSoll/n.pos().abs()
+                scale = rSoll / n.pos().abs()
                 if scale > 1:
-                    meshR.node(n.id()).setPos(pg.Line([0.0, 0.0],
-                                                      n.pos()).at(scale))
+                    meshR.node(n.id()).setPos(pg.Line([0.0, 0.0], n.pos()).at(scale))
 
     if marker != 0:
         for c in meshR.cells():
@@ -194,9 +194,9 @@ def appendBoundary(mesh, **kwargs):
     pg.critical("Don't know how to append boundary to: ", mesh)
 
 
-def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
-                           isSubSurface=True,
-                           **kwargs):
+def appendTriangleBoundary(
+    mesh, xbound=10, ybound=10, marker=1, isSubSurface=True, **kwargs
+):
     """Add a triangle mesh boundary to a given mesh.
 
     Returns a new mesh that contains a triangulated box around a given mesh
@@ -207,7 +207,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
     the subsurface.
 
     Note, this all will only work stable if the mesh generator (triangle)
-    preserve all input boundaries. However this will lead to bad quality meshes 
+    preserve all input boundaries. However this will lead to bad quality meshes
     for the boundary region so its a good idea to play with the addNodes keyword
     argument to manually refine the newly created outer boundaries.
 
@@ -292,78 +292,102 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
                 startPoint = endPoint
                 endPoint = mesh.node(paths[0][0]).pos()
         else:
-            pg.critical("Can't identify upper part of the mesh to be moved to"
-                        "the surface. Maybe define them with Marker==-1")
+            pg.critical(
+                "Can't identify upper part of the mesh to be moved to"
+                "the surface. Maybe define them with Marker==-1"
+            )
 
-        addNodes = kwargs.pop('addNodes', 5)
+        addNodes = kwargs.pop("addNodes", 5)
 
         boundPoly = [pg.Pos(startPoint)]
 
         if isinstance(addNodes, (float, int)) and addNodes > 0:
             addNodes = np.full(5, addNodes)
 
-        if hasattr(addNodes, '__len__') and len(addNodes) == 5:
-            boundPoly.extend([boundPoly[-1] - pg.Pos(x, 0)
-                              for x in pg.utils.grange(1, xbound,
-                                                       n=addNodes[0]+1,
-                                                       log=True)])
-            boundPoly.extend([boundPoly[-1] - pg.Pos(0, y)
-                              for y in np.linspace(
-                0, mesh.ymax() - mesh.ymin() + ybound, addNodes[1] + 1)[1:]])
+        if hasattr(addNodes, "__len__") and len(addNodes) == 5:
             boundPoly.extend(
-                [boundPoly[-1] + pg.Pos(x, 0)
-                 for x in np.linspace(0, (endPoint-startPoint)[0] + 2*xbound,
-                                      addNodes[2]+1)[1:]])
+                [
+                    boundPoly[-1] - pg.Pos(x, 0)
+                    for x in pg.utils.grange(1, xbound, n=addNodes[0] + 1, log=True)
+                ]
+            )
             boundPoly.extend(
-                [boundPoly[-1] + pg.Pos(0, y)
-                 for y in np.linspace(0, endPoint[1]-boundPoly[-1][1],
-                                      addNodes[3]+1)[1:]])
+                [
+                    boundPoly[-1] - pg.Pos(0, y)
+                    for y in np.linspace(
+                        0, mesh.ymax() - mesh.ymin() + ybound, addNodes[1] + 1
+                    )[1:]
+                ]
+            )
             boundPoly.extend(
-                [boundPoly[-1] - pg.Pos(xbound-x, 0)
-                 for x in pg.utils.grange(1, xbound, n=addNodes[4]+1,
-                                          log=True)[::-1][1:]])
+                [
+                    boundPoly[-1] + pg.Pos(x, 0)
+                    for x in np.linspace(
+                        0, (endPoint - startPoint)[0] + 2 * xbound, addNodes[2] + 1
+                    )[1:]
+                ]
+            )
+            boundPoly.extend(
+                [
+                    boundPoly[-1] + pg.Pos(0, y)
+                    for y in np.linspace(
+                        0, endPoint[1] - boundPoly[-1][1], addNodes[3] + 1
+                    )[1:]
+                ]
+            )
+            boundPoly.extend(
+                [
+                    boundPoly[-1] - pg.Pos(xbound - x, 0)
+                    for x in pg.utils.grange(1, xbound, n=addNodes[4] + 1, log=True)[
+                        ::-1
+                    ][1:]
+                ]
+            )
         else:
             boundPoly.append(boundPoly[-1] - pg.Pos(xbound, 0))
-            boundPoly.append(boundPoly[-1] - pg.Pos(0, mesh.ymax() -
-                                                    mesh.ymin() + ybound))
-            boundPoly.append(boundPoly[-1] + pg.Pos((endPoint-startPoint)[0] +
-                                                    2*xbound, 0))
+            boundPoly.append(
+                boundPoly[-1] - pg.Pos(0, mesh.ymax() - mesh.ymin() + ybound)
+            )
+            boundPoly.append(
+                boundPoly[-1] + pg.Pos((endPoint - startPoint)[0] + 2 * xbound, 0)
+            )
             boundPoly.append(pg.Pos(endPoint) + pg.Pos(xbound, 0))
 
         boundPoly.append(pg.Pos(endPoint))
 
         poly = pg.meshtools.createPolygon(boundPoly, isClosed=False)
 
-        poly.addRegionMarker(pg.Pos([poly.xmin(), poly.ymin()]) +
-                             [xbound/100, ybound/100],
-                             marker=marker)
+        poly.addRegionMarker(
+            pg.Pos([poly.xmin(), poly.ymin()]) + [xbound / 100, ybound / 100],
+            marker=marker,
+        )
 
         if mesh.cellCount() > 0:
-            poly.addHoleMarker(pg.Pos([mesh.xmin(), mesh.ymin()]) +
-                               [0.001, 0.001])
+            poly.addHoleMarker(pg.Pos([mesh.xmin(), mesh.ymin()]) + [0.001, 0.001])
 
     else:  # no isSubSurface
 
-        boundPoly = [[mesh.xmin() - xbound, mesh.ymin() - ybound],
-                     [mesh.xmin() - xbound, mesh.ymax() + ybound],
-                     [mesh.xmax() + xbound, mesh.ymax() + ybound],
-                     [mesh.xmax() + xbound, mesh.ymin() - ybound]]
+        boundPoly = [
+            [mesh.xmin() - xbound, mesh.ymin() - ybound],
+            [mesh.xmin() - xbound, mesh.ymax() + ybound],
+            [mesh.xmax() + xbound, mesh.ymax() + ybound],
+            [mesh.xmax() + xbound, mesh.ymin() - ybound],
+        ]
 
-        poly = pg.meshtools.createPolygon(boundPoly, isClosed=True,
-                                          marker=marker,
-                                          addNodes=kwargs.pop('addNodes', 5))
+        poly = pg.meshtools.createPolygon(
+            boundPoly, isClosed=True, marker=marker, addNodes=kwargs.pop("addNodes", 5)
+        )
 
     for b in mesh.boundaries():
         if b.outside() or b.marker() == -1:
             poly.copyBoundary(b)
 
-    preserveSwitch = 'Y'
-    #pg.show(poly, fillRegion=False)
-    #pg.show(poly, boundaryMarkers=True, showNodes=True)
-    #pg.wait()
+    preserveSwitch = "Y"
+    # pg.show(poly, fillRegion=False)
+    # pg.show(poly, boundaryMarkers=True, showNodes=True)
+    # pg.wait()
 
-    mesh2 = pg.meshtools.createMesh(poly, preserveBoundary=preserveSwitch,
-                                    **kwargs)
+    mesh2 = pg.meshtools.createMesh(poly, preserveBoundary=preserveSwitch, **kwargs)
 
     # pg.show(mesh2, boundaryMarkers=True, showNodes=True)
 
@@ -404,8 +428,9 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
     return mesh3
 
 
-def appendBoundaryGrid(grid, xbound=None, ybound=None, zbound=None,
-                       marker=1, isSubSurface=True, **kwargs):
+def appendBoundaryGrid(
+    grid, xbound=None, ybound=None, zbound=None, marker=1, isSubSurface=True, **kwargs
+):
     """Return a copy of grid surrounded by a boundary grid.
 
     Note, the input grid needs to be a 2d or 3d grid with quad/hex cells.
@@ -458,10 +483,10 @@ def appendBoundaryGrid(grid, xbound=None, ybound=None, zbound=None,
     ...                 filter={'clip':{}});
     """
     if isSubSurface:
-        pg.critical('Implement me')
+        pg.critical("Implement me")
 
     def _concat(v, vBound):
-        if (not pg.isArray(vBound)):
+        if not pg.isArray(vBound):
             pg.critical("please give bound array")
 
         v = np.append(-np.array(vBound)[::-1] + v[0], v)
@@ -475,8 +500,9 @@ def appendBoundaryGrid(grid, xbound=None, ybound=None, zbound=None,
     if grid.dim() > 1:
         if grid.dim() == 2:
             if any([c.nodeCount() != 4 for c in grid.cells()]):
-                pg.critical("Grid have other cells than quads. "
-                            "Can't refine it with a grid")
+                pg.critical(
+                    "Grid have other cells than quads. " "Can't refine it with a grid"
+                )
 
         x = pg.utils.unique(pg.x(grid))
         y = pg.utils.unique(pg.y(grid))
@@ -485,23 +511,24 @@ def appendBoundaryGrid(grid, xbound=None, ybound=None, zbound=None,
 
         if grid.dim() == 3:
             if any([c.nodeCount() != 8 for c in grid.cells()]):
-                pg.critical("Grid have other cells than hex's. "
-                            "Can't refine it with a grid")
+                pg.critical(
+                    "Grid have other cells than hex's. " "Can't refine it with a grid"
+                )
 
             z = pg.utils.unique(pg.z(grid))
             z = _concat(z, zbound)
 
     mesh = pg.meshtools.createGrid(x=x, y=y, z=z, marker=marker)
 
-    mesh.setCellMarkers(pg.interpolate(grid,
-                                       grid.cellMarkers(),
-                                       mesh.cellCenters(),
-                                       fallback=marker))
+    mesh.setCellMarkers(
+        pg.interpolate(grid, grid.cellMarkers(), mesh.cellCenters(), fallback=marker)
+    )
     return mesh
 
 
-def appendTetrahedronBoundary(mesh, xbound=10, ybound=10, zbound=10,
-                              marker=1, isSubSurface=True, **kwargs):
+def appendTetrahedronBoundary(
+    mesh, xbound=10, ybound=10, zbound=10, marker=1, isSubSurface=True, **kwargs
+):
     """Return a copy of mesh surrounded by a tetrahedron mesh as boundary.
 
     Returns a new mesh that contains a tetrahedron mesh box around a given mesh
@@ -576,7 +603,7 @@ def appendTetrahedronBoundary(mesh, xbound=10, ybound=10, zbound=10,
     ...                 filter={'clip':{}})
     """
     if isSubSurface:
-        pg.critical('Implement me')
+        pg.critical("Implement me")
 
     meshBoundary = pg.Mesh(3, isGeometry=True)
     for b in mesh.boundaries():
@@ -584,10 +611,10 @@ def appendTetrahedronBoundary(mesh, xbound=10, ybound=10, zbound=10,
             meshBoundary.copyBoundary(b)
 
     bb = meshBoundary.bb()
-    meshBoundary.addHoleMarker(bb[0] + (bb[1]-bb[0])/1000.)
+    meshBoundary.addHoleMarker(bb[0] + (bb[1] - bb[0]) / 1000.0)
 
     if not any([xbound > 0, ybound > 0, zbound > 0]):
-        pg.critical('all boundaries need to be greater 0.')
+        pg.critical("all boundaries need to be greater 0.")
 
     startPos = bb[0] - [xbound, ybound, zbound]
     endPos = bb[1] + [xbound, ybound, zbound]

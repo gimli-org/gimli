@@ -5,6 +5,7 @@
 
 from math import pi
 import numpy as np
+
 # import matplotlib.pyplot as plt
 # from matplotlib.collections import LineCollection
 
@@ -15,7 +16,7 @@ from pygimli.viewer.mpl import drawModel, drawMesh, CellBrowser, createColorBar
 from pygimli.utils.base import interperc, getSavePath
 from pygimli.viewer.mpl.dataview import showVecMatrix
 
-from pygimli.frameworks import MethodManager#, MethodManager0
+from pygimli.frameworks import MethodManager  # , MethodManager0
 
 # the explicit import with full name allow for:
 # python ~/src/gimli/gimli/pygimli/physics/traveltime/refraction.py

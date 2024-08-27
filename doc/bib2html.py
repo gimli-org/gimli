@@ -6,7 +6,7 @@ from bibtexparser.customization import convert_to_unicode
 
 
 def parse_bib(fname):
-    """ Read bibtex file and sort by year. """
+    """Read bibtex file and sort by year."""
 
     with open(fname) as bibfile:
         parser = BibTexParser()

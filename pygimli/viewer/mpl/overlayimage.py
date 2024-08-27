@@ -15,6 +15,7 @@ class OverlayImageMPL(object):
     def __init__(self, imageFileName, ax):
         """Constructor."""
         import matplotlib.image as mpimg
+
         self.ax = ax
         self.imAxes = None
         self.image = mpimg.imread(imageFileName)
@@ -31,10 +32,16 @@ class OverlayImageMPL(object):
         """TODO Documentme."""
         if ax is not None:
             self.ax = ax
-        self.dx = float(self.image.size[0]) / \
-            self.figure.get_dpi() / self.figure.get_size_inches()[0]
-        self.dy = float(self.image.size[0]) / \
-            self.figure.get_dpi() / self.figure.get_size_inches()[1]
+        self.dx = (
+            float(self.image.size[0])
+            / self.figure.get_dpi()
+            / self.figure.get_size_inches()[0]
+        )
+        self.dy = (
+            float(self.image.size[0])
+            / self.figure.get_dpi()
+            / self.figure.get_size_inches()[1]
+        )
 
         xRange = self.ax.get_xlim()[1] - self.ax.get_xlim()[0]
         yRange = self.ax.get_ylim()[1] - self.ax.get_ylim()[0]
@@ -42,40 +49,56 @@ class OverlayImageMPL(object):
         x = (posX - self.ax.get_xlim()[0]) / xRange
         y = (posY - self.ax.get_ylim()[0]) / yRange
 
-        x *= (self.ax.get_position().x1 - self.ax.get_position().x0)
-        y *= (self.ax.get_position().y1 - self.ax.get_position().y0)
+        x *= self.ax.get_position().x1 - self.ax.get_position().x0
+        y *= self.ax.get_position().y1 - self.ax.get_position().y0
 
         # print self.imAxes
         # print self.figure.ax
         if self.imAxes not in self.figure.ax:
             if (x + self.ax.get_position().x0) > 10:
-                print(("overlay size out of range",
-                       (x + self.ax.get_position().x0)))
+                print(("overlay size out of range", (x + self.ax.get_position().x0)))
                 print((posX, posY))
                 print((xRange, yRange))
                 print((x, y))
-                print((self.ax.get_position().x0,
-                       self.ax.get_position().x1))
+                print((self.ax.get_position().x0, self.ax.get_position().x1))
                 print((self.figure.get_size_inches()))
-                print(("add ax",
-                       [x + self.ax.get_position().x0 - self.dx / 6.0,
-                        y + self.ax.get_position().y0, self.dx, self.dy]))
+                print(
+                    (
+                        "add ax",
+                        [
+                            x + self.ax.get_position().x0 - self.dx / 6.0,
+                            y + self.ax.get_position().y0,
+                            self.dx,
+                            self.dy,
+                        ],
+                    )
+                )
                 # hackish
                 return
 
-            self.imAxes = self.figure.add_ax([
-                x + self.ax.get_position().x0 - self.dx / 6.0,
-                y + self.ax.get_position().y0,
-                self.dx, self.dy], frameon=False, axisbg='y')
+            self.imAxes = self.figure.add_ax(
+                [
+                    x + self.ax.get_position().x0 - self.dx / 6.0,
+                    y + self.ax.get_position().y0,
+                    self.dx,
+                    self.dy,
+                ],
+                frameon=False,
+                axisbg="y",
+            )
         else:
-            self.imAxes.set_position([
-                x + self.ax.get_position().x0 - self.dx / 6.0,
-                y + self.ax.get_position().y0,
-                self.dx, self.dy])
+            self.imAxes.set_position(
+                [
+                    x + self.ax.get_position().x0 - self.dx / 6.0,
+                    y + self.ax.get_position().y0,
+                    self.dx,
+                    self.dy,
+                ]
+            )
 
         if len(self.imAxes.get_xticks()) > 0:
             print("overlay imshow")
-            self.imAxes.imshow(self.image, origin='lower')
+            self.imAxes.imshow(self.image, origin="lower")
             self.imAxes.set_xticks([])
             self.imAxes.set_yticks([])
 
@@ -105,10 +128,13 @@ __MatTilesCache__ = MapTilesCacheSingleton()
 def deg2MapTile(lon_deg, lat_deg, zoom):
     """TODO Documentme."""
     lat_rad = math.radians(lat_deg)
-    n = 2.0 ** zoom
+    n = 2.0**zoom
     xtile = int((lon_deg + 180.0) / 360.0 * n)
-    ytile = int((1.0 - math.log(math.tan(lat_rad) +
-                (1 / math.cos(lat_rad))) / math.pi) / 2.0 * n)
+    ytile = int(
+        (1.0 - math.log(math.tan(lat_rad) + (1 / math.cos(lat_rad))) / math.pi)
+        / 2.0
+        * n
+    )
 
     # correct the latitude to go from 0 (north) to 180 (south),
     # instead of 90(north) to -90(south)
@@ -117,8 +143,8 @@ def deg2MapTile(lon_deg, lat_deg, zoom):
     longitude = 180 + lon_deg
 
     # find tile size from zoom level
-    latTileSize = 180/(pow(2, (17-zoom)))
-    longTileSize = 360/(pow(2, (17-zoom)))
+    latTileSize = 180 / (pow(2, (17 - zoom)))
+    longTileSize = 360 / (pow(2, (17 - zoom)))
 
     # find the tile coordinates
     # tilex = int(longitude / longTileSize)
@@ -133,7 +159,7 @@ def mapTile2deg(xtile, ytile, zoom):
     Use the function with xtile+1 and/or ytile+1 to get the other corners.
     With xtile+0.5  ytile+0.5 it will return the center of the tile.
     """
-    n = 2.0 ** zoom
+    n = 2.0**zoom
     lon_deg = xtile / n * 360.0 - 180.0
     lat_rad = math.atan(math.sinh(math.pi * (1 - 2 * ytile / n)))
     lat_deg = math.degrees(lat_rad)
@@ -156,7 +182,7 @@ def cacheFileName(fullname, vendor):
     return os.path.join(path, fileName)
 
 
-def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
+def getMapTile(xtile, ytile, zoom, vendor="OSM", verbose=False):
     """Get a map tile from public mapping server.
 
     Its not recommended to use the google maps tile server without
@@ -182,18 +208,19 @@ def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
         be verbose
     """
     import matplotlib.image as mpimg
-    imagename = str(zoom) + '/' + str(xtile) + '/' + str(ytile)
 
-    if vendor == 'OSM' or vendor == 'Open Street Map':
+    imagename = str(zoom) + "/" + str(xtile) + "/" + str(ytile)
+
+    if vendor == "OSM" or vendor == "Open Street Map":
         # http://[abc].tile.openstreetmap.org
-        serverName = 'tile.openstreetmap.org'
-        url = 'http://a.' + serverName + '/' + imagename + '.png'
-        imFormat = '.png'
-    elif vendor == 'GM' or vendor == 'Google Maps':
+        serverName = "tile.openstreetmap.org"
+        url = "http://a." + serverName + "/" + imagename + ".png"
+        imFormat = ".png"
+    elif vendor == "GM" or vendor == "Google Maps":
         # its not recommended to use the google maps tile server without
         # google maps api .. if you use it to often your IP will be blacklisted
         # mt.google.com will balance itself
-        serverName = 'http://mt.google.com'
+        serverName = "http://mt.google.com"
         # nr = random.randint(1, 4)
         # serverName = 'http://mt' + str(nr) + '.google.com'
         # LAYERS:
@@ -206,13 +233,20 @@ def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
         # y = hybrid
         # ,transit
 
-        url = serverName + '/vt/lyrs=m' + \
-            '&x=' + str(xtile) + '&y=' + str(ytile) + \
-            '&hl=en' + '&z=' + str(zoom)
-        imFormat = '.png'
+        url = (
+            serverName
+            + "/vt/lyrs=m"
+            + "&x="
+            + str(xtile)
+            + "&y="
+            + str(ytile)
+            + "&hl=en"
+            + "&z="
+            + str(zoom)
+        )
+        imFormat = ".png"
     else:
-        raise "Vendor: " + vendor + \
-            " not supported (currently only OSM (Open Street Map))"
+        raise "Vendor: " + vendor + " not supported (currently only OSM (Open Street Map))"
 
     filename = cacheFileName(imagename, serverName) + imFormat
 
@@ -234,8 +268,8 @@ def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
                 print(imagename)
             mpimg.imsave(filename, image)
 
-        if imFormat == '.jpeg':
-            image = image[::-1, ...] / 256.
+        if imFormat == ".jpeg":
+            image = image[::-1, ...] / 256.0
 
         __MatTilesCache__.add(filename, image)
     else:
@@ -243,11 +277,14 @@ def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
             print(("Took image from cache", filename))
 
     return image
+
+
 # def getMapTile(...)
 
 
-def underlayMap(ax, proj, vendor='OSM', zoom=-1, pixelLimit=None,
-                verbose=False, fitMap=False):
+def underlayMap(
+    ax, proj, vendor="OSM", zoom=-1, pixelLimit=None, verbose=False, fitMap=False
+):
     """Get a map from public mapping server and underlay it on the given ax.
 
     Parameters
@@ -293,8 +330,7 @@ def underlayMap(ax, proj, vendor='OSM', zoom=-1, pixelLimit=None,
         nYtiles = 1e99
         zoom = 19
 
-        while ((nYtiles * 256) > pixelLimit[0] or
-               (nXtiles * 256) > pixelLimit[1]):
+        while (nYtiles * 256) > pixelLimit[0] or (nXtiles * 256) > pixelLimit[1]:
             zoom = zoom - 1
             startTile = deg2MapTile(ul[0], ul[1], zoom)
             endTile = deg2MapTile(lr[0], lr[1], zoom)
@@ -322,11 +358,11 @@ def underlayMap(ax, proj, vendor='OSM', zoom=-1, pixelLimit=None,
 
     for i in range(nXtiles):
         for j in range(nYtiles):
-            im = getMapTile(startTile[0] + i, startTile[1] + j,
-                            zoom, vendor, verbose=verbose)
+            im = getMapTile(
+                startTile[0] + i, startTile[1] + j, zoom, vendor, verbose=verbose
+            )
 
-            image[(j * 256): ((j + 1) * 256),
-                  (i * 256): ((i + 1) * 256)] = im
+            image[(j * 256) : ((j + 1) * 256), (i * 256) : ((i + 1) * 256)] = im
 
     lonLatStart = mapTile2deg(startTile[0], startTile[1], zoom)
     lonLatEnd = mapTile2deg(endTile[0] + 1, endTile[1] + 1, zoom)
@@ -349,39 +385,69 @@ def underlayMap(ax, proj, vendor='OSM', zoom=-1, pixelLimit=None,
     return gci
 
 
-def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
-                  usetls=False, epsg=0, uuid='', fmt='image/jpeg',
-                  layer='rgb'):
+def getBKGaddress(
+    xlim,
+    ylim,
+    imsize=1000,
+    zone=32,
+    service="dop40",
+    usetls=False,
+    epsg=0,
+    uuid="",
+    fmt="image/jpeg",
+    layer="rgb",
+):
     """Generate address for rendering web service image from BKG.
 
     Assumes UTM in given zone.
     """
-    url = 'https://sgx.geodatenzentrum.de/wms_' + service
+    url = "https://sgx.geodatenzentrum.de/wms_" + service
     if usetls:
-        url = 'https://sgtls12.geodatenzentrum.de/wms_' + service  # new
-    stdarg = '?service=wms&version=1.3.0&request=GetMap&Layers=' + layer
-    stdarg += '&STYLES=default'
+        url = "https://sgtls12.geodatenzentrum.de/wms_" + service  # new
+    stdarg = "?service=wms&version=1.3.0&request=GetMap&Layers=" + layer
+    stdarg += "&STYLES=default"
     if epsg == 0:
         # epsg = 32600 + zone  # WGS 84 / UTM zone 32N
         epsg = 25800 + zone  # ETRS89 / UTM zone 32N
-    srsstr = 'CRS=EPSG:' + str(epsg)  # EPSG definition of UTM
+    srsstr = "CRS=EPSG:" + str(epsg)  # EPSG definition of UTM
 
     if imsize is None or imsize <= 1:
-        imsize = int((xlim[1] - xlim[0])/0.4) + 1  # take 40cm DOP resolution
-        print('choose image size ', imsize)
-    box = ','.join(str(int(v)) for v in [xlim[0], ylim[0], xlim[1], ylim[1]])
-    ysize = int((imsize - 1.) * (ylim[1] - ylim[0]) / (xlim[1] - xlim[0])) + 1
-    sizestr = 'width=' + str(imsize) + '&Height=' + '%d' % ysize
+        imsize = int((xlim[1] - xlim[0]) / 0.4) + 1  # take 40cm DOP resolution
+        print("choose image size ", imsize)
+    box = ",".join(str(int(v)) for v in [xlim[0], ylim[0], xlim[1], ylim[1]])
+    ysize = int((imsize - 1.0) * (ylim[1] - ylim[0]) / (xlim[1] - xlim[0])) + 1
+    sizestr = "width=" + str(imsize) + "&Height=" + "%d" % ysize
     if uuid:
-        url += '__' + uuid
-    addr = url + stdarg + '&' + srsstr + \
-        '&' + 'bbox=' + box + '&' + sizestr + '&Format=' + fmt
+        url += "__" + uuid
+    addr = (
+        url
+        + stdarg
+        + "&"
+        + srsstr
+        + "&"
+        + "bbox="
+        + box
+        + "&"
+        + sizestr
+        + "&Format="
+        + fmt
+    )
 
     return addr, box
 
 
-def underlayBKGMap(ax, mode='MAP', utmzone=32, epsg=0, imsize=2500, uuid='',
-                   usetls=False, origin=None, imname=None, box=None):
+def underlayBKGMap(
+    ax,
+    mode="MAP",
+    utmzone=32,
+    epsg=0,
+    imsize=2500,
+    uuid="",
+    usetls=False,
+    origin=None,
+    imname=None,
+    box=None,
+):
     """Underlay digital orthophoto or topographic (mode='DTK') map under axes.
 
     First accessed, the image is obtained from BKG, saved and later loaded.
@@ -410,6 +476,7 @@ def underlayBKGMap(ax, mode='MAP', utmzone=32, epsg=0, imsize=2500, uuid='',
         (if imname given) specify bounding box (otherwise take from imname)
     """
     import matplotlib.image as mpimg
+
     if imname is not None:  # use predefined image
         box = box or imname[3:-4]
         # bb = np.array(imname[3:-4].split(","),
@@ -420,10 +487,18 @@ def underlayBKGMap(ax, mode='MAP', utmzone=32, epsg=0, imsize=2500, uuid='',
         except ImportError:
             import urllib2
 
-        ext = {'DOP': '.jpg', 'DTK': '.png', 'MAP': '.png'}  # extensions for different maps
-        wms = {'DOP': 'dop40', 'DTK': 'dtk25', 'MAP': 'basemapde'}  # wms service name for maps
-        fmt = {'DOP': 'image/jpeg', 'DTK': 'image/png', 'MAP': 'image/png'}  # format
-        lay = {'DOP': 'rgb', 'DTK': '0', 'MAP': 'de_basemapde_web_raster_farbe'}
+        ext = {
+            "DOP": ".jpg",
+            "DTK": ".png",
+            "MAP": ".png",
+        }  # extensions for different maps
+        wms = {
+            "DOP": "dop40",
+            "DTK": "dtk25",
+            "MAP": "basemapde",
+        }  # wms service name for maps
+        fmt = {"DOP": "image/jpeg", "DTK": "image/png", "MAP": "image/png"}  # format
+        lay = {"DOP": "rgb", "DTK": "0", "MAP": "de_basemapde_web_raster_farbe"}
         if imsize < 1:  # 0, -1 or 0.4 could be reasonable parameters
             ax = ax.get_xlim()
             imsize = int((ax[1] - ax[0]) / 0.4)  # use original 40cm pixel size
@@ -434,27 +509,34 @@ def underlayBKGMap(ax, mode='MAP', utmzone=32, epsg=0, imsize=2500, uuid='',
         if origin:
             xl += origin[0]
             yl += origin[1]
-        ad, box = getBKGaddress(xl, yl, imsize, zone=utmzone,
-                                service=wms[mode.upper()], usetls=usetls,
-                                uuid=uuid, epsg=epsg,
-                                fmt=fmt[mode.upper()], layer=lay[mode.upper()])
+        ad, box = getBKGaddress(
+            xl,
+            yl,
+            imsize,
+            zone=utmzone,
+            service=wms[mode.upper()],
+            usetls=usetls,
+            uuid=uuid,
+            epsg=epsg,
+            fmt=fmt[mode.upper()],
+            layer=lay[mode.upper()],
+        )
         imname = mode + box + ext[mode]
         if not os.path.isfile(imname):  # not already existing
-            pg.info('Retrieving file from geodatenzentrum.de using URL: ' + ad)
+            pg.info("Retrieving file from geodatenzentrum.de using URL: " + ad)
             req = urllib2.Request(ad)
             response = urllib2.urlopen(req)
-            with open(imname, 'wb') as output:
+            with open(imname, "wb") as output:
                 output.write(response.read())
         else:
-            pg.debug('Found image file: ' + imname)
+            pg.debug("Found image file: " + imname)
 
     im = mpimg.imread(imname)
-    bb = [int(bi) for bi in box.split(',')]  # bounding box
+    bb = [int(bi) for bi in box.split(",")]  # bounding box
     if origin:
         bb[0] -= origin[0]
         bb[2] -= origin[0]
         bb[1] -= origin[1]
         bb[3] -= origin[1]
 
-    ax.imshow(im, extent=[bb[0], bb[2], bb[1], bb[3]],
-              interpolation='nearest')
+    ax.imshow(im, extent=[bb[0], bb[2], bb[1], bb[3]], interpolation="nearest")

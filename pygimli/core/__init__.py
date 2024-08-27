@@ -4,6 +4,7 @@
 Imports and extensions of the C++ bindings.
 """
 import sys
+
 # import traceback
 
 import numpy as np
@@ -11,8 +12,17 @@ import numpy as np
 from .core import pgcore
 from .core import *
 from .logger import error, critical
-from .base import (isInt, isScalar, isIterable, isArray, isPos, isR3Array,
-                   isPosList, isComplex, isMatrix)
+from .base import (
+    isInt,
+    isScalar,
+    isIterable,
+    isArray,
+    isPos,
+    isR3Array,
+    isPosList,
+    isComplex,
+    isMatrix,
+)
 
 # #######################################
 # ###  Global convenience functions #####
@@ -42,13 +52,26 @@ def __RVector_str(self, valsOnly=False):
 
         s = s + str(self[len(self) - 1]) + "]"
         return s
-    return (str(self.size()) + " [" + str(self[0]) + ",...," + str(
-        self[self.size() - 1]) + "]")
+    return (
+        str(self.size())
+        + " ["
+        + str(self[0])
+        + ",...,"
+        + str(self[self.size() - 1])
+        + "]"
+    )
 
 
 def __RVector3_str(self):
-    return ("RVector3: (" + str(self.x()) + ", " + str(self.y()) + ", " + str(
-        self.z()) + ")")
+    return (
+        "RVector3: ("
+        + str(self.x())
+        + ", "
+        + str(self.y())
+        + ", "
+        + str(self.z())
+        + ")"
+    )
 
 
 def __R3Vector_str(self):
@@ -63,7 +86,7 @@ def __Line_str(self):
 
 
 def __BoundingBox_str(self):
-    s = ''
+    s = ""
     s += "BoundingBox [{0}, {1}]".format(self.min(), self.max())
     return s
 
@@ -86,10 +109,12 @@ pgcore.BoundingBox.__repr__ = __BoundingBox_str
 
 def nonzero_test(self):
     """Function to throw a warning if any vector is used as bool vector."""
-    raise BaseException("Warning! there is no 'and' and 'or' for "
-                        "BVector and RVector. " +
-                        "Use binary operators '&' or '|' instead. " +
-                        "If you looking for the nonzero test, use len(v) > 0")
+    raise BaseException(
+        "Warning! there is no 'and' and 'or' for "
+        "BVector and RVector. "
+        + "Use binary operators '&' or '|' instead. "
+        + "If you looking for the nonzero test, use len(v) > 0"
+    )
 
 
 def np_round__(self, r):
@@ -150,7 +175,7 @@ __origIndexArrayInit__ = pgcore.IndexArray.__init__
 
 def __newIndexArrayInit__(self, arr, val=None):
     """New index array."""
-    if hasattr(arr, 'dtype') and hasattr(arr, '__iter__'):
+    if hasattr(arr, "dtype") and hasattr(arr, "__iter__"):
         __origIndexArrayInit__(self, [int(a) for a in arr])
     else:
         if val:
@@ -168,7 +193,7 @@ __origBVectorInit__ = pgcore.BVector.__init__
 
 
 def __newBVectorInit__(self, arr, val=None):
-    if hasattr(arr, 'dtype') and hasattr(arr, '__iter__'):
+    if hasattr(arr, "dtype") and hasattr(arr, "__iter__"):
         # this is hell slow .. better in custom_rvalue.cpp or in
         # vector.h directly from pyobject
         __origBVectorInit__(self, len(arr))
@@ -249,6 +274,7 @@ except:
         if isInt(a):
             return __oldRVectorTrueDiv__(float(a), b)
         return __oldRVectorTrueDiv__(a, b)
+
     pgcore.RVector.__div__ = __newRVectorTrueDiv__
 
 __oldRMatMul__ = pgcore.RMatrix.__mul__
@@ -284,8 +310,7 @@ def __newRVectorSetVal__(self, *args, **kwargs):
     if len(args) == 2:
         if isinstance(args[1], int):
             if args[1] < 0:
-                return __origRVectorSetVal__(self, args[0],
-                                             i=len(self) + args[1])
+                return __origRVectorSetVal__(self, args[0], i=len(self) + args[1])
             else:
                 return __origRVectorSetVal__(self, args[0], i=args[1])
         if isinstance(args[1], pgcore.BVector):
@@ -404,12 +429,12 @@ def __getVal(self, idx):
                 return self.get_(0)
                 # raise Exception("slice invalid")
 
-    elif isinstance(idx, list) or hasattr(idx, '__iter__'):
+    elif isinstance(idx, list) or hasattr(idx, "__iter__"):
         if isinstance(idx[0], int):
             return self.getVSI_(idx)
-        elif hasattr(idx[0], 'dtype'):
+        elif hasattr(idx[0], "dtype"):
             # print("numpy: ", idx[0].dtype.str, idx[0].dtype ,type(idx[0]))
-            if idx[0].dtype == 'bool':
+            if idx[0].dtype == "bool":
                 return self.getVUI_([i for i, x in enumerate(idx) if x])
                 # return self[np.nonzero(idx)[0]]
         elif isinstance(idx[0], slice):  # try fixing newaxis
@@ -417,7 +442,7 @@ def __getVal(self, idx):
             # so we return np.array here
             return np.array(self)[idx]
         # elif isinstance(idx[0], None) and isinstance(idx[1], slice):
-            # return self[idx[1]]
+        # return self[idx[1]]
 
         return self.getVSI_([int(a) for a in idx])
 
@@ -526,11 +551,13 @@ pgcore.CMatrix.__setitem__ = __setVal
 ############################
 # len(RVector), RMatrix
 ############################
-_vecs = [pgcore.RVector,
-         pgcore.BVector,
-         pgcore.CVector,
-         pgcore.IVector,
-         pgcore.IndexArray]
+_vecs = [
+    pgcore.RVector,
+    pgcore.BVector,
+    pgcore.CVector,
+    pgcore.IVector,
+    pgcore.IndexArray,
+]
 
 for v in _vecs:
     v.ndim = 1
@@ -650,7 +677,7 @@ pgcore.RMatrix.__iter__ = __MatIterCall__
 pgcore.CMatrix.__iter__ = __MatIterCall__
 
 
-class Vector3Iter():
+class Vector3Iter:
     """Simple iterator for RVector3/PosVector.
 
     Because it lacks the core function .beginPyIter()
@@ -690,7 +717,9 @@ def __RVector3ArrayCall__(self, dtype=None):
     # print(idx)
     # raise Exception("we need to fix this")
     import numpy as np
+
     return np.array([self.getVal(0), self.getVal(1), self.getVal(2)])
+
 
 # default converter from RVector to numpy array
 
@@ -707,6 +736,7 @@ def __RVectorArrayCall__(self, dtype=None):
     # test in testRValueConverter.py:testNumpyFromRVec()
     # return np.array(self.array())
     return self.array()
+
 
 def __CVectorArrayCall__(self, dtype=None):
     # if idx and not isinstance(idx, numpy.dtype):
@@ -735,6 +765,7 @@ pgcore.RVector3.__array__ = __RVector3ArrayCall__
 # see bug description
 pgcore.CVector.__array__ = __CVectorArrayCall__
 
+
 # hackish until stdVectorRVector3 will be removed
 def __stdVectorRVector3ArrayCall(self, dtype=None):
     # if idx is not None:
@@ -755,7 +786,7 @@ pgcore.stdVectorRVector3.__array__ = __stdVectorRVector3ArrayCall
 
 def find(v):
     """Find a specific entry in vector."""
-    if hasattr(v, 'dtype') and hasattr(v, '__iter__'):
+    if hasattr(v, "dtype") and hasattr(v, "__iter__"):
         # print('new find', v, pgcore.BVector(v))
         return pgcore.find(pgcore.BVector(v))
     else:
@@ -793,6 +824,7 @@ PosList = PosVector
 ############################
 # non automatic exposed functions
 ############################
+
 
 def abs(v):
     """Create abs in the sense of distance instead of just vanishing the sign.
@@ -856,9 +888,9 @@ def abs(v):
         for i in range(len(v)):
             v[i] = pgcore.abs(v[i])
         return v
-    elif hasattr(v, 'vals'):
+    elif hasattr(v, "vals"):
         return pgcore.abs(v.vals)
-    elif hasattr(v, 'values'):
+    elif hasattr(v, "values"):
         return pgcore.fabs(v.values)
 
     return pgcore.fabs(v)
@@ -883,8 +915,10 @@ pgcore.RVector.__eq__ = __EQ_RVector__
 # usefull stuff
 ############################
 def toIVector(v):
-    print("do not use toIVector(v) use ndarray directly .. "
-          "this method will be removed soon")
+    print(
+        "do not use toIVector(v) use ndarray directly .. "
+        "this method will be removed soon"
+    )
     ret = pgcore.IVector(len(v), 0)
     for i, r in enumerate(v):
         ret[i] = int(r)
@@ -906,8 +940,10 @@ def toIVector(v):
 # DEPRECATED for backward compatibility should be removed
 def asvector(array):
     """Convert numpy array into vector (not to be used anymore!)."""
-    print("do not use asvector(ndarray) use ndarray directly .. "
-          "this method will be removed soon")
+    print(
+        "do not use asvector(ndarray) use ndarray directly .. "
+        "this method will be removed soon"
+    )
     return pgcore.RVector(array)
 
 
@@ -936,10 +972,11 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
     dModel = pgcore.RVector(len(model))
     nProcs = self.multiThreadJacobian()
 
-    if sys.platform == 'win32' or sys.platform == 'darwin':
+    if sys.platform == "win32" or sys.platform == "darwin":
         # strange pickle problem: see  python test_PhysicsManagers.py ves
         from .logger import warn
-        warn('Multiprocess Jacobian currently unavailable for Win32 and Mac.')
+
+        warn("Multiprocess Jacobian currently unavailable for Win32 and Mac.")
         nProcs = 1
 
     if nProcs == 1:
@@ -956,8 +993,15 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
     for pCount in range(int(ceil(float(nModel) / nProcs))):
         procs = []
         if self.verbose():
-            print("Jacobian MT:(", pCount * nProcs, "--",
-                  (pCount + 1) * nProcs, ") /", nModel, '... ')
+            print(
+                "Jacobian MT:(",
+                pCount * nProcs,
+                "--",
+                (pCount + 1) * nProcs,
+                ") /",
+                nModel,
+                "... ",
+            )
 
         for i in range(int(pCount * nProcs), int((pCount + 1) * nProcs)):
             if i < nModel:
@@ -965,10 +1009,13 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
                 modelChange[i] *= fak
                 dModel[i] = modelChange[i] - model[i]
 
-                shm.append(Array('d', len(resp)))
+                shm.append(Array("d", len(resp)))
                 procs.append(
-                    Process(target=__GLOBAL__response_mt_shm_,
-                            args=(self, modelChange, shm[i], i)))
+                    Process(
+                        target=__GLOBAL__response_mt_shm_,
+                        args=(self, modelChange, shm[i], i),
+                    )
+                )
 
         for i, p in enumerate(procs):
             p.start()
@@ -1000,11 +1047,11 @@ def __ModellingBase__responses_mt__(self, models, respos):
     import numpy as np
 
     if models.ndim != 2:
-        raise BaseException("models need to be a matrix(N, nModel):" +
-                            str(models.shape))
+        raise BaseException(
+            "models need to be a matrix(N, nModel):" + str(models.shape)
+        )
     if respos.ndim != 2:
-        raise BaseException("respos need to be a matrix(N, nData):" +
-                            str(respos.shape))
+        raise BaseException("respos need to be a matrix(N, nData):" + str(respos.shape))
 
     nData = len(respos[0])
     shm = []
@@ -1022,10 +1069,13 @@ def __ModellingBase__responses_mt__(self, models, respos):
         for i in range(int(pCount * nProcs), int((pCount + 1) * nProcs)):
 
             if i < nModel:
-                shm.append(Array('d', nData))
+                shm.append(Array("d", nData))
                 procs.append(
-                    Process(target=__GLOBAL__response_mt_shm_,
-                            args=(self, models[i], shm[i], i)))
+                    Process(
+                        target=__GLOBAL__response_mt_shm_,
+                        args=(self, models[i], shm[i], i),
+                    )
+                )
 
         for i, p in enumerate(procs):
             p.start()
@@ -1045,12 +1095,14 @@ class ModellingBaseMT__(pgcore.ModellingBase):
     def __init__(self, mesh=None, dataContainer=None, verbose=False):
         if mesh and dataContainer:
             pgcore.ModellingBase.__init__(
-                self, mesh=mesh, dataContainer=dataContainer, verbose=verbose)
+                self, mesh=mesh, dataContainer=dataContainer, verbose=verbose
+            )
         elif isinstance(mesh, pgcore.Mesh):
             pgcore.ModellingBase.__init__(self, mesh=mesh, verbose=verbose)
         elif dataContainer:
-            pgcore.ModellingBase.__init__(self, dataContainer=dataContainer,
-                                          verbose=verbose)
+            pgcore.ModellingBase.__init__(
+                self, dataContainer=dataContainer, verbose=verbose
+            )
         else:
             pgcore.ModellingBase.__init__(self, verbose=verbose)
 
@@ -1096,12 +1148,13 @@ def __getCoords(coord, dim, ent):
     if isinstance(ent, list) and isinstance(ent[0], pgcore.Node):
         return [n.pos()[dim] for n in ent]
 
-    if hasattr(ent, 'ndim') and ent.ndim == 2 and len(ent[0] > dim):
+    if hasattr(ent, "ndim") and ent.ndim == 2 and len(ent[0] > dim):
         return ent[:, dim]
 
     # use logger here
     raise Exception(
-        "Don't know how to find the " + coord + "-coordinates of entity:", ent)
+        "Don't know how to find the " + coord + "-coordinates of entity:", ent
+    )
 
 
 def x(instance):
@@ -1124,7 +1177,7 @@ def x(instance):
     >>> pg.x([[0, 0], [1, 0]])
     2 [0.0, 1.0]
     """
-    return __getCoords('x', 0, instance)
+    return __getCoords("x", 0, instance)
 
 
 def y(instance):
@@ -1138,7 +1191,7 @@ def y(instance):
     instance : DataContainer, Mesh, R3Vector, np.array, list(RVector3)
         Return the associated coordinate positions for given class instance.
     """
-    return __getCoords('y', 1, instance)
+    return __getCoords("y", 1, instance)
 
 
 def z(instance):
@@ -1152,7 +1205,7 @@ def z(instance):
     instance : DataContainer, Mesh, R3Vector, np.array, list(RVector3)
         Return the associated coordinate positions for given class instance.
     """
-    return __getCoords('z', 2, instance)
+    return __getCoords("z", 2, instance)
 
 
 def search(what):
@@ -1167,5 +1220,4 @@ from .trans import *  # why do we need that?
 
 # from .matrix import (Cm05Matrix, LMultRMatrix, LRMultRMatrix, MultLeftMatrix,
 #                      MultLeftRightMatrix, MultRightMatrix, RMultRMatrix)
-from .matrix import (BlockMatrix, SparseMatrix, SparseMapMatrix,
-                     IdentityMatrix, Matrix)
+from .matrix import BlockMatrix, SparseMatrix, SparseMapMatrix, IdentityMatrix, Matrix

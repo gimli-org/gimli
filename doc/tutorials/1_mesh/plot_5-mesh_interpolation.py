@@ -19,6 +19,7 @@ from pygimli.viewer.mpl import drawMesh, drawModel
 # Create coarse and fine mesh with data
 # -------------------------------------
 
+
 def create_mesh_and_data(n):
     nc = np.linspace(-2.0, 0.0, n)
     mesh = pg.meshtools.createMesh2D(nc, nc)
@@ -26,6 +27,7 @@ def create_mesh_and_data(n):
     mcy = pg.y(mesh.cellCenter())
     data = np.cos(1.5 * mcx) * np.sin(1.5 * mcy)
     return mesh, data
+
 
 coarse, coarse_data = create_mesh_and_data(5)
 fine, fine_data = create_mesh_and_data(20)
@@ -39,7 +41,7 @@ fine, fine_data = create_mesh_and_data(20)
 
 
 def nearest_neighbor_interpolation(inmesh, indata, outmesh, nan=99.9):
-    """ Nearest neighbor interpolation. """
+    """Nearest neighbor interpolation."""
     outdata = []
     for pos in outmesh.cellCenters():
         cell = inmesh.findCell(pos)
@@ -51,15 +53,18 @@ def nearest_neighbor_interpolation(inmesh, indata, outmesh, nan=99.9):
 
 
 def linear_interpolation(inmesh, indata, outmesh):
-    """ Linear interpolation using `pg.interpolate()` """
+    """Linear interpolation using `pg.interpolate()`"""
     outdata = pg.Vector()  # empty
-    pg.interpolate(srcMesh=inmesh, inVec=indata,
-                   destPos=outmesh.cellCenters(), outVec=outdata)
+    pg.interpolate(
+        srcMesh=inmesh, inVec=indata, destPos=outmesh.cellCenters(), outVec=outdata
+    )
 
     # alternatively you can use the interpolation matrix
-    outdata = inmesh.interpolationMatrix(outmesh.cellCenters()) * \
-              pg.core.cellDataToPointData(inmesh, indata)
+    outdata = inmesh.interpolationMatrix(
+        outmesh.cellCenters()
+    ) * pg.core.cellDataToPointData(inmesh, indata)
     return outdata
+
 
 ###############################################################################
 # Visualization
@@ -67,8 +72,7 @@ def linear_interpolation(inmesh, indata, outmesh):
 
 meshes = [coarse, fine]
 datasets = [coarse_data, fine_data]
-ints = [nearest_neighbor_interpolation,
-        linear_interpolation]
+ints = [nearest_neighbor_interpolation, linear_interpolation]
 
 fig, ax = plt.subplots(2, 2, figsize=(5, 5))
 
@@ -84,10 +88,12 @@ drawMesh(ax[1, 0], coarse)
 drawModel(ax[1, 1], coarse, ints[1](fine, fine_data, coarse), showCbar=False)
 drawMesh(ax[1, 1], coarse)
 
-titles = ["Coarse to fine\nwith nearest neighbors",
-          "Coarse to fine\nwith linear interpolation",
-          "Fine to coarse\nwith nearest neighbors",
-          "Fine to coarse\nwith linear interpolation"]
+titles = [
+    "Coarse to fine\nwith nearest neighbors",
+    "Coarse to fine\nwith linear interpolation",
+    "Fine to coarse\nwith nearest neighbors",
+    "Fine to coarse\nwith linear interpolation",
+]
 
 for a, title in zip(ax.flat, titles):
     a.set_title(title + "\n")

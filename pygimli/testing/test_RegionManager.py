@@ -7,6 +7,7 @@ import numpy as np
 import pygimli as pg
 from pygimli.frameworks import MeshModelling
 
+
 class DummyMod(MeshModelling):
     def __init__(self, mesh, verbose=True):
         super(DummyMod, self).__init__()
@@ -25,9 +26,9 @@ class DummyMod(MeshModelling):
 class TestRM(unittest.TestCase):
 
     def test_Constraints(self):
-        """ Test FOP """
+        """Test FOP"""
 
-        grid = pg.createGrid(x=[0., 1., 2.], y=[0., 1., 2.])
+        grid = pg.createGrid(x=[0.0, 1.0, 2.0], y=[0.0, 1.0, 2.0])
         fop = DummyMod(grid)
 
         fop.createConstraints()
@@ -83,8 +84,8 @@ class TestRM(unittest.TestCase):
         mesh2.setCellMarkers(np.ones(mesh.cellCount(), dtype=int))
 
         together = pg.meshtools.merge2Meshes(
-            mesh,
-            mesh2.translate(pg.Vector([0., 0., 1.])))
+            mesh, mesh2.translate(pg.Vector([0.0, 0.0, 1.0]))
+        )
 
         fop = pg.Modelling()
 
@@ -114,6 +115,6 @@ class TestRM(unittest.TestCase):
         # self.assertTrue(np.allclose(w0, w2))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     unittest.main()

@@ -16,25 +16,25 @@ def readusffile(filename, data=None):
     columns = []
     nr = 0
     sounding = {}
-    sounding['FILENAME'] = filename
+    sounding["FILENAME"] = filename
     isdata = False
     fid = open(filename)
     for line in fid:
-        zeile = line.rstrip('\n').replace(',', '')  # commas useless here
+        zeile = line.rstrip("\n").replace(",", "")  # commas useless here
         if zeile:  # anything at all
-            if zeile[0] == '/':  # comment-like
-                if zeile[1:4] == 'END':  # end of a sounding
+            if zeile[0] == "/":  # comment-like
+                if zeile[1:4] == "END":  # end of a sounding
                     if isdata:  # have already read some data
-                        sounding['data'] = columns
-                        for i, cn in enumerate(sounding['column_names']):
+                        sounding["data"] = columns
+                        for i, cn in enumerate(sounding["column_names"]):
                             sounding[cn] = columns[:, i]
 
                         data.append(sounding)
                         sounding = {}
 
                     isdata = not isdata  # turn off data mode
-                elif zeile.find(':') > 0:  # key-value pair
-                    key, value = zeile[1:].split(':')
+                elif zeile.find(":") > 0:  # key-value pair
+                    key, value = zeile[1:].split(":")
                     try:
                         val = float(value)
                         sounding[key] = val
@@ -49,9 +49,8 @@ def readusffile(filename, data=None):
 
                         nr += 1
                     except:
-                        sounding['column_names'] = values
-                        columns = np.zeros((int(sounding['POINTS']),
-                                            len(values)))
+                        sounding["column_names"] = values
+                        columns = np.zeros((int(sounding["POINTS"]), len(values)))
                         nr = 0
 
     fid.close()
@@ -76,35 +75,40 @@ def importMaxminData(filename, verbose=False):
     """Import function reading in positions, data, frequencies, geometry."""
     delim = None
     fid = open(filename)
-    coilspacing = 0.
+    coilspacing = 0.0
     freq = []
     aline = ""
     i = 0
     for i, aline in enumerate(fid):
         if aline.split()[0][0].isdigit():  # number found
             break
-        elif aline.upper().find('COIL') > 0:  # [:6] == '/ COIL':
+        elif aline.upper().find("COIL") > 0:  # [:6] == '/ COIL':
             coilspacing = float(aline.split()[-2])
-        elif aline.upper().find('FREQ') > 0:  # [:6] == '/ FREQ':
-            freq = np.array([float(aa) for aa in aline[aline.find(
-                ':') + 1:].replace(',', ' ').split() if aa[0].isdigit()])
+        elif aline.upper().find("FREQ") > 0:  # [:6] == '/ FREQ':
+            freq = np.array(
+                [
+                    float(aa)
+                    for aa in aline[aline.find(":") + 1 :].replace(",", " ").split()
+                    if aa[0].isdigit()
+                ]
+            )
 
     fid.close()
 
     if verbose:
         print("CS=", coilspacing, "F=", freq)
-    if aline.find(',') > 0:
-        delim = ','
+    if aline.find(",") > 0:
+        delim = ","
 
     nf = len(freq)
     if verbose:
         print("delim=", delim, "nf=", nf)
 
     A = np.loadtxt(filename, skiprows=i, delimiter=delim).T
-    x, IP, OP = A[0], A[2:nf * 2 + 2:2].T, A[3:nf * 2 + 2:2].T
+    x, IP, OP = A[0], A[2 : nf * 2 + 2 : 2].T, A[3 : nf * 2 + 2 : 2].T
 
     return x, freq, coilspacing, IP, OP
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("do some tests here")

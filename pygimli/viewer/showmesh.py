@@ -11,7 +11,7 @@ import numpy as np
 
 from pygimli.viewer.mpl.colorbar import setMappableData
 
-from .. core.logger import renameKwarg
+from ..core.logger import renameKwarg
 
 try:
     import pygimli as pg
@@ -26,8 +26,10 @@ try:
 except ImportError as e:
     print(e)
     traceback.print_exc(file=sys.stdout)
-    pg.critical("ERROR: cannot import the library 'pygimli'."
-                "Ensure that pygimli is in your PYTHONPATH ")
+    pg.critical(
+        "ERROR: cannot import the library 'pygimli'."
+        "Ensure that pygimli is in your PYTHONPATH "
+    )
 
 
 def show(obj=None, data=None, **kwargs):
@@ -73,57 +75,59 @@ def show(obj=None, data=None, **kwargs):
     """
     if "axes" in kwargs:  # remove me in 1.2 #20200515
         print("Deprecation Warning: Please use keyword `ax` instead of `axes`")
-        kwargs['ax'] = kwargs.pop('axes', None)
+        kwargs["ax"] = kwargs.pop("axes", None)
 
     # Empty call just to create an mpl axes
     # if obj is None and 'mesh' not in kwargs:
-    if obj is None and 'mesh' not in kwargs.keys():
-        ax = kwargs.pop('ax', None)
+    if obj is None and "mesh" not in kwargs.keys():
+        ax = kwargs.pop("ax", None)
 
         if ax is None:
-            ax = pg.plt.subplots(figsize=kwargs.pop('figsize', None))[1]
+            ax = pg.plt.subplots(figsize=kwargs.pop("figsize", None))[1]
 
         return ax, None
 
     # registerShowPendingFigsAtExit()
 
     # try to check if obj containes a mesh
-    if hasattr(obj, 'mesh'):
+    if hasattr(obj, "mesh"):
         return pg.show(obj.mesh, obj, **kwargs)
 
     # try to interpret obj as ERT Data
     if isinstance(obj, pg.DataContainerERT):
         from pygimli.physics.ert import showERTData
-        return showERTData(obj, vals=kwargs.pop('vals', data), **kwargs)
+
+        return showERTData(obj, vals=kwargs.pop("vals", data), **kwargs)
 
     # try to interpret obj as matrices
-    if isinstance(obj, pg.core.MatrixBase) or (isinstance(obj, np.ndarray) and
-                                               obj.ndim == 2):
+    if isinstance(obj, pg.core.MatrixBase) or (
+        isinstance(obj, np.ndarray) and obj.ndim == 2
+    ):
         return showMatrix(obj, **kwargs)
 
     try:
         from scipy.sparse import spmatrix
+
         if isinstance(obj, spmatrix):
             return showMatrix(obj, **kwargs)
     except ImportError:
         pass
 
     # try to interprete obj as mesh or list of meshes
-    mesh = kwargs.pop('mesh', obj)
+    mesh = kwargs.pop("mesh", obj)
 
-    fitView = kwargs.get('fitView', True)
+    fitView = kwargs.get("fitView", True)
 
     if isinstance(mesh, list):
-        ax = kwargs.pop('ax', None)
-        ax, cBar = show(mesh[0], data, hold=True, ax=ax,
-                        fitView=fitView, **kwargs)
+        ax = kwargs.pop("ax", None)
+        ax, cBar = show(mesh[0], data, hold=True, ax=ax, fitView=fitView, **kwargs)
 
         for m in mesh[1:]:
             ax, cBar = show(m, data, ax=ax, hold=True, fitView=False, **kwargs)
 
         if fitView is not False:
-            ax.autoscale(enable=True, axis='both', tight=True)
-            ax.set_aspect('equal')
+            ax.autoscale(enable=True, axis="both", tight=True)
+            ax.set_aspect("equal")
         return ax, cBar
 
     if isinstance(mesh, pg.Mesh):
@@ -147,12 +151,13 @@ def show(obj=None, data=None, **kwargs):
         elif mesh.dim() == 3:
 
             from .pv import showMesh3D
+
             return showMesh3D(mesh, data, **kwargs)
         else:
             pg.error("ERROR: Mesh not valid.", mesh)
 
     if isinstance(obj, pg.core.Boundary):
-        ax = kwargs.pop('ax', None)
+        ax = kwargs.pop("ax", None)
         drawSelectedMeshBoundaries(ax, [obj], **kwargs)
         return ax, None
 
@@ -160,10 +165,20 @@ def show(obj=None, data=None, **kwargs):
     return None, None
 
 
-def showMesh(mesh, data=None, block=False, colorBar=None,
-             label=None, coverage=None, ax=None, savefig=None,
-             showMesh=False, showBoundary=None,
-             markers=False, **kwargs):
+def showMesh(
+    mesh,
+    data=None,
+    block=False,
+    colorBar=None,
+    label=None,
+    coverage=None,
+    ax=None,
+    savefig=None,
+    showMesh=False,
+    showBoundary=None,
+    markers=False,
+    **kwargs,
+):
     """2D Mesh visualization.
 
     Create an axis object and plot a 2D mesh with given node or cell data.
@@ -273,17 +288,17 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
 
     cBar : matplotlib.colorbar
     """
-    renameKwarg('cmap', 'cMap', kwargs)
+    renameKwarg("cmap", "cMap", kwargs)
 
-    cMap = kwargs.pop('cMap', 'viridis')
-    cBarOrientation = kwargs.pop('orientation', 'horizontal')
-    replaceData = kwargs.pop('replaceData', False)
-    axisLabels = kwargs.pop('axisLabels', True)
-    xl = kwargs.pop('xl', "$x$ in m")
-    yl = kwargs.pop('yl', None)
+    cMap = kwargs.pop("cMap", "viridis")
+    cBarOrientation = kwargs.pop("orientation", "horizontal")
+    replaceData = kwargs.pop("replaceData", False)
+    axisLabels = kwargs.pop("axisLabels", True)
+    xl = kwargs.pop("xl", "$x$ in m")
+    yl = kwargs.pop("yl", None)
 
     if ax is None:
-        ax, _ = pg.show(figsize=kwargs.pop('figsize', None), **kwargs)
+        ax, _ = pg.show(figsize=kwargs.pop("figsize", None), **kwargs)
 
     # adjust limits only when axis is empty
     fitViewDefault = True
@@ -295,7 +310,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     # horrible wrong for german 'decimal_point': ','
     pg.checkAndFixLocaleDecimal_point(verbose=False)
 
-    hold = kwargs.pop('hold', pg.viewer.mpl.utils.__holdAxes__)
+    hold = kwargs.pop("hold", pg.viewer.mpl.utils.__holdAxes__)
 
     if block is True:
         hold = True
@@ -311,11 +326,12 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
 
         if mesh.cellCount() > 0:
             uniquemarkers, uniqueidx = np.unique(
-                np.array(mesh.cellMarkers()), return_inverse=True)
+                np.array(mesh.cellMarkers()), return_inverse=True
+            )
 
             label = label or "Cell markers"
             cMap = cmapFromName("Set3", ncols=len(uniquemarkers))
-            #cMap = pg.plt.colormaps.get_cmap("Set3", len(uniquemarkers))
+            # cMap = pg.plt.colormaps.get_cmap("Set3", len(uniquemarkers))
             kwargs["logScale"] = False
             kwargs["cMin"] = -0.5
             kwargs["cMax"] = len(uniquemarkers) - 0.5
@@ -334,13 +350,18 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     else:
 
         # check for map like data=[[marker, val], ....]
-        if isinstance(data, list) and \
-                isinstance(data[0], list) and isinstance(data[0][0], int):
+        if (
+            isinstance(data, list)
+            and isinstance(data[0], list)
+            and isinstance(data[0][0], int)
+        ):
             data = pg.solver.parseMapToCellArray(data, mesh)
 
-        if hasattr(data[0], '__len__') and not \
-                isinstance(data, np.ma.core.MaskedArray) and not \
-                isinstance(data[0], str):
+        if (
+            hasattr(data[0], "__len__")
+            and not isinstance(data, np.ma.core.MaskedArray)
+            and not isinstance(data[0], str)
+        ):
             if len(data) == 2:  # [u,v] x N
                 data = np.array(data).T
             if data.shape[1] == 2:  # N x [u,v]
@@ -352,11 +373,12 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             else:  # Try animation frames x N
                 data = np.asarray(data)
                 if data.ndim == 2:
-                    if data.shape[1] == mesh.cellCount() or \
-                       data.shape[1] == mesh.nodeCount():
+                    if (
+                        data.shape[1] == mesh.cellCount()
+                        or data.shape[1] == mesh.nodeCount()
+                    ):
 
-                        return showAnimation(mesh, data, cMap=cMap,
-                                             ax=ax, **kwargs)
+                        return showAnimation(mesh, data, cMap=cMap, ax=ax, **kwargs)
 
                 pg.warn("No valid stream data:", data.shape, data.ndim)
                 showMesh = True
@@ -380,18 +402,23 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
                 # kwargs as reference here to set defaults valid outside too
                 validData = True
                 if len(data) == mesh.cellCount():
-                    kwargs['nCols'] = kwargs.pop('nCols', 256)
+                    kwargs["nCols"] = kwargs.pop("nCols", 256)
                     gci = drawModel(ax, mesh, data, **kwargs)
 
                 elif len(data) == mesh.nodeCount():
-                    kwargs['nLevs'] = kwargs.pop('nLevs', 5)
-                    kwargs['nCols'] = kwargs.pop('nCols', kwargs['nLevs']-1)
+                    kwargs["nLevs"] = kwargs.pop("nLevs", 5)
+                    kwargs["nCols"] = kwargs.pop("nCols", kwargs["nLevs"] - 1)
 
                     gci = drawField(ax, mesh, data, **kwargs)
                 else:
                     pg.error("Data size invalid")
-                    print("Data: ", len(data), min(data), max(data),
-                          pg.core.haveInfNaN(data))
+                    print(
+                        "Data: ",
+                        len(data),
+                        min(data),
+                        max(data),
+                        pg.core.haveInfNaN(data),
+                    )
                     print("Mesh: ", mesh)
                     validData = False
                     drawMesh(ax, mesh)
@@ -402,24 +429,27 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
                 if label is None:
                     label = ""
 
-                if replaceData and hasattr(mesh, 'gci') and ax in mesh.gci:
+                if replaceData and hasattr(mesh, "gci") and ax in mesh.gci:
                     gci = mesh.gci[ax]
 
-                    if 'TriContourSet' in str(type(gci)):
+                    if "TriContourSet" in str(type(gci)):
                         ax.clear()
                         gci, validData = _drawField(ax, mesh, data, kwargs)
                         updateAxes(ax, force=True)
                     else:
-                        setMappableData(gci, data,
-                                        cMin=kwargs.get('cMin', None),
-                                        cMax=kwargs.get('cMax', None),)
+                        setMappableData(
+                            gci,
+                            data,
+                            cMin=kwargs.get("cMin", None),
+                            cMax=kwargs.get("cMax", None),
+                        )
                         updateAxes(ax, force=True)
                         return ax, gci.colorbar
                 else:
                     gci, validData = _drawField(ax, mesh, data, kwargs)
 
                 # Cache mesh and scalarmappable to make replaceData work
-                if not hasattr(mesh, 'gci'):
+                if not hasattr(mesh, "gci"):
                     mesh.gci = {}
 
                 mesh.gci[ax] = gci
@@ -435,23 +465,22 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     if mesh.cellCount() == 0:
         showMesh = False
         if mesh.boundaryCount() == 0:
-            pg.viewer.mpl.drawPLC(ax, mesh, showNodes=True,
-                                  fillRegion=False,
-                                  showBoundary=False,
-                                  **kwargs)
+            pg.viewer.mpl.drawPLC(
+                ax, mesh, showNodes=True, fillRegion=False, showBoundary=False, **kwargs
+            )
             showBoundary = False
             # ax.plot(pg.x(mesh), pg.y(mesh), '.', color='black')
         else:
-            kwargs['orientation'] = cBarOrientation
+            kwargs["orientation"] = cBarOrientation
             pg.viewer.mpl.drawPLC(ax, mesh, **kwargs)
 
     if showMesh:
-        if gci is not None and hasattr(gci, 'set_antialiased'):
+        if gci is not None and hasattr(gci, "set_antialiased"):
             gci.set_antialiased(True)
             gci.set_linewidth(0.3)
-            gci.set_edgecolor(kwargs.pop('color', "0.1"))
-            #drawMesh(ax, mesh, lw=0.3, **kwargs)
-        #else:
+            gci.set_edgecolor(kwargs.pop("color", "0.1"))
+            # drawMesh(ax, mesh, lw=0.3, **kwargs)
+        # else:
         drawMesh(ax, mesh, lw=0.3, **kwargs)
         # pg.viewer.mpl.drawSelectedMeshBoundaries(ax,
         #         mesh.boundaries(),
@@ -460,21 +489,23 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
 
     if bool(showBoundary) is True:
         b = mesh.boundaries(mesh.boundaryMarkers() != 0)
-        pg.viewer.mpl.drawSelectedMeshBoundaries(ax, b,
-                                                 color=(0.0, 0.0, 0.0, 1.0),
-                                                 linewidth=1.4)
+        pg.viewer.mpl.drawSelectedMeshBoundaries(
+            ax, b, color=(0.0, 0.0, 0.0, 1.0), linewidth=1.4
+        )
 
     if kwargs.pop("boundaryMarkers", False):
         pg.viewer.mpl.drawBoundaryMarkers(
-            ax, mesh,
-            clipBoundaryMarkers=kwargs.pop('clipBoundaryMarkers', False),
-            **kwargs.pop('boundaryProps', {}))
+            ax,
+            mesh,
+            clipBoundaryMarkers=kwargs.pop("clipBoundaryMarkers", False),
+            **kwargs.pop("boundaryProps", {}),
+        )
 
-    fitView = kwargs.pop('fitView', fitViewDefault)
+    fitView = kwargs.pop("fitView", fitViewDefault)
 
     if fitView is not False:
-        ax.autoscale(enable=True, axis='both', tight=True)
-        ax.set_aspect(kwargs.pop('aspect', 'equal'))
+        ax.autoscale(enable=True, axis="both", tight=True)
+        ax.set_aspect(kwargs.pop("aspect", "equal"))
 
     cBar = None
 
@@ -483,23 +514,24 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
 
     # pg._r(validData, gci)
     if validData:
-        labels = ['cMin', 'cMax', 'nCols', 'nLevs', 'logScale', 'levels']
+        labels = ["cMin", "cMax", "nCols", "nLevs", "logScale", "levels"]
         subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
 
-        subkwargs['cMap'] = cMap
+        subkwargs["cMap"] = cMap
 
         if isinstance(colorBar, bool):
 
             if colorBar is True:
-                subkwargs['label'] = label
-                subkwargs['orientation'] = cBarOrientation
+                subkwargs["label"] = label
+                subkwargs["orientation"] = cBarOrientation
 
-            cBar = createColorBar(gci,
-                                  size=kwargs.pop('size', 0.2),
-                                  pad=kwargs.pop('pad', None),
-                                  **subkwargs,
-                                  onlyColorSet=not colorBar,
-                                  )
+            cBar = createColorBar(
+                gci,
+                size=kwargs.pop("size", 0.2),
+                pad=kwargs.pop("pad", None),
+                **subkwargs,
+                onlyColorSet=not colorBar,
+            )
         elif colorBar is not False:
             cBar = updateColorBar(colorBar, **subkwargs)
 
@@ -515,16 +547,18 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         if isinstance(coverage, (float, int)):
             gci.set_alpha(coverage)
         elif len(data) == len(coverage) == mesh.cellCount():
-            addCoverageAlpha(gci, coverage,
-                             dropThreshold=kwargs.pop('dropThreshold', 0.4))
+            addCoverageAlpha(
+                gci, coverage, dropThreshold=kwargs.pop("dropThreshold", 0.4)
+            )
         else:
-            pg.error('Coverage needs to be either of type float or an array',
-                     'with the same length as data and mesh.cellCount().')
+            pg.error(
+                "Coverage needs to be either of type float or an array",
+                "with the same length as data and mesh.cellCount().",
+            )
             # addCoverageAlpha(gci, pg.core.cellDataToPointData(mesh,
             #                                                   coverage))
 
-    if not hold or block is not False and \
-            pg.plt.get_backend().lower() != "agg":
+    if not hold or block is not False and pg.plt.get_backend().lower() != "agg":
         if data is not None:
             if len(data) == mesh.cellCount():
                 CellBrowser(mesh, data, ax=ax)
@@ -538,9 +572,9 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     if axisLabels == True and mesh.dim() == 2:
 
         try:
-            pg.viewer.mpl.adjustWorldAxes(ax,
-                                       useDepth=min(mesh.boundaryMarkers()) < 0,
-                                       xl=xl, yl=yl)
+            pg.viewer.mpl.adjustWorldAxes(
+                ax, useDepth=min(mesh.boundaryMarkers()) < 0, xl=xl, yl=yl
+            )
         except BaseException:
             pass
     else:
@@ -549,13 +583,13 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     pg.viewer.mpl.hold(val=lastHoldStatus)
 
     if savefig:
-        print('saving: ' + savefig + ' ...', end="")
-        if '.' not in savefig:
-            savefig += '.pdf'
+        print("saving: " + savefig + " ...", end="")
+        if "." not in savefig:
+            savefig += ".pdf"
 
-        ax.figure.savefig(savefig, bbox_inches='tight')
+        ax.figure.savefig(savefig, bbox_inches="tight")
         # rc params savefig.format=pdf
-        print('.. done')
+        print(".. done")
 
     return ax, cBar
 
@@ -583,9 +617,9 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
     -------
     ax : matplotlib.ax
     """
-    ax = kwargs.pop('ax', None)
+    ax = kwargs.pop("ax", None)
 
-    col = kwargs.pop('color', 'Black')
+    col = kwargs.pop("color", "Black")
 
     if normMap:
         for pair in normMap:
@@ -595,11 +629,18 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
                 c1 = b.center()
 
                 if (pair[1][0] != 0) or (pair[1][1] != 0):
-                    ax.arrow(c1[0], c1[1], pair[1][0], pair[1][1],
-                             head_width=0.1, head_length=0.3, color=col,
-                             **kwargs)
+                    ax.arrow(
+                        c1[0],
+                        c1[1],
+                        pair[1][0],
+                        pair[1][1],
+                        head_width=0.1,
+                        head_length=0.3,
+                        color=col,
+                        **kwargs,
+                    )
                 else:
-                    ax.plot(c1[0], c1[1], 'o', color=col)
+                    ax.plot(c1[0], c1[1], "o", color=col)
         return
 
     ax = show(mesh, hold=True, ax=ax)[0]
@@ -646,14 +687,15 @@ def showAnimation(mesh, data, ax=None, **kwargs):
 
     """
     import matplotlib.animation
+
     plt = pg.plt
 
     plt.rcParams["animation.html"] = "jshtml"
-    plt.rcParams['figure.dpi'] = kwargs.pop('dpi', 96)
-    plt.rcParams['animation.embed_limit'] = 50
+    plt.rcParams["figure.dpi"] = kwargs.pop("dpi", 96)
+    plt.rcParams["animation.embed_limit"] = 50
     figsize = kwargs.pop("figsize", None)
 
-    flux = kwargs.pop('flux', None)
+    flux = kwargs.pop("flux", None)
 
     plt.ioff()
 
@@ -663,7 +705,7 @@ def showAnimation(mesh, data, ax=None, **kwargs):
         pg.show(mesh, flux[0], ax=ax)
 
     try:
-        times = mesh['times']
+        times = mesh["times"]
     except Exception as e:
         times = None
 
@@ -682,15 +724,21 @@ def showAnimation(mesh, data, ax=None, **kwargs):
 
         if times is not None and len(times) > t:
             # ax.text(0.02, 0.02, f't={pg.pf(times[t])}',
-            ax.text(0.01, 1.01, f't={pg.utils.prettyTime(times[t])}',
-                    horizontalalignment='left',
-                    verticalalignment='bottom',
-                    transform=ax.transAxes, color='k', fontsize=8)
+            ax.text(
+                0.01,
+                1.01,
+                f"t={pg.utils.prettyTime(times[t])}",
+                horizontalalignment="left",
+                verticalalignment="bottom",
+                transform=ax.transAxes,
+                color="k",
+                fontsize=8,
+            )
 
     if pg.isNotebook() is False:
         global __Animation_Keeper__
 
-    __Animation_Keeper__ = matplotlib.animation.FuncAnimation(ax.figure,
-                                                              animate,
-                                                              frames=len(data))
+    __Animation_Keeper__ = matplotlib.animation.FuncAnimation(
+        ax.figure, animate, frames=len(data)
+    )
     return __Animation_Keeper__

@@ -1,4 +1,5 @@
 """Import routines several ERT file formats."""
+
 import re
 import numpy as np
 import pygimli as pg
@@ -44,16 +45,16 @@ def load(fileName, verbose=False, **kwargs):
     if verbose:
         pg.info("Try to import using pybert .. if available")
 
-    pb = pg.optImport('pybert')
+    pb = pg.optImport("pybert")
     data = pb.importData(fileName)
 
-    if kwargs.pop('ensureKRhoa', False):
-        if not data.haveData('k'):
+    if kwargs.pop("ensureKRhoa", False):
+        if not data.haveData("k"):
             data.createGeometricFactors()
-        if data.haveData('r'):
-            data['rhoa'] = data['r'] * data['k']
-        elif data.haveData('u') and data.haveData('i'):
-            data['rhoa'] = data['u'] / data['i'] * data['k']
+        if data.haveData("r"):
+            data["rhoa"] = data["r"] * data["k"]
+        elif data.haveData("u") and data.haveData("i"):
+            data["rhoa"] = data["u"] / data["i"] * data["k"]
 
     if isinstance(data, pg.DataContainerERT):
         return data
@@ -90,46 +91,48 @@ def importRes2dInv(filename, verbose=False, return_header=False):
         dataBody
     """
 
-    def getNonEmptyRow(i, comment='#'):
+    def getNonEmptyRow(i, comment="#"):
         s = next(i)
         while s[0] is comment:
             s = next(i)
-        return s.split('\r\n')[0]
+        return s.split("\r\n")[0]
+
     # def getNonEmptyRow(...)
 
-    with open(filename, 'r') as fi:
+    with open(filename, "r") as fi:
         content = fi.readlines()
 
     it = iter(content)
     header = {}
-    header['name'] = getNonEmptyRow(it, comment=';')
-    header['spacing'] = float(getNonEmptyRow(it, comment=';'))
-    typrow = getNonEmptyRow(it, comment=';')
-    typ = int(typrow.rstrip('\n').rstrip('R').rstrip('L'))
+    header["name"] = getNonEmptyRow(it, comment=";")
+    header["spacing"] = float(getNonEmptyRow(it, comment=";"))
+    typrow = getNonEmptyRow(it, comment=";")
+    typ = int(typrow.rstrip("\n").rstrip("R").rstrip("L"))
 
     if typ == 11:
         # independent electrode positions
-        header['subtype'] = int(getNonEmptyRow(it, comment=';'))
-        header['dummy'] = getNonEmptyRow(it, comment=';')
-        isR = int(getNonEmptyRow(it, comment=';'))
+        header["subtype"] = int(getNonEmptyRow(it, comment=";"))
+        header["dummy"] = getNonEmptyRow(it, comment=";")
+        isR = int(getNonEmptyRow(it, comment=";"))
 
-    nData = int(getNonEmptyRow(it, comment=';'))
-    xLoc = float(getNonEmptyRow(it, comment=';'))
-    hasIP = int(getNonEmptyRow(it, comment=';'))
+    nData = int(getNonEmptyRow(it, comment=";"))
+    xLoc = float(getNonEmptyRow(it, comment=";"))
+    hasIP = int(getNonEmptyRow(it, comment=";"))
 
     if hasIP:
-        header['ipQuantity'] = getNonEmptyRow(it, comment=';')
-        header['ipUnit'] = getNonEmptyRow(it, comment=';')
-        header['ipData'] = getNonEmptyRow(it, comment=';')
-        ipline = header['ipData'].rstrip('\n').rstrip('\r').split(' ')
+        header["ipQuantity"] = getNonEmptyRow(it, comment=";")
+        header["ipUnit"] = getNonEmptyRow(it, comment=";")
+        header["ipData"] = getNonEmptyRow(it, comment=";")
+        ipline = header["ipData"].rstrip("\n").rstrip("\r").split(" ")
         if len(ipline) > 2:  # obviously spectral data?
-            header['ipNumGates'] = int(ipline[0])
-            header['ipDelay'] = float(ipline[1])
-            header['onTime'] = float(ipline[-2])
-            header['offTime'] = float(ipline[-1])
-            header['ipDT'] = np.array(ipline[2:-2], dtype=float)
-            header['ipGateT'] = np.cumsum(np.hstack((header['ipDelay'],
-                                                     header['ipDT'])))
+            header["ipNumGates"] = int(ipline[0])
+            header["ipDelay"] = float(ipline[1])
+            header["onTime"] = float(ipline[-2])
+            header["offTime"] = float(ipline[-1])
+            header["ipDT"] = np.array(ipline[2:-2], dtype=float)
+            header["ipGateT"] = np.cumsum(
+                np.hstack((header["ipDelay"], header["ipDT"]))
+            )
 
     data = pg.DataContainerERT()
     data.resize(nData)
@@ -143,58 +146,49 @@ def importRes2dInv(filename, verbose=False, return_header=False):
         specIP = []
 
         for i in range(nData):
-            vals = getNonEmptyRow(it, comment=';').replace(',', ' ').split()
+            vals = getNonEmptyRow(it, comment=";").replace(",", " ").split()
 
             # row starts with 4
             if int(vals[0]) == 4:
-                eaID = data.createSensor(pg.Pos(float(vals[1]),
-                                                float(vals[2])))
-                ebID = data.createSensor(pg.Pos(float(vals[3]),
-                                                float(vals[4])))
-                emID = data.createSensor(pg.Pos(float(vals[5]),
-                                                float(vals[6])))
-                enID = data.createSensor(pg.Pos(float(vals[7]),
-                                                float(vals[8])))
+                eaID = data.createSensor(pg.Pos(float(vals[1]), float(vals[2])))
+                ebID = data.createSensor(pg.Pos(float(vals[3]), float(vals[4])))
+                emID = data.createSensor(pg.Pos(float(vals[5]), float(vals[6])))
+                enID = data.createSensor(pg.Pos(float(vals[7]), float(vals[8])))
             elif int(vals[0]) == 3:
-                eaID = data.createSensor(pg.Pos(float(vals[1]),
-                                                float(vals[2])))
+                eaID = data.createSensor(pg.Pos(float(vals[1]), float(vals[2])))
                 ebID = -1
-                emID = data.createSensor(pg.Pos(float(vals[3]),
-                                                float(vals[4])))
-                enID = data.createSensor(pg.Pos(float(vals[5]),
-                                                float(vals[6])))
+                emID = data.createSensor(pg.Pos(float(vals[3]), float(vals[4])))
+                enID = data.createSensor(pg.Pos(float(vals[5]), float(vals[6])))
             elif int(vals[0]) == 2:
-                eaID = data.createSensor(pg.Pos(float(vals[1]),
-                                                float(vals[2])))
+                eaID = data.createSensor(pg.Pos(float(vals[1]), float(vals[2])))
                 ebID = -1
-                emID = data.createSensor(pg.Pos(float(vals[3]),
-                                                float(vals[4])))
+                emID = data.createSensor(pg.Pos(float(vals[3]), float(vals[4])))
                 enID = -1
             else:
-                raise Exception('dont know how to handle row', vals[0])
-            res[i] = float(vals[int(vals[0])*2+1])
+                raise Exception("dont know how to handle row", vals[0])
+            res[i] = float(vals[int(vals[0]) * 2 + 1])
             if hasIP:
                 # ip[i] = float(vals[int(vals[0])*2+2])
-                ipCol = int(vals[0])*2+2
+                ipCol = int(vals[0]) * 2 + 2
                 ip[i] = float(vals[ipCol])
-                if 'ipNumGates' in header:
+                if "ipNumGates" in header:
                     specIP.append(vals[ipCol:])
 
             data.createFourPointData(i, eaID, ebID, emID, enID)
 
         if isR:
-            data.set('r', res)
+            data.set("r", res)
         else:
-            data.set('rhoa', res)
+            data.set("rhoa", res)
 
         if hasIP:
-            data.set('ip', ip)
-            if 'ipNumGates' in header:
+            data.set("ip", ip)
+            if "ipNumGates" in header:
                 A = np.array(specIP, dtype=float)
                 A[A > 1000] = -999
                 A[A < -1000] = -999
-                for i in range(header['ipNumGates']):
-                    data.set('ip'+str(i+1), A[:, i])
+                for i in range(header["ipNumGates"]):
+                    data.set("ip" + str(i + 1), A[:, i])
     else:  # not type 11-13
         # amount of values per column per typ
         nntyp = [0, 3, 3, 4, 3, 3, 4, 4, 3, 0, 0, 8, 10]
@@ -202,7 +196,7 @@ def importRes2dInv(filename, verbose=False, return_header=False):
 
         dataBody = np.zeros((nn, nData))
         for i in range(nData):
-            vals = getNonEmptyRow(it, comment=';').replace(',', ' ').split()
+            vals = getNonEmptyRow(it, comment=";").replace(",", " ").split()
             dataBody[:, i] = np.array(vals, dtype=float)
 
         XX = dataBody[0]
@@ -226,12 +220,12 @@ def importRes2dInv(filename, verbose=False, return_header=False):
             AA = XX - xLoc * EL * 0.5
             MM = AA + EL
         elif typ == 3:  # Dipole-Dipole
-            AA = XX - xLoc * EL * (SP / 2. + 1.)
+            AA = XX - xLoc * EL * (SP / 2.0 + 1.0)
             BB = AA + EL
             MM = BB + SP * EL
             NN = MM + EL
         elif typ == 3:  # Dipole-Dipole
-            AA = XX - xLoc * EL * (SP / 2. + 1.)
+            AA = XX - xLoc * EL * (SP / 2.0 + 1.0)
             BB = AA + EL
             MM = BB + SP * EL
             NN = MM + EL
@@ -246,7 +240,7 @@ def importRes2dInv(filename, verbose=False, return_header=False):
             BB = MM + EL
             NN = BB + EL
         elif typ == 6:  # POLE-DIPOLE
-            AA = XX - xLoc * SP * EL - (SP - 1.) * (SP < 0.) * EL
+            AA = XX - xLoc * SP * EL - (SP - 1.0) * (SP < 0.0) * EL
             MM = AA + SP * EL
             NN = MM + np.sign(SP) * EL
         elif typ == 7:  # SCHLUMBERGER
@@ -255,7 +249,7 @@ def importRes2dInv(filename, verbose=False, return_header=False):
             NN = MM + EL
             BB = NN + SP * EL
         else:
-            raise Exception('Datatype ' + str(typ) + ' not yet suppoted')
+            raise Exception("Datatype " + str(typ) + " not yet suppoted")
 
         for i in range(len(AA)):
             if AA is not None:
@@ -280,20 +274,20 @@ def importRes2dInv(filename, verbose=False, return_header=False):
 
             data.createFourPointData(i, eaID, ebID, emID, enID)
 
-        data.set('rhoa', dataBody[nn - hasIP - 1])
+        data.set("rhoa", dataBody[nn - hasIP - 1])
         if hasIP:
-            data.set('ip', dataBody[nn - 1])
+            data.set("ip", dataBody[nn - 1])
 
-    row = getNonEmptyRow(it, comment=';')
-    if row.lower().startswith('topography'):
-        row = getNonEmptyRow(it, comment=';')
+    row = getNonEmptyRow(it, comment=";")
+    if row.lower().startswith("topography"):
+        row = getNonEmptyRow(it, comment=";")
 
     istopo = int(row)
     if istopo:
-        ntopo = int(getNonEmptyRow(it, comment=';'))
+        ntopo = int(getNonEmptyRow(it, comment=";"))
         ap = data.additionalPoints()
         for i in range(ntopo):
-            strs = getNonEmptyRow(it, comment=';').replace(',', ' ').split()
+            strs = getNonEmptyRow(it, comment=";").replace(",", " ").split()
             ap.push_back(pg.Pos([float(s) for s in strs]))
 
         data.setAdditionalPoints(ap)
@@ -304,6 +298,8 @@ def importRes2dInv(filename, verbose=False, return_header=False):
         return data, header
     else:
         return data
+
+
 # def importRes2dInv(...)
 
 
@@ -323,16 +319,16 @@ def importAsciiColumns(filename, verbose=False, return_header=False):
     """
     data = pg.DataContainerERT()
     header = {}
-    with open(filename, 'r', encoding='iso-8859-15') as fi:
+    with open(filename, "r", encoding="iso-8859-15") as fi:
         content = fi.readlines()
-        if content[0].startswith('Injection'):  # Resecs lead-in
+        if content[0].startswith("Injection"):  # Resecs lead-in
             for n in range(20):
                 if len(content[n]) < 2:
                     break
 
-            content = content[n+1:]
+            content = content[n + 1 :]
 
-        if content[0].startswith('Filename'):  # ABEM lead-in
+        if content[0].startswith("Filename"):  # ABEM lead-in
             for n, line in enumerate(content):
                 if line.find("MeasID") > 0:
                     break
@@ -343,7 +339,7 @@ def importAsciiColumns(filename, verbose=False, return_header=False):
                     tok = sp[0].lstrip("\t").lstrip("- ")
                     header[tok] = sp[1].rstrip("\n").rstrip("\r")
 
-            for last in range(len(content)-1, -1, -1):
+            for last in range(len(content) - 1, -1, -1):
                 if content[last].find("---") == 0:
                     print(content[last])
                     last -= 1
@@ -358,25 +354,25 @@ def importAsciiColumns(filename, verbose=False, return_header=False):
 
             content = content[n:last]
 
-        d = readAsDictionary(content, sep='\t')
+        d = readAsDictionary(content, sep="\t")
         if len(d) < 2:
             d = readAsDictionary(content)
         nData = len(next(iter(d.values())))
         data.resize(nData)
-        if 'Spa.1' in d:  # Syscal Pro
-            abmn = ['Spa.1', 'Spa.2', 'Spa.3', 'Spa.4']
+        if "Spa.1" in d:  # Syscal Pro
+            abmn = ["Spa.1", "Spa.2", "Spa.3", "Spa.4"]
             if verbose:
                 pg.debug("detected Syscalfile format")
-        elif 'A(x)' in d:  # ABEM Terrameter
-            abmn = ['A', 'B', 'M', 'N']
+        elif "A(x)" in d:  # ABEM Terrameter
+            abmn = ["A", "B", "M", "N"]
             if verbose:
                 pg.debug("detected ABEM file format")
-        elif 'xA' in d:  # Workbench TX2 processed data
-            abmn = ['xA', 'xB', 'xM', 'xN']
+        elif "xA" in d:  # Workbench TX2 processed data
+            abmn = ["xA", "xB", "xM", "xN"]
             if verbose:
                 pg.debug("detected Workbench file format")
-        elif 'C1(x)' in d or 'C1(xm)' in d:  # Resecs
-            abmn = ['C1', 'C2', 'P1', 'P2']
+        elif "C1(x)" in d or "C1(xm)" in d:  # Resecs
+            abmn = ["C1", "C2", "P1", "P2"]
             if verbose:
                 pg.debug("detected RESECS file format")
         else:
@@ -384,65 +380,101 @@ def importAsciiColumns(filename, verbose=False, return_header=False):
             pg.debug("Keys are:", d.keys())
             raise Exception("No electrode positions found!")
         for i in range(nData):
-            if abmn[0]+'(z)' in d:
-                eID = [data.createSensor([d[se+'(x)'][i], d[se+'(y)'][i],
-                                          d[se+'(z)'][i]]) for se in abmn]
-            elif abmn[0]+'(zm)' in d:
-                eID = [data.createSensor([d[se+'(xm)'][i], d[se+'(ym)'][i],
-                                          d[se+'(zm)'][i]]) for se in abmn]
-            elif abmn[0]+'(y)' in d:
-                eID = [data.createSensor([d[se+'(x)'][i], d[se+'(y)'][i],
-                                          0.]) for se in abmn]
-            elif abmn[0]+'(ym)' in d:
-                eID = [data.createSensor([d[se+'(xm)'][i], d[se+'(ym)'][i],
-                                          0.]) for se in abmn]
-            elif abmn[0]+'(x)' in d:
-                eID = [data.createSensor([d[se+'(x)'][i], 0.,
-                                          0.]) for se in abmn]
-            elif abmn[0]+'(xm)' in d:
-                eID = [data.createSensor([d[se+'(xm)'][i], 0.,
-                                          0.]) for se in abmn]
+            if abmn[0] + "(z)" in d:
+                eID = [
+                    data.createSensor(
+                        [d[se + "(x)"][i], d[se + "(y)"][i], d[se + "(z)"][i]]
+                    )
+                    for se in abmn
+                ]
+            elif abmn[0] + "(zm)" in d:
+                eID = [
+                    data.createSensor(
+                        [d[se + "(xm)"][i], d[se + "(ym)"][i], d[se + "(zm)"][i]]
+                    )
+                    for se in abmn
+                ]
+            elif abmn[0] + "(y)" in d:
+                eID = [
+                    data.createSensor([d[se + "(x)"][i], d[se + "(y)"][i], 0.0])
+                    for se in abmn
+                ]
+            elif abmn[0] + "(ym)" in d:
+                eID = [
+                    data.createSensor([d[se + "(xm)"][i], d[se + "(ym)"][i], 0.0])
+                    for se in abmn
+                ]
+            elif abmn[0] + "(x)" in d:
+                eID = [data.createSensor([d[se + "(x)"][i], 0.0, 0.0]) for se in abmn]
+            elif abmn[0] + "(xm)" in d:
+                eID = [data.createSensor([d[se + "(xm)"][i], 0.0, 0.0]) for se in abmn]
             else:
-                eID = [data.createSensor([d[se][i], 0., 0.]) for se in abmn]
+                eID = [data.createSensor([d[se][i], 0.0, 0.0]) for se in abmn]
 
             data.createFourPointData(i, *eID)
 
         # data.save('tmp.shm', 'a b m n')
-        tokenmap = {'I(mA)': 'i', 'I': 'i', 'In': 'i', 'Vp': 'u',
-                    'VoltageV': 'u', 'U': 'u', 'U(V)': 'u', 'UV': 'u',
-                    'R(Ohm)': 'r', 'RO': 'r', 'R(O)': 'r', 'Res': 'r',
-                    'Rho': 'rhoa', 'AppROhmm': 'rhoa', 'Rho-a(Ohm-m)': 'rhoa',
-                    'Rho-a(Om)': 'rhoa',
-                    'Var(%)': 'err', 'D': 'err', 'Dev.': 'err', 'Dev': 'err',
-                    'M': 'ma', 'P': 'ip', 'IP sum window': 'ip',
-                    'Time': 't'}
+        tokenmap = {
+            "I(mA)": "i",
+            "I": "i",
+            "In": "i",
+            "Vp": "u",
+            "VoltageV": "u",
+            "U": "u",
+            "U(V)": "u",
+            "UV": "u",
+            "R(Ohm)": "r",
+            "RO": "r",
+            "R(O)": "r",
+            "Res": "r",
+            "Rho": "rhoa",
+            "AppROhmm": "rhoa",
+            "Rho-a(Ohm-m)": "rhoa",
+            "Rho-a(Om)": "rhoa",
+            "Var(%)": "err",
+            "D": "err",
+            "Dev.": "err",
+            "Dev": "err",
+            "M": "ma",
+            "P": "ip",
+            "IP sum window": "ip",
+            "Time": "t",
+        }
         # Unit conversions (mA,mV,%), partly automatically assumed
-        unitmap = {'I(mA)': 1e-3, 'Var(%)': 0.01,  # ABEM
-                   'U': 1e-3, 'I': 1e-3, 'D': 0.01,  # Resecs
-                   'Dev.': 0.01, 'In': 1e-3, 'Vp': 1e-3}  # Syscal
-        abmn = ['a', 'b', 'm', 'n']
-        if 'Cycles' in d:
-            d['stacks'] = d['Cycles']
+        unitmap = {
+            "I(mA)": 1e-3,
+            "Var(%)": 0.01,  # ABEM
+            "U": 1e-3,
+            "I": 1e-3,
+            "D": 0.01,  # Resecs
+            "Dev.": 0.01,
+            "In": 1e-3,
+            "Vp": 1e-3,
+        }  # Syscal
+        abmn = ["a", "b", "m", "n"]
+        if "Cycles" in d:
+            d["stacks"] = d["Cycles"]
         for key in d.keys():
             vals = np.asarray(d[key])
-            if key.startswith('IP sum window'):  # there is a trailing number
-                key = 'IP sum window'  # apparently not working
-            if np.issubdtype(vals.dtype, np.floating,  # 'float'  'int'
-                             ) or np.issubdtype(vals.dtype, np.signedinteger):
+            if key.startswith("IP sum window"):  # there is a trailing number
+                key = "IP sum window"  # apparently not working
+            if np.issubdtype(
+                vals.dtype,
+                np.floating,  # 'float'  'int'
+            ) or np.issubdtype(vals.dtype, np.signedinteger):
                 if key in tokenmap:  # use the standard (i, u, rhoa) key
                     if key not in abmn:
                         if verbose:
                             pg.debug("Setting", tokenmap[key], "from", key)
-                        data.set(tokenmap[key],
-                                 vals * unitmap.get(key, 1.0))
+                        data.set(tokenmap[key], vals * unitmap.get(key, 1.0))
                 else:  # use the original key if not XX(x) etc.
-                    if not re.search('([x-z])', key) and key not in abmn:
-                        data.set(key.replace(' ', '_'), d[key])
+                    if not re.search("([x-z])", key) and key not in abmn:
+                        data.set(key.replace(" ", "_"), d[key])
 
-        r = data['u'] / data['i']
-        if hasattr(d, 'R(0)'):
-            if np.linalg.norm(r-d['R(O)']) < 1e4:  # no idea what's that for
-                data.set('r', r)
+        r = data["u"] / data["i"]
+        if hasattr(d, "R(0)"):
+            if np.linalg.norm(r - d["R(O)"]) < 1e4:  # no idea what's that for
+                data.set("r", r)
             else:
                 pg.debug("Warning! File inconsistent")
 
@@ -451,6 +483,8 @@ def importAsciiColumns(filename, verbose=False, return_header=False):
         return data, header
     else:
         return data
+
+
 # def importAsciiColumns(...)
 
 
@@ -492,16 +526,16 @@ def readAsDictionary(content, token=None, sep=None):  # obsolote due to numpy?
     for i, row in enumerate(content[1:]):
         vals = row.splitlines()[0].split(sep)
         for j, v in enumerate(vals):
-            v = v.replace(',', '.')
+            v = v.replace(",", ".")
 
-            if len(token) < j+1:
-                token.append('col' + str(j))
+            if len(token) < j + 1:
+                token.append("col" + str(j))
             if token[j] not in data:
-                data[token[j]] = [None] * (len(content)-1)
+                data[token[j]] = [None] * (len(content) - 1)
             try:
                 data[token[j]][i] = float(v)
             except Exception:
-                if len(v) == 1 and v[0] == '-':
+                if len(v) == 1 and v[0] == "-":
                     v = 0.0
                 data[token[j]][i] = v
 

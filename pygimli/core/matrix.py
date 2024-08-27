@@ -6,9 +6,18 @@ import numpy as np
 
 from .core import pgcore
 
-from .core import (CMatrix, CSparseMapMatrix, CSparseMatrix,
-                   RSparseMapMatrix, RSparseMatrix, ElementMatrix,
-                   IVector, MatrixBase, R3Vector, RVector)
+from .core import (
+    CMatrix,
+    CSparseMapMatrix,
+    CSparseMatrix,
+    RSparseMapMatrix,
+    RSparseMatrix,
+    ElementMatrix,
+    IVector,
+    MatrixBase,
+    R3Vector,
+    RVector,
+)
 
 from .logger import critical, warn, info
 
@@ -23,13 +32,15 @@ SparseMapMatrix = pgcore.RSparseMapMatrix
 BlockMatrix = pgcore.RBlockMatrix
 
 # General Monkeypatch core classes
-__Matrices = [pgcore.MatrixBase,
-              pgcore.RSparseMatrix,
-              pgcore.RSparseMapMatrix,
-              pgcore.CSparseMatrix,
-              pgcore.CSparseMapMatrix,
-              pgcore.RBlockMatrix,
-              pgcore.IdentityMatrix]
+__Matrices = [
+    pgcore.MatrixBase,
+    pgcore.RSparseMatrix,
+    pgcore.RSparseMapMatrix,
+    pgcore.CSparseMatrix,
+    pgcore.CSparseMapMatrix,
+    pgcore.RBlockMatrix,
+    pgcore.IdentityMatrix,
+]
 
 for m in __Matrices:
     m.ndim = 2
@@ -38,7 +49,7 @@ for m in __Matrices:
     ## To allow for ignoring np.*.__mul__ in case A has the __rmul__ function
     ## see test TestMatrixMethods.testSparseMatrixBasics, TestRVectorMethods.testUFunc
     m.__array_ufunc__ = None
-    m.__rmul__ = lambda self: critical('not yet implemented')
+    m.__rmul__ = lambda self: critical("not yet implemented")
 
 
 pgcore.RMatrix.dtype = float
@@ -53,9 +64,9 @@ def __RMatrix_str(self):
     s = "RMatrix: " + str(self.rows()) + " x " + str(self.cols())
 
     if self.rows() < 6:
-        s += '\n'
+        s += "\n"
         for v in range(self.rows()):
-            s += self[v].__str__() + '\n'
+            s += self[v].__str__() + "\n"
     return s
 
 
@@ -63,32 +74,33 @@ def __CMatrix_str(self):
     s = "CMatrix: " + str(self.rows()) + " x " + str(self.cols())
 
     if self.rows() < 6:
-        s += '\n'
+        s += "\n"
         for v in range(self.rows()):
-            s += self[v].__str__() + '\n'
+            s += self[v].__str__() + "\n"
     return s
 
 
 def __ElementMatrix_str(self):
     """Show entries of an ElementMatrix."""
     import pygimli as pg
+
     if self.mat().cols() == 0 and self.mat().rows() == 0:
-        return 'Empty ElementMatrix\n'
+        return "Empty ElementMatrix\n"
 
-    maxRowID = int(np.log10(max(self.rowIDs())))+2
+    maxRowID = int(np.log10(max(self.rowIDs()))) + 2
 
-    s = '\n ' + ' ' * maxRowID
+    s = "\n " + " " * maxRowID
     for i in range(self.mat().cols()):
         s += str(self.colIDs()[i]).rjust(9)
-    s += '\n'
+    s += "\n"
 
-    s += '  ' + '-'*self.mat().cols()*(9 + maxRowID) + '-\n'
+    s += "  " + "-" * self.mat().cols() * (9 + maxRowID) + "-\n"
 
     for i in range(self.mat().rows()):
         s += str(self.rowIDs()[i]).rjust(maxRowID) + " :"
         for v in self.row(i):
             s += pg.pf(v).rjust(9)
-        s += '\n'
+        s += "\n"
     return s
 
 
@@ -100,8 +112,8 @@ pgcore.ElementMatrix.__repr__ = __ElementMatrix_str
 def __RSparseMapMatrix_str(self):
     s = "SparseMapMatrix: " + str(self.rows()) + " x " + str(self.cols())
     if self.rows() * self.cols() > 0:
-        pc = int(self.nVals()/self.cols()/self.rows()*1000) / 10
-        s += " (nnz=" + str(self.nVals()) + " / " + str(pc)+ "%)"
+        pc = int(self.nVals() / self.cols() / self.rows() * 1000) / 10
+        s += " (nnz=" + str(self.nVals()) + " / " + str(pc) + "%)"
 
     return s
 
@@ -113,14 +125,16 @@ def __RVector_format(self, f):
     print(f)
     return str(self)
 
+
 pgcore.RVector.__format__ = __RVector_format
 
 # Special Monkeypatch core classes
 __BlockMatrix_addMatrix__ = pgcore.RBlockMatrix.addMatrix
 
 
-def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
-                                       scale=1.0, transpose=False):
+def __BlockMatrix_addMatrix_happy_GC__(
+    self, M, row=None, col=None, scale=1.0, transpose=False
+):
     """Add an existing matrix to this block matrix and return a unique index.
 
     As long row and col are None, the Matrix will not be used until a matrix
@@ -149,25 +163,24 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
     """
     if M.ndim == 1:
         if transpose is False:
-            _M = SparseMapMatrix(list(range(len(M))), [0]*len(M), M)
+            _M = SparseMapMatrix(list(range(len(M))), [0] * len(M), M)
         else:
-            warn('BlockMatrix add (transpose==True) ... Move me to core')
-            _M = SparseMapMatrix([0]*len(M), list(range(len(M))), M)
+            warn("BlockMatrix add (transpose==True) ... Move me to core")
+            _M = SparseMapMatrix([0] * len(M), list(range(len(M))), M)
         M = _M
     else:
         if transpose is True:
             if isinstance(M, pgcore.RSparseMapMatrix):
-                warn('BlockMatrix add (transpose==True) ... Move me to core')
+                warn("BlockMatrix add (transpose==True) ... Move me to core")
                 v = pgcore.RVector()
                 i = pgcore.IndexArray([0])
                 j = pgcore.IndexArray([0])
                 M.fillArrays(v, i, j)
                 M = SparseMapMatrix(j, i, v)
             else:
-                critical("don't know yet how to add transpose matrix of type",
-                         type(M))
+                critical("don't know yet how to add transpose matrix of type", type(M))
 
-    if not hasattr(self, '__mats__'):
+    if not hasattr(self, "__mats__"):
         self.__mats__ = []
     self.__mats__.append(M)
 
@@ -180,8 +193,7 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
 
 
 def __BlockMatrix_str__(self):
-    string = ("pg.matrix.BlockMatrix of size %d x %d consisting of %d "
-              "submatrices.")
+    string = "pg.matrix.BlockMatrix of size %d x %d consisting of %d " "submatrices."
     return string % (self.rows(), self.cols(), len(self.entries()))
 
 
@@ -196,9 +208,13 @@ pgcore.RBlockMatrix.ndim = 2
 def __SparseMatrixEqual__(self, T):
     """Compare two SparseMatrices"""
     from pygimli.utils import sparseMatrix2Array
+
     if self.rows() != T.rows() or self.cols() != T.cols():
-        warn("Compare sizes invalid {0},{1} vs. {2},{3}: ".format(
-            self.rows(), self.cols(), T.rows(), T.cols()))
+        warn(
+            "Compare sizes invalid {0},{1} vs. {2},{3}: ".format(
+                self.rows(), self.cols(), T.rows(), T.cols()
+            )
+        )
         return False
 
     rowsA, colsA, valsA = sparseMatrix2Array(self, indices=True)
@@ -216,9 +232,11 @@ def __SparseMatrixEqual__(self, T):
     #     np.mean(abs(valsB)))
     # print(np.linalg.norm(valsA-valsB)/np.mean(abs(valsA)))
 
-    return rowsA == rowsB and \
-        colsA == colsB and \
-        np.linalg.norm(valsA-valsB)/np.mean(abs(valsA)) < 1e-14
+    return (
+        rowsA == rowsB
+        and colsA == colsB
+        and np.linalg.norm(valsA - valsB) / np.mean(abs(valsA)) < 1e-14
+    )
 
 
 pgcore.RSparseMatrix.__eq__ = __SparseMatrixEqual__

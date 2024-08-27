@@ -11,7 +11,7 @@ import pygimli as pg
 pg.version()
 
 # test pygimli log
-pg.info("Start numeric log test." + str(pg.log(pg.Vector(1, 1.))))
+pg.info("Start numeric log test." + str(pg.log(pg.Vector(1, 1.0))))
 pg.setVerbose(True)
 pg.verbose("some verbose notes")
 pg.warn("Start warning test.")
@@ -20,6 +20,7 @@ pg.warn("Start warning test.")
 def testTraceback1():
     def testTraceback2():
         pg.error("Start error test.: int", 1, " vec", pg.Vector(2))
+
     testTraceback2()
 
 
@@ -28,11 +29,11 @@ testTraceback1()
 
 @pg.v
 def testVerboseDecorator1():
-    pg.verbose('testVerboseDecorator1 should be seen even if verbose is false')
+    pg.verbose("testVerboseDecorator1 should be seen even if verbose is false")
 
 
 def testVerboseDecorator2():
-    pg.verbose('testVerboseDecorator2 should be seen even if verbose is true')
+    pg.verbose("testVerboseDecorator2 should be seen even if verbose is true")
 
 
 pg.setVerbose(False)
@@ -46,7 +47,7 @@ testVerboseDecorator2()
 
 @pg.d
 def testDebugDecorator():
-    pg.debug('testDebugDecorator should always be seen even if debug is false')
+    pg.debug("testDebugDecorator should always be seen even if debug is false")
 
 
 testDebugDecorator()
@@ -82,10 +83,10 @@ def testMethod(**kwargs):
     pg.core.logger.warnNonEmptyArgs(kwargs)
 
 
-testMethod(a=1, b='foo')
+testMethod(a=1, b="foo")
 #
 
 # teste colored output
-print(pg._('Green', c='g'), pg._('Red', c='r'), pg._('Yellow', c='y'))
+print(pg._("Green", c="g"), pg._("Red", c="r"), pg._("Yellow", c="y"))
 # print(pg._g('Green'), pg._g('Red'), pg._y('Yellow'))
-print(pg._('more', 'then', 'one', c='6;30;42'))
+print(pg._("more", "then", "one", c="6;30;42"))

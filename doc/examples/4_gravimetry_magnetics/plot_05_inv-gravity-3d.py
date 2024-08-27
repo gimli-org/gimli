@@ -27,9 +27,9 @@ from pygimli.physics.gravimetry import GravityModelling
 
 
 dx = 50
-x = np.arange(0., 1001, dx)
-y = np.arange(0., 1001, dx)
-z = np.arange(0., 501, dx)
+x = np.arange(0.0, 1001, dx)
+y = np.arange(0.0, 1001, dx)
+z = np.arange(0.0, 501, dx)
 grid = pg.createGrid(x, y, z)
 print(grid)
 
@@ -39,9 +39,9 @@ print(grid)
 # are shifted by one cell for subsequent cells.
 #
 
-v = np.zeros((len(z)-1, len(y)-1, len(x)-1))
+v = np.zeros((len(z) - 1, len(y) - 1, len(x) - 1))
 for i in range(7):
-    v[1+i, 11-i:16-i, 7:13] = 1 # 1g/cm³
+    v[1 + i, 11 - i : 16 - i, 7:13] = 1  # 1g/cm³
 
 grid["synth"] = v.ravel()
 
@@ -56,8 +56,14 @@ grid["synth"] = v.ravel()
 #
 
 pl, _ = pg.show(grid, style="wireframe", hold=True)
-pv.drawMesh(pl, grid, label="synth", style="surface", cMap="Spectral_r",
-            filter={"threshold": dict(value=0.05, scalars="synth")})
+pv.drawMesh(
+    pl,
+    grid,
+    label="synth",
+    style="surface",
+    cMap="Spectral_r",
+    filter={"threshold": dict(value=0.05, scalars="synth")},
+)
 pl.camera_position = "yz"
 pl.camera.roll = 90
 pl.camera.azimuth = 180 - 15
@@ -76,7 +82,7 @@ data = fop.response(grid["synth"])
 noise_level = 1
 data += np.random.randn(len(data)) * noise_level
 plt.contourf(yy, xx, np.reshape(data, xx.shape))
-plt.colorbar();
+plt.colorbar()
 
 # %%%
 # Depth weighting
@@ -96,7 +102,7 @@ bz = np.array([b.center().z() for b in grid.boundaries() if not b.outside()])
 bn = np.array([b.norm().z() for b in grid.boundaries() if not b.outside()])
 z0 = 50
 beta = 2.0
-wz = (z0 / (bz+z0))**(beta/2)
+wz = (z0 / (bz + z0)) ** (beta / 2)
 
 # %%%
 # Inversion
@@ -110,17 +116,22 @@ inv = pg.Inversion(fop=fop, verbose=True)  # , debug=True)
 inv.modelTrans = pg.trans.TransCotLU(-2, 2)
 # inv.setRegularization(correlationLengths=[500, 500, 100])
 inv.setConstraintWeights(wz)
-invmodel = inv.run(data, absoluteError=noise_level, lam=1e4,  # zWeight=0.3,
-                   startModel=0.1, verbose=True)
+invmodel = inv.run(
+    data,
+    absoluteError=noise_level,
+    lam=1e4,  # zWeight=0.3,
+    startModel=0.1,
+    verbose=True,
+)
 grid["inv"] = invmodel
 
 # %%%
 # Model response
 #
 
-misfit = np.reshape(data-inv.response, xx.shape) / noise_level
+misfit = np.reshape(data - inv.response, xx.shape) / noise_level
 plt.pcolor(yy, xx, misfit, cmap="bwr", vmin=-3, vmax=3)
-plt.colorbar();
+plt.colorbar()
 
 # %%%
 # Visualization
@@ -132,11 +143,13 @@ plt.colorbar();
 #
 
 ftr = dict(value=0.5, scalars="synth")
-pl, _ = pg.show(grid, label="synth", style="wireframe",
-                filter={"threshold": ftr}, hold=True)
+pl, _ = pg.show(
+    grid, label="synth", style="wireframe", filter={"threshold": ftr}, hold=True
+)
 ftr = dict(value=0.4, scalars="inv")
-pv.drawMesh(pl, grid, label="inv", style="surface", filter={"threshold": ftr},
-            cMin=0, cMax=1)
+pv.drawMesh(
+    pl, grid, label="inv", style="surface", filter={"threshold": ftr}, cMin=0, cMax=1
+)
 pl.camera_position = "yz"
 pl.camera.roll = 90
 pl.camera.azimuth = 180

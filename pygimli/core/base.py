@@ -4,7 +4,8 @@ Misc stuff also needed for core imports and monkey patching
 """
 import numpy as np
 
-from .core import (RVector3, R3Vector, RMatrix)
+from .core import RVector3, R3Vector, RMatrix
+
 
 def isInt(v, val=None):
     """Check if v is int , i.e. int, np.int32, np.int64.
@@ -22,6 +23,7 @@ def isInt(v, val=None):
     if val is None:
         return isinstance(v, (int, np.int32, np.int64))
     return isInt(v) and v == val
+
 
 def isScalar(v, val=None):
     """Check if v is scalar, i.e. int, float or complex.
@@ -63,7 +65,7 @@ def isIterable(v, N=None):
     True
     """
     if N is None:
-        return hasattr(v, '__iter__')
+        return hasattr(v, "__iter__")
 
     return isIterable(v) and len(v) == N
 
@@ -89,14 +91,14 @@ def isArray(v, N=None):
     False
     """
     if N is None:
-        
+
         if isinstance(v, (tuple, list)):
             return isScalar(v[0])
-            
-        return (hasattr(v, '__iter__') and \
-            not isinstance(v, (str))) and v.ndim == 1
+
+        return (hasattr(v, "__iter__") and not isinstance(v, (str))) and v.ndim == 1
 
     return isArray(v) and len(v) == N
+
 
 def isComplex(vals):
     """Check numpy or pg.Vector if have complex data type"""
@@ -106,6 +108,7 @@ def isComplex(vals):
     elif isArray(vals):
         return isComplex(vals[0])
     return False
+
 
 def isPos(v):
     """Check if v is an array of size(3), [x,y,z], or pg.Pos.
@@ -124,6 +127,7 @@ def isPos(v):
     """
     return isArray(v, 2) or isArray(v, 3) or isinstance(v, RVector3)
 
+
 def isR3Array(v, N=None):
     """Check if v is an array of size(N,3), a R3Vector or a list of pg.Pos.
 
@@ -138,18 +142,31 @@ def isR3Array(v, N=None):
     True
     """
     if N is None:
-        return isinstance(v, R3Vector) or \
-               (    isinstance(v, list) and isPos(v[0])) or \
-               (not isinstance(v, list) and hasattr(v, '__iter__') and \
-                not isinstance(v, (str)) and v.ndim == 2 and isPos(v[0]))
+        return (
+            isinstance(v, R3Vector)
+            or (isinstance(v, list) and isPos(v[0]))
+            or (
+                not isinstance(v, list)
+                and hasattr(v, "__iter__")
+                and not isinstance(v, (str))
+                and v.ndim == 2
+                and isPos(v[0])
+            )
+        )
     return isR3Array(v) and len(v) == N
 
+
 isPosList = isR3Array
+
 
 def isMatrix(v, shape=None):
     """Check is v has ndim=2 or is comparable list"""
     if shape is None:
-        return isinstance(v, RMatrix) or \
-               hasattr(v, 'ndim') and v.ndim == 2 or \
-                isinstance(v, list) and isArray(v[0])
-    return isMatrix(v) and (hasattr(v, 'shape') and v.shape == shape)
+        return (
+            isinstance(v, RMatrix)
+            or hasattr(v, "ndim")
+            and v.ndim == 2
+            or isinstance(v, list)
+            and isArray(v[0])
+        )
+    return isMatrix(v) and (hasattr(v, "shape") and v.shape == shape)

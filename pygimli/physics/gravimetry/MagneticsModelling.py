@@ -1,4 +1,5 @@
 """Magnetics forward operator."""
+
 import numpy as np
 import pygimli as pg
 from .kernel import SolveGravMagHolstein
@@ -35,8 +36,9 @@ class MagneticsModelling(pg.frameworks.MeshModelling):
         self.components = cmp
         self.igrf = None
         if hasattr(igrf, "__iter__"):
-            if len(igrf) == 2: # lat lon
+            if len(igrf) == 2:  # lat lon
                 import pyIGRF
+
                 self.igrf = pyIGRF.igrf_value(*igrf)
             else:
                 self.igrf = igrf
@@ -48,20 +50,27 @@ class MagneticsModelling(pg.frameworks.MeshModelling):
 
     def computeKernel(self):
         """Compute the kernel."""
-        points = np.column_stack([self.sensorPositions[:, 1],
-                                  self.sensorPositions[:, 0],
-                                  -np.abs(self.sensorPositions[:, 2])])
-        self.kernel = SolveGravMagHolstein(self.mesh().NED(),
-                                           pnts=points, igrf=self.igrf,
-                                           cmp=self.components,
-                                           foot=self.footprint)
+        points = np.column_stack(
+            [
+                self.sensorPositions[:, 1],
+                self.sensorPositions[:, 0],
+                -np.abs(self.sensorPositions[:, 2]),
+            ]
+        )
+        self.kernel = SolveGravMagHolstein(
+            self.mesh().NED(),
+            pnts=points,
+            igrf=self.igrf,
+            cmp=self.components,
+            foot=self.footprint,
+        )
         self.J = pg.matrix.BlockMatrix()
         self.Ki = []
         self.Ji = []
         for iC in range(self.kernel.shape[1]):
             self.Ki.append(np.squeeze(self.kernel[:, iC, :]))
             self.Ji.append(pg.matrix.NumpyMatrix(self.Ki[-1]))
-            self.J.addMatrix(self.Ji[-1], iC*self.kernel.shape[0], 0)
+            self.J.addMatrix(self.Ji[-1], iC * self.kernel.shape[0], 0)
 
         self.J.recalcMatrixSize()
         self.setJacobian(self.J)
@@ -70,7 +79,7 @@ class MagneticsModelling(pg.frameworks.MeshModelling):
     # self.createKernel
 
     # def setMesh(self, mesh):
-        # self.createKernel(mesh)
+    # self.createKernel(mesh)
 
     def response(self, model):
         """Compute forward response."""

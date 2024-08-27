@@ -14,7 +14,6 @@ import traceback
 
 
 class doxygen_doc_extractor(object):
-
     """
     Extracts Doxygen styled documentation from source or generates it from
     description.
@@ -37,7 +36,8 @@ class doxygen_doc_extractor(object):
                     return ""
 
                 self.source = open(
-                    declaration.location.file_name, encoding='utf-8').readlines()
+                    declaration.location.file_name, encoding="utf-8"
+                ).readlines()
             find_block_end = False
 
             # search backward until file begin
@@ -51,7 +51,7 @@ class doxygen_doc_extractor(object):
                             find_block_end = True
                     except Exception as e:
                         if not self.hasError:
-                            print('*' * 100)
+                            print("*" * 100)
                             print(e)
                             print(line)
                             self.hasError = True
@@ -64,7 +64,7 @@ class doxygen_doc_extractor(object):
                     except Exception as e:
                         if not self.hasError:
                             self.hasError = True
-                            print('*' * 100)
+                            print("*" * 100)
                             print(e)
                             print(line)
                         pass
@@ -79,42 +79,53 @@ class doxygen_doc_extractor(object):
             if not self.hasError:
                 traceback.print_exc(file=sys.stdout)
                 self.hasError = True
-                print('*' * 100)
+                print("*" * 100)
                 print(e)
                 print(self.file_name)
             pass
         finally:
             if len(doc_lines) > 0:
-                final_doc_lines = [
-                    line.replace(
-                        "\n",
-                        "\\n") for line in doc_lines[
-                        :-
-                        1]]
+                final_doc_lines = [line.replace("\n", "\\n") for line in doc_lines[:-1]]
                 final_doc_lines.append(doc_lines[-1].replace("\n", ""))
-                return '\"' + ''.join(final_doc_lines) + '\"'
+                return '"' + "".join(final_doc_lines) + '"'
             else:
-                return '\"\"'
-    #__call__()
+                return '""'
+
+    # __call__()
 
     def clear_str(self, tmp_str):
         r"""
         Replace */! by space and \brief, @fn, \param, etc
         """
+
         # CR: add
         def clean(_str, sym, change2=""):
             return _str.replace(sym, change2)
 
         # CR: add '\r\n'
         # tmp_str = reduce(clean, [tmp_str, "\r\n", '/','*','!',
-            #"\\brief","@brief","\\fn","@fn",
-            #"\\ref","@ref", "\"", "\'", "\\c"])
+        # "\\brief","@brief","\\fn","@fn",
+        # "\\ref","@ref", "\"", "\'", "\\c"])
 
-        for sym in ['/', "\r\n", '/', '*', '!', "\\brief", "@brief",
-                    "\\fn", "@fn", "\\ref", "@ref", "\"", "\'", "\\c"]:
+        for sym in [
+            "/",
+            "\r\n",
+            "/",
+            "*",
+            "!",
+            "\\brief",
+            "@brief",
+            "\\fn",
+            "@fn",
+            "\\ref",
+            "@ref",
+            '"',
+            "'",
+            "\\c",
+        ]:
             tmp_str = clean(tmp_str, sym)
 
-        tmp_str = clean(tmp_str, '\\', '')
+        tmp_str = clean(tmp_str, "\\", "")
 
         # commands list taken form :
         # http://www.stack.nl/~dimitri/doxygen/commands.html
@@ -271,6 +282,7 @@ class doxygen_doc_extractor(object):
             tmp_str = clean(tmp_str, "\\" + old, new)
 
         return tmp_str.lstrip()
+
     # clean_str()
 
     def is_code(self, tmp_str):
@@ -283,6 +295,8 @@ class doxygen_doc_extractor(object):
         except:
             pass
         return False
+
     # is_code()
+
 
 # class doxygen_doc_extractor

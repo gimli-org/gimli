@@ -12,7 +12,7 @@ def __TransCumulative_addForGC_MP__(self, T, *args):
 
     Monkey patch to keep the GC happy until redesign.
     """
-    if not hasattr(self, '__trans__'):
+    if not hasattr(self, "__trans__"):
         self.__trans__ = []
     self.__trans__.append(T)
 
@@ -50,14 +50,14 @@ class TransSymLog(pgcore.RTrans):
 
     def invTrans(self, y):
         """Inverse transformation."""
-        return (pgcore.exp(np.abs(y)) - 1.) * self.tol * np.sign(y)
+        return (pgcore.exp(np.abs(y)) - 1.0) * self.tol * np.sign(y)
 
     def deriv(self, x):
         """Derivative of the transformation."""
-        return 1. / (np.abs(x) / self.tol + 1) / self.tol
+        return 1.0 / (np.abs(x) / self.tol + 1) / self.tol
 
 
-def str2Trans(tr:str):
+def str2Trans(tr: str):
     """Convert string to transformation.
 
     Convention
@@ -76,9 +76,9 @@ def str2Trans(tr:str):
         if "-" in low:  # lower/upper
             sp = low[3:].split("-")
             return TransLogLU(float(sp[0]), float(sp[1]))
-        elif len(low) > 3: # lower
+        elif len(low) > 3:  # lower
             return TransLog(float(low[3:]))
-        else: # just log
+        else:  # just log
             return TransLog()
     elif low.startswith("cot") and "-" in low:
         sp = low[3:].split("-")
@@ -87,5 +87,3 @@ def str2Trans(tr:str):
         return TransSymLog(float(low[6:]))
     else:  # check for LU values, e.g. "Log1-1000" or "Cot0-1"
         raise KeyError("Transformation string unknown!")
-
-

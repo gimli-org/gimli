@@ -41,6 +41,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pygimli as pg
 import pygimli.meshtools as mt
+
 # sphinx_gallery_thumbnail_number = 8
 
 # %%%
@@ -92,7 +93,7 @@ print(mesh)
 #
 
 pos = [[3, -3], [7, -7]]
-vals = np.array([20., 15.])
+vals = np.array([20.0, 15.0])
 fop = PriorModelling(mesh, pos)
 
 # %%%
@@ -252,7 +253,7 @@ t = ax.set_title("geostat I=(2m, 0.5m), dip=-20°")
 # %%%
 # We now add many more points.
 #
-np.random.seed(42) # reproducabilty is our friend
+np.random.seed(42)  # reproducabilty is our friend
 N = 30
 x = np.random.rand(N) * 10
 y = -np.random.rand(N) * 10
