@@ -17,6 +17,7 @@ gradient field of :math:`\mathbf{v}=-\nabla p`.
 # sphinx_gallery_thumbnail_number = 2
 
 import numpy as np
+
 import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.viewer.pv import drawStreamLines, drawSlice

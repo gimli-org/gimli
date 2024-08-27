@@ -13,9 +13,10 @@ Assume we want to store Vertical Electrical Sounding (VES) data.
 """
 # sphinx_gallery_thumbnail_number = 2
 
+import matplotlib.pyplot as plt
 # We start off with the typical imports
 import numpy as np
-import matplotlib.pyplot as plt
+
 import pygimli as pg
 from pygimli.physics import VESManager
 

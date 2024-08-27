@@ -11,10 +11,11 @@ spectral induced polarization (SIP) signatures."""
 ###############################################################################
 # Generate a Cole-Cole signature
 
-from pygimli.physics.SIP import modelColeColeRho
-import numpy as np
-import pygimli as pg
 import matplotlib as mpl
+import numpy as np
+
+import pygimli as pg
+from pygimli.physics.SIP import modelColeColeRho
 
 f = np.logspace(-2, 5, 100)
 

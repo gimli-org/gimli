@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """Extensions to the core DataContainer class[es]."""
 import numpy as np
-from .logger import critical, verbose
+
 from .core import RVector, RVector3, DataContainer, DataContainerERT
-from .core import yVari, zVari, swapXY, swapYZ, x, y, z
+from .core import yVari, zVari, swapYZ, y, z
+from .logger import critical, verbose
 
 
 def __DataContainer_str(self):

@@ -5,8 +5,9 @@ This program is part of pygimli
 Visit http://www.resistivity.net for further information or the latest version.
 """
 
-import sys
 import os
+import sys
+
 import pygimli as pg
 
 

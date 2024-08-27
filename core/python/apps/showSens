@@ -6,8 +6,8 @@
     version.
 """
 
-import sys
 import os
+import sys
 
 import pygimli as pg
 

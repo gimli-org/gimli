@@ -9,9 +9,9 @@ inversion using a depth-weighting function as outlined in the paper.
 """
 
 import numpy as np
+
 import pygimli as pg
 import pygimli.meshtools as mt
-
 # from pygimli.viewer import pv
 from pygimli.physics.gravimetry import GravityModelling2D
 

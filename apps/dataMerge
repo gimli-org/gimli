@@ -6,6 +6,7 @@ See https://www.pygimli.org for further information.
 """
 
 import sys
+
 import numpy as np
 
 try:

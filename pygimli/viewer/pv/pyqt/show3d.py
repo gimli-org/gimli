@@ -4,16 +4,10 @@ BUGS:
 + there is no good coming back from volumetric slicing atm
 """
 
-from shutil import copyfile
 import os
 import signal
 import sys
-
-import pygimli as pg
-import pygimli.viewer.pv
-
-# from .draw import drawMesh
-# from .utils import pgMesh2pvMesh
+from shutil import copyfile
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon
@@ -21,7 +15,6 @@ from PyQt5.QtWidgets import (
     QMainWindow,
     QFrame,
     QVBoxLayout,
-    QComboBox,
     QPushButton,
     QFileDialog,
     QSplitter,
@@ -31,15 +24,14 @@ from PyQt5.QtWidgets import (
     QStatusBar,
 )
 
+import pygimli as pg
 from gwidgets import (
     GToolBar,
-    GButton,
-    GLineEdit,
-    GComboBox,
-    GSlider,
-    GDoubleSpinBox,
     CMAPS,
 )
+
+# from .draw import drawMesh
+# from .utils import pgMesh2pvMesh
 
 pv = pg.optImport("pyvista", requiredFor="properly visualize 3D data")
 

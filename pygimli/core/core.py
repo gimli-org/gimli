@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import sys
-import os
 
 # if sys.platform == 'win32':
 #    os.environ['PATH'] = os.path.abspath(__file__) + ';' + os.environ['PATH']

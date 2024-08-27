@@ -3,6 +3,7 @@
 """Utility functions to convert pg SparseMatrices from and to numpy objects"""
 
 import numpy as np
+
 import pygimli as pg
 
 

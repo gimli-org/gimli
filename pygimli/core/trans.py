@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """Some specialization to the trans functions."""
 
-from .core import pgcore
 import numpy as np
+
+from .core import pgcore
 
 __TransCumulative_addForGC__ = pgcore.RTransCumulative.add
 

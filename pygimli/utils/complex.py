@@ -3,11 +3,11 @@
 """Pygimli base functions to handle complex arrays"""
 
 from math import pi
-from pygimli.core.base import isComplex
 
 import numpy as np
-import pygimli as pg
 
+import pygimli as pg
+from pygimli.core.base import isComplex
 
 isComplex = pg.isComplex
 

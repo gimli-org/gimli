@@ -13,13 +13,12 @@ python example-2-visualisation.py permModel_h-3/
 
 import sys
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.offsetbox import AnchoredText
 
 import pygimli as pg
 from pygimli.viewer.mpl import saveAxes
-
-from matplotlib.offsetbox import AnchoredText
 
 days = [0, 2, 4, 6, 8, 10]
 

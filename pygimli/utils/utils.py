@@ -3,10 +3,12 @@
 """Collection of several utility functions."""
 
 from __future__ import print_function
+
 import sys
 from math import floor, sqrt
 
 import numpy as np
+
 import pygimli as pg
 
 # scooby is a soft dependency.

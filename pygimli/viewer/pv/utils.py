@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import numpy as np
+
 import pygimli as pg
 
 pv = pg.optImport("pyvista", requiredFor="properly visualize 3D data")

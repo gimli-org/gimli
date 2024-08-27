@@ -22,8 +22,9 @@ library numpy. Additionally we load the python plotting module of the library
 matplotlib. Both are contained in most python distributions and systems.
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+
 import pygimli as pg
 
 

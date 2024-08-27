@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Digital Elevation Model (DEM) class for interpolating elevations."""
-import os.path
 import math
+import os.path
+
 import numpy as np
 
 
@@ -91,7 +92,7 @@ class DEM:
     def loadTXT(self, demfile):
         """Load column-based DEM."""
         import matplotlib.tri as mtri
-        from scipy.interpolate import RegularGridInterpolator, LinearNDInterpolator
+        from scipy.interpolate import RegularGridInterpolator
 
         xp, yp, zp = np.loadtxt(demfile, unpack=True)
         be = self.fallback is None
@@ -232,7 +233,7 @@ class DEM:
         """
         import matplotlib.pyplot as plt
         import matplotlib.tri as mtri
-        from scipy.interpolate import RegularGridInterpolator, LinearNDInterpolator
+        from scipy.interpolate import LinearNDInterpolator
 
         if ax is None:
             fig, ax = plt.subplots(figsize=kwargs.pop("figsize", (12, 12)))

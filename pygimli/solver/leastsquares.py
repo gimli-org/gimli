@@ -1,6 +1,8 @@
 from math import sqrt
+
 import numpy as np
 from numpy.linalg import norm
+
 import pygimli as pg
 from pygimli.math import dot
 

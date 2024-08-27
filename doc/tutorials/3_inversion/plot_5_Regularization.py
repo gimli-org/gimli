@@ -37,21 +37,20 @@ reference model :math:`m_{ref}`.
 # We start with importing the numpy, matplotlib and pygimli libraries
 #
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+
 import pygimli as pg
 import pygimli.meshtools as mt
+from pygimli.frameworks import PriorModelling
 
 # sphinx_gallery_thumbnail_number = 8
-
 # %%%
 # Regularization drives the model where the data are too weak to constrain
 # the model. In order to explain different kinds of regularization (also
 # called constraints), we use a very simple mapping forward operator: The
 # values at certain positions are picked.
 #
-
-from pygimli.frameworks import PriorModelling
 
 # %%%
 # Implementation

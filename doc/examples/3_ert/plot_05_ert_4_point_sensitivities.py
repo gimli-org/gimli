@@ -9,8 +9,9 @@ arrays. You can easily loop over the plotting command to create something like:
 https://www.youtube.com/watch?v=lt1qV-2d5Ps
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+
 import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.physics import ert

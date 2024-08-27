@@ -16,18 +16,17 @@ combined by the JointInversion framework, using a vertical electric sounding
 # A similar case has been documented by :cite:`Guenther2013NSG`.
 #
 
+import matplotlib.pyplot as plt
 # We import the numpy and matplotlib
 import numpy as np
-import matplotlib.pyplot as plt
 
 # Next we import pyGIMLi and the modelling operators for block models
 import pygimli as pg
-from pygimli.physics.em import HEMmodelling
-from pygimli.physics.ves import VESModelling
 from pygimli.frameworks import JointModelling
-
 # For block models we need the Marquardt-Levenberg inversion scheme
 from pygimli.frameworks import MarquardtInversion
+from pygimli.physics.em import HEMmodelling
+from pygimli.physics.ves import VESModelling
 from pygimli.viewer.mpl import drawModel1D
 
 # %%%

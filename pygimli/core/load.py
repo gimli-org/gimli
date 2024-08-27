@@ -1,21 +1,19 @@
 # -*- coding: utf-8 -*-
 """Utility functions for downloading, caching, and importing."""
 
-import sys
-import os.path
-
-from importlib import import_module
 import contextlib
+import os.path
+import sys
+from importlib import import_module
 from urllib.request import urlopen
 
 import numpy as np
+
 import pygimli as pg
 from pygimli.meshtools import readFenicsHDF5Mesh, readGmsh, readPLC, readSTL, readMeshIO
-from pygimli.utils import readGPX
-
 # from pygimli.utils import cache  # not used yet
 from pygimli.physics.traveltime import load as loadTT
-
+from pygimli.utils import readGPX
 
 __gimliExampleDataRepo__ = "gimli-org/example-data/"
 __gimliExampleDataBase__ = "example-data"

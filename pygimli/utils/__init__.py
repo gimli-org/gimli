@@ -26,10 +26,9 @@ from .base import (
     saveResult,
     chi2,
 )
-
 # compatibility for dev #can be removed? (20200515)
 from .base import rmsWithErr as rmswitherr
-
+from .cache import cache, strHash, noCache
 from .complex import (
     isComplex,
     toComplex,
@@ -38,8 +37,7 @@ from .complex import (
     toRealMatrix,
     KramersKronig,
 )
-
-from .cache import cache, strHash, noCache
+from .dem import DEM
 from .geostatistics import (
     computeInverseRootMatrix,
     covarianceMatrix,
@@ -59,10 +57,9 @@ from .sparseMat2Numpy import (
     toCSR,
     toCOO,
 )
-
-from .units import unit, cmap
+from .streams import streamline, streamlineDir
 from .units import cmap as cMap  # for compatibilty (will be removed)
-
+from .units import unit, cmap
 from .utils import (
     ProgressBar,
     boxprint,
@@ -89,9 +86,5 @@ from .utils import (
     unique_rows,
     uniqueAndSum,
 )
-
-from .streams import streamline, streamlineDir
-from .dem import DEM
-
 
 __all__ = [name for name in dir() if "_" not in name]

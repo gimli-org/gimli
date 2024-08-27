@@ -9,8 +9,8 @@
     pg.critical() # raises exception
 
 """
-import logging
 import inspect
+import logging
 import traceback
 
 from .core import pgcore

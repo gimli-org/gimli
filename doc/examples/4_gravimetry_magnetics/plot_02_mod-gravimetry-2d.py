@@ -16,9 +16,9 @@ along a profile for a cylindrical heterogeneity with different approaches.
 """
 
 import numpy as np
+
 import pygimli as pg
 from pygimli.meshtools import createCircle, createWorld, createMesh
-
 from pygimli.physics.gravimetry import gradUCylinderHoriz, solveGravimetry
 
 radius = 2.0  # [m]

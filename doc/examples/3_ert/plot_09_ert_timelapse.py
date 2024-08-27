@@ -17,8 +17,8 @@ This notebook is a simplistic model for a synthetic case.
 """
 
 # sphinx_gallery_thumbnail_number = 5
-import numpy as np
 import matplotlib.pyplot as plt
+
 import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.physics import ert

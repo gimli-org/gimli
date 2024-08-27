@@ -11,7 +11,6 @@ import pygimli.meshtools as mt
 import pygimli.physics.ert as ert
 import pygimli.physics.petro as petro
 
-
 # Create geometry definition for the modelling domain
 world = mt.createWorld(
     start=[-20, 0], end=[20, -16], layers=[-2, -8], worldMarker=False

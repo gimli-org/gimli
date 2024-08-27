@@ -3,15 +3,11 @@
 """
 Imports and extensions of the C++ bindings.
 """
-import sys
 
 # import traceback
 
 import numpy as np
 
-from .core import pgcore
-from .core import *
-from .logger import error, critical
 from .base import (
     isInt,
     isScalar,
@@ -23,6 +19,9 @@ from .base import (
     isComplex,
     isMatrix,
 )
+from .core import *
+from .core import pgcore
+from .logger import error, critical
 
 # #######################################
 # ###  Global convenience functions #####
@@ -1214,8 +1213,8 @@ def search(what):
 
 
 # Import from submodules at the end
-from .mesh import Mesh, MeshEntity, Node
-from .datacontainer import DataContainer, DataContainerERT
+from .mesh import Mesh
+from .datacontainer import DataContainer
 from .trans import *  # why do we need that?
 
 # from .matrix import (Cm05Matrix, LMultRMatrix, LRMultRMatrix, MultLeftMatrix,

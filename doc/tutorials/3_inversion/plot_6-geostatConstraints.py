@@ -29,10 +29,11 @@ Let us illustrate this by a simple mesh:
 # --------------------------------------------
 # We create a simple mesh using a box geometry
 import matplotlib.pyplot as plt
-from matplotlib.patches import CirclePolygon
+import numpy as np
 from matplotlib.collections import PatchCollection
 from matplotlib.colors import LogNorm
-import numpy as np
+from matplotlib.patches import CirclePolygon
+
 import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.frameworks import PriorModelling

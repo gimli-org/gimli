@@ -5,15 +5,7 @@ import numpy as np
 
 import pygimli as pg
 import pygimli.core as pgcore
-
-
 from pygimli.core import (
-    CMatrix,
-    CSparseMapMatrix,
-    CSparseMatrix,
-    RSparseMapMatrix,
-    RSparseMatrix,
-    ElementMatrix,
     MatrixBase,
 )
 

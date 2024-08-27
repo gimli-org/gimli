@@ -15,9 +15,9 @@ It is common to parameterize the complex resistivities using magnitude (in
 :math:`\Omega`m) and phase :math:`\phi` (in mrad), although the pyGIMLi
 forward operator takes real and imaginary parts.
 """
+import matplotlib.pylab as plt
 # sphinx_gallery_thumbnail_number = 5
 import numpy as np
-import matplotlib.pylab as plt
 
 import pygimli as pg
 import pygimli.meshtools as mt

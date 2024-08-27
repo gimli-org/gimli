@@ -22,13 +22,14 @@ doi:10.1111/1365-2478.12013, 2000.
     info@pygimli.org
 
 """
+import matplotlib.pyplot as plt
 # sphinx_gallery_thumbnail_number = 5
 import numpy as np
-import matplotlib.pyplot as plt
 
 import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.physics import ert
+
 
 ###############################################################################
 # For reference we later plot the true complex resistivity model as reference

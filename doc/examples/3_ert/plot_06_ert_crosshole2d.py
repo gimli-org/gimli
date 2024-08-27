@@ -12,6 +12,7 @@ for displaying a data container.
 
 # sphinx_gallery_thumbnail_number = 3
 import numpy as np
+
 import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.physics import ert

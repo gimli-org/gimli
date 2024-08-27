@@ -14,15 +14,14 @@ section 3.3 of the pyGIMLi paper (https://cg17.pygimli.org).
 
 # sphinx_gallery_thumbnail_number = 10
 import numpy as np
-import pygimli as pg
 
+import pygimli as pg
 from pygimli import meshtools as mt
+from pygimli.frameworks import PetroInversionManager, JointPetroInversionManager
 from pygimli.physics import ert
 from pygimli.physics import traveltime as tt
 from pygimli.physics.petro import transFwdArchieS as ArchieTrans
 from pygimli.physics.petro import transFwdWyllieS as WyllieTrans
-from pygimli.frameworks import PetroInversionManager, JointPetroInversionManager
-
 
 ###############################################################################
 # Create synthetic model

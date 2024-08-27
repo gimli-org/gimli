@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import environment_for_pygimli_build
-
 
 WRAPPER_DEFINITION_RVector3 = """
 #include <numpy/arrayobject.h>

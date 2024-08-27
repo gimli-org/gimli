@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Plotting utilities used throughout the viewer.mpl package."""
-import sys
 import os
+import sys
 import time
+
 import numpy as np
 
 import pygimli as pg

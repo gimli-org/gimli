@@ -126,6 +126,7 @@ In this example you will learn how to create a geometry in
 
 
 import numpy as np
+
 import pygimli as pg
 
 gmsh = pg.optImport("gmsh", "do this tutorial. Install by running: pip install gmsh")

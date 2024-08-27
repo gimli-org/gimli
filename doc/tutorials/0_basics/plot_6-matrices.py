@@ -13,8 +13,8 @@ logical or wrappers. They just have to provide the functions
 
 # We start off with the typical imports
 import numpy as np
-import pygimli as pg
 
+import pygimli as pg
 
 # %%%
 # Dense matrix ``Matrix``

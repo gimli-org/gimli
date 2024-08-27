@@ -18,11 +18,11 @@ from math import asin, tan
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 import pygimli as pg
 import pygimli.meshtools as mt
-from pygimli.viewer.mpl import drawMesh
-
 from pygimli.physics import TravelTimeManager
+from pygimli.viewer.mpl import drawMesh
 
 ###############################################################################
 # Two-layer model

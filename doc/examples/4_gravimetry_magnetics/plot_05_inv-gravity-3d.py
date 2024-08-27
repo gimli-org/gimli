@@ -12,12 +12,13 @@ In the following, we will build the model, create synthetic data, and do
 inversion using a depth-weighting function as outlined in the paper.
 
 """
+import matplotlib.pyplot as plt
 # %%%
 import numpy as np
-import matplotlib.pyplot as plt
+
 import pygimli as pg
-from pygimli.viewer import pv
 from pygimli.physics.gravimetry import GravityModelling
+from pygimli.viewer import pv
 
 # %%
 # Synthetic model and data generation

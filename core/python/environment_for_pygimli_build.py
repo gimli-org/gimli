@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
 import os
+import sys
 
 this_module_dir_path = os.path.abspath(os.path.dirname(sys.modules[__name__].__file__))
 project_root = os.path.abspath(os.path.join(this_module_dir_path, "..", "..", ".."))

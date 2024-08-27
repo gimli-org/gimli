@@ -18,7 +18,6 @@ import pygimli.physics.ert as ert
 import pygimli.physics.petro as petro
 from pygimli.physics import ERTManager
 
-
 ################################################################################
 # Create geometry definition for the modelling domain
 world = mt.createWorld(

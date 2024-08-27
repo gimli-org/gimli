@@ -180,7 +180,6 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 from pygimli.meshtools import readGmsh
 
-
 filename = pg.getExampleFile("gmsh/2d_tutorial.geo")
 
 try:

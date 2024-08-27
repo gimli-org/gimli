@@ -17,17 +17,16 @@ def myLongRunningStuff(*args, **kwargs):
     #...
     return results
 """
-import sys
-import os
-import inspect
 import hashlib
+import inspect
 import json
+import os
+import sys
 import time
 
 import numpy as np
 
 import pygimli as pg
-
 
 __NO_CACHE__ = False
 

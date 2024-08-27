@@ -15,8 +15,8 @@ functionality.
 """
 
 import numpy as np
-import pygimli as pg
 
+import pygimli as pg
 from pygimli.solver import solve
 from pygimli.viewer import show
 from pygimli.viewer.mpl import drawStreams

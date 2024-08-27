@@ -9,11 +9,12 @@ the example shown here is in 2D, the same routines can be applied when
 converting 3D data to a 2D mesh for instance.
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 import pygimli as pg
 from pygimli.viewer.mpl import drawMesh, drawModel
+
 
 ###############################################################################
 # Create coarse and fine mesh with data

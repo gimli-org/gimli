@@ -11,9 +11,10 @@ data collected at the surface.
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 import pygimli as pg
-from pygimli.physics import ert
 from pygimli.frameworks import PriorModelling, JointModelling
+from pygimli.physics import ert
 from pygimli.viewer.mpl import draw1DColumn
 
 # %%%

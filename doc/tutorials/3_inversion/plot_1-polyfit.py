@@ -53,9 +53,11 @@ To avoid name clashes with other libraries we suggest to import `pygimli` and
 alias it to an easy name (as usually done for numpy or matplotlib), e.g. by
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+
 import pygimli as pg
+
 
 ###############################################################################
 # The modelling class is derived from ModellingBase, a constructor is defined

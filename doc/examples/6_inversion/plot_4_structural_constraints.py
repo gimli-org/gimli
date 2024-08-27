@@ -18,7 +18,6 @@ are far easier to interpret.
 """
 
 # We import the numpy and matplotlib
-import numpy as np
 
 # Next we import pyGIMLi and the ERT and mesh tools modules
 import pygimli as pg

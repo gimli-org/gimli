@@ -4,12 +4,10 @@
 import os
 import shutil
 import sys
-
-from environment_for_pygimli_build import settings
+from optparse import OptionParser
 
 import hand_made_wrappers
-
-from optparse import OptionParser
+from environment_for_pygimli_build import settings
 
 optionParser = OptionParser("usage: %prog [options]")
 optionParser.add_option("", "--extra-includes", dest="extraIncludes")
@@ -33,8 +31,6 @@ if options.extraPath:
 
 from pygccxml import parser
 
-import logging
-
 from pygccxml import utils
 
 logger = utils.loggers.cxx_parser
@@ -42,7 +38,7 @@ logger = utils.loggers.cxx_parser
 
 from pygccxml import declarations
 from pygccxml.declarations import access_type_matcher_t
-from pyplusplus import code_creators, module_builder, messages, decl_wrappers
+from pyplusplus import module_builder, messages, decl_wrappers
 from pyplusplus.module_builder import call_policies
 from pyplusplus.decl_wrappers.doc_extractor import doc_extractor_i
 

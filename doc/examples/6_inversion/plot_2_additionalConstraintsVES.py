@@ -16,14 +16,14 @@ We use the LSQR inversion framework as used by Wagner et al. (2019) to
 constrain the sum of water, ice, air and rock fraction to be 1.
 """
 
+import matplotlib.pyplot as plt
 # sphinx_gallery_thumbnail_number = 2
 import numpy as np
-import matplotlib.pyplot as plt
+
 import pygimli as pg
 from pygimli.frameworks.lsqrinversion import LSQRInversion
 from pygimli.physics.ves import VESModelling
 from pygimli.viewer.mpl import drawModel1D
-
 
 # %%%
 # We set up a synthetic model of four layers and show the sounding curve

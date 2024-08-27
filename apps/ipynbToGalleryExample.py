@@ -9,8 +9,9 @@ Usage: python ipynbToGalleryExample.py <notebook.ipynb>
 Dependencies:
 pypandoc: install using `pip install pypandoc`
 """
-import pypandoc as pdoc
 import json
+
+import pypandoc as pdoc
 
 
 def fixRST(rst):

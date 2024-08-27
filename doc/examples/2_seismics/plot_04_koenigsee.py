@@ -18,6 +18,7 @@ example data repository
 # We import pyGIMLi and the traveltime module.
 
 import matplotlib.pyplot as plt
+
 import pygimli as pg
 import pygimli.physics.traveltime as tt
 

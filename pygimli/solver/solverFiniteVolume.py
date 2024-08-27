@@ -3,8 +3,8 @@
 """Simple Finite Volume Solver."""
 
 import numpy as np
-import pygimli as pg
 
+import pygimli as pg
 from pygimli.solver import identity  # , parseArgToArray, parseArgToBoundaries
 
 

@@ -20,9 +20,10 @@ Note that the ERT simulation can already simulate with complex
 # %%%
 
 import numpy as np
+
 import pygimli as pg
-from pygimli.physics import ert
 import pygimli.meshtools as mt
+from pygimli.physics import ert
 
 # %%%
 # Synthetic model

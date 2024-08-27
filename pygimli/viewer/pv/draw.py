@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 import numpy as np
-import matplotlib
-import pygimli as pg
-from .utils import pgMesh2pvMesh
 
+import pygimli as pg
 from pygimli.viewer.mpl.colorbar import cmapFromName
+from .utils import pgMesh2pvMesh
 
 pv = pg.optImport("pyvista", requiredFor="properly visualize 3D data")
 

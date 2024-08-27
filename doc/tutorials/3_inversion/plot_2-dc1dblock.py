@@ -9,10 +9,11 @@ This tutorial shows how an built-in forward operator is used for inversion.
 A DC 1D (VES) modelling is used to generate data, noisify and invert them.
 """
 
+import matplotlib.pyplot as plt
 # %%%
 # We import numpy, matplotlib and the 1D plotting function
 import numpy as np
-import matplotlib.pyplot as plt
+
 import pygimli as pg
 from pygimli.physics import VESManager
 

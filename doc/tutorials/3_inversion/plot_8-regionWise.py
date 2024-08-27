@@ -14,9 +14,10 @@ We first import pygimli and the modules for ERT and mesh building.
 
 # sphinx_gallery_thumbnail_number = 12
 import matplotlib.pyplot as plt
+
 import pygimli as pg
-from pygimli.physics import ert
 import pygimli.meshtools as mt
+from pygimli.physics import ert
 
 # %%%
 # Data and geometry

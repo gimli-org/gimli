@@ -15,11 +15,12 @@ medium.
 # sphinx_gallery_thumbnail_number = 2
 
 import numpy as np
+import pyvista
+
 import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.physics import traveltime as tt
 from pygimli.viewer.pv import drawSensors
-import pyvista
 
 ################################################################################
 # Build mesh.

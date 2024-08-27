@@ -6,19 +6,6 @@ import numpy as np
 
 from .core import pgcore
 
-from .core import (
-    CMatrix,
-    CSparseMapMatrix,
-    CSparseMatrix,
-    RSparseMapMatrix,
-    RSparseMatrix,
-    ElementMatrix,
-    IVector,
-    MatrixBase,
-    R3Vector,
-    RVector,
-)
-
 from .logger import critical, warn, info
 
 

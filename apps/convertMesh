@@ -6,10 +6,14 @@ This program is part of pyGIMLi.
 Visit http://www.pygimli.org for further information or the latest version.
 """
 
-import sys
 import os
+import sys
+
 import numpy as np
+
 import pygimli as pg
+
+
 # from pygimli.meshtools import readGmsh
 
 

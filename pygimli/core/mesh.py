@@ -2,13 +2,15 @@
 """
 Import and extensions of the core Mesh class.
 """
-import numpy as np
 from math import ceil
+
+import numpy as np
+
+from .base import isR3Array
 from .core import (
     cat,
     HexahedronShape,
     Line,
-    RSparseMapMatrix,
     Mesh,
     MeshEntity,
     Node,
@@ -20,7 +22,6 @@ from .core import (
     TriangleFace,
 )
 from .logger import deprecated, error, info, warn, critical
-from .base import isScalar, isArray, isPos, isR3Array, isComplex
 from ..meshtools import mergePLC, exportPLC, interpolateAlongCurve
 
 

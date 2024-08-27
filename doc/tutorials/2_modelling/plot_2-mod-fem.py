@@ -140,6 +140,7 @@ with our known exact solution :math:`u(x,y)`.
 """
 
 import numpy as np
+
 import pygimli as pg
 
 ###############################################################################

@@ -2,8 +2,6 @@
 """Utility methods to read GPS data and convert them via pyproj."""
 
 import sys
-import os
-
 from math import floor
 
 import numpy as np

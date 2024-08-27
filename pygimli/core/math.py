@@ -2,38 +2,6 @@
 """Collection of mathematical functions."""
 
 import numpy as np
-from .core import (
-    angle,
-    besselI0,
-    besselI1,
-    besselK0,
-    besselK1,
-    cos,
-    cot,
-    det,
-    dot,
-    exp,
-    exp10,
-    imag,
-    log,
-    log10,
-    max,
-    median,
-    min,
-    pow,
-    rand,
-    randn,
-    real,
-    rms,
-    round,
-    rrms,
-    sign,
-    sin,
-    sqrt,
-    sum,
-    toComplex,
-    unique,
-)
 
 
 def symlog(x, tol=1e-12, linearSpread=0):

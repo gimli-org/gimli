@@ -11,11 +11,12 @@ induced polarization (SIP) signatures.
 **Author:** *Maximilian Weigand, University of Bonn* 
 """
 
+import numpy as np
+
+import pygimli as pg
 ###############################################################################
 # Import pyGIMLi and related stuff for SIP Spectra
 from pygimli.physics.SIP import SIPSpectrum, modelColeColeRho
-import numpy as np
-import pygimli as pg
 
 ###############################################################################
 # 1. Generate synthetic data with a Double-Cole-Cole Model and initialize a

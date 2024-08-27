@@ -34,10 +34,9 @@ modelling and inversion using the ERTManager.
 #     \frac{\partial u}{\partial \vec{n}} & = a u \quad\text{in the Subsurface}\quad (z<0)
 #
 
-import matplotlib
 import numpy as np
-import pygimli as pg
 
+import pygimli as pg
 from pygimli.viewer.mpl import drawStreams
 
 
