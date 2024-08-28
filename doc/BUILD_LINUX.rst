@@ -12,6 +12,7 @@ Assuming you have a proper build toolchain and the required libraries
 (see Installation on Ubuntu below) installed.
 
 .. code-block:: bash
+
     mkdir -p gimli
     cd gimli
     git clone https://github.com/gimli-org/gimli.git
@@ -25,6 +26,7 @@ Assuming you have a proper build toolchain and the required libraries
 We recommend an out of source build:
 
 .. code-block:: bash
+
     mkdir -p build
     cd build
     cmake ../gimli
@@ -32,7 +34,7 @@ We recommend an out of source build:
     make pygimli J=4
     cd ..
 
-There is no more need to change the `PATH`` or `LD_LIBRARY_PATH``.
+There is no more need to change the `PATH` or `LD_LIBRARY_PATH`.
 In fact, check to remove any prior changes to these environment variables from
 older installations.
 
@@ -42,7 +44,7 @@ older installations.
     python -c 'import pygimli as pg; pg.version()'
 
 
-**All following building procedures are outdated and may not work without
+**All following build procedures are outdated and may not work without
 tweaking**
 
 
