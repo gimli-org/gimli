@@ -165,7 +165,7 @@ class TimelapseERT():
 
                 ind = np.arange(tmin, tmax)
                 if t is not None:
-                    ind = np.setxor1d(ind, t)
+                    ind = np.setxor1d(ind, self.timeIndex(t))
 
             self.DATA = self.DATA[:, ind]
             if np.any(self.ERR):
@@ -194,7 +194,7 @@ class TimelapseERT():
         """
         self.DATA = np.ma.masked_invalid(self.DATA)
         self.DATA = np.ma.masked_outside(self.DATA, rmin, rmax)
-        if emax is not None:
+        if emax is not None and np.any(self.ERR):
             self.DATA.mask = np.bitwise_or(self.DATA.mask, self.ERR > emax)
 
     def showData(self, v="rhoa", x="a", y="m", t=None, **kwargs):
