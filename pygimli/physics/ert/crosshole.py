@@ -88,15 +88,15 @@ class CrossholeERT(TimelapseERT):
             rhoa = self.DATA[:, t]
             v = rhoa.data
             v[rhoa.mask] = np.nan
-        if len(np.unique(self.bhmap)) > 1:
+        if len(np.unique(self.bhmap)) == 1 or "style" in kwargs:
+            return self.data.show(v, **kwargs)
+        else:
             ax, cb = pg.viewer.mpl.showDataContainerAsMatrix(
                 self.data, x, y, v, **kwargs)
             xx = np.nonzero(np.diff(self.bhmap))[0] + 1
             ax.set_xticks(xx)
             ax.set_yticks(xx)
             return ax, cb
-        else:
-            return self.data.show(v, **kwargs)
 
     def extractSubset(self, nbh, plane=None, name=None):
         """Extract a subset (slice) by borehole number.
@@ -120,7 +120,7 @@ class CrossholeERT(TimelapseERT):
         for tok in ["a", "b", "m", "n"]:
             bla = np.zeros(xh2.size(), dtype=bool)
             for nn in nbh:
-                bla = bla | (self.data["n"+tok] == nn)
+                bla = bla | (self.data["n"+tok] == nn - 1)
 
             good = good & bla
 
