@@ -5,7 +5,7 @@ from pygimli.utils import ProgressBar
 
 
 @pg.cache
-def SolveGravMagHolstein(mesh, pnts, cmp, igrf=None, foot=np.inf):
+def SolveGravMagHolstein(mesh, pnts, cmp, igrf=None):  # , foot=np.inf):
     """Solve gravity and/or magnetics problem after Holstein (1997).
 
     Parameters
@@ -32,6 +32,7 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf=None, foot=np.inf):
         pnts = [[0.0, 0.0]]
 
     doG = np.any([c[0] == "g" for c in cmp])
+    doGT = np.any([c[0] == "g" and len(c) == 2 for c in cmp])
     doB = np.any([c[0] == "B" and len(c) == 2 for c in cmp]) or "TFA" in cmp
     doBT = np.any([c[0] == "B" and len(c) == 3 for c in cmp])
     B_tens = None
@@ -116,18 +117,21 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf=None, foot=np.inf):
                 temp[i, :, jj] = g_vec[:, 2]
                 jj += 1
 
-            # if 'gxx' in cmp:
-            #     temp[:, jj]=G_tens[:, 0, 0]
-            # if 'gxy' in cmp:
-            #     temp[:, jj]=G_tens[:, 0, 1]
-            # if 'gxz' in cmp:
-            #     temp[:, jj]=G_tens[:, 0, 2]
-            # if 'gyy' in cmp:
-            #     temp[:, jj]=G_tens[:, 1, 1]
-            # if 'gyz' in cmp:
-            #     temp[:, jj]=G_tens[:, 1, 2]
-            # if 'gzz' in cmp:
-            #     temp[:, jj]=G_tens[:, 2, 2]
+            if doGT:
+                raise Exception("Gravity tensor not yet supported!")
+                G_tens = np.zeros([3, 3, 3])
+                if 'gxx' in cmp:
+                    temp[:, jj]=G_tens[:, 0, 0]
+                if 'gxy' in cmp:
+                    temp[:, jj]=G_tens[:, 0, 1]
+                if 'gxz' in cmp:
+                    temp[:, jj]=G_tens[:, 0, 2]
+                if 'gyy' in cmp:
+                    temp[:, jj]=G_tens[:, 1, 1]
+                if 'gyz' in cmp:
+                    temp[:, jj]=G_tens[:, 1, 2]
+                if 'gzz' in cmp:
+                    temp[:, jj]=G_tens[:, 2, 2]
 
         if doB or doBT:
             # magnetic field vector and gravity gradient tensor
