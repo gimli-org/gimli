@@ -32,7 +32,18 @@ def scaledJacobianMatrix(inv):
         raise TypeError("Matrix type cannot be converted")
 
 def resolutionMatrix(inv, returnRD=False):
-    """Formal model resolution matrix (MCM) from inversion.
+    """Formal model (and data) resolution matrix (MCM) from inversion.
+
+    .. math::
+
+        \mathbf{R_M} = (\mathbf{J}^T\mathbf{D}^T\mathbf{D}\mathbf{J} + \alpha
+        \mathbf{C}^T\mathbf{C})^{-1}
+        \mathbf{J}^T\mathbf{D}^T\mathbf{D}\mathbf{J}
+
+        \mathbf{R_D} = \mathbf{D}\mathbf{J}
+        (\mathbf{J}^T\mathbf{D}^T\mathbf{D}\mathbf{J} + \alpha
+        \mathbf{C}^T\mathbf{C})^{-1}
+        \mathbf{J}^T\mathbf{D}^T
 
     Parameters
     ----------
@@ -63,6 +74,12 @@ def resolutionMatrix(inv, returnRD=False):
 
 def modelResolutionMatrix(inv):
     """Formal model resolution matrix (MCM) from inversion.
+
+    .. math::
+
+        \mathbf{R_m} = (\mathbf{J}^T\mathbf{D}^T\mathbf{D}\mathbf{J} + \alpha
+        \mathbf{C}^T\mathbf{C})^{-1}
+        \mathbf{J}^T\mathbf{D}^T\mathbf{D}\mathbf{J}
 
     Parameters
     ----------
