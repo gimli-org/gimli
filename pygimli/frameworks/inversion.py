@@ -9,6 +9,7 @@ import pygimli as pg
 from pygimli.solver.leastsquares import lsqr as lssolver
 from pygimli.core.trans import str2Trans
 from pygimli.utils import prettyFloat as pf
+from pygimli.utils.sparseMat2Numpy import sparseMatrix2Dense
 from .linesearch import lineSearch
 
 
@@ -1563,8 +1564,12 @@ class ClassicInversion(object):
         if error_weighted:
             tData *= self.dataTrans.error(self.response, self.errorVals)
         if numpy_matrix:
+            J = self.fop.jacobian()
+            if isinstance(J, pg.SparseMapMatrix):
+                J = sparseMatrix2Dense(self.fop.jacobian())
+
             return np.reshape(tData, [-1, 1]) * \
-                pg.utils.gmat2numpy(self.fop.jacobian()) * \
+                pg.utils.gmat2numpy(J) * \
                 np.reshape(tModel, [1, -1])
         else:
             return pg.matrix.MultLeftRightMatrix(self.fop.jacobian(),
