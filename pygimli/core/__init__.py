@@ -607,6 +607,13 @@ pgcore.DataContainerERT.__hash__ = pgcore.DataContainerERT.hash
 pgcore.Mesh.__hash__ = pgcore.Mesh.hash
 
 
+def _stdVectorR3Vector_hash_(self):
+    h = 0
+    for rv in self:
+        h = h ^ rv.__hash__()
+    return h
+pgcore.stdVectorR3Vector.__hash__ = _stdVectorR3Vector_hash_
+
 ############################
 # Iterator support for RVector allow to apply python build-ins
 ############################
