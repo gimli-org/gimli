@@ -12,21 +12,15 @@ from pygimli.viewer.mpl.colorbar import setMappableData
 
 from .. core.logger import renameKwarg
 
-try:
-    import pygimli as pg
-    from .showmatrix import showMatrix
-    from .mpl import drawMesh, drawModel, drawField, drawSensors, drawStreams
-    from .mpl import drawSelectedMeshBoundaries
-    from .mpl import addCoverageAlpha
-    from .mpl import updateAxes
-    from .mpl import createColorBar, updateColorBar
-    from .mpl import CellBrowser
-    from .mpl.colorbar import cmapFromName
-except ImportError as e:
-    print(e)
-    traceback.print_exc(file=sys.stdout)
-    pg.critical("ERROR: cannot import the library 'pygimli'."
-                "Ensure that pygimli is in your PYTHONPATH ")
+import pygimli as pg
+from .showmatrix import showMatrix
+from .mpl import drawMesh, drawModel, drawField, drawSensors, drawStreams
+from .mpl import drawSelectedMeshBoundaries
+from .mpl import addCoverageAlpha
+from .mpl import updateAxes
+from .mpl import createColorBar, updateColorBar
+from .mpl import CellBrowser
+from .mpl.colorbar import cmapFromName
 
 
 def show(obj=None, data=None, **kwargs):
@@ -73,7 +67,7 @@ def show(obj=None, data=None, **kwargs):
     showMesh
     """
     if "axes" in kwargs:  # remove me in 1.2 #20200515
-        print("Deprecation Warning: Please use keyword `ax` instead of `axes`")
+        pg.critical("Deprecation Warning: Please use keyword `ax` instead of `axes`")
         kwargs['ax'] = kwargs.pop('axes', None)
 
     # Empty call just to create an mpl axes
@@ -417,7 +411,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
                 if data.ndim == 2:
                     if data.shape[1] == mesh.cellCount() or \
                        data.shape[1] == mesh.nodeCount():
-
+                        
                         return showAnimation(mesh, data, cMap=cMap,
                                              ax=ax, **kwargs)
 
@@ -780,10 +774,16 @@ def showAnimation(mesh, data, ax=None, **kwargs):
 
     Keyword Args
     ------------
-    dpi : int[96]
+    plc: Mesh
+        Overlay plc mesh.
+    dpi: int[96]
         Movie resolution.
-
-    Rest is forwarded to :py:func:pygimli.viewer.show:
+    interval: int [20]
+        Forwarded to Matplotlib animation plotter.
+    ffmpeg: str [None]
+        Write ffmpeg movie with name *.mp4. Need ffmpeg package installed.
+    **kwargs:
+        Forwarded to :py:func:pygimli.viewer.show:
 
     """
     import matplotlib.animation
@@ -792,14 +792,15 @@ def showAnimation(mesh, data, ax=None, **kwargs):
     plt.rcParams["animation.html"] = "jshtml"
     plt.rcParams['figure.dpi'] = kwargs.pop('dpi', 96)
     plt.rcParams['animation.embed_limit'] = 50
+
     figsize = kwargs.pop("figsize", None)
-
     flux = kwargs.pop('flux', None)
-
-    plt.ioff()
-
+    plc = kwargs.pop('plc', None)
     interval = kwargs.pop('interval', 20)
     swapAxes = kwargs.get('swapAxes', False)
+    ffmpeg = kwargs.pop('ffmpeg', None)
+
+    plt.ioff()
 
     if mesh.dim() == 1:
         ax, curve = pg.show(mesh, data[0], ax=ax, **kwargs)
@@ -813,6 +814,7 @@ def showAnimation(mesh, data, ax=None, **kwargs):
         if flux is not None:
             pg.show(mesh, flux[0], ax=ax)
 
+        ax.figure.tight_layout()
 
     try:
         times = mesh['times']
@@ -820,7 +822,6 @@ def showAnimation(mesh, data, ax=None, **kwargs):
         times = None
 
     p = pg.utils.ProgressBar(len(data))
-
 
     def animate(t):
         p.update(t)
@@ -856,4 +857,12 @@ def showAnimation(mesh, data, ax=None, **kwargs):
                                                               animate,
                                                               interval=interval,
                                                               frames=len(data))
+
+    if ffmpeg is not None:
+        __Animation_Keeper__.save(ffmpeg +'.mp4',
+                              writer=matplotlib.animation.FFMpegWriter(
+                                    fps=14, bitrate=5000, codec='h264'),
+                              dpi=plt.rcParams['figure.dpi']
+                              )
+
     return __Animation_Keeper__
