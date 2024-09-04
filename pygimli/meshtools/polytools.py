@@ -162,7 +162,7 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     >>> pg.viewer.mpl.drawSensors(ax, pnts5)
     """
     pnts = kwargs.pop('pnts', None)
-    
+
     if pnts is not None:
         if len(pnts) == 1:
             return createRectangle(pos=pnts[0], size=[1, 1], **kwargs)
@@ -604,25 +604,25 @@ def createLine(start, end, nSegments=1, **kwargs):
     return poly
 
 
-def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear',
+def createPolygon(pnts, isClosed=False, addNodes=0, interpolate='linear',
                   **kwargs):
-    """Create a polygon from a list of vertices.
+    """Create a polygon from a list of points.
 
-    All vertices need to be unique and duplicate vertices will be ignored.
+    All points need to be unique and duplicate points will be ignored.
     If you want the polygon be a closed region you can set the 'isClosed' flag.
     Closed region can be attributed by assigning a region marker.
-    The automatic region marker is placed in the center of all vertices.
+    The automatic region marker is placed in the center of all points.
 
     Parameters
     ----------
-    verts : []
+    pnts : []
         * List of x y pairs [[x0, y0], ... ,[xN, yN]]
 
     isClosed : bool [True]
-        Add closing edge between last and first node.
+        Add closing edge between last and first point.
 
     addNodes : int [1], iterable
-        Constant or (for each) Number of additional nodes to be added,
+        Constant or (for each) number of additional points to be added,
         equidistant between sensors.
 
     interpolate : str ['linear']
@@ -639,8 +639,10 @@ def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear',
             Maximum cell size for resulting triangles after mesh generation
         isHole : bool [False]
             The polygon will become a hole instead of a triangulation
-        boundaryMarker : int [1]
-            Marker for the resulting boundary edges
+        boundaryMarker : int [1] | [int]
+            Marker for the resulting boundary edges.
+            If boundaryMarker is a list, then the marker will be distributed
+            in order of points.
         leftDirection : bool [True]
             Rotational direction
 
@@ -670,10 +672,10 @@ def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear',
 
     if hasattr(addNodes, '__iter__') or addNodes > 0:
         if isClosed:
-            verts = np.array(verts)
-            verts = np.vstack([verts, verts[0]])
+            pnts = np.array(pnts)
+            pnts = np.vstack([pnts, pnts[0]])
 
-        tV = pg.utils.cumDist(verts)
+        tV = pg.utils.cumDist(pnts)
 
         if isinstance(addNodes, int) and addNodes > 0:
             addNodes = np.full(len(tV)-1, addNodes)
@@ -694,18 +696,18 @@ def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear',
         if not isClosed:
             tI.append(tV[-1])
 
-        verts = pg.meshtools.interpolate(verts, tI,
-                                         method=interpolate,
-                                         periodic=isClosed)
+        pnts = pg.meshtools.interpolate(pnts, tI,
+                                        method=interpolate,
+                                        periodic=isClosed)
 
     if kwargs.pop("leftDirection", False):
-        for v in verts[::-1]:
+        for v in pnts[::-1]:
             if isinstance(v, float) or isinstance(v, int):
                 poly.createNodeWithCheck([v, 0], warn=True)
             else:
                 poly.createNodeWithCheck(v, warn=True)
     else:
-        for v in verts:
+        for v in pnts:
             if isinstance(v, float) or isinstance(v, int):
                 poly.createNodeWithCheck([v, 0], warn=True)
             else:

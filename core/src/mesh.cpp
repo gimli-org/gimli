@@ -940,7 +940,7 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
         if (!refNode->cellSet().empty()){
 
             for (auto *c: refNode->cellSet()){
-                // std::cout << (*it)->id() << std::endl;
+                //std::cout << c->id() << std::endl;
                 //** isInside useing shapefunctions only work for aligned dimensions
                 if (c->shape().isInside(pos, false)) return c;
             }

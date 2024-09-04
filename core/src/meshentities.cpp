@@ -22,6 +22,7 @@
 #include "mesh.h"
 #include "node.h"
 #include "shape.h"
+#include "stopwatch.h"
 
 #include <map>
 #include <algorithm>
@@ -238,7 +239,7 @@ void MeshEntity::registerShapeFunctions(){
     ShapeFunctionCache::instance().shapeFunctions(*this);
     for (Index i = 0; i < this->dim(); i ++ ){
         ShapeFunctionCache::instance().deriveShapeFunctions(*this, i);
-    }       
+    }
 }
 
 
@@ -313,7 +314,7 @@ RVector3 MeshEntity::rst(uint i) const {
 }
 
 std::vector < PolynomialFunction < double > > MeshEntity::createShapeFunctions() const{
-    log(Warning, "need shape function implementation for meshEntity ", 
+    log(Warning, "need shape function implementation for meshEntity ",
         typeid(this).name(), rtti());
     //THROW_TO_IMPL
     return std::vector < PolynomialFunction < double > > ();
@@ -364,7 +365,7 @@ RVector3 MeshEntity::vec(const RVector3 & xyz,
 }
 
 RVector3 MeshEntity::grad(const RVector3 & xyz, const RVector & u, Index dim) const {
-
+    WITH_TICTOC("r = cell.grad(R)");
     RVector3 rst(shape_->rst(xyz));
 
     RMatrix MdNdL;
@@ -383,9 +384,16 @@ RVector3 MeshEntity::grad(const RVector3 & xyz, const RVector & u, Index dim) co
     }
     return gr;
 }
-
 RMatrix MeshEntity::grad(const RVector3 & xyz, const R3Vector & u, Index dim) const {
+    WITH_TICTOC("r=cell.grad(R3)");
+    RMatrix ret(dim, dim);
+    this->grad(xyz, u, dim, ret);
+    return ret;
+}
 
+void MeshEntity::grad(const RVector3 & xyz, const R3Vector & u, Index dim, RMatrix & ret) const {
+
+    WITH_TICTOC("cell.grad(R3, r)");
     RVector3 rst(shape_->rst(xyz));
 
     RMatrix MdNdL;
@@ -396,9 +404,8 @@ RMatrix MeshEntity::grad(const RVector3 & xyz, const R3Vector & u, Index dim) co
     // if (dim == 3){
     //     MdNdL.push_back(dNdL(rst, 2));
     // }
+    ret.resize(dim, dim);
 
-    RMatrix gr(dim, dim);
-    
     RMatrix up(3, 3);
     up[0] = x(u(this->ids()));
     up[1] = y(u(this->ids()));
@@ -408,21 +415,20 @@ RMatrix MeshEntity::grad(const RVector3 & xyz, const R3Vector & u, Index dim) co
     // RVector up2(z(u(this->ids())));
     for (Index i=0; i < dim; i++){
         for (Index j=0; j < dim; j++){
-            gr[i][j] = sum(up[i] * MdNdL.transMult(shape_->invJacobian().col(j)));
+            ret[i][j] = sum(up[i] * MdNdL.transMult(shape_->invJacobian().col(j)));
         }
     }
     // gr[0][0] = sum(up0 * MdNdL.transMult(shape_->invJacobian().col(0)));
     // gr[0][1] = sum(up0 * MdNdL.transMult(shape_->invJacobian().col(1)));
     // gr[0][2] = sum(up0 * MdNdL.transMult(shape_->invJacobian().col(2)));
-    
+
     // gr[1][0] = sum(up1 * MdNdL.transMult(shape_->invJacobian().col(0)));
     // gr[1][1] = sum(up1 * MdNdL.transMult(shape_->invJacobian().col(1)));
     // gr[1][2] = sum(up1 * MdNdL.transMult(shape_->invJacobian().col(2)));
-    
+
     // gr[2][0] = sum(up2 * MdNdL.transMult(shape_->invJacobian().col(0)));
     // gr[2][1] = sum(up2 * MdNdL.transMult(shape_->invJacobian().col(1)));
     // gr[2][2] = sum(up2 * MdNdL.transMult(shape_->invJacobian().col(2)));
-    return gr;
 }
 
 void MeshEntity::changed(){
@@ -880,7 +886,7 @@ QuadrangleFace::QuadrangleFace()
 
 QuadrangleFace::QuadrangleFace(const std::vector < Node * > & nodes)
     : Boundary(new QuadrangleShape(this)){
-    MeshEntity::setNodes(nodes);    
+    MeshEntity::setNodes(nodes);
 }
 
 QuadrangleFace::QuadrangleFace(Node & n1, Node & n2, Node & n3, Node & n4)
@@ -907,7 +913,7 @@ std::vector < PolynomialFunction < double > > QuadrangleFace::createShapeFunctio
 
 Quadrangle8Face::Quadrangle8Face(const std::vector < Node * > & nodes)
     : QuadrangleFace(){
-    MeshEntity::setNodes(nodes);    
+    MeshEntity::setNodes(nodes);
 }
 
 Quadrangle8Face::~Quadrangle8Face(){
@@ -927,13 +933,13 @@ std::vector < PolynomialFunction < double > > Quadrangle8Face::createShapeFuncti
 
 PolygonFace::PolygonFace(const std::vector < Node * > & nodes)
     : Boundary(new PolygonShape(this)){
-    MeshEntity::setNodes(nodes);    
+    MeshEntity::setNodes(nodes);
     this->shape().resizeNodeSize_(nodes.size());
 }
 
 PolygonFace::~PolygonFace(){
 }
- 
+
 std::vector < PolynomialFunction < double > > PolygonFace::createShapeFunctions() const{
     return std::vector < PolynomialFunction < double > > ();
 }
@@ -1004,7 +1010,7 @@ EdgeCell::EdgeCell()
 
 EdgeCell::EdgeCell(const std::vector < Node * > & nodes)
     : Cell(new EdgeShape(this)){
-    MeshEntity::setNodes(nodes);    
+    MeshEntity::setNodes(nodes);
     neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
@@ -1136,7 +1142,7 @@ Quadrangle::Quadrangle(const std::vector < Node * > & nodes)
     neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
-Quadrangle::Quadrangle(Node & n1, Node & n2, Node & n3, Node & n4): 
+Quadrangle::Quadrangle(Node & n1, Node & n2, Node & n3, Node & n4):
     Cell(new QuadrangleShape(this)){
     setNodes(n1, n2, n3, n4);
     neighborCells_.resize(this->neighborCellCount(), NULL);

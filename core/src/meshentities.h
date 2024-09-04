@@ -198,6 +198,9 @@ public:
     * The position pos, in Cartesian coordinates (x,y,z), need to be inside, or on the boundary, of the entity.  */
     RMatrix grad(const RVector3 & xyz, const R3Vector & u, Index dim=3) const;
 
+    /*! Version for grad without the need for copying results. */
+    void grad(const RVector3 & xyz, const R3Vector & u, Index dim, RMatrix & ret) const;
+
     friend std::ostream & operator << (std::ostream & str, const MeshEntity & c);
 
     /*! Geometry has been changed. Deletes cache.*/
