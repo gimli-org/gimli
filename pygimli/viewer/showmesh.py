@@ -66,6 +66,10 @@ def show(obj=None, data=None, **kwargs):
     --------
     showMesh
     """
+    def _removeFigHeader(ax):
+        ## remove annoying 'Figure Nr.' for ipympl widgets
+        ax.figure.canvas.header_visible = False
+
     if "axes" in kwargs:  # remove me in 1.2 #20200515
         pg.critical("Deprecation Warning: Please use keyword `ax` instead of `axes`")
         kwargs['ax'] = kwargs.pop('axes', None)
@@ -77,6 +81,7 @@ def show(obj=None, data=None, **kwargs):
         if ax is None:
             ax = pg.plt.subplots(figsize=kwargs.pop('figsize', None))[1]
 
+        _removeFigHeader(ax)
         return ax, None
 
     # create table of axes aka mpl.subplots
@@ -89,6 +94,7 @@ def show(obj=None, data=None, **kwargs):
         fig, ax = pg.plt.subplots(nrows=nrows, ncols=ncols,
                           figsize=kwargs.pop('figsize', None))
 
+        _removeFigHeader(ax)
         return ax, None
 
     ### obj containes a mesh
@@ -151,6 +157,8 @@ def show(obj=None, data=None, **kwargs):
         if fitView is not False:
             ax.autoscale(enable=True, axis='both', tight=True)
             ax.set_aspect('equal')
+
+        _removeFigHeader(ax)
         return ax, cBar
 
     if isinstance(mesh, pg.Mesh):
@@ -177,6 +185,8 @@ def show(obj=None, data=None, **kwargs):
     if isinstance(obj, pg.core.Boundary):
         ax = kwargs.pop('ax', None)
         drawSelectedMeshBoundaries(ax, [obj], **kwargs)
+
+        _removeFigHeader(ax)
         return ax, None
 
     pg.error("Can't interprete obj: {0} to show.".format(obj))
@@ -411,7 +421,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
                 if data.ndim == 2:
                     if data.shape[1] == mesh.cellCount() or \
                        data.shape[1] == mesh.nodeCount():
-                        
+
                         return showAnimation(mesh, data, cMap=cMap,
                                              ax=ax, **kwargs)
 
