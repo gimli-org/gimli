@@ -138,7 +138,6 @@ def __Mesh_getVal(self, key):
     if self.haveData(key):
         return self.data(key)
     else:
-
         uniqueNames = {}
         for d in self.dataMap().keys():
             if '_y' in d or '_z' in d:

@@ -73,7 +73,11 @@ class TimelapseERT():
 
         if "name" in kwargs:
             self.name = kwargs["name"]
-        nt = self.DATA.shape[1]
+
+        nt = 0
+        if np.any(self.DATA):
+            self.DATA.shape[1]
+
         if len(self.times) != nt:  # default: days from now
             self.times = datetime.now() + np.arange(nt) * timedelta(days=1)
 
