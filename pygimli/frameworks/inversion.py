@@ -604,10 +604,19 @@ class InversionBase(object):
                 self.dataTrans.fwd(self.response)) / \
             self.dataTrans.error(self.response, self.errorVals)
 
-    def dataGradient(self):
+    def dataGradientFormal(self):  # formal but restricted to existent J
         """Data gradient from jacobian and residual, i.e. J^T * dData."""
         return -self.jacobianMatrix(error_weighted=True).transMult(
             self.residual())
+
+    def dataGradient(self, error_weighted=True):  # also works for fop.STy
+        """Data gradient from jacobian and residual, i.e. J^T * dData."""
+        tData = self.dataTrans.deriv(self.response)
+        if error_weighted:
+            tData /= self.dataTrans.error(self.response, self.errorVals)
+
+        return self.fop.STy(-self.residual()*tData) / \
+            self.modelTrans.deriv(self.model)
 
     def modelGradient(self):
         """Model gradient, i.e. C^T * C * (m - m0)."""
