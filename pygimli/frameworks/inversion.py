@@ -27,6 +27,8 @@ class InversionBase(object):
         self._model = None
         self._response = None
         self.lam = 20      # lambda regularization
+        self.lambdaFactor = 1.0
+        self.minLamba = 0
         self.iter = 0
         self.debug = False
         self.robustData = False
@@ -35,6 +37,7 @@ class InversionBase(object):
         self.modelHistory = []
         self.deltaPhiPercent = 1
         self.minDPhi = 1
+        self.stopAtChi1 = True
         self.localRegularization = False
         self.dataTrans = kwargs.pop('dataTrans', pg.trans.TransLin())
         self.cWeight = 1
@@ -42,6 +45,9 @@ class InversionBase(object):
         self.LSiter = 100
         self.maxIter = kwargs.pop('maxIter', 20)
         self.G = None
+        self._jacobianOutdated = False
+        self.lineSearchMethod = None  # auto inter-quad
+        # self.minTau/maxTau
 
     @property
     def fop(self):
@@ -127,9 +133,13 @@ class InversionBase(object):
 
     @model.setter
     def model(self, m):
-        # check size??
+        if self._model is not None:
+            assert len(self._model) == len(m), "Model size mismatch!"
+
         self._model = m
-        self._response = None  # not known
+        if np.any(m - self._model):
+            self._jacobianOutdated = True
+            self._response = None  # not known
 
     @property  # not sure if we need it
     def response(self):
@@ -558,8 +568,7 @@ class InversionBase(object):
                 break
 
             lastPhi = phi
-
-            self.lam *= self.lambdaFactor
+            self.lam = max(self.lam*self.lambdaFactor, self.minLambda)
 
         # will never work as expected until we unpack kwargs .. any idea for
         # better strategy?
@@ -693,6 +702,7 @@ class DescentInversion(InversionBase):
 
     def modelUpdate(self):
         """The negative gradient of  objective function as search direction."""
+        # somehow track whether there is an STx or Jacobian is updated.
         self.fop.createJacobian(self.model)
         return -self.gradient()
 
@@ -1908,5 +1918,3 @@ class LCInversion(Inversion):
         print(kwargs)
         print('#'*50)
         return super(LCInversion, self).run(dataVec, errVec, lam=lam, **kwargs)
-
-
