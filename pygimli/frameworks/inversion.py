@@ -28,7 +28,7 @@ class InversionBase(object):
         self._response = None
         self.lam = 20      # lambda regularization
         self.lambdaFactor = 1.0
-        self.minLamba = 0
+        self.minLambda = 0
         self.iter = 0
         self.debug = False
         self.robustData = False
@@ -1338,6 +1338,9 @@ class ClassicInversion(object):
 
         self.inv.setLambdaFactor(kwargs.pop('lambdaFactor', 1.0))
 
+        if "correlationLength" in kwargs:  # single float value
+            kwargs.setdefault("correlationLenghts",
+                              [kwargs["correlationLength"]])
         # catch a few regularization options that don't go into run
         for opt in ["cType", "limits", "correlationLengths", "C"]:
             if opt in kwargs:
