@@ -36,6 +36,7 @@ def showMatrix(mat, ax=None, **kwargs):
         from scipy.sparse import spmatrix
 
         if isinstance(mat, spmatrix):
+            kwargs.setdefault('markersize', 1)
             gci = drawSparseMatrix(ax, mat, **kwargs)
             return ax, None
     except ImportError:
