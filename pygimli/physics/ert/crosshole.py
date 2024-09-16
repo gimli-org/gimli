@@ -142,7 +142,7 @@ class CrossholeERT(TimelapseERT):
                             name=name)
 
     def createMesh(self, ibound=2, obound=10, quality=None, show=False,
-                   threeD=None, ref=0.25):
+                   threeD=None, ref=0.25, area=1):
         """Create a 2D mesh around boreholes.
 
         Parameters
@@ -171,14 +171,17 @@ class CrossholeERT(TimelapseERT):
                                 end=[xmax+obound, ymax+obound, 0], marker=1)
             box = mt.createCube(start=[xmin-ibound, ymin-ibound, zmin-ibound],
                                 end=[xmax+ibound, ymax+ibound, ztop],
-                                marker=2, area=1)
-            quality = quality or 1.3
+                                marker=2, area=area)
+            if quality is None:
+                quality = 1.3
         else:
             world = mt.createWorld(start=[xmin-obound, zmin-obound],
                                    end=[xmax+obound, 0.], marker=1)
             box = mt.createRectangle(start=[xmin-ibound, zmin-ibound],
-                                    end=[xmax+ibound, ztop], marker=2)
-            quality = quality or 34.4
+                                     end=[xmax+ibound, ztop], marker=2,
+                                     area=area)
+            if quality is None:
+                quality = 34.4
 
         geo = world + box
         for pos in data.sensors():
