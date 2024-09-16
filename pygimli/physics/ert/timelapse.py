@@ -76,7 +76,7 @@ class TimelapseERT():
 
         nt = 0
         if np.any(self.DATA):
-            self.DATA.shape[1]
+            nt = self.DATA.shape[1]
 
         if len(self.times) != nt:  # default: days from now
             self.times = datetime.now() + np.arange(nt) * timedelta(days=1)
@@ -102,7 +102,8 @@ class TimelapseERT():
                 self.ERR = np.loadtxt(filename[:-4]+".err")
             if os.path.isfile(filename[:-4]+".times"):
                 timestr = np.loadtxt(filename[:-4]+".times", dtype=str)
-                self.times = np.array([datetime.fromisoformat(s) for s in timestr])
+                self.times = np.array(
+                    [datetime.fromisoformat(s) for s in timestr])
         elif "*" in filename:
             DATA = [ert.load(fname) for fname in glob(filename)]
             self.data, self.DATA, self.ERR = combineMultipleData(DATA)
@@ -174,8 +175,10 @@ class TimelapseERT():
             self.DATA = self.DATA[:, ind]
             if np.any(self.ERR):
                 self.ERR = self.ERR[:, ind]
+
             if np.any(self.times):
                 self.times = self.times[ind]
+
         if kmax is not None:
             ind = np.nonzero(np.abs(self.data["k"]) < kmax)[0]
             self.data["valid"] = 0
@@ -183,6 +186,7 @@ class TimelapseERT():
             self.data.removeInvalid()
             if np.any(self.DATA):
                 self.DATA = self.DATA[ind, :]
+
             if np.any(self.ERR):
                 self.ERR = self.ERR[ind, :]
 
