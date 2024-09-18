@@ -82,17 +82,22 @@ class CrossholeERT(TimelapseERT):
         kwargs : dict
             forwarded to ert.show or showDataContainerAsMatrix
         """
+        if isinstance(v, (int, str)) and t is None:  # obviously t meant
+            t = v
+            v = "rhoa"
+
         kwargs.setdefault("cMap", "Spectral_r")
         if t is not None:
             t = self.timeIndex(t)
-            rhoa = self.DATA[:, t]
+            rhoa = self.DATA[:, t].copy()
             v = rhoa.data
             v[rhoa.mask] = np.nan
+
         if len(np.unique(self.bhmap)) == 1 or "style" in kwargs:
             return self.data.show(v, **kwargs)
         else:
             ax, cb = pg.viewer.mpl.showDataContainerAsMatrix(
-                self.data, x, y, v, **kwargs)
+                self.data, x=x, y=y, v=v, **kwargs)
             xx = np.nonzero(np.diff(self.bhmap))[0] + 1
             ax.set_xticks(xx)
             ax.set_yticks(xx)

@@ -205,24 +205,30 @@ class TimelapseERT():
         if emax is not None and np.any(self.ERR):
             self.DATA.mask = np.bitwise_or(self.DATA.mask, self.ERR > emax)
 
-    def showData(self, v="rhoa", x="a", y="m", t=None, **kwargs):
+    def showData(self, v="rhoa", t=None, **kwargs):
         """Show data as pseudosections (single-hole) or cross-plot (crosshole)
 
         Parameters
         ----------
         v : str|array ["rhoa]
             array or field to plot
+        t : int|str|datetime
+            time to choose (can also be first argument)
         x, y : str|array ["a", "m"]
             values to use for x and y axes
-        t : int|str|datetime
-            time to choose
+        crossplot : bool [x and y given]
+            force AB-MN crossplot
         kwargs : dict
             forwarded to ert.show or showDataContainerAsMatrix
         """
+        if isinstance(v, (int, str)) and t is None:  # obviously t meant
+            t = v
+            v = "rhoa"
+
         kwargs.setdefault("cMap", "Spectral_r")
         if t is not None:
             t = self.timeIndex(t)
-            rhoa = self.DATA[:, t]
+            rhoa = self.DATA[:, t].copy()
             v = rhoa.data
             v[rhoa.mask] = np.nan
 
@@ -232,6 +238,8 @@ class TimelapseERT():
             return pg.viewer.mpl.showDataContainerAsMatrix(
                 self.data, x, y, v, **kwargs)
         else:
+            kwargs.setdefault("x", "a")
+            kwargs.setdefault("y", "m")
             return self.data.show(v, **kwargs)
 
     def showTimeline(self, ax=None, **kwargs):
