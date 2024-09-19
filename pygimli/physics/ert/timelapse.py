@@ -205,6 +205,18 @@ class TimelapseERT():
         if emax is not None and np.any(self.ERR):
             self.DATA.mask = np.bitwise_or(self.DATA.mask, self.ERR > emax)
 
+    def automask(self, dmax=0.5, nc=5):
+        """Automatic outlier masking using dist to smoothed curve."""
+        from pygimli.frameworks import harmfit
+        tt = np.array([ti.toordinal() for ti in self.times])
+        for data in self.DATA:
+            ddata = data[~data.mask].data
+            if len(ddata) > 3:
+                hf = harmfit(ddata, tt[~data.mask], verbose=False,
+                            nc=nc, robustData=True, resample=tt)[0]
+                misfit = np.abs(data/hf - 1)
+                data.mask[misfit > dmax] = True
+
     def showData(self, v="rhoa", t=None, **kwargs):
         """Show data as pseudosections (single-hole) or cross-plot (crosshole)
 
@@ -332,6 +344,29 @@ class TimelapseERT():
                 ax = fig.subplots()
                 self.showData(t=i, ax=ax, **kwargs)
                 ax.set_title(str(i)+": "+ self.times[i].isoformat(" ", "minutes"))
+                fig.savefig(pdf, format='pdf')
+                fig.clf()
+
+    def generateTimelinePDF(self, key="a", filename=None, **kwargs):
+        """Generate multipage PDF with timeline data.
+
+        Parameters
+        ----------
+        key : str ['a']
+            data key to sort measurements after
+        filename : str [name+'time'+key+'.pdf']
+            output pdf filename
+        kwargs : dict
+            passed to showTimeline
+        """
+        from matplotlib.backends.backend_pdf import PdfPages
+        if filename is None:
+            filename = self.name+'-time-'+key+'.pdf'
+        with PdfPages(filename) as pdf:
+            fig = pg.plt.figure()
+            for a in np.unique(self.data[key]):
+                ax = fig.subplots()
+                self.showTimeline(ax=ax, a=a)
                 fig.savefig(pdf, format='pdf')
                 fig.clf()
 
