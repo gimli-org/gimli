@@ -899,15 +899,19 @@ class ClassicInversion(object):
             sm = self.fop.regionManager().createStartModel()
             if len(sm) > 0 and max(abs(np.atleast_1d(sm))) > 0.0:
                 self._startModel = sm
-                pg.info("Created startmodel from region infos:", sm)
+                if self.verbose:
+                    pg.info("Created startmodel from region infos:", sm)
             else:
-                pg.verbose("No region infos for startmodel")
+                if self.verbose:
+                    pg.verbose("No region infos for startmodel")
 
         if self._startModel is None:
             sm = self.fop.createStartModel(self.dataVals)
             # pg.info("Created startmodel from forward operator:", sm)
-            pg.info("Created startmodel from forward operator: {:d}, min/max={:f}/{:f}".format(
-                len(sm), min(sm), max(sm)))
+            if self.verbose:
+                pg.info("Created startmodel from forward operator:" +
+                        "{:d}, min/max={:f}/{:f}".format(
+                            len(sm), min(sm), max(sm)))
             self._startModel = sm
         return self._startModel
 
