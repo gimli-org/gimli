@@ -110,19 +110,25 @@ class TimelapseERT():
 
         self.name = filename[:-4].replace("*", "All")
 
-    def saveData(self, filename=None):
+    def saveData(self, filename=None, masknan=True):
         """Save all data as datacontainer, times, rhoa and error arrays."""
         filename = filename or self.name
         if filename.endswith(".shm"):
             filename = filename[:-4]
 
         self.data.save(filename+".shm", "a b m n k")
-        np.savetxt(filename+".rhoa", self.DATA, fmt="%6.2f")
+        DATA = self.DATA.copy()
+        if masknan:
+            DATA[DATA.mask] = np.nan
+
+        np.savetxt(filename+".rhoa", DATA, fmt="%6.2f")
         if np.any(self.ERR):
             np.savetxt(filename+".err", self.ERR, fmt="%6.2f")
+
         with open(filename+".times", "w", encoding="utf-8") as fid:
             for d in self.times:
                 fid.write(d.isoformat()+"\n")
+
         self.name = filename
 
     def timeIndex(self, t):  #
@@ -205,7 +211,7 @@ class TimelapseERT():
         if emax is not None and np.any(self.ERR):
             self.DATA.mask = np.bitwise_or(self.DATA.mask, self.ERR > emax)
 
-    def automask(self, dmax=0.5, nc=5):
+    def automask(self, dmax=0.3, nc=5):
         """Automatic outlier masking using dist to smoothed curve."""
         from pygimli.frameworks import harmfit
         tt = np.array([ti.toordinal() for ti in self.times])
