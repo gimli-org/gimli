@@ -35,7 +35,6 @@ int initNumpy(){
     return 0;
 }
 
-
 namespace bp = boost::python;
 
 #if defined ( __APPLE__ ) || ( defined (__SVR4) && defined (__sun) )
