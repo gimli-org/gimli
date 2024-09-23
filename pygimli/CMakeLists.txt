@@ -58,7 +58,7 @@ else()
     # update the environment with VIRTUAL_ENV variable (mimic the activate script) and search again
     add_custom_target(whl${TARGET_NAME}TestInstall DEPENDS whl${TARGET_NAME} DEPENDS whlpgcoreTestRun
         COMMAND "${Python3_EXECUTABLE}" -m pip uninstall -y ${TARGET_NAME}
-        COMMAND "${Python3_EXECUTABLE}" -m pip install ${TARGET_NAME} --find-links=${WHEELHOUSE}
+        COMMAND "${Python3_EXECUTABLE}" -m pip install ${TARGET_NAME} --quiet --find-links=${WHEELHOUSE}
         COMMENT "Installing ${TARGET_NAME} in virtual test environment"
     )
     add_custom_target(whl${TARGET_NAME}TestRun DEPENDS whl${TARGET_NAME}TestInstall
