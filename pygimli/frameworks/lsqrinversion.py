@@ -3,11 +3,12 @@
 from math import sqrt
 import numpy as np
 import pygimli as pg
+from pygimli.frameworks import Inversion
 from pygimli.solver.leastsquares import lsqr as lssolver
-from pygimli.frameworks import lineSearch
+from .linesearch import lineSearch
 
 
-class LSQRInversion(pg.Inversion):
+class LSQRInversion(Inversion):
     """LSQR solver based inversion"""
 
     def __init__(self, *args, **kwargs):

@@ -29,7 +29,7 @@ class DEM:
         zone: int [32]
             UTM zone to be chosen
         """
-        from scipy.interpolate import RegularGridInterpolator, LinearNDInterpolator
+        from scipy.interpolate import RegularGridInterpolator
 
         self.latlon = False
         self.x = x
@@ -144,7 +144,7 @@ class DEM:
 
     def loadASC(self, ascfile):
         """Load ASC (DEM matrix with location header) file."""
-        from scipy.interpolate import RegularGridInterpolator, LinearNDInterpolator
+        from scipy.interpolate import RegularGridInterpolator
 
         with open(ascfile) as fid:
             header = {}
@@ -169,6 +169,7 @@ class DEM:
 
     def loadHGT(self, hgtfile):
         """Load ASC (DEM matrix with location header) file."""
+        from scipy.interpolate import RegularGridInterpolator
         siz = os.path.getsize(hgtfile)
         samples = int(math.sqrt(siz/2))
         lat = int(hgtfile[-10:-8])
@@ -233,20 +234,22 @@ class DEM:
         - **kwargs, type keyword arguments
             add additional keyword arguments for the plot style (e.g., *lw*)
         """
+        import matplotlib.pyplot as plt
         import matplotlib.tri as mtri
         from scipy.interpolate import RegularGridInterpolator, LinearNDInterpolator
 
         if ax is None:
-            fig, ax = pg.plt.subplots(figsize=kwargs.pop('figsize', (15, 15)))
+            fig, ax = plt.subplots(figsize=kwargs.pop('figsize', (12, 12)))
 
         # extract some kwargs for axis setting and colorbar
         orientation = kwargs.pop('orientation', 'vertical')
         xlim = kwargs.pop('xlim', (-9e99, 9e99))
         ylim = kwargs.pop('ylim', (-9e99, 9e99))
         clim = kwargs.pop('clim', (np.min(self.z), np.max(self.z)))
-        nl = kwargs.pop("nl", 11)
+        cmap = kwargs.pop('cmap', 'terrain')
+        nl = kwargs.pop("nl", 15)
         if isinstance(self.dem, mtri.TriInterpolator):
-            im = ax.tricontourf(self.tri, self.z,
+            im = ax.tricontourf(self.tri, self.z, cmap=cmap,
                                 levels=np.linspace(*clim, nl))
             ax.triplot(self.tri, '-', color='gray', alpha=0.5, lw=0.5)
         elif isinstance(self.dem, LinearNDInterpolator):
@@ -272,7 +275,7 @@ class DEM:
         cb = None
         if cbar:
             # norm = Normalize(vmin=clim[0], vmax=clim[1])
-            cb = pg.plt.colorbar(im, ax=ax, orientation=orientation)
+            cb = plt.colorbar(im, ax=ax, orientation=orientation)
             if clim:
                 cb.vmin = clim[0]
                 cb.vmax = clim[1]

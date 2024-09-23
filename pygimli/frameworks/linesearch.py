@@ -4,7 +4,6 @@
 Linesearch procedures used by various inversion frameworks.
 """
 import numpy as np
-import pygimli as pg
 
 
 def tauVector(taumin=0.01, taumax=1, logScale=False, n=21):
@@ -43,10 +42,11 @@ def lineSearchExact(inv, dM, taus=None, show=False, **kwargs):
         phis[i] = inv.phi(newModel, newResponse)
 
     if show:
+        import matplotlib.pyplot as plt
         if kwargs.get("logScale", False):
-            pg.plt.semilogx(taus, phis)
+            plt.semilogx(taus, phis)
         else:
-            pg.plt.plot(taus, phis)
+            plt.plot(taus, phis)
 
     return taus[np.argmin(phis)], newResponse
 
@@ -82,10 +82,11 @@ def lineSearchInter(inv, dM, taus=None, show=False, **kwargs):
         phis[i] = inv.phi(newModel, newResponse)
 
     if show:
+        import matplotlib.pyplot as plt
         if kwargs.get("logScale", False):
-            pg.plt.semilogx(taus, phis)
+            plt.semilogx(taus, phis)
         else:
-            pg.plt.plot(taus, phis)
+            plt.plot(taus, phis)
 
     return taus[np.argmin(phis)], newResponse
 
@@ -110,7 +111,7 @@ def lineSearchInterOld(inv, dM, nTau=100, maxTau=1.0):
 
     return taus[np.argmin(phi)], responseLS
 
-def lineSearchQuad(inv, dm, tautest=0.3, tau1=1, show=False):
+def lineSearchQuad(inv, dm, tautest=0.3, tau1=1, show=False, **kwargs):
     """Optimize line search by fitting parabola by Phi(tau) curve."""
     y0 = inv.phi()
     x1 = tau1
@@ -129,7 +130,8 @@ def lineSearchQuad(inv, dm, tautest=0.3, tau1=1, show=False):
     # xopt = (rt*x1 - r1*xt) / (rt - r1) / 2
     if show:
         taus = np.arange(0, 1.001, 0.01)
-        ax = pg.plt.subplots()[1]
+        import matplotlib.pyplot as plt
+        ax = plt.subplots()[1]
         ax.plot(taus, taus**2*a+taus*b+y0, label="parabola")
         ax.plot(0, y0, "*", label="start")
         ax.plot(xt, yt, "*", label="test")

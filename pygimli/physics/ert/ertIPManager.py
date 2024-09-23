@@ -32,21 +32,22 @@ class ERTIPManager(ERTManager):
             ipdata /= 1000
         mesh0 = pg.Mesh(self.paraDomain)
         mesh0.setCellMarkers(mesh0.cellCount())
-        fopIP = DCIPMModelling(self.fop, mesh0, self.model, response=self.inv.response)
+        fopIP = DCIPMModelling(self.fop, mesh0, self.model,
+                               response=self.inv.response)
         fopIP.createRefinedForwardMesh(True)
-        invIP = pg.Inversion(fop=fopIP, verbose=True)
-        invIP.modelTrans = pg.trans.TransLogLU(0.0, 1.0)
+        self.invIP = pg.Inversion(fop=fopIP, verbose=True)
+        self.invIP.modelTrans = pg.trans.TransLogLU(0.0, 1.0)
         relErr = kwargs.pop("relativeError", 0.03)
         absErr = kwargs.pop("absoluteError", 0.001)
         errorIP = pg.Vector(self.data.size(), relErr) + absErr / pg.abs(ipdata)
         kwargs.setdefault("lam", 100)
         kwargs.setdefault("startModel", pg.median(ipdata))
         kwargs.setdefault("verbose", True)
-        self.modelIP = invIP.run(ipdata, errorIP, **kwargs)
+        self.modelIP = self.invIP.run(ipdata, errorIP, **kwargs)
 
     def invertFDIP(self, **kwargs):
         """IP inversion in frequency domain."""
-        self.modelIP = None  # naive IP inversion
+        self.modelIP = None  # naive IP inversion from pg example
 
     def showIPModel(self, **kwargs):
         """"Show IP model."""
@@ -95,7 +96,7 @@ class ERTIPManager(ERTManager):
     def invertDC(self, *args, **kwargs):
         # Needed if we want to do ERT first without the IP and do IP later
         super().invert(*args, **kwargs)
-    
+
     def simulate(self, mesh, res, m, scheme=None, **kwargs):
         """."""
         from pygimli.physics.ert import ERTModelling

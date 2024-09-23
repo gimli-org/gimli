@@ -446,7 +446,7 @@ def underlayBKGMap(ax, mode='MAP', utmzone=32, epsg=0, imsize=2500, uuid='',
             with open(imname, 'wb') as output:
                 output.write(response.read())
         else:
-            pg.info('Found image file: ' + imname)
+            pg.debug('Found image file: ' + imname)
 
     im = mpimg.imread(imname)
     bb = [int(bi) for bi in box.split(',')]  # bounding box

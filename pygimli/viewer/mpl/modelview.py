@@ -156,7 +156,7 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cMin=1, cMax=1000,
 
     if kwargs.pop("logScale", True):
         pp.set_norm(LogNorm(cMin, cMax))
-    
+
     pp.set_array(np.array(val))
     pp.set_clim(cMin, cMax)
     if name:
@@ -259,7 +259,7 @@ def showStitchedModels(models, ax=None, x=None, cMin=None, cMax=None, thk=None,
     if ax is None:
         fig, ax = pg.plt.subplots()
 
-    dxmed2 = np.median(np.diff(x)) / 2.
+    dxmed2 = kwargs.pop("width", np.median(np.diff(x))) / 2.
     patches = []
     zMinLimit = 9e99
     zMaxLimit = 0

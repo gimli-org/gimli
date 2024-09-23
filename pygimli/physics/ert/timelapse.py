@@ -73,7 +73,11 @@ class TimelapseERT():
 
         if "name" in kwargs:
             self.name = kwargs["name"]
-        nt = self.DATA.shape[1]
+
+        nt = 0
+        if np.any(self.DATA):
+            nt = self.DATA.shape[1]
+
         if len(self.times) != nt:  # default: days from now
             self.times = datetime.now() + np.arange(nt) * timedelta(days=1)
 
@@ -98,7 +102,8 @@ class TimelapseERT():
                 self.ERR = np.loadtxt(filename[:-4]+".err")
             if os.path.isfile(filename[:-4]+".times"):
                 timestr = np.loadtxt(filename[:-4]+".times", dtype=str)
-                self.times = np.array([datetime.fromisoformat(s) for s in timestr])
+                self.times = np.array(
+                    [datetime.fromisoformat(s) for s in timestr])
         elif "*" in filename:
             DATA = [ert.load(fname) for fname in glob(filename)]
             self.data, self.DATA, self.ERR = combineMultipleData(DATA)
@@ -165,13 +170,15 @@ class TimelapseERT():
 
                 ind = np.arange(tmin, tmax)
                 if t is not None:
-                    ind = np.setxor1d(ind, t)
+                    ind = np.setxor1d(ind, self.timeIndex(t))
 
             self.DATA = self.DATA[:, ind]
             if np.any(self.ERR):
                 self.ERR = self.ERR[:, ind]
+
             if np.any(self.times):
                 self.times = self.times[ind]
+
         if kmax is not None:
             ind = np.nonzero(np.abs(self.data["k"]) < kmax)[0]
             self.data["valid"] = 0
@@ -179,6 +186,7 @@ class TimelapseERT():
             self.data.removeInvalid()
             if np.any(self.DATA):
                 self.DATA = self.DATA[ind, :]
+
             if np.any(self.ERR):
                 self.ERR = self.ERR[ind, :]
 
@@ -194,27 +202,45 @@ class TimelapseERT():
         """
         self.DATA = np.ma.masked_invalid(self.DATA)
         self.DATA = np.ma.masked_outside(self.DATA, rmin, rmax)
-        if emax is not None:
+        if emax is not None and np.any(self.ERR):
             self.DATA.mask = np.bitwise_or(self.DATA.mask, self.ERR > emax)
 
-    def showData(self, v="rhoa", x="a", y="m", t=None, **kwargs):
+    def automask(self, dmax=0.5, nc=5):
+        """Automatic outlier masking using dist to smoothed curve."""
+        from pygimli.frameworks import harmfit
+        tt = np.array([ti.toordinal() for ti in self.times])
+        for data in self.DATA:
+            ddata = data[~data.mask].data
+            if len(ddata) > 3:
+                hf = harmfit(ddata, tt[~data.mask], verbose=False,
+                            nc=nc, robustData=True, resample=tt)[0]
+                misfit = np.abs(data/hf - 1)
+                data.mask[misfit > dmax] = True
+
+    def showData(self, v="rhoa", t=None, **kwargs):
         """Show data as pseudosections (single-hole) or cross-plot (crosshole)
 
         Parameters
         ----------
         v : str|array ["rhoa]
             array or field to plot
+        t : int|str|datetime
+            time to choose (can also be first argument)
         x, y : str|array ["a", "m"]
             values to use for x and y axes
-        t : int|str|datetime
-            time to choose
+        crossplot : bool [x and y given]
+            force AB-MN crossplot
         kwargs : dict
             forwarded to ert.show or showDataContainerAsMatrix
         """
+        if isinstance(v, (int, str)) and t is None:  # obviously t meant
+            t = v
+            v = "rhoa"
+
         kwargs.setdefault("cMap", "Spectral_r")
         if t is not None:
             t = self.timeIndex(t)
-            rhoa = self.DATA[:, t]
+            rhoa = self.DATA[:, t].copy()
             v = rhoa.data
             v[rhoa.mask] = np.nan
 
@@ -224,6 +250,8 @@ class TimelapseERT():
             return pg.viewer.mpl.showDataContainerAsMatrix(
                 self.data, x, y, v, **kwargs)
         else:
+            kwargs.setdefault("x", "a")
+            kwargs.setdefault("y", "m")
             return self.data.show(v, **kwargs)
 
     def showTimeline(self, ax=None, **kwargs):
@@ -316,6 +344,29 @@ class TimelapseERT():
                 ax = fig.subplots()
                 self.showData(t=i, ax=ax, **kwargs)
                 ax.set_title(str(i)+": "+ self.times[i].isoformat(" ", "minutes"))
+                fig.savefig(pdf, format='pdf')
+                fig.clf()
+
+    def generateTimelinePDF(self, key="a", filename=None, **kwargs):
+        """Generate multipage PDF with timeline data.
+
+        Parameters
+        ----------
+        key : str ['a']
+            data key to sort measurements after
+        filename : str [name+'time'+key+'.pdf']
+            output pdf filename
+        kwargs : dict
+            passed to showTimeline
+        """
+        from matplotlib.backends.backend_pdf import PdfPages
+        if filename is None:
+            filename = self.name+'-time-'+key+'.pdf'
+        with PdfPages(filename) as pdf:
+            fig = pg.plt.figure()
+            for a in np.unique(self.data[key]):
+                ax = fig.subplots()
+                self.showTimeline(ax=ax, a=a)
                 fig.savefig(pdf, format='pdf')
                 fig.clf()
 
