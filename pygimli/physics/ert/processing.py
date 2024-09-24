@@ -26,20 +26,20 @@ def uniqueERTIndex(data, nI=0, reverse=False, unify=True):
         nI = data.sensorCount() + 1
 
     if unify:
-        normABMN = {'a': np.minimum(data('a'), data('b')) + 1,
-                    'b': np.maximum(data('a'), data('b')) + 1,
-                    'm': np.minimum(data('m'), data('n')) + 1,
-                    'n': np.maximum(data('m'), data('n')) + 1}
+        normABMN = {'a': np.minimum(data['a'], data['b']) + 1,
+                    'b': np.maximum(data['a'], data['b']) + 1,
+                    'm': np.minimum(data['m'], data['n']) + 1,
+                    'n': np.maximum(data['m'], data['n']) + 1}
     else:
         normABMN = {tok: data[tok] + 1 for tok in "abmn"}
 
     abmn = "abmn"
     if reverse:
-        abmn = "mnab"  # nmba?
+        abmn = "mnab"
 
     ind = 0
     for el in abmn:
-        ind = ind * nI + normABMN[el]  # data(el)
+        ind = ind * nI + normABMN[el]
 
     return np.array(ind, dtype=int)
 
@@ -70,7 +70,7 @@ def generateDataFromUniqueIndex(ind, data=None, nI=None):
     scheme["valid"] = 1
     return scheme
 
-def reciprocalIndices(data, onlyOnce=False):
+def reciprocalIndices(data, onlyOnce=False, unify=True):
     """Return indices for reciprocal data.
 
     Parameters:
@@ -84,8 +84,8 @@ def reciprocalIndices(data, onlyOnce=False):
     iN, iR : np.array(dtype=int)
         indices into the data container for normal and reciprocals
     """
-    unF = uniqueERTIndex(data)
-    unB = uniqueERTIndex(data, reverse=True)
+    unF = uniqueERTIndex(data, unify=unify)
+    unB = uniqueERTIndex(data, unify=unify, reverse=True)
     iF, iB = [], []
     for i, u in enumerate(unF):
         ii = np.nonzero(unB == u)[0]
