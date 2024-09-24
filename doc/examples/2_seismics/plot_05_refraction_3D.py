@@ -73,9 +73,9 @@ for receiver in sensors[1:]:
     ni = dij.shortestPathTo(mesh.findNearestNode(receiver))
     pos = mesh.positions(withSecNodes=True)[ni]
     segs = np.zeros((len(pos), 3))
-    segs[:, 0] = pg.x(pos)
-    segs[:, 1] = pg.y(pos)
-    segs[:, 2] = pg.z(pos)
+    segs[:,0] = pg.x(pos)
+    segs[:,1] = pg.y(pos)
+    segs[:,2] = pg.z(pos)
     rays.append(segs)
 
 ################################################################################
