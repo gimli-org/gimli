@@ -704,8 +704,13 @@ class DescentInversion(InversionBase):
 
     def modelUpdate(self):
         """The negative gradient of  objective function as search direction."""
-        # somehow track whether there is an STx or Jacobian is updated.
-        self.fop.createJacobian(self.model)
+        if self.fop.STy.__doc__ is pg.Modelling.STy.__doc__:  # original
+            if len(self.model) != self.fop.jacobian().cols():
+                self._jacobianOutdated = True
+
+            if self._jacobianOutdated:
+                self.fop.createJacobian(self.model)
+
         return -self.gradient()
 
 

@@ -130,15 +130,15 @@ def KramersKronig(f, re, im, usezero=False):
 
         fun1 = (re - re[num]) / x2w2
         fun1[num] = dRedx[num] / 2 / w
-        im2[num] = -2./pi * w * simpson(fun1, x)
+        im2[num] = -2./pi * w * simpson(fun1, x=x)
 
         if usezero:
             fun2 = (im * w / x - im[num]) / x2w2
-            re2[num] = 2./pi * w * simpson(fun2, x)  + re[0]
+            re2[num] = 2./pi * w * simpson(fun2, x=x)  + re[0]
         else:
             fun2 = (im * x - im[num] * w) / x2w2
             fun2[num] = (im[num] / w + dImdx[num]) / 2
-            re2[num] = 2./pi * simpson(fun2, x) + re[-1]
+            re2[num] = 2./pi * simpson(fun2, x=x) + re[-1]
 
     return re2, im2
 
