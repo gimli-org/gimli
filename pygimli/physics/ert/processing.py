@@ -37,11 +37,11 @@ def uniqueERTIndex(data, nI=0, reverse=False, unify=True):
     if reverse:
         abmn = "mnab"
 
-    ind = 0
+    ind = np.zeros(data.size(), dtype=np.int64)
     for el in abmn:
         ind = ind * nI + normABMN[el]
 
-    return np.array(ind, dtype=int)
+    return ind  # np.array(ind, dtype=int)
 
 def generateDataFromUniqueIndex(ind, data=None, nI=None):
     """Generate data container from unique index."""
