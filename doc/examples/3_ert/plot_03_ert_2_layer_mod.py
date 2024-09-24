@@ -39,7 +39,7 @@ for s in scheme.sensors():
 # Now we can create our forward modelling mesh.
 mesh = mt.createMesh(plc, quality=33)
 
-pg.show(mesh, data=mesh.cellMarkers(), label='Marker', showMesh=True)
+_ = pg.show(mesh, data=mesh.cellMarkers(), label='Marker', showMesh=True)
 
 ###############################################################################
 # It is usually a good idea to calculate with a p2-refined mesh.
@@ -69,7 +69,7 @@ ax.plot(ab2, ves.response([10.0, 100.0, 1.0]), '-x', label='1D (VES)')
 ax.set_xlabel('AB/2 (m)')
 ax.set_ylabel('Apparent resistivity ($\Omega$m)')
 ax.grid(1)
-ax.legend()
+_ = ax.legend()
 
 ###############################################################################
 # We can easily repeat the above example using a complex resistivity model.

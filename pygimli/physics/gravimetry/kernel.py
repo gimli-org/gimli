@@ -32,7 +32,7 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf=None):  # , foot=np.inf):
         pnts = [[0.0, 0.0]]
 
     doG = np.any([c[0] == "g" for c in cmp])
-    doGT = np.any([c[0] == "g" and len(c) == 2 for c in cmp])
+    doGT = np.any([c[0] == "g" and len(c) == 3 for c in cmp])
     doB = np.any([c[0] == "B" and len(c) == 2 for c in cmp]) or "TFA" in cmp
     doBT = np.any([c[0] == "B" and len(c) == 3 for c in cmp])
     B_tens = None
