@@ -426,8 +426,10 @@ class InversionBase(object):
         self.reset()
         if errorVals is None:  # use absoluteError and/or relativeError instead
             absErr = kwargs.pop("absoluteError", 0)
-            relErr = kwargs.pop("relativeError",
-                                0.01 if np.allclose(absErr, 0) else 0)
+            relErr = kwargs.pop("relativeError", 0)
+            if np.any(np.isclose(absErr + relErr, 0, atol=0)):
+                raise Exception("Zero error occurred, check abs/relErr")
+
             errorVals = pg.abs(absErr / np.asarray(dataVals)) + relErr
 
         if isinstance(errorVals, (float, int)):
@@ -1311,7 +1313,7 @@ class ClassicInversion(object):
         if errorVals is None:  # use absoluteError and/or relativeError instead
             absErr = kwargs.pop("absoluteError", 0)
             relErr = kwargs.pop("relativeError",
-                                0.01 if np.allclose(absErr, 0) else 0)
+                                0.01 if np.allclose(absErr, 0, atol=0) else 0)
             errorVals = pg.abs(absErr / np.asarray(dataVals)) + relErr
 
         if isinstance(errorVals, (float, int)):
@@ -1658,7 +1660,7 @@ class MarquardtInversion(Inversion):
         if errorVals is None:  # use absoluteError and/or relativeError instead
             absErr = kwargs.pop("absoluteError", 0)
             relErr = kwargs.pop("relativeError",
-                                0.01 if np.allclose(absErr, 0) else 0)
+                                0.01 if np.allclose(absErr, 0, atol=0) else 0)
             errorVals = pg.abs(absErr / dataVals) + relErr
 
         self.fop.regionManager().setConstraintType(0)
