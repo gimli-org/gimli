@@ -32,7 +32,7 @@ def scaledJacobianMatrix(inv):
         raise TypeError("Matrix type cannot be converted")
 
 def resolutionMatrix(inv, returnRD=False):
-    """Formal model (and data) resolution matrix (MCM) from inversion.
+    r"""Formal model (and data) resolution matrix (MCM) from inversion.
 
     .. math::
 
@@ -73,7 +73,7 @@ def resolutionMatrix(inv, returnRD=False):
         return RM
 
 def modelResolutionMatrix(inv):
-    """Formal model resolution matrix (MCM) from inversion.
+    r"""Formal model resolution matrix (MCM) from inversion.
 
     .. math::
 
