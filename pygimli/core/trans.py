@@ -65,6 +65,12 @@ def __RTransCotLU_str(self):
 
 pgcore.RTransCotLU.__repr__ = __RTransCotLU_str
 
+def __RTrans_str(self):
+    """String representation."""
+    return "Identity transform"
+
+pgcore.RTrans.__repr__ = __RTrans_str
+
 
 # Aliases
 Trans = pgcore.RTrans
@@ -84,6 +90,10 @@ class TransSymLog(pgcore.RTrans):
         """Forward transformation."""
         super().__init__()
         self.tol = tol
+
+    def __repr__(self):
+        """String representation."""
+        return f"Symlog transformation with threshold {self.tol}"
 
     def trans(self, x):
         """Forward transformation."""
