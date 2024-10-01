@@ -67,7 +67,6 @@ class ERTIPManager(ERTManager):
 
         complexData = pg.utils.toComplex(data["rhoa"], ipdata)
         datavec = pg.cat(complexData.real, complexData.imag)
-        datavec.save("mydata.vec")
         errvec = pg.cat(data["err"], iperr / (pg.abs(ipdata)+1e-4))
 
         self.fopC = ERTModelling(sr=kwargs.pop("sr", False), verbose=True)
