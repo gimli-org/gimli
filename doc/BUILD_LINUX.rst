@@ -42,6 +42,7 @@ older installations.
 
     export PYTHONPATH=$PYTHONPATH:$(pwd)/gimli
     python -c 'import pygimli as pg; pg.version()'
+    python -c 'import pygimli as pg; print(pg.report())'
 
 
 **All following build procedures are outdated and may not work without
