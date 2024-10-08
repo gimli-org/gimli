@@ -54,11 +54,13 @@ if(WIN32)
     )
 endif(WIN32)
 
-add_python_module(pygimli "${CMAKE_CURRENT_BINARY_DIR}/generated/" "gimli" "${CMAKE_SOURCE_DIR}/pygimli/core")
+add_python_module(pygimli "${CMAKE_CURRENT_BINARY_DIR}/generated/" "gimli" "${CMAKE_SOURCE_DIR}/pygimli/core/libs")
 include_directories(${Python_NumPy_INCLUDE_DIRS})
 
-add_dependencies(pggen gimli)
-add_dependencies(copy_python pggen)
+## copy libgimli.so INSOURCE so we can use and develop there directly
+##add_dependencies(pggen copyLibGIMLi_INSOURCE)
+#add_dependencies(copy_python pggen)
+
 add_dependencies(fixpygimlisrc pggen)
 add_dependencies(pgbuild fixpygimlisrc)
 
@@ -70,44 +72,24 @@ else(WIN32)
 endif(WIN32)
 
 # for calling the build only
-ADD_CUSTOM_TARGET(pg ALL)
+
+add_custom_target(pg ALL)
+
 add_dependencies(pg _pygimli_)
 
-ADD_CUSTOM_TARGET(pgtest)
-ADD_CUSTOM_COMMAND(
-    COMMAND ${Python_EXECUTABLE}
-    ARGS -c 'import pygimli\; pygimli.test(show=False, abort=True) ' 
-    TARGET pgtest
-   )
+ADD_CUSTOM_TARGET(pgtest
+    COMMAND ${Python_EXECUTABLE} -c 'import pygimli\; pygimli.test(show=False, abort=True) ' 
+)
 
-add_test(
-    NAME
-        pgtest:pygimli_tests
-    COMMAND
-        make pgtest
-    )
+#add_dependencies(check pgtest)
+#add_custom_target(checkpg ALL)
 
-#add_dependencies(pgtest pygimli)
-
-#ADD_CUSTOM_TARGET(pgrebuild ALL)
-#add_dependencies(pgrebuild pggen _pygimli_)
-
-#ADD_CUSTOM_TARGET(pygimli_check_sources ALL)
-
-# foreach(file ${PYGIMLI_FILES})
-#     add_custom_command(
-#             COMMAND
-#                 #echo ${PYGIMLI_SOURCE_DIR}/${file} ${PYGIMLI_BUILD_DIR}/${file}
-#                 cmake -E copy_if_different ${PYGIMLI_SOURCE_DIR}/${file} ${PYGIMLI_BUILD_DIR}/${file}
-#             TARGET
-#                 pygimli_check_sources
-#             VERBATIM
-#             COMMENT
-#                 "Updating python file: ${file}"
+# add_test(
+#     NAME
+#         pgtest:pygimli_tests
+#     COMMAND
+#         make pgtest
 #     )
-# endforeach()
-
-## prepare installation
 
 set(SCRIPTS pytripatch.py; meshmerge.py; meshconvert.py; pygi; datamerge.py)
 

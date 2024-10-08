@@ -76,6 +76,7 @@ deps = [
 # check for p.version too
 modules = [p.project_name for p in pkg_resources.working_set]
 
+pg._b(modules)
 req = []
 for dep in deps:
     if dep not in modules:

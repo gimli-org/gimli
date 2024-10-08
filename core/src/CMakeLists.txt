@@ -40,7 +40,15 @@ endif (UMFPACK_FOUND)
 
 if (PYTHON_FOUND)
     include_directories(${Python_INCLUDE_DIRS})
+
+    # needed since the later doesnt seems to work
     target_link_libraries(${libgimli_TARGET_NAME} ${Python_LIBRARIES})
+    
+    if (Python_Development.Module_FOUND)
+        target_link_libraries(${libgimli_TARGET_NAME} Python::Module)
+    else()
+        target_link_libraries(${libgimli_TARGET_NAME} ${Python_LIBRARIES})
+    endif()
 endif (PYTHON_FOUND)
 
 if (Boost_INCLUDE_DIR)
@@ -74,6 +82,21 @@ if (USE_BOOST_THREAD)
     endif (Boost_SYSTEM_FOUND)
 endif(USE_BOOST_THREAD)
 
+## copy libgimli.so INSOURCE so we can use and develop there directly
+set(INSOURCE_LIBRARIES_DIR ${CMAKE_SOURCE_DIR}/pygimli/core/libs/ )
+add_custom_command(TARGET ${libgimli_TARGET_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${INSOURCE_LIBRARIES_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${libgimli_TARGET_NAME}> ${INSOURCE_LIBRARIES_DIR}
+    COMMENT "copy $<TARGET_FILE:gimli> to ${INSOURCE_LIBRARIES_DIR}"
+)
+
+# add_custom_target(copyLibGIMLi_INSOURCE DEPENDS gimli
+# COMMAND
+#     cmake -E copy_if_different $<TARGET_FILE:gimli> ${OUTDIR}
+# COMMENT "copy $<TARGET_FILE:gimli> to ${OUTDIR}"
+# )
+
+
 
 if (APPLE)
     target_link_libraries(${libgimli_TARGET_NAME} "-undefined dynamic_lookup")
@@ -102,17 +125,16 @@ if (WIN32)
 
 elseif (UNIX AND NOT APPLE)
 	if (READPROC_FOUND)
+        #message(STATUS " add:" ${READPROC_LIBRARIES})
         target_link_libraries(${libgimli_TARGET_NAME} ${CMAKE_DL_LIBS})
 		include_directories(${READPROC_INCLUDE_DIR})
 		target_link_libraries(${libgimli_TARGET_NAME} ${READPROC_LIBRARIES})
 	endif (READPROC_FOUND)
+
 	install(TARGETS ${libgimli_TARGET_NAME} LIBRARY DESTINATION ${LIBRARY_INSTALL_DIR})
+
 endif(WIN32)
 
-install(FILES ${HEADER_FILES} ${PROJECT_BINARY_DIR}/${libgimli_TARGET_NAME}_export.h
-        DESTINATION ${INCLUDE_INSTALL_DIR})
-
-# install(DIRECTORY include/${PROJECT_NAME}/
-#         DESTINATION include
-#         PATTERN ".cpp" EXCLUDE)
+# install(FILES ${HEADER_FILES} ${PROJECT_BINARY_DIR}/${libgimli_TARGET_NAME}_export.h
+#         DESTINATION ${INCLUDE_INSTALL_DIR})
 

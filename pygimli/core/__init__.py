@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 Imports and extensions of the C++ bindings.
 """
@@ -684,7 +683,7 @@ pgcore.RVector3.__iter__ = __Vector3IterCall__
 
 # ######### c to python converter ######
 # default converter from RVector3 to numpy array
-def __RVector3ArrayCall__(self, dtype=None):
+def __RVector3ArrayCall__(self, dtype=None, **kwargs):
     # if idx:
     # print(self)
     # print(idx)
@@ -695,7 +694,7 @@ def __RVector3ArrayCall__(self, dtype=None):
 # default converter from RVector to numpy array
 
 
-def __RVectorArrayCall__(self, dtype=None):
+def __RVectorArrayCall__(self, dtype=None, **kwargs):
     # if idx and not isinstance(idx, numpy.dtype):
     # print("self:", self)
     # print("idx:", idx, type(idx) )
@@ -708,7 +707,7 @@ def __RVectorArrayCall__(self, dtype=None):
     # return np.array(self.array())
     return self.array()
 
-def __CVectorArrayCall__(self, dtype=None):
+def __CVectorArrayCall__(self, dtype=None, **kwargs):
     # if idx and not isinstance(idx, numpy.dtype):
     # print("self:", self)
     # print("idx:", idx, type(idx) )

@@ -341,7 +341,7 @@ public:
     }
     /*!
      * Return a new vector that based on indices's.
-     * Throws exception if indices's are out of bound. 
+     * Throws exception if indices's are out of bound.
      */
     inline Vector < ValueType > operator () (const SIndexArray & siArray) const {
         return get_(siArray);
@@ -594,7 +594,7 @@ public:
         if (end < 0){
             e = max(start, size_ + end);
         }
-        
+
         Vector < ValueType > v(e-start);
 
         if (start == e) return v;
@@ -721,8 +721,10 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
         if (newCapacity != capacity_) {
             ValueType * buffer = new ValueType[newCapacity];
 
-            std::memcpy(buffer, data_, sizeof(ValueType) * min(capacity_, newCapacity));
-            if (data_)  delete [] data_;
+            std::memcpy(buffer, data_,
+                        sizeof(ValueType) * min(capacity_, newCapacity));
+            // std::destroy_at(data_);
+            if (data_) delete [] data_;
             data_  = buffer;
             capacity_ = newCapacity;
             //std::copy(&tmp[0], &tmp[min(tmp.size(), n)], data_);
