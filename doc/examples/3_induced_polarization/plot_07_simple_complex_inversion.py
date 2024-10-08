@@ -212,7 +212,8 @@ mesh_coarse = mt.createMesh(world, quality=33)
 mesh = mesh_coarse.createH2()
 for nr, c in enumerate(mesh.cells()):
     c.setMarker(nr)
-pg.show(mesh)
+_ = pg.show(mesh)
+
 ###############################################################################
 # Define start model of the inversion
 # [magnitude, phase]

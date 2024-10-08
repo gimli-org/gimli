@@ -17,7 +17,7 @@ from pygimli.physics.gravimetry import GravityModelling2D
 # %%
 # Synthetic model and data generation
 # -----------------------------------
-# We create a rectangular modelling domain (50x15m) with a flat anomaly  
+# We create a rectangular modelling domain (50x15m) with a flat anomaly
 # in a depth of about 5m.
 #
 
@@ -122,8 +122,8 @@ rho = inv.run(g, absoluteError=error, lam=1e5, verbose=True)
 #
 
 fig, ax = pg.plt.subplots(ncols=1, nrows=2, sharex=True)
-ax[0].plot(x, data, "+")
-ax[0].plot(x, inv.response, "-")
+ax[0].plot(x, data, "+", label="data")
+ax[0].plot(x, inv.response, "-", label="response")
 ax[0].set_ylabel(r'$\frac{\partial u}{\partial z}$ [mGal]')
 ax[0].grid()
 ax[0].legend()

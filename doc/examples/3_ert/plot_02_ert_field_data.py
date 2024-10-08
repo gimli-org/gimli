@@ -34,7 +34,7 @@ mgr = ert.ERTManager(sr=False)
 # It might be interesting to see the topography effect, i.e the ratio between
 # the numerically computed geometry factor and the analytical formula
 k0 = ert.createGeometricFactors(data)
-ert.showData(data, vals=k0/data['k'], label='Topography effect')
+_ = ert.showData(data, vals=k0/data['k'], label='Topography effect')
 
 ###############################################################################
 # The data container has no apparent resistivities (token field 'rhoa') yet.
@@ -50,7 +50,7 @@ print(data)
 data['err'] = ert.estimateError(data, relativeError=0.03, absoluteUError=5e-5)
 # or manually:
 # data['err'] = data_errors  # somehow
-ert.show(data, data['err']*100)
+_ = ert.show(data, data['err']*100)
 
 ###############################################################################
 # Now the data have all necessary fields ('rhoa', 'err' and 'k') so we can run
@@ -60,13 +60,13 @@ ert.show(data, data['err']*100)
 mod = mgr.invert(data, lam=10, verbose=True,
                  paraDX=0.3, paraMaxCellSize=10, paraDepth=20, quality=33.6)
 
-mgr.showResult()
+_ = mgr.showResult()
 
 ###############################################################################
 # We can view the resulting model in the usual way.
-mgr.showResultAndFit()
+_ = mgr.showResultAndFit()
 # np.testing.assert_approx_equal(ert.inv.chi2(), 1.10883, significant=3)
 
 ###############################################################################
 # Or just plot the model only using your own options.
-mgr.showResult(mod, cMin=5, cMax=30, cMap="Spectral_r", logScale=True)
+_ = mgr.showResult(mod, cMin=5, cMax=30, cMap="Spectral_r", logScale=True)

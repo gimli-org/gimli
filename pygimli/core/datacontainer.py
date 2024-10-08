@@ -193,6 +193,7 @@ def __DataContainer_subset(self, **kwargs):
         dictionary forwarded to getIndices marking validity
     x/y/z : float
         positions are extended to all sensor indices
+
     Returns
     -------
     out : DataContainer
