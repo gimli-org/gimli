@@ -43,7 +43,7 @@ if (PYTHON_FOUND)
 
     # needed since the later doesnt seems to work
     target_link_libraries(${libgimli_TARGET_NAME} ${Python_LIBRARIES})
-    
+
     if (Python_Development.Module_FOUND)
         target_link_libraries(${libgimli_TARGET_NAME} Python::Module)
     else()
@@ -66,7 +66,6 @@ if (OpenBLAS_INCLUDE_DIR)
         target_link_libraries(${libgimli_TARGET_NAME} openblas)
     endif()
 endif()
-
 
 if (USE_BOOST_THREAD)
     target_link_libraries(${libgimli_TARGET_NAME} ${Boost_THREAD_LIBRARIES})
@@ -96,12 +95,13 @@ add_custom_command(TARGET ${libgimli_TARGET_NAME} POST_BUILD
 # COMMENT "copy $<TARGET_FILE:gimli> to ${OUTDIR}"
 # )
 
-
+if (OpenMP_CXX_FOUND)
+    target_link_libraries(${libgimli_TARGET_NAME} OpenMP::OpenMP_CXX)
+endif()
 
 if (APPLE)
     target_link_libraries(${libgimli_TARGET_NAME} "-undefined dynamic_lookup")
 endif()
-
 
 if (WIN32)
     target_link_libraries(${libgimli_TARGET_NAME} psapi)

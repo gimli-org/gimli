@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.15)
 if (POLICY CMP0025) # recognize appleclang
     cmake_policy(SET CMP0025 NEW)
 endif()
-if (POLICY CMP0094) 
+if (POLICY CMP0094)
     cmake_policy(SET CMP0094 NEW) #Python_FIND_STRATEGY LOCATION
 endif()
 
@@ -95,7 +95,7 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX OR ${CMAKE_CXX_COMPILE
 
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -ansi -pedantic -fno-omit-frame-pointer -Wall")
     #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -std=c++11 -ansi -pedantic -fno-omit-frame-pointer -Wall")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fopenmp")
+    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fopenmp")
 
     ### debug settings
     # run with -DCMAKE_BUILD_TYPE=Debug
@@ -211,7 +211,7 @@ endif()
 find_package(Threads REQUIRED)
 
 ################################################################################
-#   python
+#  Python
 ################################################################################
 if (NOT PYVERSION)
     # Q&D python version guess .. while Python_FIND_STRATEGY LOCATION does not work in every case
@@ -220,7 +220,7 @@ if (NOT PYVERSION)
             PYVERSION_GUESS
         OUTPUT_STRIP_TRAILING_WHITESPACE
             ERROR_STRIP_TRAILING_WHITESPACE
-    )    
+    )
     STRING(REPLACE "Python " "" PYVERSION_GUESS "${PYVERSION_GUESS}")
     message(STATUS "No PYVERSION set, guessing from current python executable: ${PYVERSION_GUESS}")
     set(PYVERSION ${PYVERSION_GUESS})
@@ -233,8 +233,8 @@ set(Python_ADDITIONAL_VERSIONS=${PYVERSION})
 set(Python_FIND_VIRTUALENV FIRST)
 
 if (OS_VAR STREQUAL "almalinux")
-    ## almalinux used for manylinux builds, 
-    ## EXACT fails since Python_Includes are not part of 
+    ## almalinux used for manylinux builds,
+    ## EXACT fails since Python_Includes are not part of
     ## build virtual enviroment but on /opt
     find_package(Python ${PYVERSION} COMPONENTS Interpreter REQUIRED)
     find_package(Python ${PYVERSION} COMPONENTS Development.Module REQUIRED)
@@ -246,7 +246,7 @@ else()
 endif()
 
 set (PYTHON_FOUND TRUE CACHE BOOL "Is python available")
-    
+
 message(STATUS "Python_FOUND: ${Python_FOUND}")
 message(STATUS "Python_Interpreter_FOUND: ${Python_Interpreter_FOUND}")
 message(STATUS "Python_EXECUTABLE: ${Python_EXECUTABLE}")
@@ -266,10 +266,10 @@ message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES}")
 message(STATUS "Python_LINK_OPTIONS: ${Python_LINK_OPTIONS}")
 message(STATUS "Python_VERSION: ${Python_VERSION}")
 message(STATUS "Python_NumPy: ${Python_NumPy_FOUND}, ${Python_NumPy_INCLUDE_DIRS}, ${Python_NumPy_VERSION}")
-        
+
 
 ################################################################################
-#   boost
+#  Boost
 ################################################################################
 cprint(green "********** Boost.Python settings ***********")
 #set(Boost_USE_STATIC_LIBS ON)
@@ -347,7 +347,7 @@ message(STATUS "Found Boost_ROOT: ${Boost_ROOT}")
 message(STATUS "Found Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
 if (NOT Boost_PYTHON_LIBRARY)
     # Who sets this? It prevents successfull search directly after build
-    unset(Boost_USE_DEBUG_RUNTIME) 
+    unset(Boost_USE_DEBUG_RUNTIME)
     find_package(Boost COMPONENTS "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
     #find_or_build_package(Boost boost)
 endif()
@@ -460,6 +460,9 @@ endif()
 #   misc third party stuff
 ################################################################################
 cprint(green "********** Misc settings ***********")
+
+find_package(OpenMP)
+
 # Find packages that CHOLMOD depends on
 set(CMAKE_LIBRARY_PATH ${EXTERNAL_DIR}/lib $ENV{EXTERNAL_DIR}/lib ${CMAKE_LIBRARY_PATH})
 
@@ -850,9 +853,6 @@ set(WHEELHOUSE ${CMAKE_BINARY_DIR}/wheelhouse)
 # if (LIBGIMLI_BUILD_TESTS)
 #      enable_testing()
 # endif(LIBGIMLI_BUILD_TESTS)
-
-
-
 
 ################################################################################
 # descend into subdirs
