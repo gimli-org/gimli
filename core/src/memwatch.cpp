@@ -26,6 +26,7 @@
 #elif READPROC_FOUND || defined(HAVE_PROC_READPROC)
     #include <proc/readproc.h>
     #define USE_PROC_READPROC TRUE
+    #error readproc
 #else
     #define USE_PROC_READPROC 0
 #endif
@@ -89,9 +90,9 @@ double MemWatch::inUse() {
 //      __MS("rss: " << usage.rss/1024)
     double ret = MByte(usage.vsize);
     return ret;
-#else 
+#else
     // no windows and no libproc
-#endif 
+#endif
 
 
 #endif // no WINDOWS
