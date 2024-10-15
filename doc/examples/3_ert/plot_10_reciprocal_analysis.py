@@ -34,10 +34,10 @@ voltage gain.
 This procedure, originally designed for lab ERT with a small range of R values,
 was used by Udphuay et al. (2011) for determining the error model for field data
 with a much larger range for R values (section 4.4 and Fig. 11).
-For the two data sets (called OP and RCP) they found rather low percentage errors
-of about 1% or below and ohmic errors of about 1.5m$\Omega$ (unfortunately the
-milli is missing in the paper) which is about 100µV considering a medium value of
-about 60mA. This value is a good estimate that has been used as default value in
+For the two data sets (OP and RCP) they found rather low percentage errors of
+about 1% or below and ohmic errors of about 1.5m$\Omega$ (unfortunately the
+milli is missing in the paper) which is about 100µV considering a medium value
+of  60mA. This value is a good estimate that has been used as default value in
 the BERT software, which was used to invert the data. To account for other error
 sources like positioning, topography, they increased the percentage error to 2%
 to determine the weighting in inversion as described by Günther et al. (2006).

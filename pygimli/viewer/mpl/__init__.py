@@ -103,7 +103,6 @@ __all__ = [
     "setOutputStyle", "setPlotStuff", "createAnimation", "saveAnimation",
     "drawParameterConstraints", "drawPLC", "drawSelectedMeshBoundaries",
     "drawSelectedMeshBoundariesShadow", "drawSensors", "drawStreamLines",
-    "drawStreams", "insertUnitAtNextLastTick", "plotLines", "cacheFileName",
-    "deg2MapTile", "getMapTile", "mapTile2deg", "underlayMap", "updateAxes"
-]
+    "drawStreams", "insertUnitAtNextLastTick", "plotLines", "updateAxes"]
+# "cacheFileName", "deg2MapTile", "getMapTile", "mapTile2deg", "underlayMap"]
 

@@ -58,7 +58,7 @@ else()
     # update the environment with VIRTUAL_ENV variable (mimic the activate script) and search again
     add_custom_target(whl${TARGET_NAME}TestInstall DEPENDS whl${TARGET_NAME} DEPENDS whlpgcoreTestRun
         COMMAND "${Python3_EXECUTABLE}" -m pip uninstall -y ${TARGET_NAME}
-        COMMAND "${Python3_EXECUTABLE}" -m pip --quiet install ${WHEELHOUSE}/${PY_WHEELFILE} --find-links=${WHEELHOUSE}
+        COMMAND "${Python3_EXECUTABLE}" -m pip install ${TARGET_NAME} --quiet --find-links=${WHEELHOUSE}
         COMMENT "Installing ${TARGET_NAME} in virtual test environment"
     )
     add_custom_target(whl${TARGET_NAME}TestRun DEPENDS whl${TARGET_NAME}TestInstall
@@ -71,7 +71,7 @@ else()
     add_custom_target(whlTest DEPENDS whl${TARGET_NAME}TestRun)
     add_custom_target(whl DEPENDS whl${TARGET_NAME})
 
-    ## deploy the wheel: make whlDeploy
+    ## deploy the wheel: make whlpygimliDeploy
     add_custom_target(whl${TARGET_NAME}Deploy DEPENDS whl${TARGET_NAME}Test
         COMMAND "${Python_EXECUTABLE}" -m twine check ${WHEELHOUSE}/${WHEELFILE}
         COMMAND "${Python_EXECUTABLE}" -m twine upload --repository pypi ${WHEELHOUSE}/${WHEELFILE}

@@ -32,7 +32,18 @@ def scaledJacobianMatrix(inv):
         raise TypeError("Matrix type cannot be converted")
 
 def resolutionMatrix(inv, returnRD=False):
-    """Formal model resolution matrix (MCM) from inversion.
+    r"""Formal model (and data) resolution matrix (MCM) from inversion.
+
+    .. math::
+
+        \mathbf{R_M} = (\mathbf{J}^T\mathbf{D}^T\mathbf{D}\mathbf{J} + \alpha
+        \mathbf{C}^T\mathbf{C})^{-1}
+        \mathbf{J}^T\mathbf{D}^T\mathbf{D}\mathbf{J}
+
+        \mathbf{R_D} = \mathbf{D}\mathbf{J}
+        (\mathbf{J}^T\mathbf{D}^T\mathbf{D}\mathbf{J} + \alpha
+        \mathbf{C}^T\mathbf{C})^{-1}
+        \mathbf{J}^T\mathbf{D}^T
 
     Parameters
     ----------
@@ -62,7 +73,13 @@ def resolutionMatrix(inv, returnRD=False):
         return RM
 
 def modelResolutionMatrix(inv):
-    """Formal model resolution matrix (MCM) from inversion.
+    r"""Formal model resolution matrix (MCM) from inversion.
+
+    .. math::
+
+        \mathbf{R_m} = (\mathbf{J}^T\mathbf{D}^T\mathbf{D}\mathbf{J} + \alpha
+        \mathbf{C}^T\mathbf{C})^{-1}
+        \mathbf{J}^T\mathbf{D}^T\mathbf{D}\mathbf{J}
 
     Parameters
     ----------
@@ -109,6 +126,41 @@ def modelResolutionKernel(inv, nr=0, maxiter=50):
                        pg.Vector(C.rows()))
         return lsqr(JC, invec, maxiter=50)
 
+def modelResolutionRadius(inv, nr=None, RM=None):
+    """Compute resolution radius from model resolution matrix diagonal.
+
+    According to Friedel (2003), it is defined as the radius of a circle (2D) or
+    sphere (3D) having a resolution of 1, i.e. Sr = Se / RM(i, i) where Sr and
+    are the sizes (area or volume) of the circle/sphere and the element.
+
+    Parameters
+    ----------
+    nr : int|None [None]
+        compute only resolution radius for a single cell (otherwise all cells)
+    RM : numpy.matrix [None]
+        already existing resolution matrix, otherwise compute it
+    """
+    pd = inv.paraDomain
+    cs = pd.cellSizes()
+    if nr is not None:  # only a single one
+        if RM is not None:
+            rm = RM[:, nr]
+        else:
+            rm = modelResolutionKernel(inv, nr=nr)[nr]
+
+        cs = cs[nr]
+    else:
+        if RM is None:
+            RM = modelResolutionMatrix(inv)
+
+        rm = np.diag(RM)
+
+    if pd.dim() == 2:
+        return np.abs(cs/rm/np.pi)**0.5
+    elif pd.dim() == 3:
+        return np.abs(cs/rm*3/4/np.pi)**(1/3)
+    else: # 1D
+        return cs/rm
 
 def computeR(J, C, alpha=0.5):
     r"""Return diagional of model resolution matrix.

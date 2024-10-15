@@ -881,8 +881,10 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
 
             ValueType * buffer = new ValueType[newCapacity];
 
-            std::memcpy(buffer, data_, sizeof(ValueType) * min(capacity_, newCapacity));
-            if (data_)  delete [] data_;
+            std::memcpy(buffer, data_,
+                        sizeof(ValueType) * min(capacity_, newCapacity));
+            // std::destroy_at(data_);
+            if (data_) delete [] data_;
             data_  = buffer;
             capacity_ = newCapacity;
             //std::copy(&tmp[0], &tmp[min(tmp.size(), n)], data_);

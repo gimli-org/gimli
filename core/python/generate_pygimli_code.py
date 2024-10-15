@@ -48,11 +48,16 @@ from pygccxml import parser
 import logging
 
 from pygccxml import utils
+
+# patch for >gcc-14
+import patch_pygccxml
+
 logger = utils.loggers.cxx_parser
 logger.setLevel(logging.INFO)
 
 from pygccxml import declarations
 from pygccxml.declarations import access_type_matcher_t
+
 from pyplusplus import code_creators, module_builder, messages, decl_wrappers
 from pyplusplus.module_builder import call_policies
 from pyplusplus.decl_wrappers.doc_extractor import doc_extractor_i
@@ -60,6 +65,7 @@ from pyplusplus.decl_wrappers.doc_extractor import doc_extractor_i
 import hashlib
 
 MAIN_NAMESPACE = 'GIMLI'
+
 
 def samefile(sourcefile, destfile):
     """

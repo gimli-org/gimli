@@ -11,7 +11,7 @@ from .inversion import (Inversion, MarquardtInversion,
                         Block1DInversion,
                         LCInversion)
 
-# from .lsqrinversion import LSQRInversion  # circular import, why?
+from .lsqrinversion import LSQRInversion  # circular import, why?
 
 from .methodManager import (fit, MethodManager, MethodManager1d,
                             ParameterInversionManager,
@@ -23,7 +23,7 @@ from .timelapse import MultiFrameModelling
 
 from .linesearch import lineSearch
 
-# from .resolution import computeR
+from .resolution import resolutionMatrix
 
 from .harmfit import HarmFunctor, harmfit, harmfitNative
 

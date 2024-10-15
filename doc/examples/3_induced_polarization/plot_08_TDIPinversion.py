@@ -44,14 +44,14 @@ mesh = mt.createMesh(world, quality=34.4)
 ax, cb = pg.show(mesh, markers=True, showMesh=True, boundaryMarkers=False)
 ax.plot(pg.x(scheme), pg.y(scheme), "mo")
 ax.set_ylim(-10, 0)
-ax.set_xlim(-15, 15)
+_ = ax.set_xlim(-15, 15)
 
 # %%%
 # FD simulation
 # -------------
 # We associate different resistivities for the three layers and
 # the identical resistivity for the circle, which is the only
-# body with an imaginary component. 
+# body with an imaginary component.
 # First we create an FD data set for comparison using the normal simulate.
 #
 
@@ -61,7 +61,7 @@ rhomap = [[1, 100. + 0j],
           [4, 50.+ 1j]]
 
 dataFD = ert.simulate(mesh, res=rhomap, scheme=scheme, verbose=True)
-dataFD.show("phia", label="-apparent phase (mrad)")
+ax, cb = dataFD.show("phia", label="-apparent phase (mrad)")
 
 # %%%
 # TD simulation
@@ -77,7 +77,7 @@ res = np.array([0, 100, 50, 10, 50.])
 m = np.array([0, 0, 0, 0, 0.1])
 mgr = ert.ERTIPManager()
 dataTD = mgr.simulate(mesh=mesh, scheme=scheme, res=res, m=m)
-dataTD.show("ip", label="-apparent chargeability")
+ax, cb = dataTD.show("ip", label="-apparent chargeability")
 
 # %%%
 # Inversion
@@ -93,5 +93,5 @@ mgr = ert.ERTIPManager(dataTD)
 mgr.invert(zWeight=0.2, quality=34.4, verbose=True)
 mgr.showResult()
 ax, cb = mgr.showIPModel()
-pg.viewer.mpl.drawPLC(ax, circle, fitView=False, fillRegion=False)
-# axs = mgr.showResults()
+_ = pg.viewer.mpl.drawPLC(ax, circle, fitView=False,
+                          fillRegion=False, color="white")

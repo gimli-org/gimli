@@ -329,12 +329,15 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     # horrible wrong for german 'decimal_point': ','
     pg.checkAndFixLocaleDecimal_point(verbose=False)
 
-    hold = kwargs.pop('hold', pg.viewer.mpl.utils.__holdAxes__)
+    from pygimli.viewer.mpl.utils import __holdAxes__
+    hold = kwargs.pop('hold', __holdAxes__)
+    # hold = kwargs.pop('hold', pg.viewer.mpl.utils.__holdAxes__)
 
     if block is True:
         hold = True
 
-    lastHoldStatus = pg.viewer.mpl.utils.__holdAxes__
+    # lastHoldStatus = pg.viewer.mpl.utils.__holdAxes__
+    lastHoldStatus = __holdAxes__
     pg.viewer.mpl.hold(val=hold)
 
     gci = None

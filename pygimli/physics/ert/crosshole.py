@@ -82,21 +82,26 @@ class CrossholeERT(TimelapseERT):
         kwargs : dict
             forwarded to ert.show or showDataContainerAsMatrix
         """
+        if isinstance(v, (int, str)) and t is None:  # obviously t meant
+            t = v
+            v = "rhoa"
+
         kwargs.setdefault("cMap", "Spectral_r")
         if t is not None:
             t = self.timeIndex(t)
-            rhoa = self.DATA[:, t]
+            rhoa = self.DATA[:, t].copy()
             v = rhoa.data
             v[rhoa.mask] = np.nan
-        if len(np.unique(self.bhmap)) > 1:
+
+        if len(np.unique(self.bhmap)) == 1 or "style" in kwargs:
+            return self.data.show(v, **kwargs)
+        else:
             ax, cb = pg.viewer.mpl.showDataContainerAsMatrix(
-                self.data, x, y, v, **kwargs)
+                self.data, x=x, y=y, v=v, **kwargs)
             xx = np.nonzero(np.diff(self.bhmap))[0] + 1
             ax.set_xticks(xx)
             ax.set_yticks(xx)
             return ax, cb
-        else:
-            return self.data.show(v, **kwargs)
 
     def extractSubset(self, nbh, plane=None, name=None):
         """Extract a subset (slice) by borehole number.
@@ -120,7 +125,7 @@ class CrossholeERT(TimelapseERT):
         for tok in ["a", "b", "m", "n"]:
             bla = np.zeros(xh2.size(), dtype=bool)
             for nn in nbh:
-                bla = bla | (self.data["n"+tok] == nn)
+                bla = bla | (self.data["n"+tok] == nn - 1)
 
             good = good & bla
 
@@ -142,7 +147,7 @@ class CrossholeERT(TimelapseERT):
                             name=name)
 
     def createMesh(self, ibound=2, obound=10, quality=None, show=False,
-                   threeD=None, ref=0.25):
+                   threeD=None, ref=0.25, area=1):
         """Create a 2D mesh around boreholes.
 
         Parameters
@@ -171,14 +176,17 @@ class CrossholeERT(TimelapseERT):
                                 end=[xmax+obound, ymax+obound, 0], marker=1)
             box = mt.createCube(start=[xmin-ibound, ymin-ibound, zmin-ibound],
                                 end=[xmax+ibound, ymax+ibound, ztop],
-                                marker=2, area=1)
-            quality = quality or 1.3
+                                marker=2, area=area)
+            if quality is None:
+                quality = 1.3
         else:
             world = mt.createWorld(start=[xmin-obound, zmin-obound],
                                    end=[xmax+obound, 0.], marker=1)
             box = mt.createRectangle(start=[xmin-ibound, zmin-ibound],
-                                    end=[xmax+ibound, ztop], marker=2)
-            quality = quality or 34.4
+                                     end=[xmax+ibound, ztop], marker=2,
+                                     area=area)
+            if quality is None:
+                quality = 34.4
 
         geo = world + box
         for pos in data.sensors():

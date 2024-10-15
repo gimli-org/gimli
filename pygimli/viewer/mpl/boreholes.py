@@ -56,7 +56,9 @@ class BoreHole(object):
         if len(self.data) > 1:
             header = self.data[0][2].decode('UTF-8').split('_')
             self.borehole_id = header[0]
-            self._textoffset = float(header[1])
+            if len(header) > 1:
+                self._textoffset = float(header[1])
+
             self.inline_pos = (self.data[0][0], self.data[0][1])
             self.classes = [d[-1].decode('UTF-8') for d in self.data[1:]]
             self.unique_classes, self.class_id = \

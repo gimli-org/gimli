@@ -141,11 +141,16 @@ def showERTData(data, vals=None, **kwargs):
 
         ax, cbar = showDataContainerAsMatrix(data, v=vals, ax=ax, **kwargs)
     else:
-        try:
-            ax, cbar = drawERTData(ax, data, vals=vals, **kwargs)
-        except Exception:
-            pg.warning('Something gone wrong while drawing data. '
-                    'Try fallback with equidistant electrodes.')
+        equidistant = kwargs.pop("equidistant", False)
+        if not equidistant:
+            try:
+                ax, cbar = drawERTData(ax, data, vals=vals, **kwargs)
+            except Exception:
+                pg.warning('Something gone wrong while drawing data. '
+                           'Try fallback with equidistant electrodes.')
+                equidistant = True
+
+        if equidistant:
             d = pg.DataContainerERT(data)
             sc = data.sensorCount()
             d.setSensors(list(zip(range(sc), np.zeros(sc))))

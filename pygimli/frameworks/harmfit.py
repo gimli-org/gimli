@@ -33,9 +33,9 @@ class HarmFunctor(object):
 class HarmonicModelling(Modelling):
     """Harmonic modelling."""
 
-    def __init__(self, x=None, nc=10):
+    def __init__(self, x=None, nc=10, verbose=False):
         """Init."""
-        super().__init__()
+        super().__init__(verbose=verbose)
         self.xmin = min(x)
         self.xspread = max(x) - min(x)
         self.xs = (x - self.xmin) / self.xspread
@@ -210,25 +210,25 @@ def harmfit(y, x=None, error=None, nc=42, resample=None,  # lam=0.1,
 
     Parameters
     ----------
-    y : 1d-array - values to be fitted
-
-    x : 1d-array(len(y)) - data abscissa data. default: [0 .. len(y))
-
-    error : 1d-array(len(y)) error of y. default (absolute error = 0.01)
-
-    nc : int - Number of harmonic coefficients
-
-    resample : 1d-array - resample y to x using fitting coeffients
-
-    window : int - just fit data inside window bounds
+    y : 1d-array
+        values to be fitted
+    x : 1d-array(len(y))
+        data abscissa data. default: [0 .. len(y))
+    error : 1d-array(len(y))
+        error of y. default (absolute error = 0.01)
+    nc : int
+        Number of harmonic coefficients
+    resample : 1d-array
+        resample y to x using fitting coeffients
+    window : int
+        just fit data inside window bounds
 
     Returns
     -------
-    response : 1d-array(len(resample) or len(x))
+    response : 1d-array of len(resample) or len(x)
         smoothed values
-
     inv : pg.Inversion
-        coefficients : 1d-array - fitting coefficients
+        inversion instance, coefficients are in inv.model
     """
     if x is None:
         x = np.arange(len(y))
@@ -243,7 +243,7 @@ def harmfit(y, x=None, error=None, nc=42, resample=None,  # lam=0.1,
         if error is not None:
             error = error(idx)
 
-    fop = HarmonicModelling(xToFit, nc=nc)
+    fop = HarmonicModelling(xToFit, nc=nc, verbose=verbose)
     inv = MarquardtInversion(fop=fop, verbose=verbose)
     inv.modelTrans = pg.trans.Trans()
     if error is None:

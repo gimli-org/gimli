@@ -12,8 +12,8 @@ numpy>=1.25
 # needed
 matplotlib
 pyqt5 #pyqtagg backend
-pyplusplus==1.8.4
-pygccxml==2.0.0
+pyplusplus==1.8.5
+pygccxml==2.5.0
 
 # needed to run
 matplotlib>=3.7,<3.9

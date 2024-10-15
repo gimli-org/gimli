@@ -221,7 +221,6 @@ def __Mesh_getVal(self, key):
     if self.haveData(key):
         return self.data(key)
     else:
-
         uniqueNames = {}
         for d in self.dataMap().keys():
             #print(d)

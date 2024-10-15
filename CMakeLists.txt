@@ -98,7 +98,7 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
 
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -ansi -pedantic -fno-omit-frame-pointer -Wall")
     #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -std=c++11 -ansi -pedantic -fno-omit-frame-pointer -Wall")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fopenmp")
+    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fopenmp")
 
     ### debug settings
     # run with -DCMAKE_BUILD_TYPE=Debug
@@ -222,7 +222,7 @@ endif()
 find_package(Threads REQUIRED)
 
 ################################################################################
-#   python
+#  Python
 ################################################################################
 if (NOT PYVERSION)
     # Q&D python version guess .. while Python_FIND_STRATEGY LOCATION does not work in every case
@@ -280,7 +280,7 @@ message(STATUS "Python_NumPy: ${Python_NumPy_FOUND}, ${Python_NumPy_INCLUDE_DIRS
 
 
 ################################################################################
-#   boost
+#  Boost
 ################################################################################
 cprint(green "********** Boost.Python settings ***********")
 #set(Boost_USE_STATIC_LIBS ON)
@@ -471,6 +471,9 @@ endif()
 #   misc third party stuff
 ################################################################################
 cprint(green "********** Misc settings ***********")
+
+find_package(OpenMP)
+
 # Find packages that CHOLMOD depends on
 set(CMAKE_LIBRARY_PATH ${EXTERNAL_DIR}/lib $ENV{EXTERNAL_DIR}/lib ${CMAKE_LIBRARY_PATH})
 
@@ -590,22 +593,25 @@ endif()
 find_package(UMFPACK REQUIRED)
 find_package(CHOLMOD REQUIRED)
 
-if (NOT AVOID_CPPUNIT)
+if (NOT NOCPPUNIT)
     find_package(CppUnit)
     if (CPPUNIT_FOUND)
         option (LIBGIMLI_BUILD_TESTS "Build unittests" ON)
     endif (CPPUNIT_FOUND)
 endif()
 
-if (NOT AVOID_READPROC)
+if (NOT NOREADPROC)
     if(WIN32)
-        set(Readproc_FOUND FALSE)
+        set(READPROC_FOUND FALSE)
     else()
         find_package(readproc)
+        message("READPROC_FOUND ${READPROC_FOUND}")
     endif()
 else()
-    set(Readproc_FOUND FALSE)
+    set(READPROC_FOUND FALSE)
 endif()
+
+#exit()
 
 if (NOT CASTER)
     set(CASTER "castxml")

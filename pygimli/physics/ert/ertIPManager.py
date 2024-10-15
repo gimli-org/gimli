@@ -1,6 +1,8 @@
 """ERT manager (derived) with FD or TD IP inversion."""
+import numpy as np
 import pygimli as pg
 from .ertManager import ERTManager
+from .ertModelling import ERTModelling
 from .ipModelling import DCIPMModelling
 
 
@@ -32,25 +34,68 @@ class ERTIPManager(ERTManager):
             ipdata /= 1000
         mesh0 = pg.Mesh(self.paraDomain)
         mesh0.setCellMarkers(mesh0.cellCount())
-        fopIP = DCIPMModelling(self.fop, mesh0, self.model, response=self.inv.response)
+        fopIP = DCIPMModelling(self.fop, mesh0, self.model,
+                               response=self.inv.response)
         fopIP.createRefinedForwardMesh(True)
-        invIP = pg.Inversion(fop=fopIP, verbose=True)
-        invIP.modelTrans = pg.trans.TransLogLU(0.0, 1.0)
+        self.invIP = pg.Inversion(fop=fopIP, verbose=True)
+        self.invIP.modelTrans = pg.trans.TransLogLU(0.0, 1.0)
         relErr = kwargs.pop("relativeError", 0.03)
         absErr = kwargs.pop("absoluteError", 0.001)
         errorIP = pg.Vector(self.data.size(), relErr) + absErr / pg.abs(ipdata)
         kwargs.setdefault("lam", 100)
         kwargs.setdefault("startModel", pg.median(ipdata))
         kwargs.setdefault("verbose", True)
-        self.modelIP = invIP.run(ipdata, errorIP, **kwargs)
+        self.modelIP = self.invIP.run(ipdata, errorIP, **kwargs)
 
-    def invertFDIP(self, **kwargs):
+    def invertFDIP(self, ipdata="ip", **kwargs):
         """IP inversion in frequency domain."""
-        self.modelIP = None  # naive IP inversion
+        data = kwargs.pop("data", self.data)
+        if isinstance(ipdata, str):
+            ipdata = self.data[ipdata]
+
+        if "iperr" in kwargs:
+            iperr = kwargs["iperr"]
+        elif data.haveData("iperr"):
+            iperr = data["iperr"]
+        else:
+            iperr = 1
+
+        if max(ipdata) > 3.15:  # mrad
+            ipdata /= 1000
+        if iperr >= 1:
+            iperr /= 1000
+
+        complexData = pg.utils.toComplex(data["rhoa"], ipdata)
+        datavec = pg.cat(complexData.real, complexData.imag)
+        errvec = pg.cat(data["err"], iperr / (pg.abs(ipdata)+1e-4))
+
+        self.fopC = ERTModelling(sr=kwargs.pop("sr", False), verbose=True)
+        self.fopC.setComplex(True)
+        self.fopC.setData(self.data)
+        self.fopC.setMesh(self.mesh)#, ignoreRegionManager=True)
+        self.fopC.setDefaultBackground()
+        ipmodel = pg.RVector(len(self.model), np.median(self.model) * 0.001)
+        kwargs.setdefault("startModel", pg.cat(self.model, ipmodel))
+        self.invIP = pg.Inversion(fop=self.fopC)  # , verbose=True, debug=True)
+        self.invIP.dataTrans = kwargs.pop("dataTrans",
+                                          "log" if min(datavec) > 0 else "lin")
+        self.invIP.modelTrans = "log"
+        kwargs.setdefault("verbose", True)
+        kwargs.setdefault("isReference", True)  # "final phase improvement"
+        self.modelC = pg.utils.toComplex(self.invIP.run(
+            datavec, relativeError=errvec, **kwargs))
+        self.modelIP = np.angle(self.modelC)  # mrad
+
+    def showDCModel(self, **kwargs):
+        """Explicitly show absolute of complex-valued inversion."""
+        if self.isfd:
+            return self.showResult(np.abs(self.modelC), **kwargs)
+        else:
+            return self.showModel(**kwargs)
 
     def showIPModel(self, **kwargs):
         """"Show IP model."""
-        kwargs.setdefault("logSpace", False)
+        kwargs.setdefault("logScale", False)
         if self.isfd:
             kwargs.setdefault("label", r"$\phi$ (mrad)")
             kwargs.setdefault("cMap", "viridis")
@@ -87,15 +132,19 @@ class ERTIPManager(ERTManager):
     def invert(self, *args, **kwargs):
         """Carry out DC and IP inversion."""
         super().invert(*args, **kwargs)  # DC first (not needed for FD)
+        self.invertIP(**kwargs)
+
+    def invertIP(self, **kwargs):
+        """Invert IP data according to FD/TD settings."""
         if self.isfd:
-            self.invertFDIP()
+            self.invertFDIP(**kwargs)
         else:
-            self.invertTDIP()
+            self.invertTDIP(**kwargs)
 
     def invertDC(self, *args, **kwargs):
         # Needed if we want to do ERT first without the IP and do IP later
         super().invert(*args, **kwargs)
-    
+
     def simulate(self, mesh, res, m, scheme=None, **kwargs):
         """."""
         from pygimli.physics.ert import ERTModelling
