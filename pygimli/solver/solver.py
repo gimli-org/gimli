@@ -1169,7 +1169,7 @@ class LinSolver(object):
 
     def factorize_PG(self, mat):
         """"""
-        self._m = pg.utils.toSparseMatrix(mat)
+        self._m = pg.matrix.toSparseMatrix(mat)
         self._desiredArrayType = pg.Vector
         self._solver = pg.core.LinSolver(self._m, verbose=self.verbose)
 
@@ -1261,7 +1261,7 @@ def linSolve(mat, b, solver=None, verbose=False, **kwargs):
         # core proxy to cholmod and LDL for float and umfpack for complex
         if reorder is True:
             pg.warning('Matrix reordering for pg core solver not yet implemented')
-        _m = pg.utils.toSparseMatrix(mat)
+        _m = pg.matrix.asSparseMatrix(mat)
 
         solver = pg.core.LinSolver(_m, verbose=verbose)
 
@@ -2060,7 +2060,7 @@ def createStiffnessMatrix(mesh, a=None, isVector=False):
     # if isComplex is True:
     #     return pg.matrix.CSparseMatrix(A)
 
-    return pg.utils.toSparseMatrix(A)
+    return pg.utils.asSparseMatrix(A)
 
 
 def createMassMatrix(mesh, b=None):

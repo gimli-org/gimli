@@ -29,8 +29,8 @@ from .core.matrix import (BlockMatrix, Matrix, SparseMapMatrix, SparseMatrix)
 
 from .core.logger import (_, _d, _g, _r, _y, _b, critical, d, debug,
                           deprecated, renameKwarg, renameArg,
-                          error, info, debug, setDebug, setLogLevel, setVerbose, v,
-                          verbose, warn)
+                          error, info, debug, setDebug, setLogLevel,
+                          setVerbose, v, verbose, warn)
 
 warning = warn  # conveniance
 

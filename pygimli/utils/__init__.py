@@ -24,13 +24,6 @@ from .hankel import hankelFC
 
 from .postinversion import iterateBounds, modelCovariance, modelResolutionMatrix
 
-# for historical reasons .. move me!
-from pygimli.core import (convertCRSIndex2Map, sparseMatrix2Array,
-                          sparseMatrix2coo, sparseMatrix2csr, sparseMatrix2Dense, sparseMatrix2csc,
-                          toSparseMatrix, toSparseMapMatrix,
-                          toCSC, toCSR, toCOO,
-                          toDense, reduceEntries)
-
 from .units import (unit, cmap)
 from .units import cmap as cMap # for compatibilty (will be removed)
 

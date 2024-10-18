@@ -11,18 +11,16 @@ from pygimli.core import (CMatrix, CSparseMapMatrix, CSparseMatrix,
                           RSparseMapMatrix, RSparseMatrix, ElementMatrix,
                           MatrixBase)
 
+from pygimli.core.matrix import (asCSC, asCSR, asCOO,
+                                 asSparseMapMatrix, asSparseMatrix,
+                                 asDense, reduceEntries, removeEntries)
+
 IdentityMatrix = pgcore.IdentityMatrix
 Matrix = pgcore.RMatrix
 SparseMatrix = pgcore.RSparseMatrix
 SparseMapMatrix = pgcore.RSparseMapMatrix
 BlockMatrix = pgcore.RBlockMatrix
 
-from pygimli.core import (convertCRSIndex2Map, sparseMatrix2Array,
-                     sparseMatrix2coo, sparseMatrix2csr, 
-                     sparseMatrix2Dense, sparseMatrix2csc, 
-                     toSparseMatrix, toSparseMapMatrix,
-                     toCSC, toCSR, toCOO,
-                     toDense, reduceEntries, removeEntries,)
 
 class ScaledMatrix(MatrixBase):
     """Super-simple matrix with scaling factor B=A*s."""
@@ -55,7 +53,7 @@ class TransposedMatrix(MatrixBase):
     def __init__(self, A, verbose=False):
         self._A = A
         super().__init__(self._A.cols(), self._A.rows(), verbose)
-        
+
     # def rows(self):
     #     """Return number of rows (cols of underlying matrix)."""
     #     return self._A.cols()
@@ -79,7 +77,7 @@ class SquaredMatrix(MatrixBase):
     def __init__(self, A, verbose=False):
         self._A = A
         super().__init__(self._A.cols(), self._A.cols(), verbose)
-        
+
     # def rows(self):
     #     """Return number of rows (cols of underlying matrix)."""
     #     return self._A.cols()
@@ -140,7 +138,7 @@ class RealNumpyMatrix(MatrixBase):
                 self.M = np.copy(mat)
             else:
                 self.M = mat
-        
+
         super().__init__(np.shape(self.M)[0], np.shape(self.M)[1], verbose=False)
 
     def __repr__(self):
@@ -390,7 +388,7 @@ class Mult2Matrix(MatrixBase):
         self.A = A
         self.B = B
         assert A.cols() == B.rows()
-      
+
         super().__init__(self.A.rows(), self.B.cols(), verbose=True)
 
     def mult(self, x):
@@ -674,7 +672,7 @@ class KroneckerMatrix(MatrixBase):
         self.no = outer.rows()
         self.mi = inner.cols()
         self.mo = outer.cols()
-        self.resize(self._I.rows() * self._O.rows(), 
+        self.resize(self._I.rows() * self._O.rows(),
                     self._I.cols() * self._O.cols())
 
     def mult(self, x):
@@ -799,13 +797,13 @@ class GeostatisticConstraintsMatrix(MatrixBase):
     def transMult(self, x):
         return self.Cm05.transMult(x) - self.spur * x
 
-    # 231017 not longer virtual cols and rows .. use self.resize() for this 
-    # comment will be removed in 2.0 
+    # 231017 not longer virtual cols and rows .. use self.resize() for this
+    # comment will be removed in 2.0
     #
     # def cols(self):
     #     return self.nModel
-    # 231017 not longer virtual cols and rows .. use self.resize() for this 
-    # comment will be removed in 2.0 
+    # 231017 not longer virtual cols and rows .. use self.resize() for this
+    # comment will be removed in 2.0
     #
     # def rows(self):
     #     return self.nModel

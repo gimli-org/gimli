@@ -68,6 +68,8 @@ def show(obj=None, data=None, **kwargs):
     """
     def _removeFigHeader(ax):
         ## remove annoying 'Figure Nr.' for ipympl widgets
+        if isinstance(ax, np.ndarray):
+            return _removeFigHeader(ax[0])
         ax.figure.canvas.header_visible = False
 
     if "axes" in kwargs:  # remove me in 1.2 #20200515

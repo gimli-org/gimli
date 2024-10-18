@@ -158,7 +158,7 @@ def __ElementMatrix_str(self):
             except:
                 pass
             warn('invalid element multR. should be evaluated with multE?')
-            return '' 
+            return ''
 
 
         else:
@@ -174,7 +174,7 @@ pgcore.CMatrix.__repr__ = __CMatrix_str
 pgcore.ElementMatrix.__repr__ = __ElementMatrix_str
 
 
-# for copy by reference objects we need to keep the owner objects alive, i.e. increase the reference counter 
+# for copy by reference objects we need to keep the owner objects alive, i.e. increase the reference counter
 __ElementMatrix_mat = pgcore.ElementMatrix.mat
 def __ElementMatrix_mat_GC__(self):
     R = __ElementMatrix_mat(self)
@@ -183,7 +183,7 @@ def __ElementMatrix_mat_GC__(self):
 pgcore.ElementMatrix.mat = __ElementMatrix_mat_GC__
 
 
-# temporary object for debugging 
+# temporary object for debugging
 # __TElementMatrix_mat = pgcore.TestEM.mat
 # def __TElementMatrix_mat_GC__(self):
 #     R = __TElementMatrix_mat(self)
@@ -328,7 +328,7 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
                          type(M))
 
         from scipy.sparse import spmatrix
-                
+
         if isinstance(M, spmatrix):
             M = toSparseMatrix(M)
 
@@ -563,9 +563,9 @@ def sparseMatrix2csr(A):
         #                    C.vecRowIdx(),
         #                    C.vecColPtr()))
     elif isinstance(A, SparseMatrix):
-        
-        return csr_matrix((A.vecVals().array(), 
-                           A.vecRowIdx().array(), 
+
+        return csr_matrix((A.vecVals().array(),
+                           A.vecRowIdx().array(),
                            A.vecColPtr().array()), shape=A.shape)
 
     elif isinstance(A, CSparseMatrix):
@@ -596,7 +596,7 @@ def sparseMatrix2csc(A):
         Matrix to convert into.
     """
     #optImport(scipy.sparse, requiredFor="toCRC_matrix")
-    
+
     if isinstance(A, CSparseMapMatrix):
         return toCOO(A).tocsc()
     if isinstance(A, SparseMapMatrix):
@@ -626,7 +626,7 @@ def sparseMatrix2coo(A, rowOffset=0, colOffset=0):
     mat: scipy.coo_matrix
         Matrix to convert into.
     """
-    
+
     vals = Vector()
     rows = IndexArray([0])
     cols = IndexArray([0])
@@ -720,10 +720,11 @@ def sparseMatrix2Dense(matrix):
     return mat
 
 toDense = sparseMatrix2Dense
+asDense = sparseMatrix2Dense
 
 def removeEntries(A, rows=None, cols=None):
     """Remove rows and columns from a sparse matrix.
-    
+
     Convert matrix into SCR
 
     """
@@ -751,7 +752,7 @@ def removeEntries(A, rows=None, cols=None):
     elif len(cols) > 0:
         cMask[cols] = False
         return A[:,cMask]
-    
+
     return A
 
 def reduceEntries(A, idx):

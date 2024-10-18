@@ -1553,11 +1553,6 @@ from .trans import *  # why do we need that?
 from .matrix import (BlockMatrix, SparseMatrix, SparseMapMatrix, IdentityMatrix,
                      Matrix)
 
-from .matrix import (convertCRSIndex2Map, sparseMatrix2Array,
-                     sparseMatrix2coo, sparseMatrix2csr,
-                     sparseMatrix2Dense, sparseMatrix2csc,
-                     toSparseMatrix, toSparseMapMatrix,
-                     toCSC, toCSR, toCOO,
-                     asCSC, asCSR, asCOO, asSparseMapMatrix, asSparseMatrix,
-                     toDense, reduceEntries, removeEntries,
+from .matrix import (asCSC, asCSR, asCOO, asSparseMapMatrix, asSparseMatrix,
+                     asDense, reduceEntries, removeEntries,
                      )
