@@ -40,8 +40,7 @@ class ProgressBar(object):
     console. In IPython Notebooks a 'tqdm' progressbar instance is created and
     can be configured with appropriate keyword arguments.
     """
-
-    def __init__(self, its, width=80, sign=":", **kwargs):
+    def __init__(self, its, width=60, sign=":", **kwargs):
         """Create animated text-based progress bar.
 
         Todo
@@ -53,7 +52,7 @@ class ProgressBar(object):
         its : int
             Number of iterations of the process.
         width : int
-            Width of the ProgressBar, default is 80.
+            Width of the ProgressBar, default is 60.
         sign : str
             Sign used to fill the bar.
 

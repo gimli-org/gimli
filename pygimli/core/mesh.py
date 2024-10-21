@@ -475,7 +475,7 @@ def __Mesh_findPaths__(self, bounds):
         S.addVal(b.shape().node(1).id(), b.shape().node(0).id(), 2.0)
         S.addVal(b.shape().node(0).id(), b.shape().node(1).id(), 1.0)
 
-    S = scipy.sparse.dok_matrix(pg.utils.toCOO(S))
+    S = scipy.sparse.dok_matrix(pg.matrix.asCOO(S))
 
     paths = []
 
