@@ -13,7 +13,8 @@ from pygimli.core import (CMatrix, CSparseMapMatrix, CSparseMatrix,
 
 from pygimli.core.matrix import (asCSC, asCSR, asCOO,
                                  asSparseMapMatrix, asSparseMatrix,
-                                 asDense, reduceEntries, removeEntries)
+                                 asDense, sparseMatrix2Array,
+                                 reduceEntries, removeEntries)
 
 IdentityMatrix = pgcore.IdentityMatrix
 Matrix = pgcore.RMatrix

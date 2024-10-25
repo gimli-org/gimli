@@ -213,7 +213,7 @@ def __SparseMatrix_str(self):
     """Show entries of an ElementMatrix."""
     import pygimli as pg
 
-    S = pg.utils.toSparseMapMatrix(self)
+    S = pg.matrix.asSparseMapMatrix(self)
     if S.cols() == 0 and S.rows() == 0:
         return 'Empty ElementMatrix\n'
 
@@ -223,7 +223,7 @@ def __SparseMatrix_str(self):
     if S.cols() < 25:
         s += '\n'
 
-        M = pg.utils.toDense(self)
+        M = pg.matrix.asDense(self)
         for mi in M:
             for v in mi:
                 if (abs(v) < 1e-12 and abs(v) > 0):
