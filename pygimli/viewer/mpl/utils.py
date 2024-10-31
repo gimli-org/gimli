@@ -278,7 +278,7 @@ def createAnimation(fig, animate, nFrames, dpi, out):
     """
     from matplotlib.animation import FuncAnimation
     anim = FuncAnimation(fig, animate, frames=nFrames,
-                                   interval=0.001, repeat=False)
+                         interval=0.001, repeat=False)
     anim.save(out + ".mp4", writer=None, fps=20, dpi=dpi, codec=None,
               bitrate=24 * 1024, extra_args=None, metadata=None,
               extra_anim=None, savefig_kwargs=None)

@@ -162,7 +162,7 @@ def show(obj=None, data=None, **kwargs):
 
 def showMesh(mesh, data=None, block=False, colorBar=None,
              label=None, coverage=None, ax=None, savefig=None,
-             showMesh=False, showBoundary=None,
+             showMesh=False, showBoundary=None, factor=1,
              markers=False, **kwargs):
     """2D Mesh visualization.
 
@@ -274,7 +274,6 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     cBar : matplotlib.colorbar
     """
     renameKwarg('cmap', 'cMap', kwargs)
-
     cMap = kwargs.pop('cMap', 'viridis')
     cBarOrientation = kwargs.pop('orientation', 'horizontal')
     replaceData = kwargs.pop('replaceData', False)
@@ -324,18 +323,23 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             kwargs["cMax"] = len(uniquemarkers) - 0.5
             data = np.arange(len(uniquemarkers))[uniqueidx]
 
+    if isinstance(data, str):
+        if mesh.haveData(data):
+            print(factor)
+            data = mesh[data] * factor
+        else:
+            raise IndexError("Mesh does not contain field ", data)
+
     if data is None:
         showMesh = True
         mesh.createNeighborInfos()
         if showBoundary is None:
             showBoundary = True
-
     elif isinstance(data, pg.core.stdVectorRVector3):
         drawSensors(ax, data, **kwargs)
     elif isinstance(data, pg.PosVector):
         drawStreams(ax, mesh, data, **kwargs)
     else:
-
         # check for map like data=[[marker, val], ....]
         if isinstance(data, list) and \
                 isinstance(data[0], list) and isinstance(data[0][0], int):
@@ -697,3 +701,9 @@ def showAnimation(mesh, data, ax=None, **kwargs):
                                                               animate,
                                                               frames=len(data))
     return __Animation_Keeper__
+
+def __Mesh__show__(self, data=None, **kwargs):
+    """Show the mesh with all possible keyword arguments."""
+    return showMesh(self, data=data, **kwargs)
+
+pg.Mesh.show = __Mesh__show__

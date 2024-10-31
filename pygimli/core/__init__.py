@@ -731,6 +731,8 @@ pgcore.BVector.__array__ = __RVectorArrayCall__
 pgcore.R3Vector.__array__ = __RVectorArrayCall__
 pgcore.RVector3.__array__ = __RVector3ArrayCall__
 
+pgcore.R3Vector.append = pgcore.R3Vector.push_back
+
 # see bug description
 pgcore.CVector.__array__ = __CVectorArrayCall__
 
