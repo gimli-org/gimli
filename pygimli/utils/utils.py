@@ -402,7 +402,10 @@ def prettyTime(t):
 
 
 def niceLogspace(vMin, vMax, nDec=10):
-    """Nice logarithmic space from decade < vMin to decade > vMax.
+    """Nice logarithmic space.
+
+    Return nice logarithmic space from decade < vMin to decade > vMax.
+    If vMin > vMax the output is reversed.
 
     Parameters
     ----------
@@ -422,6 +425,9 @@ def niceLogspace(vMin, vMax, nDec=10):
     >>> v1 = niceLogspace(vMin=0.09, vMax=0.11, nDec=1)
     >>> print(v1)
     [0.01 0.1  1.  ]
+    >>> v1 = niceLogspace(vMin=0.9, vMax=2e-2, nDec=1)
+    >>> print(v1)
+    [1.   0.1  0.01]
     >>> v1 = niceLogspace(vMin=0.09, vMax=0.11, nDec=10)
     >>> print(len(v1))
     21
@@ -431,7 +437,15 @@ def niceLogspace(vMin, vMax, nDec=10):
      0.15848932 0.19952623 0.25118864 0.31622777 0.39810717 0.50118723
      0.63095734 0.79432823 1.        ]
     """
-    if vMin > vMax or vMin < 1e-12:
+    reverse = False
+
+    if vMin > vMax:
+        t = vMax
+        vMax = vMin
+        vMin = t
+        reverse = True
+
+    if vMin < 1e-12:
         print("vMin:", vMin, "vMax", vMax)
         raise Exception('vMin > vMax or vMin <= 0.')
 
@@ -445,7 +459,9 @@ def niceLogspace(vMin, vMax, nDec=10):
 
     q = 10.**(1. / nDec)
 
-    return vMin * q**np.arange(n)
+    if reverse:
+        return (vMin*q**np.arange(n))[::-1]
+    return vMin*q**np.arange(n)
 
 
 def grange(start, end, dx=0, n=0, log=False):
