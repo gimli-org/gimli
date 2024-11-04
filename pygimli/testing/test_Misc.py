@@ -268,6 +268,30 @@ class TestMisc(unittest.TestCase):
         pg.core.showSizes()
 
 
+    def test_Table(self):
+
+        r1 = [1, 2, 3]
+        r2 = [4, 5, 6]
+        # default is per row
+        print(pg.Table([r1, r2], ['c1', 'c2', 'c3']))
+
+        c1 = [1, 2, 3]
+        c2 = [4, 5, 6]
+        print(pg.Table([c1, c1], ['r1', 'r2'], transpose=True))
+
+        # test auto transpose for elementcount of the header
+        c1 = [1, 2, 3]
+        c2 = [4, 5, 6]
+        print(pg.Table([c1, c1], ['r1', 'r2']))
+
+        r1 = [1, 2, 3]
+        r2 = [4, 5, 6]
+        # default is per row
+        print(pg.Table(r1))
+        print(pg.Table(r1, transpose=True))
+        print(pg.Table(r1, ['a']))
+
+
 if __name__ == '__main__':
     pg.core.setDeepDebug(0)
     unittest.main()

@@ -256,6 +256,7 @@ def prettify(value, roundValue=False, mathtex=False):
             value, type(value))
     return value
 
+
 def prettyFloat(value, roundValue=None, mathtex=False):
     """Return prettified string for a float value.
 
@@ -1028,12 +1029,13 @@ class Report(ScoobyReport):
 
 
 class Table(object):
-    """Simple table for nice formated output
+    """Simple table for nice formated output.
     """
     def __init__(self, table, header=None, align=None, pn=None,
-                 transpose:bool=False):
-
+                 transpose:bool=None):
         """
+        Create a simple but shiny table.
+
         Arguments
         ---------
         table: [list,]
@@ -1042,17 +1044,35 @@ class Table(object):
             Header row.
         align: string
             Alignment string, for each column either 'l', 'r', or 'c'.
-        transpose: bool [False]
-            Transpose table.
+        transpose: bool [None]
+            Transpose table. If not set try to check need to transpose from 
+            header length.
         """
         self.table = table
         self.header = header
         self.align = align
         self.pn = pn
 
-        if transpose is True:
-            self.table = list(map(list, zip(*self.table)))
+        self.rows = len(table)
+        self.cols = 1
 
+        if hasattr(table[0], '__iter__'):
+            self.cols = len(table[0])
+        else:
+            self.cols = self.rows
+            self.rows = 1
+            self.table = [self.table]
+
+        if transpose is None:
+            transpose = False
+            if hasattr(header, '__iter__'):
+                #pg._r(self.rows, self.cols, ':', len(header))
+                if len(header) == self.rows:
+                    transpose = True
+        
+        #pg._g(transpose)
+        if transpose:
+            self.table = list(map(list, zip(*self.table)))
 
         if self.pn is not None:
             for i, row in enumerate(self.table):
