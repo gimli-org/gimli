@@ -1044,8 +1044,10 @@ class Table(object):
             Header row.
         align: string
             Alignment string, for each column either 'l', 'r', or 'c'.
+        pn: int|list[None]
+            Prettify numbers in columns.
         transpose: bool [None]
-            Transpose table. If not set try to check need to transpose from 
+            Transpose table. If not set try to check need to transpose from
             header length.
         """
         self.table = table
@@ -1069,15 +1071,24 @@ class Table(object):
                 #pg._r(self.rows, self.cols, ':', len(header))
                 if len(header) == self.rows:
                     transpose = True
-        
+
         #pg._g(transpose)
         if transpose:
             self.table = list(map(list, zip(*self.table)))
 
+        # for i, row in enumerate(self.table):
+        #     for j, c in enumerate(row):
+        #         if isinstance(c, float) and c != 0.0:
+        #             self.table[i][j] = f'{pg.pf(c)}'
+
         if self.pn is not None:
             for i, row in enumerate(self.table):
                 #self.table[i][self.pn]=f'${pg.pf(row[self.pn], mathtex=True)}$'
-                self.table[i][self.pn] = f'{pg.pf(row[self.pn])}'
+                if isinstance(self.pn, list):
+                    for j in self.pn:
+                        self.table[i][j] = f'{pg.pf(row[j])}'
+                else:
+                    self.table[i][self.pn] = f'{pg.pf(row[self.pn])}'
 
 
     @property
@@ -1195,7 +1206,7 @@ class Table(object):
                 self.table[i][j] = _m2r(r)
 
         md = tabulate(self.table, headers=self.header,
-                    tablefmt="rst", **self.fmt)
+                      tablefmt="rst", **self.fmt)
 
         return SG_RST_TABLE.format(indent(md, ''))
 
