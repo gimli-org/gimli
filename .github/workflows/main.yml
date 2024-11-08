@@ -20,6 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          fetch-depth: 0 # checks out all branches and tags
           path: source
       - name: Running cmake
         run: |
