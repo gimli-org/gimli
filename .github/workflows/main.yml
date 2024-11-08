@@ -1,0 +1,32 @@
+name: pyGIMLi CI
+
+env:
+  # Current bug in openblas core detection: https://stackoverflow.com/a/66057286
+  OPENBLAS_CORETYPE: ARMV8
+  GIMLI_NUM_THREADS: 4
+  OMP_THREAD_LIMIT: 4
+
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  pgcore:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: source
+      - name: Running cmake
+        run: |
+          mkdir -p build
+          cd build
+          cmake ../source
+      - name: Build gimli
+        run: make -j 8 gimli
+      - name: Build python bindings
+        run: make pygimli J=4
