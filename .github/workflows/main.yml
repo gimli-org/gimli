@@ -26,8 +26,10 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          cmake ../source
+          CC=/usr/bin/clang CXX=/usr/bin/clang++ cmake ../source
       - name: Build gimli
         run: make -j 8 gimli
+        working-directory: build
       - name: Build python bindings
         run: make pygimli J=4
+        working-directory: build
