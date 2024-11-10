@@ -40,7 +40,7 @@ jobs:
         working-directory: source
       - name: Install as development package
         working-directory: source
-        run: pip install -e .
+        run: pip install -e . --break-system-packages --user # better to use virtual enviroment in the future
   docs:
       name: Build website with examples
       needs: pgtest
