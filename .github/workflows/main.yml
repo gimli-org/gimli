@@ -1,11 +1,5 @@
 name: pyGIMLi CI
 
-env:
-  # Current bug in openblas core detection: https://stackoverflow.com/a/66057286
-  OPENBLAS_CORETYPE: ARMV8
-  GIMLI_NUM_THREADS: 4
-  OMP_THREAD_LIMIT: 4
-
 on:
   push:
     branches:
@@ -16,6 +10,7 @@ on:
 
 jobs:
   pgcore:
+    name: Building pgcore & bindings
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
@@ -34,9 +29,43 @@ jobs:
         run: make pygimli J=4
         working-directory: build
   pgtest:
+    name: Running tests
     runs-on: self-hosted
     needs: pgcore
+    env:
+      OPENBLAS_CORETYPE: "ARMV8" # current bug in OpenBlas core detection
     steps:
-      - name: Run Python tests
-        run: OPENBLAS_CORETYPE="ARMV8" python3 -c "import pygimli; pygimli.test(show=False, onlydoctests=True)"
+      - name: Run pg.test()
+        run: python3 -c "import pygimli; pygimli.test(show=False)"
         working-directory: source
+      - name: Install as development package
+        working-directory: source
+        run: pip install -e .
+  docs:
+      name: Build website with examples
+      needs: pgtest
+      runs-on: self-hosted
+      env:
+        DISPLAY: ":99.0"
+        PYVISTA_OFF_SCREEN: True
+      steps:
+        - name: Set up headless display
+          uses: pyvista/setup-headless-display-action@v2
+        - name: Running sphinx
+          working-directory: build
+          run: make doc
+  merging:
+    name: Merging dev into master
+    runs-on: self-hosted
+    needs: docs
+    if: github.ref == 'refs/heads/dev' # Only merge from dev
+    steps:
+      - name: Merge into master
+        uses: devmasx/merge-branch@master
+        with:
+          type: now
+          target_branch: master
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+    
+        
+  
