@@ -101,6 +101,22 @@ class Modelling(pg.core.ModellingBase):
         else:
             return pg.utils.strHash(str(type(self)))
 
+    def Sx(self, x):
+        """Right-hand side multiplication of Jacobian J*x.
+
+        By default, uses self.jacobian().mult(x)
+        Overwrite for efficient use with gradient-type inversion.
+        """
+        return self.jacobian().mult(x)
+
+    def STy(self, y):
+        """Right-hand side multiplication of Jacobian J.T*y.
+
+        By default, uses self.jacobian().transMult(x)
+        Overwrite for efficient use with gradient-type inversion.
+        """
+        return self.jacobian().transMult(y)
+
     def __call__(self, *args, **kwargs):
         """Call forward operator."""
         return self.response(*args, **kwargs)
@@ -589,7 +605,7 @@ class MeshModelling(Modelling):
         return self._pd
 
     def setCustomConstraints(self, C):
-        """ Set custom constraints matrix for lazy evaluation. 
+        """ Set custom constraints matrix for lazy evaluation.
 
         To remove them set it to 'None' again.
         """

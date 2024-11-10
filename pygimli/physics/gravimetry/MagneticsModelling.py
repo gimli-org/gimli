@@ -7,7 +7,7 @@ from .kernel import SolveGravMagHolstein
 class MagneticsModelling(pg.frameworks.MeshModelling):
     """Magnetics modelling operator using Holstein (2007)."""
 
-    def __init__(self, mesh=None, points=None, cmp=["TFA"], igrf=[50, 13], foot=None):
+    def __init__(self, mesh=None, points=None, cmp=["TFA"], igrf=[50, 13]):
         """Setup forward operator.
 
         Parameters
@@ -40,7 +40,6 @@ class MagneticsModelling(pg.frameworks.MeshModelling):
                 self.igrf = pyIGRF.igrf_value(*igrf)
             else:
                 self.igrf = igrf
-        self.footprint = foot
         self.kernel = None
         self.J = pg.matrix.BlockMatrix()
         if self.mesh_ is not None:
@@ -53,8 +52,8 @@ class MagneticsModelling(pg.frameworks.MeshModelling):
                                   -np.abs(self.sensorPositions[:, 2])])
         self.kernel = SolveGravMagHolstein(self.mesh().NED(),
                                            pnts=points, igrf=self.igrf,
-                                           cmp=self.components,
-                                           foot=self.footprint)
+                                           cmp=self.components)
+
         self.J = pg.matrix.BlockMatrix()
         self.Ki = []
         self.Ji = []

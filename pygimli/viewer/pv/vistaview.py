@@ -41,8 +41,8 @@ def showMesh3DFallback(mesh, data, **kwargs):
 
     if ax is None or not isinstance(ax, Axes3D):
         fig = plt.figure()
-        ax = fig.add_subplot(projection="3d", proj_type="persp")
-        # ax = fig.add_subplot(projection='3d', proj_type="ortho")
+        ax = fig.add_subplot(projection='3d', proj_type="persp")
+        #ax = fig.add_subplot(projection='3d', proj_type="ortho")
 
     if mesh.boundaryCount() > 0:
         x, y, tri, z, dataIndex = pg.viewer.mpl.createTriangles(mesh)
@@ -122,6 +122,13 @@ def showMesh3DVista(mesh, data=None, **kwargs):
             lambda *args, **kwargs: plotter.__show(*args, **kwargs)
             if pg.viewer.mpl.isInteractive() or pyvista.BUILDING_GALLERY
             else False
+        )
+    else:
+        ## on default skipp showing if forced, e.g., by test with show=False
+        plotter.__show = plotter.show
+        plotter.show = (
+            lambda *args, **kwargs: plotter.__show(*args, **kwargs)
+            if pg.rc['pyvista.backend'] is not None else False
         )
 
     if hold is False:

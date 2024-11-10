@@ -456,9 +456,9 @@ def drawDataMatrix(ax, mat, xmap=None, ymap=None, cMin=None, cMax=None,
         mat_ = np.ma.masked_where(mat == 0.0, mat, False)
 
     if cMin is None:
-        cMin = np.min(mat_)
+        cMin = np.nanmin(mat_)
     if cMax is None:
-        cMax = np.max(mat_)
+        cMax = np.nanmax(mat_)
     if logScale is None:
         logScale = (cMin > 0.0)
     if logScale:

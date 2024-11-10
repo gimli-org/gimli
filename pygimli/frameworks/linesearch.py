@@ -111,7 +111,7 @@ def lineSearchInterOld(inv, dM, nTau=100, maxTau=1.0):
 
     return taus[np.argmin(phi)], responseLS
 
-def lineSearchQuad(inv, dm, tautest=0.3, tau1=1, show=False):
+def lineSearchQuad(inv, dm, tautest=0.3, tau1=1, show=False, **kwargs):
     """Optimize line search by fitting parabola by Phi(tau) curve."""
     y0 = inv.phi()
     x1 = tau1

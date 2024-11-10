@@ -109,9 +109,11 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
                 "Consider upgrading to numpy >= 1.15")
 
     old_backend = plt.get_backend()
-    # pg._r(old_backend, show)
+    old_backend_pv = pg.rc["pyvista.backend"]
+
     if not show:
         plt.switch_backend("Agg")
+        pg.rc["pyvista.backend"] = None
     else:
         plt.ion()
 
@@ -175,6 +177,8 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     exitcode = pytest.main(cmd)
 
     plt.switch_backend(old_backend)
+    pg.rc["pyvista.backend"] = old_backend_pv
+
     np.set_printoptions(**printopt)
 
     if exitcode == pytest.ExitCode.OK and verbose:

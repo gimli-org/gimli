@@ -28,8 +28,9 @@ layer3 = mt.createPolygon([[0.0, 110], [0.0, 126], [117.5, 153], [117.5, 110]],
 
 geom = layer1 + layer2 + layer3
 
-# If you want no sloped flat earth geometry .. comment out the next 2 lines
-# geom = mt.createWorld(start=[0.0, 110], end=[117.5, 137], layers=[137-2, 137-11])
+# If you want no sloping flat earth geometry .. comment out the next 3 lines
+# geom = mt.createWorld(start=[0.0, 110], end=[117.5, 137],
+#                       layers=[137-2, 137-11])
 # slope = 0.0
 
 pg.show(geom)
@@ -42,7 +43,7 @@ ax, _ = pg.show(mesh)
 # shot and receiver indices.
 numberGeophones = 48
 sensors = np.linspace(0., 117.5, numberGeophones)
-scheme = tt.createRAData(sensors)
+scheme = tt.createRAData(sensors, shotDistance=3)
 
 # Adapt sensor positions to slope
 slope = (164 - 137) / 117.5

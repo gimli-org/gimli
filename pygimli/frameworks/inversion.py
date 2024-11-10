@@ -9,6 +9,7 @@ import pygimli as pg
 from pygimli.solver.leastsquares import lsqr as lssolver
 from pygimli.core.trans import str2Trans
 from pygimli.utils import prettyFloat as pf
+from pygimli.utils.sparseMat2Numpy import sparseMatrix2Dense
 from .linesearch import lineSearch
 
 
@@ -20,20 +21,23 @@ class InversionBase(object):
     def __init__(self, fop=None, **kwargs):
         self._debug = kwargs.pop('debug', False)
         self._verbose = kwargs.pop('verbose', False)
-        self._stopAtChi1 = True
         self._preStep = None
         self._postStep = None
         self._fop = fop
         self._model = None
         self._response = None
         self.lam = 20      # lambda regularization
+        self.lambdaFactor = 1.0
+        self.minLambda = 0
         self.iter = 0
         self.debug = False
         self.robustData = False
         self.blockyModel = False
         self.chi2History = []
+        self.modelHistory = []
         self.deltaPhiPercent = 1
         self.minDPhi = 1
+        self.stopAtChi1 = True
         self.localRegularization = False
         self.dataTrans = kwargs.pop('dataTrans', pg.trans.TransLin())
         self.cWeight = 1
@@ -41,6 +45,9 @@ class InversionBase(object):
         self.LSiter = 100
         self.maxIter = kwargs.pop('maxIter', 20)
         self.G = None
+        self._jacobianOutdated = False
+        self.lineSearchMethod = None  # auto inter-quad
+        # self.minTau/maxTau
 
     @property
     def fop(self):
@@ -126,9 +133,13 @@ class InversionBase(object):
 
     @model.setter
     def model(self, m):
-        # check size??
+        if self._model is not None:
+            assert len(self._model) == len(m), "Model size mismatch!"
+
         self._model = m
-        self._response = None  # not known
+        if np.any(m - self._model):
+            self._jacobianOutdated = True
+            self._response = None  # not known
 
     @property  # not sure if we need it
     def response(self):
@@ -347,6 +358,22 @@ class InversionBase(object):
         self._dataVals = None
         self._errorVals = None
 
+    def oneStep(self):
+        """Carry out one iteration step (e.g. good for coupling etc.)."""
+        dModel = self.modelUpdate()
+        print("dM: ", dModel)
+        tau, responseLS = lineSearch(self, dModel)
+        print("tau: ", tau)
+        pg.debug(f"tau={tau}")
+        if tau >= 0.95:  # practically 1
+            tau = 1
+
+        self.model = self.modelTrans.update(self.model, dModel*tau)
+        if tau == 1.0:
+            self.response = responseLS
+        else:  # compute new response
+            self.response = self.fop.response(self.model)
+
     def run(self, dataVals, errorVals=None, **kwargs):
         """Run inversion.
 
@@ -399,8 +426,10 @@ class InversionBase(object):
         self.reset()
         if errorVals is None:  # use absoluteError and/or relativeError instead
             absErr = kwargs.pop("absoluteError", 0)
-            relErr = kwargs.pop("relativeError",
-                                0.01 if np.allclose(absErr, 0) else 0)
+            relErr = kwargs.pop("relativeError", 0)
+            if np.any(np.isclose(absErr + relErr, 0, atol=0)):
+                raise Exception("Zero error occurred, check abs/relErr")
+
             errorVals = pg.abs(absErr / np.asarray(dataVals)) + relErr
 
         if isinstance(errorVals, (float, int)):
@@ -419,8 +448,7 @@ class InversionBase(object):
         self.verbose = kwargs.pop('verbose', self.verbose)
         self.debug = kwargs.pop('debug', self.debug)
         self.robustData = kwargs.pop('robustData', False)
-        if "stopAtChi1" in kwargs:
-            self._stopAtChi1 = kwargs["stopAtChi1"]
+        self.stopAtChi1 = kwargs.pop("stopAtChi1", True)
 
         self.lam = kwargs.pop('lam', self.lam)
         self.lambdaFactor = kwargs.pop('lambdaFactor', 1.0)
@@ -445,22 +473,8 @@ class InversionBase(object):
         if self.verbose:
             pg.info('Starting inversion.')
             print("fop:", self.fop)
-            if isinstance(self._dataTrans, pg.trans.TransCumulative):
-                print("Data transformation (cumulative):")
-                for i in range(self._dataTrans.size()):
-                    print("\t", i, self._dataTrans.at(i))
-            else:
-                print("Data transformation:", self._dataTrans)
-
-            if isinstance(self.modelTrans, pg.trans.TransCumulative):
-                print("Model transformation (cumulative):")
-                for i in range(self.modelTrans.size()):
-                    if i < 10:
-                        print("\t", i, self.modelTrans.at(i))
-                    else:
-                        print(".", end='')
-            else:
-                print("Model transformation:", self.modelTrans)
+            print("Data transformation:", self.dataTrans)
+            print("Model transformation:", self.modelTrans)
 
             print("min/max (data): {0}/{1}".format(pf(min(self._dataVals)),
                                                    pf(max(self._dataVals))))
@@ -509,20 +523,7 @@ class InversionBase(object):
                 print("-" * 80)
                 print("inv.iter", i, "... ", end='')
 
-            dModel = self.modelUpdate()
-            print("dM: ", dModel)
-            tau, responseLS = lineSearch(self, dModel)
-            print("tau: ", tau)
-            pg.debug(f"tau={tau}")
-            if tau >= 0.95:  # practically 1
-                tau = 1
-
-            self.model = self.modelTrans.update(self.model, dModel*tau)
-            if tau == 1.0:
-                self.response = responseLS
-            else:  # compute new response
-                self.response = self.fop.response(self.model)
-
+            self.oneStep()
             if np.isnan(self.model).any():
                 pg.info(self.model)
                 pg.critical('invalid model')
@@ -569,8 +570,7 @@ class InversionBase(object):
                 break
 
             lastPhi = phi
-
-            self.lam *= self.lambdaFactor
+            self.lam = max(self.lam*self.lambdaFactor, self.minLambda)
 
         # will never work as expected until we unpack kwargs .. any idea for
         # better strategy?
@@ -615,10 +615,19 @@ class InversionBase(object):
                 self.dataTrans.fwd(self.response)) / \
             self.dataTrans.error(self.response, self.errorVals)
 
-    def dataGradient(self):
+    def dataGradientFormal(self):  # formal but restricted to existent J
         """Data gradient from jacobian and residual, i.e. J^T * dData."""
         return -self.jacobianMatrix(error_weighted=True).transMult(
             self.residual())
+
+    def dataGradient(self, error_weighted=True):  # also works for fop.STy
+        """Data gradient from jacobian and residual, i.e. J^T * dData."""
+        tData = self.dataTrans.deriv(self.response)
+        if error_weighted:
+            tData /= self.dataTrans.error(self.response, self.errorVals)
+
+        return self.fop.STy(-self.residual()*tData) / \
+            self.modelTrans.deriv(self.model)
 
     def modelGradient(self):
         """Model gradient, i.e. C^T * C * (m - m0)."""
@@ -695,6 +704,13 @@ class DescentInversion(InversionBase):
 
     def modelUpdate(self):
         """The negative gradient of  objective function as search direction."""
+        if self.fop.STy.__doc__ is pg.Modelling.STy.__doc__:  # original
+            if len(self.model) != self.fop.jacobian().cols():
+                self._jacobianOutdated = True
+
+            if self._jacobianOutdated:
+                self.fop.createJacobian(self.model)
+
         return -self.gradient()
 
 
@@ -890,15 +906,19 @@ class ClassicInversion(object):
             sm = self.fop.regionManager().createStartModel()
             if len(sm) > 0 and max(abs(np.atleast_1d(sm))) > 0.0:
                 self._startModel = sm
-                pg.info("Created startmodel from region infos:", sm)
+                if self.verbose:
+                    pg.info("Created startmodel from region infos:", sm)
             else:
-                pg.verbose("No region infos for startmodel")
+                if self.verbose:
+                    pg.verbose("No region infos for startmodel")
 
         if self._startModel is None:
             sm = self.fop.createStartModel(self.dataVals)
             # pg.info("Created startmodel from forward operator:", sm)
-            pg.info("Created startmodel from forward operator: {:d}, min/max={:f}/{:f}".format(
-                len(sm), min(sm), max(sm)))
+            if self.verbose:
+                pg.info("Created startmodel from forward operator:" +
+                        "{:d}, min/max={:f}/{:f}".format(
+                            len(sm), min(sm), max(sm)))
             self._startModel = sm
         return self._startModel
 
@@ -1298,7 +1318,7 @@ class ClassicInversion(object):
         if errorVals is None:  # use absoluteError and/or relativeError instead
             absErr = kwargs.pop("absoluteError", 0)
             relErr = kwargs.pop("relativeError",
-                                0.01 if np.allclose(absErr, 0) else 0)
+                                0.01 if np.allclose(absErr, 0, atol=0) else 0)
             errorVals = pg.abs(absErr / np.asarray(dataVals)) + relErr
 
         if isinstance(errorVals, (float, int)):
@@ -1329,6 +1349,9 @@ class ClassicInversion(object):
 
         self.inv.setLambdaFactor(kwargs.pop('lambdaFactor', 1.0))
 
+        if "correlationLength" in kwargs:  # single float value
+            kwargs.setdefault("correlationLenghts",
+                              [kwargs["correlationLength"]])
         # catch a few regularization options that don't go into run
         for opt in ["cType", "limits", "correlationLengths", "C"]:
             if opt in kwargs:
@@ -1574,8 +1597,12 @@ class ClassicInversion(object):
         if error_weighted:
             tData *= self.dataTrans.error(self.response, self.errorVals)
         if numpy_matrix:
+            J = self.fop.jacobian()
+            if isinstance(J, pg.SparseMapMatrix):
+                J = sparseMatrix2Dense(self.fop.jacobian())
+
             return np.reshape(tData, [-1, 1]) * \
-                pg.utils.gmat2numpy(self.fop.jacobian()) * \
+                pg.utils.gmat2numpy(J) * \
                 np.reshape(tModel, [1, -1])
         else:
             return pg.matrix.MultLeftRightMatrix(self.fop.jacobian(),
@@ -1638,7 +1665,7 @@ class MarquardtInversion(Inversion):
         if errorVals is None:  # use absoluteError and/or relativeError instead
             absErr = kwargs.pop("absoluteError", 0)
             relErr = kwargs.pop("relativeError",
-                                0.01 if np.allclose(absErr, 0) else 0)
+                                0.01 if np.allclose(absErr, 0, atol=0) else 0)
             errorVals = pg.abs(absErr / dataVals) + relErr
 
         self.fop.regionManager().setConstraintType(0)
@@ -1905,5 +1932,3 @@ class LCInversion(Inversion):
         print(kwargs)
         print('#'*50)
         return super(LCInversion, self).run(dataVec, errVec, lam=lam, **kwargs)
-
-

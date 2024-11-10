@@ -6,7 +6,7 @@ from .kernel import SolveGravMagHolstein
 class GravityModelling(pg.frameworks.MeshModelling):
     """Magnetics modelling operator using Holstein (2007)."""
 
-    def __init__(self, mesh, points, cmp=["gz"], foot=None):
+    def __init__(self, mesh, points, cmp=["gz"]):
         """Setup forward operator.
 
         Parameters
@@ -24,7 +24,7 @@ class GravityModelling(pg.frameworks.MeshModelling):
         self.mesh_ = mesh
         self.sensorPositions = points
         self.components = cmp
-        self.footprint = foot
+        # self.footprint = foot
         self.kernel = None
         self.J = pg.matrix.BlockMatrix()
         self.createKernel()
@@ -33,8 +33,7 @@ class GravityModelling(pg.frameworks.MeshModelling):
         """Create computational kernel."""
         self.kernel = SolveGravMagHolstein(self.mesh_,
                                            pnts=self.sensorPositions,
-                                           cmp=self.components,
-                                           foot=self.footprint)
+                                           cmp=self.components)
         self.J = pg.matrix.BlockMatrix()
         self.Ki = []
         self.Ji = []

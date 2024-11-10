@@ -4,7 +4,8 @@ r"""
 Semianalytical Gravimetry and Geomagnetics in 2D
 ------------------------------------------------
 
-Simple gravimetric and magnetostatic field caluculation using integration approach after :cite:`WonBev1987`.
+Simple gravimetric and magnetostatic field caluculation using integration
+approach after :cite:`WonBev1987`.
 
 """
 import numpy as np
@@ -26,8 +27,10 @@ pos = [0, -depth]
 
 
 def plot(x, a1, ga, gza, a2, g, gz, legend=True):
-    a1.plot(x, ga[:, 0],  label=r'Analytical $\frac{\partial u}{\partial x}$', c="red")
-    a1.plot(x, ga[:, 1],  label=r'Analytical $\frac{\partial u}{\partial z}$', c="blue")
+    a1.plot(x, ga[:, 0], label=r'Analytical $\frac{\partial u}{\partial x}$',
+            c="red")
+    a1.plot(x, ga[:, 1], label=r'Analytical $\frac{\partial u}{\partial z}$',
+            c="blue")
 
     a1.plot(x, g[:, 0], label=r'Won & Bevis: $\frac{\partial u}{\partial x}$',
             marker='o', linewidth=0, c="red")

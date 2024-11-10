@@ -26,6 +26,7 @@
 #elif READPROC_FOUND || defined(HAVE_PROC_READPROC)
     #include <proc/readproc.h>
     #define USE_PROC_READPROC TRUE
+    #error readproc
 #else
     #define USE_PROC_READPROC 0
 #endif
@@ -62,24 +63,21 @@ double MemWatch::current(){
 }
 
 double MemWatch::inUse() {
- #if USE_BOOST_THREAD
-        boost::mutex::scoped_lock lock(__readproc__mutex__);
- #else
-        std::unique_lock < std::mutex > lock(__readproc__mutex__);
+#if USE_BOOST_THREAD
+    boost::mutex::scoped_lock lock(__readproc__mutex__);
+#else
+    std::unique_lock < std::mutex > lock(__readproc__mutex__);
         //std::lock_guard< std::mutex > lock(__readproc__mutex__);
- #endif
+#endif
 
-
- #ifdef WIN32_LEAN_AND_MEAN
+#ifdef WIN32_LEAN_AND_MEAN
 
     PROCESS_MEMORY_COUNTERS pmc;
-
     if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))){
         double ret = MByte(pmc.WorkingSetSize);
         return ret;
     } else { return 0; }
-
-#else
+#else // no WINDOWS
 
 #if USE_PROC_READPROC
     struct proc_t usage;
@@ -92,10 +90,12 @@ double MemWatch::inUse() {
 //      __MS("rss: " << usage.rss/1024)
     double ret = MByte(usage.vsize);
     return ret;
-    #else // no windows and no libproc
+#else
+    // no windows and no libproc
+#endif
 
-    #endif // no libproc
-#endif // no windows
+
+#endif // no WINDOWS
     return 0;
 }
 

@@ -26,6 +26,8 @@ def load(fileName, verbose=False, **kwargs):
         data = importGTT(fileName)
     elif fileName.lower().endswith('.tom'):
         data = readTOMfile(fileName)
+    elif "nR" in kwargs or "nS" in kwargs:
+        data = importAsciiColumns(fileName, **kwargs)
     else:
         data = DataContainerTT(fileName)
         # data = pg.DataContainer(fileName, sensorTokens='s g')
@@ -106,6 +108,47 @@ def importGTT(filename, return_header=False):
             return data
 
 
+def importAsciiColumns(filename, ndig=2, roundto=0,
+                       nS=None, nR=None, nT=None, nA=None):
+    """Read in columns from ASCII file.
+    
+    Parameters
+    ----------
+    filename : str
+        filename holding position and traveltime columns
+    nS : [int, int, int]
+        columns for shot positions
+    nR : [int, int, int]
+        columns for shot positions
+    """
+    if nS is None:
+        nS = [0, 1]
+    if nR is None: 
+        nR = [max(nS)+1, max(nS)+2]
+    
+    A = np.genfromtxt(filename)
+    if nT is None:
+        nT = A.shape[1] - 1  # last one
+    
+    posS = A[:, nS]
+    posR = A[:, nR]
+    # if twoD: take only receivers for defining topo
+    uR, iR = np.unique(posR[:, 0], return_index=True)
+    ux, ix, ii = np.unique(np.vstack([posS[:, 0], posR[:, 0]]),
+                           return_index=True, return_inverse=True)
+    uz = np.interp(ux, posR[iR, 0], posR[iR, 1])
+    data = DataContainerTT()
+    for xx, zz in zip(ux, uz):
+        data.createSensor(pg.Pos(xx, zz))
+
+    ndata = A.shape[0]
+    data.resize(ndata)
+    data["s"] = ii[:ndata]
+    data["g"] = ii[ndata:]
+    data["t"] = A[:, nT]
+    data["valid"] = 1
+    return data
+
 def readTOMfile(filename, ndig=2, roundto=0):
     """Read Reflex tomography (*.TOM) file."""
     t, xT, zT, xR, zR = np.loadtxt(filename, usecols=(0, 2, 3, 4, 5), unpack=1)
@@ -115,6 +158,7 @@ def readTOMfile(filename, ndig=2, roundto=0):
     else:
         pT = xT.round(ndig) - zT.round(ndig) * 1j
         pR = xR.round(ndig) - zR.round(ndig) * 1j
+    
     pU = np.unique(np.hstack((pT, pR)))
     iT = np.array([np.nonzero(pU == pi)[0][0] for pi in pT], dtype=float)
     iR = np.array([np.nonzero(pU == pi)[0][0] for pi in pR], dtype=float)
