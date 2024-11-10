@@ -27,9 +27,16 @@ jobs:
           mkdir -p build
           cd build
           CC=/usr/bin/clang CXX=/usr/bin/clang++ cmake ../source
-      - name: Build gimli
+      - name: Build libgimli
         run: make -j 8 gimli
         working-directory: build
-      - name: Build python bindings
+      - name: Build Python bindings
         run: make pygimli J=4
         working-directory: build
+  pgtest:
+    runs-on: self-hosted
+    needs: pgcore
+    steps:
+      - name: Run Python tests
+        run: OPENBLAS_CORETYPE="ARMV8" python3 -c "import pygimli; pygimli.test(show=False, onlydoctests=True)"
+        working-directory: source
