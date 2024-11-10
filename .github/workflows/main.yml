@@ -79,6 +79,6 @@ jobs:
     steps:
       - name: Merge into master
         working-directory: build
-        run: rsync -avP --delete doc/html ~/dev.pygimli.org
+        run: rsync -avP --delete doc/html/ /var/www/html
         
   
