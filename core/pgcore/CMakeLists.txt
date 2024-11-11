@@ -98,7 +98,7 @@ else()
     ## test the wheel: make whlTest
     add_custom_target(whl${TARGET_NAME}TestInstall DEPENDS whl${TARGET_NAME}
         COMMAND "${Python3_EXECUTABLE}" -m pip uninstall -y ${TARGET_NAME}
-        COMMAND "${Python3_EXECUTABLE}" -m pip install ${TARGET_NAME} --find-links ${WHEELHOUSE} --no-index
+        COMMAND "${Python3_EXECUTABLE}" -m pip install ${WHEELHOUSE}/${PY_WHEELFILE} --find-links ${WHEELHOUSE}
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMENT "Installing ${TARGET_NAME} in virtual test environment"
     )
