@@ -248,7 +248,7 @@ def prettyFloat(value, roundValue=None):
     """
     # test-cases:
     # if change things her, look that they are still good (mod-dc-2d)
-        
+
     if (isinstance(roundValue, int) and abs(round(value)-value) < 1e-4 and
             abs(value) < 1e3 and 0):
         string = str(int(round(value, roundValue)))
@@ -807,7 +807,7 @@ def unique_rows(array):
     # return A[sort_idx[np.nonzero(mask)[0][np.bincount(mask.cumsum()-1)==1]]]
 
 
-def uniqueRows(data, precition=2):
+def uniqueRows(data, precision=2):
     """Equivalent of Matlabs unique(data, 'rows') with tolerance check.
 
     Additionally returns forward and reverse indices
@@ -818,12 +818,12 @@ def uniqueRows(data, precition=2):
     >>> import numpy as np
     >>> A = np.array(([1,2,3],[3,2,1],[1,2,3]))
     >>> unA, ia, ib = uniqueRows(A)
-    >>> np.all(A[ia] == unA)
+    >>> bool(np.all(A[ia] == unA))
     True
     >>> np.all(unA[ib] == A)
     True
     """
-    fak = 100**precition
+    fak = 100**precision
     dFix = np.fix(data * fak) / fak + 0.0
     dtype = np.dtype((np.void, dFix.dtype.itemsize * dFix.shape[1]))
     b = np.ascontiguousarray(dFix).view(dtype)
