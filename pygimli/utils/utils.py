@@ -798,6 +798,7 @@ def uniqueRows(data, precision=2):
     >>> bool(np.all(A[ia] == unA))
     True
     """
+    pg.deprecated(hint="Please use np.unique(axis=0) instead.")
     fak = 100**precision
     dFix = np.fix(data * fak) / fak + 0.0
     dtype = np.dtype((np.void, dFix.dtype.itemsize * dFix.shape[1]))
