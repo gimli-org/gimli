@@ -74,7 +74,7 @@ void ModellingBase::init_() {
     constraints_        = 0;
     dataContainer_      = 0;
 
-    nThreads_           = min(16, numberOfCPU()-2);
+    nThreads_           = min(8, numberOfCPU()-2);
     nThreadsJacobian_   = 1;
 
     ownJacobian_        = false;
@@ -98,9 +98,6 @@ void ModellingBase::setThreadCount(Index nThreads) {
 Index ModellingBase::threadCount(){
     bool verbose = this->verbose();
 
-    this->nThreads_ = getEnvironment("GIMLI_NUM_THREADS",
-                                     this->nThreads_, verbose);
-
     if (verbose){
         std::cout << "J(" << numberOfCPU() << "/" << this->nThreads_;
     #if USE_BOOST_THREAD
@@ -113,7 +110,7 @@ Index ModellingBase::threadCount(){
     if (verbose){
         std::cout << std::endl;
     }
-    return this->nThreads_;
+    return max(1, this->nThreads_);
 }
 
 void ModellingBase::setData(DataContainer & data){

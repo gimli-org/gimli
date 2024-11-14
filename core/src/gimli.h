@@ -120,8 +120,8 @@ typedef int64_t int64;
 
 
 /*!Replace from with to inside str and return the result*/
-DLLEXPORT  std::string replace(const std::string & str, 
-                               const std::string & from, 
+DLLEXPORT  std::string replace(const std::string & str,
+                               const std::string & from,
                                const std::string & to);
 
 #ifndef SRC_DIR
@@ -369,6 +369,9 @@ DLLEXPORT int deepDebug();
 Default is number of CPU. */
 DLLEXPORT void setThreadCount(Index nThreads);
 DLLEXPORT Index threadCount();
+
+void setUseOMP(bool o);
+bool useOMP();
 
 /*! For some debug purposes only */
 DLLEXPORT void showSizes();
