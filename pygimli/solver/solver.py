@@ -886,7 +886,7 @@ def div(mesh, v):
     >>> divCells = pg.solver.div(mesh, v(mesh.cellCenters()))
     >>> # divergence from boundary values are exact where the divergence from
     >>> # interpolated cell center values wrong due to interpolation to boundary
-    >>> print(sum(divCells))
+    >>> print(np.round(sum(divCells),12))
     12.0
     >>> mesh = pg.createGrid(x=np.linspace(0, 1, 4),
     ...                      y=np.linspace(0, 1, 4),
@@ -894,7 +894,7 @@ def div(mesh, v):
     >>> print(sum(pg.solver.div(mesh, v(mesh.boundaryCenters()))))
     81.0
     >>> divCells = pg.solver.div(mesh, v(mesh.cellCenters()))
-    >>> print(sum(divCells))
+    >>> print(np.round(sum(divCells),12))
     54.0
     """
     mesh.createNeighborInfos()
@@ -2255,8 +2255,8 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         Note this is only a shortcut for
         bc={'Dirichlet': [mesh.node(nodeID), value]}.
 
-        The parameter $a$ for Neumann boundary condition is choosen 
-        automatically from the diffusivity parameter $a$ of the associated cell. 
+        The parameter $a$ for Neumann boundary condition is choosen
+        automatically from the diffusivity parameter $a$ of the associated cell.
 
     times: array [None]
         Solve as time dependent problem for the given times.
