@@ -110,6 +110,12 @@ def testColorbar():
     pg.viewer.mpl.setMappableData(cbar.mappable, pg.x(grid.cellCenter()))
     ax.figure.tight_layout()
 
+    ax, cbar = pg.show(grid, data=pg.x(grid.positions())-5,
+                       label='white at 0 in the middle', ax=axs[2][2], showMesh=True,
+                       cMap='RdBu', #cMin= -80, cMax= 80,
+                       nLevs=6, logScale=False)
+
+    return
     pg.show(grid, pg.x(grid.cellCenter()), tri=True, shading='gouraud',
             cMap='Spectral_r', logScale=False, cMin=0.01, cMax=10,
             levels=[10, 55, 100],
@@ -296,7 +302,7 @@ def testPVBackends():
     """
     m1 = mt.createCube()
 
-    
+
     # pg.rc['view3D'] = 'fallback'
     # pg.show(m1)
 

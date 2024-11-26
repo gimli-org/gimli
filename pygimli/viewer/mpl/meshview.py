@@ -532,7 +532,7 @@ def drawBoundaryMarkers(ax, mesh, clipBoundaryMarkers=False, **kwargs):
     """
     ms = pg.unique(pg.sort(mesh.boundaryMarkers()[mesh.boundaryMarkers()!=0]))
     bc = kwargs.pop('bc', None)
-    
+
     #cMap = plt.cm.get_cmap("Set3", len(ms))
     kwargs['lw'] = kwargs.pop('lw', 4)
 
@@ -575,11 +575,11 @@ def drawBoundaryMarkers(ax, mesh, clipBoundaryMarkers=False, **kwargs):
         # bca = ax.figure.add_axes([0.8, 0.75, 0.1, pos.height])
         bcstr = 'BC\n'
         bcstr += '1: $p=1$\n'
-        bcstr += '2: $p=0$\n' 
+        bcstr += '2: $p=0$\n'
         bcstr += '3: $v=$no-flow\n'
         bcstr += '4: $v=$no-flow\n'
 
-        ax.text(1.02, 0.0, bcstr, 
+        ax.text(1.02, 0.0, bcstr,
                  #transform=ax.figure.transFigure,
                 #  bbox=dict(boxstyle="square",
                 #    ec=(1., 0.5, 0.5),
@@ -840,7 +840,7 @@ def createMeshPatches(ax, mesh, rasterized=False, verbose=True):
 
     pg.tic()
     polys = [_createCellPolygon(c) for c in mesh.cells()]
-    
+
     patches = mpl.collections.PolyCollection(polys, picker=True,
                                              rasterized=rasterized)
 
@@ -952,6 +952,9 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
         Additional kwargs forwarded to ax.tripcolor,
         ax.tricontour, ax.tricontourf
 
+    symLevels: bool [False]
+        Symmetric levels if no cMap is given.
+
     Returns
     -------
     gci : image object
@@ -981,7 +984,8 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
 
     if levels is None:
         levels = autolevel(data, nLevs,
-                           zMin=cMin, zMax=cMax, logScale=logScale)
+                           zMin=cMin, zMax=cMax, logScale=logScale,
+                           symLevels=kwargs.pop('symLevels', False))
     else:
         nCols = len(levels)-1
 
@@ -1030,9 +1034,9 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
 
             if contourLines is True:
                 ax.tricontour(x, y, triangles, z, levels=levels,
-                              colors=kwargs.pop('colors', ['0.5']), 
-                              alpha=kwargs.pop('alpha', 0.5), 
-                              linewidths=kwargs.pop('lw', 1.0), 
+                              colors=kwargs.pop('colors', ['0.5']),
+                              alpha=kwargs.pop('alpha', 0.5),
+                              linewidths=kwargs.pop('lw', 1.0),
                               **kwargs)
     else:
         gci = None

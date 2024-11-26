@@ -450,6 +450,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
 
             def _drawField(ax, mesh, data, kwargs):  # like view.mpl.drawField?
                 # kwargs as reference here to set defaults valid outside too
+
                 validData = True
                 if len(data) == mesh.cellCount():
                     kwargs['nCols'] = kwargs.pop('nCols', 256)
@@ -459,7 +460,8 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
                     kwargs['nLevs'] = kwargs.pop('nLevs', 5)
                     kwargs['nCols'] = kwargs.pop('nCols', kwargs['nLevs']-1)
 
-                    gci = drawField(ax, mesh, data, **kwargs)
+                    gci = drawField(ax, mesh, data, symLevels='RdBu' in cMap,
+                                    **kwargs)
                 else:
                     pg.error("Data size invalid")
                     print("Data: ", len(data), min(data), max(data),
@@ -469,6 +471,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
                     drawMesh(ax, mesh)
 
                 return gci, validData
+
 
             try:
                 if label is None:
@@ -570,8 +573,8 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
                                   size=kwargs.pop('size', 0.2),
                                   pad=kwargs.pop('pad', None),
                                   **subkwargs,
-                                  onlyColorSet=not colorBar,
-                                  )
+                                  onlyColorSet=not colorBar)
+
         elif colorBar is not False:
             cBar = updateColorBar(colorBar, **subkwargs)
 

@@ -10,8 +10,13 @@ from . utils import prettyFloat
 from pygimli.core.logger import renameKwarg
 
 
-def autolevel(z, nLevs, logScale=None, zMin=None, zMax=None):
+def autolevel(z, nLevs, logScale=None, zMin=None, zMax=None, symLevels:bool=False):
     """Create nLevs bins for the data array z based on matplotlib ticker.
+
+    Arguments
+    ---------
+    symLevels: bool[False]
+        Symmetric levels (to Zero) if not zMin and not zMax
 
     Examples
     --------
@@ -33,6 +38,10 @@ def autolevel(z, nLevs, logScale=None, zMin=None, zMax=None):
         locator = ticker.LinearLocator(numticks=nLevs)
         # locator = ticker.MaxNLocator(nBins=nLevs + 1)
         # locator = ticker.MaxNLocator(nBins='auto')
+
+    if symLevels and not zMin and not zMax:
+        zMax = max(abs(z))
+        zMin = -zMax
 
     if zMin is None:
         zMin = min(z)
@@ -102,14 +111,14 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
     try:
         cMap = copy.copy(mpl.colormaps.get_cmap(cMapName).resampled(ncols))
     except ValueError as e:
-        cMap = copy.copy(mpl.colormaps.get_cmap('viridis').resampled(ncols))           
-        
+        cMap = copy.copy(mpl.colormaps.get_cmap('viridis').resampled(ncols))
+
         ## colormap probably unknown we try if we find it on cmocean
         try:
             import cmocean
             cMap = copy.copy(getattr(cmocean.cm, cMapName.lower()))
         except ImportError as eo:
-                
+
             pg.warn("Could not retrieve colormap:", cMapName, "Reason:", e)
             pg.warn("Fallback to cmocean: ", cMapName, " but: ", eo)
 
@@ -117,10 +126,10 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
             pg.warn("Could not retrieve colormap ", cMapName, e)
             pg.warn("Fallback to cmocean but does not know: ", cMapName, eo)
             print('available:', cmocean.cm.cmapnames)
-           
+
         except BaseException as e:
             pg.warn("Could not retrieve colormap ", cMapName, e)
-            
+
 
     cMap.set_bad(bad)
     return cMap
@@ -232,27 +241,33 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
         cMax = levels[-1]
         needLevelUpdate = True
 
-    if cMin is not None or cMax is not None or nLevs is not None:
+    if not cMin or not cMax or nLevs:
         needLevelUpdate = True
 
-    if logScale is not None:
-        needLevelUpdate = True
-
-        if cMin is None:
+    if not cMin and not cMax:
+        if not cMin:
             cMin = mappable.get_clim()[0]
-        if cMax is None:
+        if not cMax:
             cMax = mappable.get_clim()[1]
 
-        if logScale:
-            if cMin < 1e-12:
-                cMin = min(filter(lambda _x: _x > 0.0,
-                                  mappable.get_array()))
+    #if logScale is not None: ??
+    #needLevelUpdate = True
 
-            norm = mpl.colors.LogNorm(vmin=cMin, vmax=cMax)
-        else:
-            norm = mpl.colors.Normalize(vmin=cMin, vmax=cMax)
+    if cMin is None:
+        cMin = mappable.get_clim()[0]
+    if cMax is None:
+        cMax = mappable.get_clim()[1]
 
-        mappable.set_norm(norm)
+    if logScale:
+        if cMin < 1e-12:
+            cMin = min(filter(lambda _x: _x > 0.0,
+                                mappable.get_array()))
+
+        norm = mpl.colors.LogNorm(vmin=cMin, vmax=cMax)
+    else:
+        norm = mpl.colors.Normalize(vmin=cMin, vmax=cMax)
+
+    mappable.set_norm(norm)
 
     if needLevelUpdate is True:
         if cbar is not None:
@@ -261,7 +276,6 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
                 cbar.set_label(label)
         else:
             setCbarLevels(mappable, cMin, cMax, nLevs, levels)
-
 
     return cbar
 
@@ -292,7 +306,6 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
         Forwarded to updateColorBar
 
     """
-    #pg._y('createColorBar', kwargs)
     from mpl_toolkits.axes_grid1 import make_axes_locatable
     cbarTarget = pg.plt
     cax = None
