@@ -197,7 +197,7 @@ def show(obj=None, data=None, **kwargs):
 
 def showMesh(mesh, data=None, block=False, colorBar=None,
              label=None, coverage=None, ax=None, savefig=None,
-             showMesh=False, showBoundary=None,
+             showMesh=False, showBoundary=None, factor=1,
              markers=False, **kwargs):
     """2D Mesh visualization.
 
@@ -310,7 +310,6 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     cBar : matplotlib.colorbar
     """
     renameKwarg('cmap', 'cMap', kwargs)
-
     cMap = kwargs.pop('cMap', 'viridis')
     cBarOrientation = kwargs.pop('orientation', 'horizontal')
     replaceData = kwargs.pop('replaceData', False)
@@ -379,12 +378,17 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             data = np.arange(len(uniquemarkers))[uniqueidx]
 
     if isinstance(data, str):
-        if data in mesh.dataKeys():
-            data = mesh[data]
-            # elif 0:  # maybe check x, y, z, cellMarker etc.
+        # if data in mesh.dataKeys():
+        #     data = mesh[data]
+        #     # elif 0:  # maybe check x, y, z, cellMarker etc.
+        # else:
+        #     pg.error(f"Could not retrieve data from key {data}")
+        #     return None, None
+        if mesh.haveData(data):
+            #print(factor)
+            data = mesh[data]# * factor
         else:
-            pg.error(f"Could not retrieve data from key {data}")
-            return None, None
+            raise IndexError("Mesh does not contain field ", data)
     elif callable(data):
         data = data(mesh.positions())
 
@@ -393,13 +397,11 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         mesh.createNeighborInfos()
         if showBoundary is None:
             showBoundary = True
-
-    # elif isinstance(data, pg.core.stdVectorRVector3):
+    # elif isinstance(data, pg.core.stdVectorRVector3): /no such datatype??
     #     drawSensors(ax, data, **kwargs)
     elif isinstance(data, pg.PosVector):
         drawStreams(ax, mesh, data, **kwargs)
     else:
-
         # check for map like data=[[marker, val], ....]
         if isinstance(data, list) and \
                 isinstance(data[0], list) and isinstance(data[0][0], int):
@@ -884,3 +886,9 @@ def showAnimation(mesh, data, ax=None, **kwargs):
                               )
 
     return __Animation_Keeper__
+
+def __Mesh__show__(self, data=None, **kwargs):
+    """Show the mesh with all possible keyword arguments."""
+    return showMesh(self, data=data, **kwargs)
+
+pg.Mesh.show = __Mesh__show__

@@ -391,7 +391,6 @@ MEMINFO
         if (S.rows() != nData || S.cols() != nModel) S.resize(nData, nModel);
         S *= ValueType(0);
 MEMINFO
-
         if (verbose){
             std::cout << "S(" << numberOfCPU() << "/" << nThreads; //**check!!!
             #if USE_BOOST_THREAD
@@ -403,10 +402,14 @@ MEMINFO
 //swatch.stop(verbose);
         }
         bool calc1 = getEnvironment("SENSMAT1", false, true);
-        distributeCalc(CreateSensitivityColMT< ValueType >(S, cells, data,
+        if (useOMP()){
+
+        } else {
+            distributeCalc(CreateSensitivityColMT< ValueType >(S, cells, data,
                                                            pots, currPatternIdx,
                                                            weights, k, calc1, verbose),
-                        cells.size(), nThreads, verbose);
+                            cells.size(), nThreads, verbose);
+        }
          if (verbose){
              swatch.stop(verbose);
          }

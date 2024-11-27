@@ -416,6 +416,9 @@ DLLEXPORT void setNoCBlas(bool s);
 DLLEXPORT bool noCBlas();
 
 
+void setUseOMP(bool o);
+bool useOMP();
+
 /*! For some debug purposes only */
 DLLEXPORT void showSizes();
 

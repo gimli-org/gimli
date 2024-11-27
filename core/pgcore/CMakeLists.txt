@@ -1,10 +1,10 @@
 ## PRE Build
 set(TARGET_NAME pgcore)
 
-CONFIGURE_FILE(getwheelname.py.in 
+CONFIGURE_FILE(getwheelname.py.in
     ${CMAKE_CURRENT_BINARY_DIR}/getwheelname.py @ONLY
 )
-execute_process(COMMAND "${Python_EXECUTABLE}" getwheelname.py 
+execute_process(COMMAND "${Python_EXECUTABLE}" getwheelname.py
     RESULT_VARIABLE STATUS
     OUTPUT_VARIABLE PY_WHEELFILE
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
@@ -19,19 +19,19 @@ else()
     cprint(green "********** Prepare wheel build for: ${TARGET_NAME} ***********")
 
     message(STATUS "Detected Python wheel filename: ${PY_WHEELFILE}")
-    CONFIGURE_FILE(setup.py.in 
+    CONFIGURE_FILE(setup.py.in
         ${CMAKE_CURRENT_BINARY_DIR}/setup.py @ONLY
     )
-    
+
     message(STATUS "Copying python files to ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}/${TARGET_NAME}")
-    file(GLOB_RECURSE PYGIMLI_FILES RELATIVE 
-        ${CMAKE_CURRENT_SOURCE_DIR} 
+    file(GLOB_RECURSE PYGIMLI_FILES RELATIVE
+        ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/*.py)
     foreach (filename ${PYGIMLI_FILES})
         #message(STATUS "Copying ${filename} to ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}/${TARGET_NAME}/${target}")
         configure_file("${filename}" "${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}/${filename}" COPYONLY)
     endforeach (filename)
-    
+
     string(REPLACE "linux" "manylinux_2_28" PY_WHEELFILE_OUTPLATFORM ${PY_WHEELFILE})
     message(STATUS "Desired Python wheel filename after audtitwheel repair: ${PY_WHEELFILE_OUTPLATFORM}")
 
@@ -50,7 +50,7 @@ else()
         set(BINDEPS_LIBS $<TARGET_FILE:_pygimli_>)
     else()
         ## copy important libs only for in source dev
-        set(BINDEPS_LIBS 
+        set(BINDEPS_LIBS
                 #$<TARGET_FILE:${Boost_PYTHON_LIBRARY}>
                 $<TARGET_FILE:gimli>
                 $<TARGET_FILE:_pygimli_>)
@@ -86,7 +86,7 @@ else()
         add_custom_target(whl${TARGET_NAME} DEPENDS whl${TARGET_NAME}PackageRepair)
     elseif (OS_VAR STREQUAL "MAC")
         add_custom_target(whl${TARGET_NAME}PackageRepair DEPENDS whl${TARGET_NAME}PackageBuild
-            COMMAND "delocate" repair ${WHEELHOUSE}/${PY_WHEELFILE} 
+            COMMAND "delocate" repair ${WHEELHOUSE}/${PY_WHEELFILE}
             WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
             COMMENT "Repairing python wheel package at: ${CMAKE_BINARY_DIR}"
         )
@@ -101,7 +101,7 @@ else()
     ## test the wheel: make whlTest
     add_custom_target(whl${TARGET_NAME}TestInstall DEPENDS whl${TARGET_NAME}
         COMMAND "${Python3_EXECUTABLE}" -m pip uninstall -y ${TARGET_NAME}
-        COMMAND "${Python3_EXECUTABLE}" -q -m pip install ${WHEELHOUSE}/${PY_WHEELFILE} --quiet --find-links=${WHEELHOUSE}
+        COMMAND "${Python3_EXECUTABLE}" -m pip install ${WHEELHOUSE}/${PY_WHEELFILE} --find-links ${WHEELHOUSE}
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMENT "Installing ${TARGET_NAME} in virtual test environment"
     )

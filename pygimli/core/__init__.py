@@ -766,7 +766,7 @@ setattr(pgcore.Pos, '__truediv__', __POS_new__truediv__)
 
 # ######### c to python converter ######
 # default converter from Pos to numpy array
-def __PosArrayCall__(self, dtype=None):
+def __PosArrayCall__(self, dtype=None, **kwargs):
     # if idx:
     # print(self)
     # print(idx)
@@ -776,7 +776,7 @@ def __PosArrayCall__(self, dtype=None):
 
 # default converter from RVector to numpy array
 
-def __RVectorArrayCall__(self, dtype=None):
+def __RVectorArrayCall__(self, dtype=None, **kwargs):
     #
     # This wrapper is needed to catch explicit type conversion from np.asarray
     #
@@ -792,7 +792,7 @@ def __RVectorArrayCall__(self, dtype=None):
     # return np.array(self.array())
     return self.array()
 
-def __CVectorArrayCall__(self, dtype=None):
+def __CVectorArrayCall__(self, dtype=None, **kwargs):
     #
     # This wrapper is needed to catch explicit type conversion from np.asarray
     #
@@ -819,6 +819,8 @@ pgcore.R3Vector.__array__ = __RVectorArrayCall__
 
 # should work with handmade wrapper -- test me!
 pgcore.Pos.__array__ = __PosArrayCall__
+
+pgcore.R3Vector.append = pgcore.R3Vector.push_back
 
 # see bug description
 pgcore.CVector.__array__ = __CVectorArrayCall__

@@ -17,8 +17,8 @@ def drawTravelTimeData(ax, data, t=None):
     x = pg.x(data.sensorPositions())
     # z = pg.z(data.sensorPositions())
 
-    shots = pg.unique(pg.sort(data('s')))
-    geoph = pg.unique(pg.sort(data('g')))
+    shots = pg.unique(pg.sort(data['s']))
+    geoph = pg.unique(pg.sort(data['g']))
 
     startOffsetIDX = 0
 
@@ -35,7 +35,7 @@ def drawTravelTimeData(ax, data, t=None):
 
     for shot in shots:
         gIdx = pg.find(data('s') == shot)
-        sensorIdx = [int(i__ - startOffsetIDX) for i__ in data('g')[gIdx]]
+        sensorIdx = [int(i__ - startOffsetIDX) for i__ in data['g'][gIdx]]
         ax.plot(x[sensorIdx], tShow[gIdx], 'x-')
 
     yPixel = ax.transData.inverted().transform_point((1, 1))[1] - \
@@ -82,10 +82,10 @@ def drawFirstPicks(ax, data, tt=None, plotva=False, **kwargs):
         list of plotting items (matplotlib lines)
     """
     px = pg.x(data)
-    gx = np.array([px[int(g)] for g in data("g")])
-    sx = np.array([px[int(s)] for s in data("s")])
+    gx = np.array([px[int(g)] for g in data["g"]])
+    sx = np.array([px[int(s)] for s in data["s"]])
     if tt is None:
-        tt = np.array(data("t"))
+        tt = np.array(data["t"])
     if plotva:
         tt = np.absolute(gx - sx) / tt
 
@@ -181,7 +181,7 @@ def drawVA(ax, data, vals=None, usePos=True, pseudosection=False, **kwargs):
 
     # A = np.ones((data.sensorCount(), data.sensorCount())) * np.nan
     # for i in range(data.size()):
-    #     A[int(data('s')[i]), int(data('g')[i])] = va[i]
+    #     A[int(data('s')[i]), int(data['g'][i])] = va[i]
     # gci = ax.imshow(A, interpolation='nearest')
     # ax.grid(True)
 

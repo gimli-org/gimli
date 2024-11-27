@@ -62,7 +62,10 @@ class TimelapseERT():
 
         if filename is not None:
             if isinstance(filename, str):
-                self.load(filename, **kwargs)
+                results = kwargs.pop("results", None)
+                self.load(filename, **kwargs)                
+                if results is not None:
+                    self.loadResults(results)
             else:
                 self.DATA = filename
 
@@ -92,7 +95,7 @@ class TimelapseERT():
 
         return "\n".join(out)
 
-    def load(self, filename):
+    def load(self, filename, **kwargs):
         """Load or import data (or data files using *)."""
         if os.path.isfile(filename):
             self.data = ert.load(filename)
@@ -603,6 +606,23 @@ class TimelapseERT():
             for i, model in enumerate(self.models):
                 vtk["resistivity"] = model
                 vtk.exportVTK(name+f"_result{i}.vtk")
+
+    def saveResults(self, basename=None):
+        """Save inversion results."""
+        if basename is None:
+            basename = self.name
+        
+        self.pd.save(basename+".bms")
+        np.savetxt(basename+".result", self.models, fmt="%.1f")
+
+    def loadResults(self, basename=None):
+        """Load inversion results."""
+        if basename is None or basename is True:
+            basename = self.name
+        
+        self.pd = pg.load(basename+".bms")
+        self.models = np.loadtxt(basename+".result")
+
 
 if __name__ == "__main__":
     pass

@@ -32,7 +32,7 @@ from .utils import (ProgressBar, Table, boxprint, cumDist, cut, diff, dist, rate
                     getIndex, grange, logDropTol, niceLogspace,
                     prettify, prettyFloat, prettyTime,
                     randn, rand, trimDocString, unicodeToAscii, unique,
-                    unique_everseen, unique_rows, uniqueAndSum)
+                    unique_everseen, uniqueAndSum)
 
 from .streams import streamline, streamlineDir
 from .dem import DEM

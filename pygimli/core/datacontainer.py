@@ -70,9 +70,9 @@ def __DC_setVal(self, key, val):
 DataContainer.__setitem__ = __DC_setVal
 
 
-def __DC_getVal(self, key):
+def __DC_getVal(self, key, **kwargs):
     if self.isSensorIndex(key):
-        return np.array(self.get(key), dtype=int)
+        return np.array(self.get(key), dtype=int, **kwargs)
     # return self(key).array() // d['a'][2] = 0.0, would be impossible
     return self.ref(key)
 DataContainer.__getitem__ = __DC_getVal

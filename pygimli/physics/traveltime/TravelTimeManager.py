@@ -52,7 +52,7 @@ class TravelTimeManager(MeshMethodManager):
         if self.useFatray:
             fop = FatrayDijkstraModelling(frequency=self.frequency, **kwargs)
         else:
-            fop = TravelTimeDijkstraModelling(**kwargs)
+            fop = TravelTimeDijkstraModelling(verbose=self.verbose)
         return fop
 
     def load(self, fileName):
@@ -297,6 +297,7 @@ class TravelTimeManager(MeshMethodManager):
 
         segs = []
         nodes = self.fop._core.mesh().positions(withSecNodes=True)
+
         for s, g in zip(shots, recei):
             wi = self.fop.way(s, g)
             points = nodes[wi]

@@ -64,13 +64,50 @@ Index __setTC__(){
         setBLASThreadCount(min(8, numberOfCPU()-2));
     }
 
-    int tc = min(8, numberOfCPU()-2);
-    return (Index)(tc);
+    int tc = getEnvironment("GIMLI_NUM_THREADS", -1, false);
+
+// __MS(tc)
+    tc = Index(min(8, numberOfCPU()-2));
+// __MS(Index(tc))
+    setThreadCount(Index(tc));
+    return Index(tc);
 }
 
 static Index __GIMLI_THREADCOUNT__ = __setTC__();
 
-static Index __GIMLI_USE_OMP__ = 1;
+void setThreadCount(Index nThreads){
+
+    nThreads = max(1, nThreads);
+    log(Debug, "Set amount of threads to " + str(nThreads));
+    //log(Debug, "omp_get_max_threads: " + str(omp_get_max_threads()));
+    //omp_set_num_threads
+#if OPENBLAS_CBLAS_FOUND
+    openblas_set_num_threads(nThreads);
+    //omp_set_num_threads
+#else
+    log(Debug, "can't set openblas thread count. ");
+#endif
+
+    __GIMLI_THREADCOUNT__ = nThreads;
+    // __MS(__GIMLI_THREADCOUNT__)
+}
+
+Index threadCount(){
+    return __GIMLI_THREADCOUNT__;
+}
+
+bool __setOMP__(){
+
+    int tc = getEnvironment("PG_USE_OMP", -1, false);
+    if (tc == -1) {
+        // default is false
+        tc = false;
+    }
+    setUseOMP(tc);
+    return (bool)tc;
+}
+
+static bool __GIMLI_USE_OMP__ = __setOMP__();
 
 void setUseOMP(bool o){
     __GIMLI_USE_OMP__ = o;
@@ -78,31 +115,6 @@ void setUseOMP(bool o){
 bool useOMP(){
     return __GIMLI_USE_OMP__;
 }
-
-// //** end forward declaration
-// // static here gives every .cpp its own static bool
-// extern static bool __SAVE_PYTHON_GIL__;
-// extern static bool __GIMLI_DEBUG__;
-
-std::string versionStr(){
-    std::string vers(str(PACKAGE_NAME) + "-" + PACKAGE_VERSION);
-#if USE_EIGEN3
-    vers += " (Eigen3)";
-#endif
-    return vers;
-}
-
-void savePythonGIL(bool s){ __SAVE_PYTHON_GIL__ = s; }
-bool pythonGIL(){ return __SAVE_PYTHON_GIL__; }
-
-void setDebug(bool s){ __GIMLI_DEBUG__ = s; }
-bool debug(){ return __GIMLI_DEBUG__;}
-
-void setDeepDebug(int level){__GIMLI_DEEP_DEBUG__ = level;}
-int deepDebug(){ return __GIMLI_DEEP_DEBUG__; }
-
-void setNoCBlas(bool s ){__GIMLI_NO_CBLAS__ = s;}
-bool noCBlas(){ return __GIMLI_NO_CBLAS__; }
 
 void setOMPThreadCount(Index nThreads){
     log(Debug, "Set amount of OMP threads to " + str(nThreads));
@@ -129,14 +141,6 @@ Index getBLASThreadCount(){
     return 0;
 #endif
 }
-void setThreadCount(Index nThreads){
-    __GIMLI_THREADCOUNT__ = nThreads;
-    setOMPThreadCount(nThreads);
-    setBLASThreadCount(nThreads);
-}
-Index threadCount(){
-    return __GIMLI_THREADCOUNT__;
-}
 
 void threadsInfo(){
     // log(Info, "omp_in_parallel: " + str(omp_in_parallel()));
@@ -148,6 +152,26 @@ void threadsInfo(){
         str(omp_in_parallel()) + ") " + str(omp_get_thread_num()), '/', str(omp_get_num_threads()));
 
 }
+
+std::string versionStr(){
+    std::string vers(str(PACKAGE_NAME) + "-" + PACKAGE_VERSION);
+#if USE_EIGEN3
+    vers += " (Eigen3)";
+#endif
+    return vers;
+}
+
+void savePythonGIL(bool s){ __SAVE_PYTHON_GIL__ = s; }
+bool pythonGIL(){ return __SAVE_PYTHON_GIL__; }
+
+void setDebug(bool s){ __GIMLI_DEBUG__ = s; }
+bool debug(){ return __GIMLI_DEBUG__;}
+
+void setDeepDebug(int level){__GIMLI_DEEP_DEBUG__ = level;}
+int deepDebug(){ return __GIMLI_DEEP_DEBUG__; }
+
+void setNoCBlas(bool s ){__GIMLI_NO_CBLAS__ = s;}
+bool noCBlas(){ return __GIMLI_NO_CBLAS__; }
 
 static bool __DISABLE_CACHE_FOR_DBG__ = false;
 

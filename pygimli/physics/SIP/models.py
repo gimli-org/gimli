@@ -146,7 +146,7 @@ def tauRhoToTauSigma(tRho, m, c):
     >>> S = modelColeColeSigma(1e5, sigma=0.1, m=0.5, tau=ts, c=0.5)
     >>> abs(1.0/S - Z) < 1e-12
     True
-    >>> np.angle(1.0/S / Z) < 1e-12
+    >>> float(np.angle(1.0/S / Z)) < 1e-12
     True
     """
     return tRho * (1-m) ** (1/c)
