@@ -41,9 +41,6 @@ data['k'] = ert.createGeometricFactors(data, numerical=True)
 _ = ert.showData(data, vals=k0/ data['k'], label='Topography effect',
                  cMin=2/3, cMax=3/2, logScale=True, cMap="bwr")
 
-
-sdfsfsf
-
 ###############################################################################
 # We can now compute the apparent resistivity and display it, once with the
 # wrong analytical formula and once with the numerical values in data['k']
