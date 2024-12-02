@@ -31,7 +31,7 @@ plt.plot(pg.x(data), pg.z(data), 'x-')
 ###############################################################################
 # The data file does not contain geometric factors (token field 'k'),
 # so we create them based on the given topography.
-k0 = ert.geometricFactors(data)  # the analytical one
+k0 = ert.createGeometricFactors(data)  # the analytical one
 data['k'] = ert.createGeometricFactors(data, numerical=True)
 
 ###############################################################################
@@ -40,6 +40,9 @@ data['k'] = ert.createGeometricFactors(data, numerical=True)
 # Rücker et al. (2006). We display it using a colormap with neutral white.
 _ = ert.showData(data, vals=k0/ data['k'], label='Topography effect',
                  cMin=2/3, cMax=3/2, logScale=True, cMap="bwr")
+
+
+sdfsfsf
 
 ###############################################################################
 # We can now compute the apparent resistivity and display it, once with the
