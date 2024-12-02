@@ -545,9 +545,8 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     if axisLabels == True and mesh.dim() == 2:
 
         try:
-            pg.viewer.mpl.adjustWorldAxes(ax,
-                                       useDepth=min(mesh.boundaryMarkers()) < 0,
-                                       xl=xl, yl=yl)
+            useDepth = min(mesh.boundaryMarkers()) < 0 and max(pg.y(mesh)) <= 0
+            pg.viewer.mpl.adjustWorldAxes(ax, useDepth=useDepth, xl=xl, yl=yl)
         except BaseException:
             pass
     else:
