@@ -31,7 +31,7 @@ plt.plot(pg.x(data), pg.z(data), 'x-')
 ###############################################################################
 # The data file does not contain geometric factors (token field 'k'),
 # so we create them based on the given topography.
-k0 = ert.geometricFactors(data)  # the analytical one
+k0 = ert.createGeometricFactors(data)  # the analytical one
 data['k'] = ert.createGeometricFactors(data, numerical=True)
 
 ###############################################################################
