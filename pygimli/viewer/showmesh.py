@@ -693,6 +693,7 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
 def show1D(mesh, obj, **kwargs):
     """Show simple plot for 1D modelling results
     """
+
     kwargs.pop('hold', None)
     kwargs.pop('fitView', None)
 
@@ -747,10 +748,11 @@ def show1D(mesh, obj, **kwargs):
         ax.set_xlabel(xLabel)
 
     if 'yl' in kwargs:
+
         if not isinstance(obj, (list, np.ndarray)):
             yLabel = kwargs.pop('yl', str(obj))
         else:
-            yLabel = ''
+            yLabel = kwargs.pop('yl', '')
 
         if swapAxes is True:
             ax.set_xlabel(yLabel)

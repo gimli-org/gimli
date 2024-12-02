@@ -42,7 +42,7 @@ def drawSparseMatrix(ax, mat, **kwargs):
     color = kwargs.pop('color', None)
     ms = kwargs.pop('ms', kwargs.pop('markersize', 0.5))
 
-    mat = pg.utils.sparseMatrix2coo(mat)
+    mat = pg.matrix.asCOO(mat)
     mat.row += row
     mat.col += col
     gci = ax.spy(mat, color=color, ms=ms, **kwargs)

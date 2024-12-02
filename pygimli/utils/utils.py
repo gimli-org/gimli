@@ -243,6 +243,8 @@ class PFjsonEncoder(json.JSONEncoder):
 
 def prettify(value, roundValue=False, mathtex=False):
     """Return prettified string for value .. if possible."""
+    if isinstance(value, list):
+        return f'[{", ".join([prettify(v) for v in value])}]'
     if isinstance(value, dict):
         try:
             return json.dumps(value, indent=4, cls=PFjsonEncoder)
@@ -253,7 +255,7 @@ def prettify(value, roundValue=False, mathtex=False):
         return prettyFloat(value, roundValue, mathtex)
 
     pg.warn("Don't know how to prettify the string representation for: ",
-            value, type(value))
+            type(value), value)
     return value
 
 
