@@ -141,7 +141,7 @@ public:
     inline Shape * pShape() { return shape_; }
 
     /*! Return rst-coordinates for the i-th node. See Shape::rst. */
-    RVector3 rst(uint i) const;
+    virtual RVector3 rst(uint i) const;
 
     /*! Return the center coordinates of this MeshEntity. */
     RVector3 center() const;
@@ -164,7 +164,7 @@ public:
     virtual RVector N(const RVector3 & rst) const;
 
     /*! Inplace variant of \ref N */
-    virtual void N(const RVector3 & rst, RVector & n) const;
+    virtual void N(const RVector3 & (rst), RVector & n) const;
 
     /*! Return a \ref RVector of the derivation for the \f$ n=[0,\mathrm{nodeCount()}] \f$ shape functions \f$ N_n(L_1,L_2,L_3)\f$ for the local coordinate \f$ (L_1,L_2,L_3)\f$
      *   regarding to the local coordinates \f$ L_i \f$ \n

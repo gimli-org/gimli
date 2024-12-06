@@ -8,7 +8,7 @@ import numpy as np
 import pygimli as pg
 
 
-def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
+def createMesh(poly, quality=32, area=0.0, smooth=True, switches=None,
                verbose=False, **kwargs):
     """Create a mesh for a given PLC or point list.
 
@@ -46,7 +46,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
         1: node center
         2: weighted node center
 
-        If smooth is just set to True then [1, 4] is choosen.
+        If smooth is just set to True then [1, 2] is choosen.
 
     switches: str
         Set additional triangle command switches.
@@ -69,7 +69,6 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
     >>> ax, _ = pg.show(mt.createMesh(rect, quality=10))
     >>> ax, _ = pg.show(mt.createMesh(rect, quality=33))
     >>> ax, _ = pg.show(mt.createMesh(rect, quality=33, area=0.01))
-    >>> pg.wait()
     """
     #  poly == [pg.Mesh, ]
     if isinstance(poly, list):
@@ -102,7 +101,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
                 # than 0.0001 into the scientific notation 1e-5
                 # which can not be read by triangle. The following
                 # avoids this even for very small numbers
-                switches += 'a' + '{:.20f}'.format(area)
+                switches += 'a' + '{:.12f}'.format(area)
 
             # switches = switches.replace('.', ',')
             switches += 'q' + str(quality)

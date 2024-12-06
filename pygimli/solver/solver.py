@@ -2060,7 +2060,7 @@ def createStiffnessMatrix(mesh, a=None, isVector=False):
     # if isComplex is True:
     #     return pg.matrix.CSparseMatrix(A)
 
-    return pg.utils.asSparseMatrix(A)
+    return pg.matrix.asSparseMatrix(A)
 
 
 def createMassMatrix(mesh, b=None):
@@ -2632,7 +2632,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
 
 
 def checkCFL(times, mesh, vMax, verbose=False):
-    """Check Courant-Friedrichs-Lewy condition.
+    r"""Check Courant-Friedrichs-Lewy condition.
 
     For advection and flow problems. CFL Number should be lower then 1 to
     ensure stability.

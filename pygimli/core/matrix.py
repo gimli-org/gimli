@@ -360,7 +360,7 @@ pgcore.RBlockMatrix.ndim = 2
 
 def __SparseMatrixEqual__(self, T):
     """Compare two SparseMatrices"""
-    from pygimli.utils import sparseMatrix2Array
+    from .matrix import sparseMatrix2Array
 
     if self.shape[0] != T.shape[0] or self.shape[1] != T.shape[1]:
         warn(f'Compare sizes invalid {self.shape} vs. {T.shape}: ')
@@ -563,7 +563,6 @@ def sparseMatrix2csr(A):
         #                    C.vecRowIdx(),
         #                    C.vecColPtr()))
     elif isinstance(A, SparseMatrix):
-
         return csr_matrix((A.vecVals().array(),
                            A.vecRowIdx().array(),
                            A.vecColPtr().array()), shape=A.shape)

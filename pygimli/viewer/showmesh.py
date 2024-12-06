@@ -43,6 +43,7 @@ def show(obj=None, data=None, **kwargs):
         * :gimliapi:`GIMLI::Mesh` or list of meshes
         * DataContainer
         * pg.core.Sparse[Map]Matrix
+        * [Pos,] -> scatter
 
     data: iterable
         Optionally data to visualize. See appropriate show function.
@@ -76,6 +77,7 @@ def show(obj=None, data=None, **kwargs):
         pg.critical("Deprecation Warning: Please use keyword `ax` instead of `axes`")
         kwargs['ax'] = kwargs.pop('axes', None)
 
+    ax = None
     # Empty call just to create an mpl axes
     # if obj is None and 'mesh' not in kwargs:
     if obj is None and 'mesh' not in kwargs.keys():
@@ -99,7 +101,7 @@ def show(obj=None, data=None, **kwargs):
         _removeFigHeader(ax)
         return ax, None
 
-    ### obj containes a mesh
+    ### obj contains a mesh
     if hasattr(obj, 'mesh'):
         ### data has values
         if hasattr(obj, 'values'):
@@ -136,6 +138,16 @@ def show(obj=None, data=None, **kwargs):
             return showMatrix(obj, **kwargs)
     except ImportError:
         pass
+
+    ### obj is list of Pos -> draw dots
+    if pg.isPosList(obj):
+        ax = kwargs.pop('ax', None)
+        if ax is None:
+            ax, cbar = pg.show()
+        ax.scatter(pg.x(obj), pg.y(obj),  **kwargs)
+        _removeFigHeader(ax)
+        return ax, None
+
 
     # try to interprete obj as mesh or list of meshes
     mesh = kwargs.pop('mesh', obj)
@@ -277,7 +289,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         Fit the axes limits to the all content of the axes. Default True.
 
     boundaryProps: dict
-        Arguments for plotboundar
+        Arguments for plot boundary.
 
     hold: bool [pg.hold()]
         Holds back the opening of the Figure.
@@ -378,7 +390,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             data = np.arange(len(uniquemarkers))[uniqueidx]
 
     if isinstance(data, str):
-        # if data in mesh.dataKeys():
+        #if data in mesh.dataKeys():
         #     data = mesh[data]
         #     # elif 0:  # maybe check x, y, z, cellMarker etc.
         # else:
@@ -386,7 +398,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         #     return None, None
         if mesh.haveData(data):
             #print(factor)
-            data = mesh[data]# * factor
+            data = mesh[data] * factor
         else:
             raise IndexError("Mesh does not contain field ", data)
     elif callable(data):
@@ -395,11 +407,11 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     if data is None:
         showMesh = True
         mesh.createNeighborInfos()
+
         if showBoundary is None:
             showBoundary = True
-    # elif isinstance(data, pg.core.stdVectorRVector3): /no such datatype??
-    #     drawSensors(ax, data, **kwargs)
-    elif isinstance(data, pg.PosVector):
+
+    elif pg.isPosList(data):
         drawStreams(ax, mesh, data, **kwargs)
     else:
         # check for map like data=[[marker, val], ....]
@@ -693,7 +705,6 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
 def show1D(mesh, obj, **kwargs):
     """Show simple plot for 1D modelling results
     """
-
     kwargs.pop('hold', None)
     kwargs.pop('fitView', None)
 
@@ -748,11 +759,10 @@ def show1D(mesh, obj, **kwargs):
         ax.set_xlabel(xLabel)
 
     if 'yl' in kwargs:
-
         if not isinstance(obj, (list, np.ndarray)):
             yLabel = kwargs.pop('yl', str(obj))
         else:
-            yLabel = kwargs.pop('yl', '')
+            yLabel = kwargs.pop('yl', None)
 
         if swapAxes is True:
             ax.set_xlabel(yLabel)

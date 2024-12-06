@@ -272,14 +272,33 @@ def apply(mb):
         rt.add_declaration_code(WRAPPER_DEFINITION_IndexArray)
         apply_reg(rt, WRAPPER_REGISTRATION_IndexArray)
 
-
     print("Register 'StdVecI' handmade wrapper")
     try:
         rt = mb.class_('vector<int, std::allocator<int> >')
+        rt = mb.class_('vector<int>')
         rt.add_declaration_code(WRAPPER_DEFINITION_StdVecI)
         apply_reg(rt, WRAPPER_REGISTRATION_StdVecI)
     except:
-        pg.warn("can't find 'vector<int, std::allocator<int> >'")
+        try:
+            rt = mb.class_('vector<int>')
+            rt.add_declaration_code(WRAPPER_DEFINITION_StdVecI)
+            apply_reg(rt, WRAPPER_REGISTRATION_StdVecI)
+        except:
+
+        # for c in mb.classes():
+        #     if 'vector' in c.name:
+        #         try:
+        #             for mem in c.member_functions():
+        #                 if mem.decl_string.find('size') > -1:
+        #                     #print('class:', c.name, mem.decl_string)
+        #                     print('class:', c.name)
+        #                     print()
+        #         except:
+        #             pass
+
+
+            pg.critical("can't find 'vector<int, std::allocator<int> >'")
+
 
     print("Register 'ByteBuffer' handmade wrapper")
     rt = mb.class_('ByteBuffer')

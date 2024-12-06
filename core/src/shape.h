@@ -279,7 +279,8 @@ public:
      */
     virtual void xyz2rst(const Pos & xyz, Pos & rst) const;
 
-    /*! Return local coordinates for Cartesian coordinates regarding the shape function. */
+    /*! Return local coordinates for Cartesian coordinates
+    regarding the shape function. */
     virtual Pos rst(const Pos & xyz) const;
 
     /*! Return local coordinates for node i. */

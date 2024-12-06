@@ -314,7 +314,7 @@ void IntegrationRules::initTri_(){
     triAbscissa_.back()[0] = RVector3(1.0/3.0, 1.0/3.0);
     triWeights_.push_back(RVector(1, 1.0));
 
-        //** 2.Order, n=3, Error: O(h3)
+    //** 2.Order, n=3, Error: O(h3)
     triAbscissa_.push_back(R3Vector(3));
     triAbscissa_.back()[0] = RVector3(0.5, 0.0);
     triAbscissa_.back()[1] = RVector3(0.5, 0.5);
@@ -324,8 +324,8 @@ void IntegrationRules::initTri_(){
     //** 3.Order, n=4, Error: O(h4)
     triAbscissa_.push_back(R3Vector(4));
     triAbscissa_.back()[0] = RVector3(1.0/3.0, 1.0/3.0) ;
-    triAbscissa_.back()[1] = RVector3(0.2, 0.2);
-    triAbscissa_.back()[2] = RVector3(0.6, 0.2);
+    triAbscissa_.back()[1] = RVector3(0.6, 0.2);
+    triAbscissa_.back()[2] = RVector3(0.2, 0.2);
     triAbscissa_.back()[3] = RVector3(0.2, 0.6);
     triWeights_.push_back(RVector(4, 25.0 / 48.0));
     triWeights_.back()[0] = -27.0/48.0;

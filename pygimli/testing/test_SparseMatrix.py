@@ -9,15 +9,35 @@ import numpy as np
 
 class TestSparseMatrix(unittest.TestCase):
 
-    def test_Convert(self):
+
+    def test_Misc(self):
+        """ Miscellaneous occurred fails.
         """
+        D = pg.matrix.asSparseMapMatrix(np.ones((3,4)))
+
+        np.testing.assert_allclose(D.col(2), pg.Vector(D.rows(), 1.0))
+        np.testing.assert_allclose(D.row(2), pg.Vector(D.cols(), 1.0))
+
+        D.cleanRow(1)
+        np.testing.assert_allclose(D.col(2), [1.0, 0.0, 1.0])
+
+        D.cleanCol(1)
+        np.testing.assert_allclose(D.row(2), [1.0, 0.0, 1.0, 1.0])
+
+        D = pg.matrix.asSparseMatrix(D)
+        np.testing.assert_allclose(D.values().array(), np.ones(6))
+        np.testing.assert_allclose(D.vecRowIdx().array(), [0, 2, 3, 0, 2, 3])
+
+
+    def test_Convert(self):
+        """ Test Sparse matrix conversion from * to *.
         """
         def _cmp_(A, B, timings=False):
 
-            At = pg.utils.toCSR(A)
+            At = pg.matrix.asCSR(A)
             if timings == True:
                 pg.toc('cmp A:', reset=True)
-            Bt = pg.utils.toCSR(B)
+            Bt = pg.matrix.asCSR(B)
             if timings == True:
                 pg.toc('cmp B:', reset=True)
             # np.testing.assert_equal(pg.utils.toSparseMatrix(A) == pg.utils.toSparseMatrix(B), True)
@@ -38,31 +58,31 @@ class TestSparseMatrix(unittest.TestCase):
                 print(f'A.shape: {A.shape}')
 
             pg.tic()
-            T = pg.utils.toSparseMatrix(A)
+            T = pg.matrix.asSparseMatrix(A)
             if timings == True:
                 pg.toc(f'{type(A)} -> RSparseMatrix:',  reset=True)
             _cmp_(A, T, timings)
 
             pg.tic()
-            T = pg.utils.toSparseMapMatrix(A)
+            T = pg.matrix.asSparseMapMatrix(A)
             if timings == True:
                 pg.toc(f'{type(A)} -> RSparseMapMatrix:',  reset=True)
             _cmp_(A, T, timings)
 
             pg.tic()
-            T = pg.utils.toCOO(A)
+            T = pg.matrix.asCOO(A)
             if timings == True:
                 pg.toc(f'{type(A)} -> COO', reset=True)
             _cmp_(A, T, timings)
 
             pg.tic()
-            T = pg.utils.toCSR(A)
+            T = pg.matrix.asCSR(A)
             if timings == True:
                 pg.toc(f'{type(A)} -> CSR', reset=True)
             _cmp_(A, T, timings)
 
             pg.tic()
-            T = pg.utils.toCSC(A)
+            T = pg.matrix.asCSC(A)
             if timings == True:
                 pg.toc(f'{type(A)} -> CSC', reset=True)
             _cmp_(A, T, timings)
@@ -75,25 +95,25 @@ class TestSparseMatrix(unittest.TestCase):
 
         A = pg.solver.createStiffnessMatrix(grid,
                                             a=np.ones(grid.cellCount())*3.14)
-        
+
         _test_(A, timings=False)
-        _test_(pg.utils.toSparseMapMatrix(A), timings=False)
-        _test_(pg.utils.toCOO(A), timings=False)
-        _test_(pg.utils.toCSR(A), timings=False)
-        
-        
+        _test_(pg.matrix.asSparseMapMatrix(A), timings=False)
+        _test_(pg.matrix.asCOO(A), timings=False)
+        _test_(pg.matrix.asCSR(A), timings=False)
+
+
         colIds = range(10)
         rowIds = range(10)
         vals = np.ones(10)
-        
+
         # Construct SparseMap Matrix from python arrays
         A = pg.matrix.SparseMapMatrix(colIds, rowIds, vals)
-        
+
         # SparseMap -> CRS (compressed row storage)
-        S = pg.utils.toSparseMatrix(A)
+        S = pg.matrix.asSparseMatrix(A)
 
         # CRS -> SparseMap (COO)
-        A2 = pg.utils.toSparseMapMatrix(S)
+        A2 = pg.matrix.asSparseMapMatrix(S)
 
         # all should be identity matrix
         np.testing.assert_equal(A2.getVal(1, 1), 1.0)
@@ -102,8 +122,8 @@ class TestSparseMatrix(unittest.TestCase):
 
 
         MAP1 = pg.matrix.SparseMapMatrix(r=3, c=15)
-        CSR = pg.utils.toSparseMatrix(MAP1)
-        MAP2 = pg.utils.toSparseMapMatrix(CSR)
+        CSR = pg.matrix.asSparseMatrix(MAP1)
+        MAP2 = pg.matrix.asSparseMapMatrix(CSR)
 
         v3 = pg.Vector(3)
         v15 = pg.Vector(15)
@@ -136,20 +156,20 @@ class TestSparseMatrix(unittest.TestCase):
         check_csc_cols = [0, 0, 1, 2, 3]
         check_csc_rowptr = [0, 1, 2, 3, 4, 5]
 
-        r1, c1, v1 = pg.utils.sparseMatrix2Array(mm)
+        r1, c1, v1 = pg.matrix.sparseMatrix2Array(mm)
         np.testing.assert_allclose(r1, check_csr_rows)
         np.testing.assert_allclose(c1, check_csr_colPtr)
         np.testing.assert_allclose(v1, check_vals)
 
-        sciA1 = pg.utils.sparseMatrix2csr(pg.utils.toSparseMatrix(mm))
+        sciA1 = pg.matrix.asCSR(pg.matrix.asSparseMatrix(mm))
         np.testing.assert_equal(sciA1.indices, check_csr_rows)
         np.testing.assert_equal(sciA1.indptr, check_csr_colPtr)
 
-        sciA1 = pg.utils.sparseMatrix2csr(mm)
+        sciA1 = pg.matrix.asCSR(mm)
         np.testing.assert_equal(sciA1.indices, check_csr_rows)
         np.testing.assert_equal(sciA1.indptr, check_csr_colPtr)
 
-        r2, c2, v2 = pg.utils.sparseMatrix2Array(pg.utils.toSparseMatrix(mm),
+        r2, c2, v2 = pg.matrix.sparseMatrix2Array(pg.matrix.asSparseMatrix(mm),
                                                  getInCRS=False)
         np.testing.assert_allclose(r2, check_rows)
         np.testing.assert_allclose(c2, check_cols)
@@ -168,7 +188,7 @@ class TestSparseMatrix(unittest.TestCase):
         rowIds = range(10)
         vals = np.ones(10)
         A = pg.matrix.SparseMapMatrix(colIds, rowIds, vals)
-        S = pg.utils.toSparseMatrix(A)
+        S = pg.matrix.asSparseMatrix(A)
 
         S2 = S + S * 0.1 * 0.3
         S3 = S + 0.1 * 0.3 * S
@@ -184,7 +204,7 @@ class TestSparseMatrix(unittest.TestCase):
                                   np.ones(grid.cellCount())*1.0)
 
         A = pg.solver.createStiffnessMatrix(grid, a=alpha)
-        
+
         return # test deactived until we need complex matrices again
         pg.solver.solver.applyDirichlet(A, None, [0], [0.0])
         #pg.solver.showSparseMatrix(A)
@@ -222,26 +242,15 @@ class TestSparseMatrix(unittest.TestCase):
 
         B.add(A, 10, 10)
 
-    def test_Misc(self):
-        D = pg.utils.toSparseMapMatrix(np.ones((3,4)))
-
-        np.testing.assert_allclose(D.col(2), pg.Vector(D.rows(), 1.0))
-        np.testing.assert_allclose(D.row(2), pg.Vector(D.cols(), 1.0))
-
-        D.cleanRow(1)
-        np.testing.assert_allclose(D.col(2), [1.0, 0.0, 1.0])
-
-        D.cleanCol(1)
-        np.testing.assert_allclose(D.row(2), [1.0, 0.0, 1.0, 1.0])
 
     def test_ReduceEntries(self):
         from scipy.sparse import csc_matrix, csr_matrix
         A = np.ones((5,5))
 
-        A1 = pg.utils.toSparseMapMatrix(A)
-        A2 = pg.utils.toSparseMapMatrix(A)
+        A1 = pg.matrix.asSparseMapMatrix(A)
+        A2 = pg.matrix.asSparseMapMatrix(A)
         idx = [1,2]
-        pg.utils.reduceEntries(A1, idx)
+        pg.matrix.reduceEntries(A1, idx)
 
         for i, ix in enumerate(idx):
             A2.cleanRow(ix)

@@ -459,7 +459,7 @@ Cell * Mesh::createCell(std::vector < Node * > & nodes, int marker){
         case 15: return createCell_< TriPrism15 >(nodes, marker, cellCount()); break;
         case 20: return createCell_< Hexahedron20 >(nodes, marker, cellCount()); break;
         default:{
-            print(nodes.size());
+            print("Node size:", nodes.size());
             THROW_TO_IMPL
         }
     }

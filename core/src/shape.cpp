@@ -597,11 +597,11 @@ bool TriangleShape::intersectRay(const Pos & start, const Pos & dir,
     return false;
 }
 
-
 Pos QuadrangleShape::rst(Index i) const{
+    // __MS(i, QuadCoordinates[i][0], QuadCoordinates[i][1], nodeCount())
     if (i < nodeCount()) return Pos(QuadCoordinates[i][0],
-                                         QuadCoordinates[i][1],
-                                         QuadCoordinates[i][2]);
+                                    QuadCoordinates[i][1],
+                                    QuadCoordinates[i][2]);
     log(Error, "rst coordinate out of bounds", i);
     return Pos(0.0, 0.0, 0.0);
 }
