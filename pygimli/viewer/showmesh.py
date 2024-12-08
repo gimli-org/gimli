@@ -736,11 +736,24 @@ def show1D(mesh, obj, **kwargs):
     elif hasattr(obj, 'ndim') and obj.ndim == 2 and pg.isArray(obj[0], mesh.nodeCount()):
         # list of values for animation
         return showAnimation(mesh, obj, ax=ax, **kwargs)
+    elif obj is None:
+        showMesh = kwargs.pop('showMesh', False)
+        if showMesh:
+            pg.viewer.mpl.drawSelectedMeshBoundaries(ax, mesh.cells(),
+                                                     color='k', linewidth=0.3,
+                                                     linestyle="-", **kwargs)
+
+        else:
+            pg.viewer.mpl.drawPLC(ax, mesh, showNodes=True,
+                                  fillRegion=False,
+                                  showBoundary=False,
+                                  **kwargs)
+        return ax, None
     else:
         pg._r(kwargs)
         pg._r(mesh)
         pg._r(obj)
-        pg._r(obj.shape)
+        #pg._r(obj.shape)
         pg.critical('implementme')
 
     swapAxes = kwargs.pop('swapAxes', False)

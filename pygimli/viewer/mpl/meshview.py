@@ -637,7 +637,7 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
     if not mesh:
         raise Exception("drawMeshBoundaries(ax, mesh): invalid mesh")
 
-    if not mesh.dimension() == 2:
+    if mesh.dimension() != 2:
         raise Exception("No 2d mesh: dim = ", mesh.dimension())
 
     if mesh.nodeCount() < 2:
@@ -657,12 +657,12 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
 
     drawSelectedMeshBoundaries(
         ax, mesh.findBoundaryByMarker(pg.core.MARKER_BOUND_HOMOGEN_NEUMANN),
-        color=(0.0, 1.0, 0.0, 1.0),
-        linewidth=lw or 1.0)
+                                      color=(0.0, 1.0, 0.0, 1.0),
+                                      linewidth=lw or 1.0)
     drawSelectedMeshBoundaries(
         ax, mesh.findBoundaryByMarker(pg.core.MARKER_BOUND_MIXED),
-        color=(1.0, 0.0, 0.0, 1.0),
-        linewidth=lw or 1.0)
+                                      color=(1.0, 0.0, 0.0, 1.0),
+                                      linewidth=lw or 1.0)
 
     col = color
 
