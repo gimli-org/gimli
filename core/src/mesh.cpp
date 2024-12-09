@@ -178,7 +178,11 @@ Node * Mesh::createNodeGC_(const RVector3 & pos, int marker){
     if (this->isGeometry_){
         // __M
         Index oldCount = this->nodeCount();
-        Node *n = this->createNodeWithCheck(pos);
+        double tol = 1e-6;
+        bool warn = false;
+        bool edgeCheck = this->dim() == 2;
+
+        Node *n = this->createNodeWithCheck(pos, tol, warn, edgeCheck);
         n->setMarker(marker);
 
         if ((this->nodeCount() == oldCount)){
