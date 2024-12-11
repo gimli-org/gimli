@@ -40,13 +40,13 @@ def createMesh(poly, quality=32, area=0.0, smooth=True, switches=None,
         Maximum element size (global). 2D maximum triangle size in m*²,
         3D maximum tetrahedral size in m³.
 
-    smooth: tuple
+    smooth: None|tuple|True [True]
         [smoothing algorithm, number of iterations]
         0: no smoothing
         1: node center
         2: weighted node center
 
-        If smooth is just set to True then [1, 2] is choosen.
+        If smooth is just set to True then `smooth=[1, 2]` is chosen [Default].
 
     switches: str
         Set additional triangle command switches.
