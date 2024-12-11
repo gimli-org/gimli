@@ -28,6 +28,11 @@ class TestSparseMatrix(unittest.TestCase):
         np.testing.assert_allclose(D.values().array(), np.ones(6))
         np.testing.assert_allclose(D.vecRowIdx().array(), [0, 2, 3, 0, 2, 3])
 
+        D = pg.SparseMapMatrix(3, 4)
+        for i in range(D.rows()):
+            for j in range(D.cols()):
+                D.setVal(i, j, 1.0)
+
 
     def test_Convert(self):
         """ Test Sparse matrix conversion from * to *.
@@ -258,6 +263,8 @@ class TestSparseMatrix(unittest.TestCase):
             A2.setVal(ix, ix, 1.0)
 
         np.testing.assert_equal(A1==A2, True)
+
+
 
 if __name__ == '__main__':
     unittest.main()

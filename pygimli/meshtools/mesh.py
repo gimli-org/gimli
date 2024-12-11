@@ -70,6 +70,9 @@ def createMesh(poly, quality=32, area=0.0, smooth=True, switches=None,
     >>> ax, _ = pg.show(mt.createMesh(rect, quality=33))
     >>> ax, _ = pg.show(mt.createMesh(rect, quality=33, area=0.01))
     """
+    #mpl somehow/somewhere changes locale back tu system settings
+    pg.checkAndFixLocaleDecimal_point()
+
     #  poly == [pg.Mesh, ]
     if isinstance(poly, list):
         if isinstance(poly[0], pg.Mesh):
