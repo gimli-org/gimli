@@ -390,9 +390,13 @@ class ERTManager(MeshMethodManager):
             _, ax = pg.plt.subplots()
 
         kwargs.setdefault("coverage", self.coverage())
-        ax, cBar = self.fop.drawModel(ax, model, **kwargs)
+        color = kwargs.pop("color", "magenta")
+        ax, cBar = self.fop.drawModel(ax, model, **kwargs)        
         if elecs:
-            pg.viewer.mpl.drawSensors(ax, self.fop.data.sensors())
+            if isinstance(elecs, str):
+                color = elecs
+            
+            pg.viewer.mpl.drawSensors(ax, self.fop.data.sensors(), color=color)
 
         return ax, cBar
 

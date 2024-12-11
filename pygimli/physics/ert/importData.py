@@ -334,7 +334,7 @@ def importAsciiColumns(filename, verbose=False, return_header=False):
 
         if content[0].startswith('Filename'):  # ABEM lead-in
             for n, line in enumerate(content):
-                if line.find("MeasID") > 0:
+                if line.find("MeasID") >= 0:
                     break
 
             for i in range(n):
@@ -506,3 +506,7 @@ def readAsDictionary(content, token=None, sep=None):  # obsolote due to numpy?
                 data[token[j]][i] = v
 
     return data
+
+
+if __name__ == "__main__":
+    pass
