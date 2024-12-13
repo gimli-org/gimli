@@ -245,7 +245,7 @@ def simulate(mesh, scheme, res, **kwargs):
 
         rhoa *= 1. + pg.randn(ret.size(), seed=seed) * ret('err')
         ret['rhoa'] = rhoa
-        if ret.allNoneZero('k'):  # also provide r if user changes k later
+        if ret.allNonZero('k'):  # also provide r if user changes k later
             ret['r'] = ret['rhoa'] / ret['k']
 
         ipError = None
