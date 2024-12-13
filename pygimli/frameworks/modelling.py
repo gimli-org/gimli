@@ -1111,7 +1111,7 @@ class LCModelling(Modelling):
 class ParameterModelling(Modelling):
     """Model with symbolic parameter names instead of numbers."""
 
-    def __init__(self, funct=None, **kwargs):
+    def __init__(self, func=None, **kwargs):
         """Initialize, optionally with given function."""
         self.function = None
         self._params = {}
@@ -1121,8 +1121,8 @@ class ParameterModelling(Modelling):
 
         super(ParameterModelling, self).__init__(**kwargs)
 
-        if funct is not None:
-            self._initFunction(funct)
+        if func is not None:
+            self._initFunction(func)
 
     @property
     def params(self):
@@ -1136,7 +1136,7 @@ class ParameterModelling(Modelling):
     def _initFunction(self, funct):
         """Init any function and interpret possible args and kwargs."""
         self.function = funct
-        # the first varname is suposed to be f or freqs
+        # the first varname is supposed to be f or freqs
         self.dataSpaceName = funct.__code__.co_varnames[0]
         pg.debug('data space:', self.dataSpaceName)
 
@@ -1190,7 +1190,7 @@ class ParameterModelling(Modelling):
         """"""
         if model is None:
             model = self._model
-            
+
         label = ''
         for k, p in self._params.items():
             label += k + "={0} ".format(pg.utils.prettyFloat(model[p]))

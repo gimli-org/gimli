@@ -13,19 +13,19 @@ import pygimli as pg
 from pygimli.utils import prettyFloat as pf
 
 
-def fit(funct, data, err=None, **kwargs):
+def fit(func, data, err=None, **kwargs):
     """Generic function fitter.
 
     Fit data to a given function.
 
     TODO
     ----
-        * Dictionary support for funct to submit user data..
+        * Dictionary support for func to submit user data..
 
     Parameters
     ----------
-    funct: callable
-        Function with the first argmument as data space, e.g., x, t, f, Nr. ..
+    func: callable
+        Function with the first argument as data space, e.g., x, t, f, Nr. ..
         Any following arguments are the parameters to be fit.
         Except if a verbose flag if used.
     data: iterable (float)
@@ -37,7 +37,7 @@ def fit(funct, data, err=None, **kwargs):
     ----------------
     *dataSpace*: iterable
         Keyword argument of the data space of len(data).
-        The name need to fit the first argument of funct.
+        The name need to fit the first argument of func.
 
     Returns
     -------
@@ -65,7 +65,7 @@ def fit(funct, data, err=None, **kwargs):
     if isinstance(err, (float, int)):
         err = np.full(len(data), err)
 
-    mgr = ParameterInversionManager(funct, **kwargs)
+    mgr = ParameterInversionManager(func, **kwargs)
     model = mgr.invert(data, err, **kwargs)
 
     if kwargs.get('retFOP', False):
@@ -428,6 +428,7 @@ class MethodManager(object):
         errVals = self._ensureError(err, dataVals)
 
         self.preRun(**kwargs)
+        pg._g(dataVals)
         self.fw.run(dataVals, errVals, **kwargs)
         self.postRun(**kwargs)
 
@@ -628,19 +629,27 @@ class MethodManager(object):
 class ParameterInversionManager(MethodManager):
     """Framework to invert unconstrained parameters."""
 
-    def __init__(self, funct=None, fop=None, **kwargs):
-        """Inizialize instance."""
+    def __init__(self, func=None, fop=None, **kwargs):
+        """Initialize instance."""
         if fop is not None:
             if not isinstance(fop, pg.frameworks.ParameterModelling):
                 pg.critical("We need a fop if type ",
                             pg.frameworks.ParameterModelling)
-        elif funct is not None:
-            fop = pg.frameworks.ParameterModelling(funct)
+        elif func is not None:
+            fop = pg.frameworks.ParameterModelling(func)
         else:
             pg.critical("you should either give a valid fop or a function so "
                         "I can create the fop for you")
 
         super(ParameterInversionManager, self).__init__(fop, **kwargs)
+
+    def _ensureData(self, data):
+        """Overwriten to allow for data values = 0.0"""
+        return np.asarray(data)
+
+    def _ensureError(self, error, *args, **kwargs):
+        """Overwriten to allow for non error."""
+        return error
 
     def createInversionFramework(self, **kwargs):
         """Create a Marquardt-type inversion framework instance."""
@@ -676,6 +685,7 @@ class ParameterInversionManager(MethodManager):
         else:
             kwargs['startModel'] = startModel
 
+        pg._r(data)
         return super(ParameterInversionManager, self).invert(data=data,
                                                              err=err,
                                                              **kwargs)

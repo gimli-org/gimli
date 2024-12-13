@@ -541,6 +541,10 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             gci.set_edgecolor(kwargs.pop('color', "0.1"))
             #drawMesh(ax, mesh, lw=0.3, **kwargs)
         #else:
+
+        if mesh.dim() == 1:
+            return show1D(mesh, None, showMesh=True, ax=ax)
+
         drawMesh(ax, mesh, lw=0.3, **kwargs)
         # pg.viewer.mpl.drawSelectedMeshBoundaries(ax,
         #         mesh.boundaries(),
@@ -742,10 +746,10 @@ def show1D(mesh, obj, **kwargs):
                                                      color='k', linewidth=0.3,
                                                      linestyle="-", **kwargs)
 
-        else:
-            pg.viewer.mpl.drawPLC(ax, mesh, showNodes=True,
-                                  fillRegion=False,
-                                  showBoundary=False,
+
+        pg.viewer.mpl.drawPLC(ax, mesh, showNodes=True,
+                              fillRegion=False,
+                              showBoundary=False,
                                   **kwargs)
         return ax, None
     else:

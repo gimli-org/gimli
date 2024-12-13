@@ -45,17 +45,17 @@ public:
 };
 
 /*! waste to satisfy python bindings */
-template < class ValueType > bool operator < (const PolynomialElement < ValueType > & a, 
+template < class ValueType > bool operator < (const PolynomialElement < ValueType > & a,
                                               const PolynomialElement < ValueType > & b){
     return ((a.i_ < b.i_) && (a.j_ < b.j_) && (a.k_ < b.k_));
 }
 
-template < class ValueType > bool operator != (const PolynomialElement < ValueType > & a, 
+template < class ValueType > bool operator != (const PolynomialElement < ValueType > & a,
                                                const PolynomialElement < ValueType > & b){
     return !(a == b);
 }
 
-template < class ValueType > bool operator == (const PolynomialElement < ValueType > & a, 
+template < class ValueType > bool operator == (const PolynomialElement < ValueType > & a,
                                                const PolynomialElement < ValueType > & b){
     return ((a.i_ == b.i_) && (a.j_ == b.j_) && (a.k_ == b.k_) && (a.val_ == b.val_));
 }
@@ -69,8 +69,8 @@ public:
 
     /*! Create empty polynomial */
     PolynomialFunction(uint size=0){
-        init_(Vector< ValueType >(size, 0.0), 
-              Vector< ValueType >(size, 0.0), 
+        init_(Vector< ValueType >(size, 0.0),
+              Vector< ValueType >(size, 0.0),
               Vector< ValueType >(size, 0.0));
     }
 
@@ -78,7 +78,7 @@ public:
         \f$ f(x,y,z) = ax[0] + ax[1]x + ax[2]x^2 ... \f$
      */
     PolynomialFunction(const Vector < ValueType > & ax){
-        init_(ax, Vector< ValueType >(0, 0.0), 
+        init_(ax, Vector< ValueType >(0, 0.0),
                   Vector< ValueType >(0, 0.0));
     }
 
@@ -94,8 +94,8 @@ public:
         \f$ f(x,y,z) = ax[0] + ax[1]x + ax[2]x^2 + ... + ay[0] + ay[1]y + ay[2]y^2 + ... + az[0] + az[1]z + az[2]z^2 + ... \f$
         If u need a composed polynomial use f(x,y,z)*g(x,y,z)*h(x,y,z).
      */
-    PolynomialFunction(const Vector < ValueType > & ax, 
-                       const Vector < ValueType > & ay, 
+    PolynomialFunction(const Vector < ValueType > & ax,
+                       const Vector < ValueType > & ay,
                        const Vector < ValueType > & az){
         init_(ax, ay, az);
     }
@@ -153,7 +153,7 @@ public:
             for (Index k = 0; k < mat_.size(); k ++){ // z
                 for (Index j = 0; j < mat_[k].rows() - 1; j ++){ // y
                     for (Index i = 0; i < mat_[k][j].size(); i ++){ // x
-                        ret[k][i][j] = mat_[k][i][j + 1] * (j +     
+                        ret[k][i][j] = mat_[k][i][j + 1] * (j +
 1.0);
                     }
                 }
@@ -251,10 +251,14 @@ public:
         return c;
     }
 
+    void show() const {
+        std::cout << *this << std::endl;
+    }
+
 protected:
 
-    void init_(const Vector < ValueType > & ax, 
-               const Vector < ValueType > & ay, 
+    void init_(const Vector < ValueType > & ax,
+               const Vector < ValueType > & ay,
                const Vector < ValueType > & az){
         Index maxDim = max(max(ax.size(), ay.size()), az.size());
 

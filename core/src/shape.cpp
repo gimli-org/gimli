@@ -76,7 +76,9 @@ createPolynomialShapeFunctions(const std::vector < Pos > & pnts,
         inv.setMaxIter(20);
         // #inv.setMarquardtScheme();
         inv.run();
-
+        if (norm(N-inv.response()) > 1e-10){
+            log(Warning, "Shape functions wrong!!");
+        }
         if (verbose) std::cout << "N" << i << ": " << fop.polynomialFunction() << std::endl;
         ret.push_back(fop.polynomialFunction());
 

@@ -1681,10 +1681,14 @@ class MarquardtInversion(Inversion):
             See: :py:mod:`pygimli.modelling.Inversion`
         """
         if errorVals is None:  # use absoluteError and/or relativeError instead
-            absErr = kwargs.pop("absoluteError", 0)
-            relErr = kwargs.pop("relativeError",
-                                0.01 if np.allclose(absErr, 0, atol=0) else 0)
-            errorVals = pg.abs(absErr / dataVals) + relErr
+            if not "absoluteError" in kwargs and \
+                not "relativeError" in kwargs:
+                errorVals = 0.0
+            else:
+                absErr = kwargs.pop("absoluteError", 0)
+                relErr = kwargs.pop("relativeError",
+                                    0.01 if np.allclose(absErr, 0, atol=0) else 0)
+                errorVals = pg.abs(absErr / dataVals) + relErr
 
         self.fop.regionManager().setConstraintType(0)
         self.fop.setRegionProperties('*', cType=0)

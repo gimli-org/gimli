@@ -293,7 +293,7 @@ def drawMesh(ax, mesh, fitView=True, **kwargs):
     >>> drawMesh(ax, mesh)
     >>> plt.show()
     """
-    if mesh.cellCount() == 0:
+    if mesh.cellCount() == 0 or mesh.dim() == 1:
         pg.viewer.mpl.drawPLC(ax, mesh, **kwargs)
     else:
         pg.viewer.mpl.drawMeshBoundaries(ax, mesh, **kwargs)

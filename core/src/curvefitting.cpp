@@ -144,8 +144,8 @@ void HarmonicModelling::createJacobian(const RVector & model) {
 PolynomialModelling::PolynomialModelling(uint dim, uint nCoeffizient,
                                          const std::vector < RVector3 > & referencePoints,
                                          const RVector & startModel)
-    : dim_(dim), referencePoints_(referencePoints) 
-       //f_(PolynomialFunction < double >(nCoeffizient)) 
+    : dim_(dim), referencePoints_(referencePoints)
+       //f_(PolynomialFunction < double >(nCoeffizient))
        {
     f_ = PolynomialFunction < double >(nCoeffizient);
     pascalTriangle_ = false;
@@ -175,7 +175,9 @@ RVector PolynomialModelling::startModel(){
                     if (powCombination_ > 0) {
                         if ((i + j + k) > powCombination_) p[k*(f_.size() * f_.size()) + j * f_.size() + i] = 0.0;
                     } else {
-                        if ((i + j + k) >= (f_.size() + serendipityStyle_ * (dim_ -1))) p[k*(f_.size() * f_.size()) + j * f_.size() + i] = 0.0;
+                        if ((i + j + k) >= (f_.size() + serendipityStyle_ * (dim_ -1))){
+                             p[k*(f_.size() * f_.size()) + j * f_.size() + i] = 0.0;
+                        }
                     }
                 }
             }
