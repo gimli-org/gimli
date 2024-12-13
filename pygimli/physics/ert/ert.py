@@ -75,6 +75,8 @@ def simulate(mesh, scheme, res, **kwargs):
         absolute phase error, if not given, data['iperr'] or noiseLevel is used
     contactImpedances float|iterables
         contact impedances for being used with CEM model
+    current : float
+        current to be assumed
 
     Returns
     -------
@@ -170,9 +172,9 @@ def simulate(mesh, scheme, res, **kwargs):
 
     ret = pg.DataContainerERT(scheme)
     # just to be sure that we don't work with artifacts
-    ret['u'] *= 0.0
-    ret['i'] *= 0.0
-    ret['r'] *= 0.0
+    ret['u'] = 0.0
+    ret['i'] = 0.0
+    ret['r'] = 0.0
 
     if isArrayData:
         rhoa = np.zeros((len(res), scheme.size()))
@@ -193,11 +195,13 @@ def simulate(mesh, scheme, res, **kwargs):
                 if fop.complex():
                     pg.critical('Implement me')
                 else:
-                    ret["u"] = dMap.data(scheme)
-                    ret["i"] = np.ones(ret.size())
+                    ret['r'] = dMap.data(scheme)
+                    ret['i'] = kwargs.pop("current", 1.0)
+                    ret['u'] = ret['r'] * ret['i']
 
                 if returnFields:
                     return pg.Matrix(fop.solution())
+                
                 return ret
             else:
                 if fop.complex():
@@ -237,15 +241,17 @@ def simulate(mesh, scheme, res, **kwargs):
                                          absoluteCurrent=1))
             if verbose:
                 pg.info("Data error estimate (min:max) ",
-                      min(ret('err')), ":", max(ret('err')))
+                      min(ret['err']), ":", max(ret['err']))
 
         rhoa *= 1. + pg.randn(ret.size(), seed=seed) * ret('err')
-        ret.set('rhoa', rhoa)
+        ret['rhoa'] = rhoa
+        if ret.allNoneZero('k'):  # also provide r if user changes k later
+            ret['r'] = ret['rhoa'] / ret['k']
 
         ipError = None
         if phia is not None:
             if scheme.allNonZero('iperr'):
-                ipError = scheme('iperr')
+                ipError = scheme['iperr']
             else:
                 # np.abs(self.data("phia") +TOLERANCE) * 1e-4absoluteError
                 if noiseLevel > 0.5:
@@ -254,7 +260,7 @@ def simulate(mesh, scheme, res, **kwargs):
                 if 'phiErr' in kwargs:
                     ipError = np.ones(ret.size()) * kwargs.pop('phiErr') / 1000
                 else:
-                    ipError = abs(ret["phia"]) * noiseLevel
+                    ipError = abs(ret['phia']) * noiseLevel
 
                 if verbose:
                     print("Data IP abs error estimate (min:max) ",
@@ -272,6 +278,7 @@ def simulate(mesh, scheme, res, **kwargs):
         else:
             return rhoa
 
+    ret['valid'] = 1
     if returnFOP:
         return ret, fop
     else:
