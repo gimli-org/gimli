@@ -425,7 +425,7 @@ class ERTManager(MeshMethodManager):
         self.mesh.save(os.path.join(path, 'mesh'))
 
         m = pg.Mesh(self.paraDomain)
-        m['Resistivity'] = self.paraModel(self.model)
+        m['Resistivity'] = self.model
         m['Resistivity (log10)'] = np.log10(m['Resistivity'])
         m['Coverage'] = self.coverage()
         m['S_Coverage'] = self.standardizedCoverage()
