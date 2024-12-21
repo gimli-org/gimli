@@ -85,9 +85,9 @@ def createMesh(poly, quality=32, area=0.0, smooth=True, switches=None,
         isinstance(poly, pg.PosVector) or \
             (isinstance(poly, np.ndarray) and poly.ndim == 2):
         delPLC = pg.Mesh(2)
-        for p in poly:
-            delPLC.createNode(p[0], p[1], 0.0)
-        return createMesh(delPLC, switches='-zeY', **kwargs)
+        delPLC.createNodes(poly)
+        return createMesh(delPLC, switches='-zeY', smooth=smooth,
+                          area=area, verbose=verbose, **kwargs)
 
     # poly == Mesh
     if poly.dim() == 2:
