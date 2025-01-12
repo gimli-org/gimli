@@ -38,7 +38,7 @@ ax, _ = pg.show(mesh)
 ###############################################################################
 # Call :py:func:`pygimli.solver.solveFiniteElements` to solve the heat
 # diffusion equation :math:`\nabla\cdot(a\nabla T)=0` with :math:`T(bottom)=0`
-# (boundary marker 8) and :math:`T(top)=1` (boundary marker 4), where :math:`a`
+# (boundary marker 4) and :math:`T(top)=1` (boundary marker 8), where :math:`a`
 # is the thermal diffusivity and :math:`T` is the temperature distribution.
 # We assign thermal diffusivities to the four # regions using their marker
 # numbers in a dictionary (a) and the fixed temperatures at the boundaries
