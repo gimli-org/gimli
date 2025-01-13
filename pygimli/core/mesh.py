@@ -62,6 +62,15 @@ def __Mesh_str(self):
 Mesh.__repr__ =__Mesh_str
 
 
+def __Mesh_createNodes__(self, posList):
+    """Create nodes for all pos in posList"""
+    try:
+        return [self.createNode(p) for p in posList]
+    except:
+        return [self.createNode(p) for p in np.asarray(posList).T]
+Mesh.createNodes = __Mesh_createNodes__
+
+
 def __addPLCs__(self, other):
     if isR3Array(other):
         m = Mesh(dim=self.dim(), isGeometry=True)
