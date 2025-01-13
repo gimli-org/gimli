@@ -35,6 +35,7 @@ def __Mesh_unique_dataKeys(self):
 
 Mesh.dataKeys = __Mesh_unique_dataKeys
 
+
 def __Mesh_str(self):
     st = "Mesh: Nodes: " + str(self.nodeCount()) + " Cells: " + str(
         self.cellCount()) + " Boundaries: " + str(self.boundaryCount())
@@ -60,6 +61,15 @@ def __Mesh_str(self):
     return st
 
 Mesh.__repr__ =__Mesh_str
+
+
+def __Mesh_createNodes__(self, posList):
+    """Create nodes for all pos in posList"""
+    try:
+        return [self.createNode(p) for p in posList]
+    except:
+        return [self.createNode(p) for p in np.asarray(posList).T]
+Mesh.createNodes = __Mesh_createNodes__
 
 
 def __addPLCs__(self, other):

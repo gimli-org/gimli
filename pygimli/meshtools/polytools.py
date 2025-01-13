@@ -1199,7 +1199,11 @@ def createParaMeshSurface(sensors, paraBoundary=None, boundary=-1,
     surfacePLC = boundaryRect + paraRect + sensors[:, 0:2]
     surface = pg.meshtools.createMesh(surfacePLC, quality=surfaceMeshQuality)
 
-    # interpolate Topography to surface
+    # interpolate topography to surface
+    # ax, _ = pg.show(pntsSurface)
+    # p_ = np.asarray(list(zip(pg.x(surface.positions()),
+    #                          pg.y(surface.positions()))))
+    # ax.scatter(*p_.T)
     sZ = pg.interpolate(pntsSurface, pnts[:, 2], surface.positions())
     for n in surface.nodes():
         n.translate(0, 0, sZ[n.id()])

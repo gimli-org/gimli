@@ -72,9 +72,9 @@ ax.set_ylim([-1.1, 1.1])
 # Alternatively we can define the gradients of the solution on the boundary,
 # i.e., Neumann type BC. This is done with another dictionary {marker: value} and passed by the bc dictionary.
 neumannBC = {1: -0.5,  # left
-             4: 2.5}  # bottom
+             3: 2.5}  # bottom
 
-dirichletBC = {3: 1.0}  # top
+dirichletBC = {4: 1.0}  # top
 
 u = solve(grid, f=0., bc={'Dirichlet': dirichletBC, 'Neumann': neumannBC})
 
