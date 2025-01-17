@@ -1687,13 +1687,13 @@ def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
                 if alpha != 0:
                     u0 = gamma/alpha
                 else:
-                    pg.warn('Robin boundary condition parmeter alpha is zero, '
+                    pg.warn('Robin boundary condition parameter alpha is zero, '
                             'falling back to Neumann condition.')
                     u0 = 0.0
                 if beta != 0:
                     a = alpha/beta
                 else:
-                    pg.warn('Robin boundary condition parmeter beta is zero, '
+                    pg.warn('Robin boundary condition parameter beta is zero, '
                             'please consider using Dirichlet instead.')
                     a = 0.0
 
@@ -1704,7 +1704,7 @@ def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
             # S += Sp
         if u0 is not None and u0 != 0.0:
             S_Neu.u(boundary)
-            rhs.add(S_Neu, f=a * u0)
+            rhs.add(S_Neu, a*u0, neg=False)
 
 
 def assembleBC(bc, mesh, mat, rhs, time=None, userData={}, dofOffset=0,

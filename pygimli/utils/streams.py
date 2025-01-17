@@ -39,7 +39,8 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
         field = field.array()
 
     if hasattr(field[0], '__len__'):
-        if abs(max(field[:, 0])) == 0 and abs(max(field[:, 1]) == 0):
+        if (max(field[:, 0]) - min(field[:, 0])) < 0.0 and \
+           (max(field[:, 1]) - min(field[:, 1])) < 0.0:
             raise Exception("No data range streamline: min/max == ",
                                 min(field[:, 0]))
 

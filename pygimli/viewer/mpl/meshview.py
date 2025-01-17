@@ -1288,7 +1288,12 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
             u = data[:, 0]
             v = data[:, 1]
 
-        ax.quiver(x, y, u, v, **kwargs)
+        q = ax.quiver(x, y, u, v, **kwargs)
+
+        label = kwargs.pop('label', None)
+        if label is not None:
+            ax.quiverkey(q, 0.05, -0.1, 0.1, label, labelpos='E',
+                         coordinates='axes')
 
         updateAxes_(ax)
         return
@@ -1340,6 +1345,37 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
 
     for c in viewMesh.cells():
         c.setValid(True)
+
+    label = kwargs.pop('label', None)
+
+    if label is not None:
+        from matplotlib.lines import Line2D
+        if 'color' not in kwargs:
+            kwargs['color'] = 'black'
+        arrowSize = kwargs.pop('arrowSize', 12)
+        arrowColor = kwargs.pop('arrowColor', kwargs.get('color'))
+
+        yOff = -26
+        ## streamline
+        ax.annotate('', xy=(3, yOff), xycoords='axes points',
+                    xytext=(25, yOff),
+                    arrowprops=dict(arrowstyle="->",
+                                    color=arrowColor,
+                                    lw=1),
+                    size=0 )
+
+        ## arrow head
+        ax.annotate('', xy=(4, yOff), xycoords='axes points',
+                    xytext=(20, yOff),
+                    arrowprops=dict(arrowstyle="<|-",
+                                    color=arrowColor,
+                                    lw=0),
+                    size=arrowSize )
+        ## text
+        ax.annotate(label, xy=(30, yOff),
+                    xycoords='axes points',
+                    horizontalalignment='left',
+                    verticalalignment='center')
 
     updateAxes_(ax)
 

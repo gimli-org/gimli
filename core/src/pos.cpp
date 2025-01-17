@@ -176,7 +176,7 @@ template < class Val > void _sum_vec_T(const Val & a, RVector & r){
 void sum(const PosVector & a, RVector & r){
     _sum_vec_T(a, r);
 }
-void sum(const std::vector < RMatrix > & a, RVector & r){
+void sum(const stdVectorRMatrix & a, RVector & r){
     _sum_vec_T(a, r);
 }
 
@@ -196,6 +196,33 @@ void sum(const std::vector < std::vector< GIMLI::RMatrix > > & a,
                    std::vector < RVector > & r){
     _sum_vec_vec_T(a, r);
 }
+
+void trace(const stdVectorRMatrix & a, RVector & r){
+    r.resize(a.size());
+    for (Index i = 0; i < a.size(); i ++ ){
+        r[i] = a[i].trace();
+    }
+}
+
+RVector trace(const stdVectorRMatrix & a){
+    RVector ret;
+    trace(a, ret);
+    return ret;
+}
+
+void trace(const stdVectorMatrixVector & a, stdVectorRVector & r){
+    r.resize(a.size());
+    for (Index i = 0; i < a.size(); i ++ ){
+        trace(a[i], r[i]);
+    }
+}
+
+stdVectorRVector trace(const stdVectorMatrixVector & a){
+    stdVectorRVector ret;
+    trace(a, ret);
+    return ret;
+}
+
 
 
 void saveRVector3(const std::vector < Pos > l, const std::string & fileName){

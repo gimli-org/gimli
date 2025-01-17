@@ -5,14 +5,16 @@ import numpy as np
 
 import pygimli as pg
 
+type Mesh = pg.Mesh
 
-def createGrid(x=None, y=None, z=None, **kwargs):
+
+def createGrid(x=None, y=None, z=None, **kwargs) -> Mesh:
     """Create grid style mesh.
 
     Generate simple grid with defined node positions for each dimension.
     The resulting grid depends on the amount of given coordinate arguments
     and consists out of edges (1D - x), quads (2D- x and y), or
-    hexahedrons(3D- x, y, and z). For grids with world boundary markers 
+    hexahedrons(3D- x, y, and z). For grids with world boundary markers
     (-1 surface and -2 subsurface) the y or z array need to be in increasing
     order.
 
@@ -69,7 +71,6 @@ def createGrid(x=None, y=None, z=None, **kwargs):
 
     if 'phi' in kwargs:
         return createGridPieShaped(x, **kwargs)
-
 
     if x is not None:
         if isinstance(x, int):
@@ -262,7 +263,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
     the subsurface.
 
     Note, this all will only work stable if the mesh generator (triangle)
-    preserve all input boundaries. However this will lead to bad quality meshes 
+    preserve all input boundaries. However this will lead to bad quality meshes
     for the boundary region so its a good idea to play with the addNodes keyword
     argument to manually refine the newly created outer boundaries.
 

@@ -1364,6 +1364,17 @@ public:
         return b_;
     }
 
+    ValueType trace() const {
+        if (this->_cols != this->_rows){
+            log(Error, "trace not defined for non quadratic matrix",
+            this->_cols, this->_rows);
+        };
+        ValueType ret(0) ;
+        for (Index i = 0; i < mat_.size(); i ++) {
+            ret += mat_[i][i];
+        }
+        return ret;
+    }
 	std::vector < Vector< ValueType > > mat_;
 
 protected:

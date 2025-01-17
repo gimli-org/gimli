@@ -92,6 +92,18 @@ DLLEXPORT void sum(const std::vector < PosVector > & a,
 DLLEXPORT void sum(const stdVectorMatrixVector & a,
                    std::vector < RVector > & r);
 
+/*Inplace create trace for all matrices and keep container shape. */
+DLLEXPORT void trace(const stdVectorRMatrix & a, RVector & r);
+
+/*Create trace for all matrices and keep container shape. */
+DLLEXPORT RVector trace(const stdVectorRMatrix & a);
+
+/*Inplace create trace for all matrices and keep container shape. */
+DLLEXPORT void trace(const stdVectorMatrixVector & a,
+                     stdVectorRVector & r);
+
+/*Create trace for all matrices and keep container shape. */
+DLLEXPORT stdVectorRVector trace(const stdVectorMatrixVector & a);
 
 DLLEXPORT RVector absR3(const R3Vector & vPos);
 

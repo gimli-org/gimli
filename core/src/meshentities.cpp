@@ -385,7 +385,7 @@ RVector3 MeshEntity::grad(const RVector3 & xyz, const RVector & u, Index dim) co
     return gr;
 }
 RMatrix MeshEntity::grad(const RVector3 & xyz, const R3Vector & u, Index dim) const {
-    WITH_TICTOC("r=cell.grad(R3)");
+    WITH_TICTOC("r=cell.grad(R3)@core");
     RMatrix ret(dim, dim);
     this->grad(xyz, u, dim, ret);
     return ret;
@@ -393,7 +393,7 @@ RMatrix MeshEntity::grad(const RVector3 & xyz, const R3Vector & u, Index dim) co
 
 void MeshEntity::grad(const RVector3 & xyz, const R3Vector & u, Index dim, RMatrix & ret) const {
 
-    WITH_TICTOC("cell.grad(R3, r)");
+    WITH_TICTOC("cell.grad(R3, r)@core");
     RVector3 rst(shape_->rst(xyz));
 
     RMatrix MdNdL;

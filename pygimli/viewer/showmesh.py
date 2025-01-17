@@ -412,7 +412,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             showBoundary = True
 
     elif pg.isPosList(data):
-        drawStreams(ax, mesh, data, **kwargs)
+        drawStreams(ax, mesh, data, label=label, **kwargs)
     else:
         # check for map like data=[[marker, val], ....]
         if isinstance(data, list) and \
@@ -429,11 +429,11 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             if len(data) == 2:
                 data = np.array(data).T
             if data.shape[1] == 2:  # N x [u,v]
-                drawStreams(ax, mesh, data, **kwargs)
+                drawStreams(ax, mesh, data, label=label, **kwargs)
             elif data.shape[1] == 3:  # N x [u,v,w]
                 # if sum(data[:, 0]) != sum(data[:, 1]):
                 # drawStreams(ax, mesh, data, **kwargs)
-                drawStreams(ax, mesh, data[:, :2], **kwargs)
+                drawStreams(ax, mesh, data[:, :2], label=label, **kwargs)
             else:
 
                 ### Try animation frames x N
