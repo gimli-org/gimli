@@ -5,10 +5,10 @@ import numpy as np
 
 import pygimli as pg
 
-type Mesh = pg.Mesh
+# type from python3.12
+# type Mesh = pg.Mesh
 
-
-def createGrid(x=None, y=None, z=None, **kwargs) -> Mesh:
+def createGrid(x=None, y=None, z=None, **kwargs):# -> Mesh:
     """Create grid style mesh.
 
     Generate simple grid with defined node positions for each dimension.
