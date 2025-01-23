@@ -768,13 +768,17 @@ class GeostatisticConstraintsMatrix(MatrixBase):
 
             if isinstance(CM, pgcore.Mesh):
                 CM = covarianceMatrix(CM, **kwargs)
-
-            if CM is None and mesh is not None:
+            elif CM is None and mesh is not None:
                 CM = covarianceMatrix(mesh, **kwargs)
             else:
                 pg.critical('Give either CM or mesh')
 
             self.Cm05 = createCm05(CM)
+
+    def __repr__(self):
+        return "Geostatistical constraints matrix of size " + \
+            "{:d}x{:d} using {:d} eigenvalues".format(
+                self.rows(), self.cols(), len(self.Cm05.ew))
 
     @property
     def spur(self):
