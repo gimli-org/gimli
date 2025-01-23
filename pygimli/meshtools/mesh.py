@@ -273,12 +273,12 @@ def refineHex2Tet(mesh, style=1):
     TODO
     ----
         * mixed meshes (needed to ensure consistent face diagonal for
-                        nonstructured hex grids .. if such exists)
+                        non-structured hex grids .. if such exists)
 
     Parameters
     ----------
     mesh : :gimliapi:`GIMLI::Mesh`
-        Mesh containing hexrahedron cells, e.g., from a grid.
+        Mesh containing hexahedron cells, e.g., from a grid.
 
     style: int [1]
         * 1 bisect each hexahedron int 6 tetrahedrons
@@ -382,6 +382,8 @@ def refineHex2Tet(mesh, style=1):
 
                     pg.critical('Mesh corrupt')
 
+    # create all boundaries
+    out.createNeighbourInfos()
     return out
 
 def createMeshFromSurface(mesh, norm=None):

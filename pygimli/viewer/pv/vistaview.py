@@ -43,7 +43,7 @@ def showMesh3DFallback(mesh, data, **kwargs):
         fig = plt.figure()
         ax = fig.add_subplot(projection='3d', proj_type="persp")
         #ax = fig.add_subplot(projection='3d', proj_type="ortho")
-        
+
     if mesh.boundaryCount() > 0:
         x, y, tri, z, dataIndex = pg.viewer.mpl.createTriangles(mesh)
         ax.plot_trisurf(x, y, tri, z)
@@ -101,9 +101,9 @@ def showMesh3DVista(mesh, data=None, **kwargs):
 
     backend = kwargs.pop("backend", "client")
 
-    plotter = drawModel(
-        kwargs.pop("ax", None), mesh, data, notebook=notebook, cMap=cMap, **kwargs
-    )
+    plotter = drawModel(kwargs.pop("ax", None), mesh,
+                        data, notebook=notebook,
+                        cMap=cMap, **kwargs)
 
     # seems top be broken on some machines
     if kwargs.get("aa", False):
@@ -124,7 +124,7 @@ def showMesh3DVista(mesh, data=None, **kwargs):
             else False
         )
     else:
-        ## on default skipp showing if forced, e.g., by test with show=False
+        ## on default skip showing if forced, e.g., by test with show=False
         plotter.__show = plotter.show
         plotter.show = (
             lambda *args, **kwargs: plotter.__show(*args, **kwargs)
@@ -133,6 +133,10 @@ def showMesh3DVista(mesh, data=None, **kwargs):
 
     if hold is False:
         plotter.show()
+    else:
+        #TODO .. store them for a showOnExit()
+        pass
+
 
     # , None to keep compatibility
     return plotter, None

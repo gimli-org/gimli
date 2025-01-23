@@ -24,6 +24,7 @@ pgVTKCELLTypes = {
     pg.core.MESH_HEXAHEDRON20_RTTI:  25 ,
 }
 
+
 def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
     """
     pyGIMLi's mesh format is different from pyvista's needs,
@@ -38,14 +39,16 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
     """
     if boundaries:
         mesh.createNeighbourInfos()
-        
+
         if mesh.cellCount() == 0:
             ### mesh is already a boundary mesh
             return pgMesh2pvMesh(mesh, data, label)
 
-        b = mesh.createSubMesh(mesh.boundaries([b.id() for b in mesh.boundaries() if b.outside() or b.marker() != 0]))
-        return pgMesh2pvMesh(b, data, label)
-    
+        bIDs = [b.id() for b in mesh.boundaries()
+                if b.outside() or b.marker() != 0]
+        b = mesh.createSubMesh(mesh.boundaries(bIDs))
+        return pgMesh2pvMesh(b, data[bIDs], label)
+
     if mesh.cellCount() > 0:
         ids = []
         for c in mesh.cells():
@@ -63,15 +66,14 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
         grid.cell_data['Cell Marker'] = np.asarray(mesh.cellMarkers())
 
     elif mesh.boundaryCount() > 0:
-        grid = pv.PolyData(np.asarray(mesh.positions()), 
-                faces=np.hstack([[len(b.ids()), *b.ids()] 
+        grid = pv.PolyData(np.asarray(mesh.positions()),
+                faces=np.hstack([[len(b.ids()), *b.ids()]
                                         for b in mesh.boundaries()]))
-        
+
         grid.cell_data['Boundary Marker'] = np.asarray(mesh.boundaryMarkers())
-        
+
     else:
         grid = pv.PolyData(np.asarray(mesh.positions()))
-
 
     # check for parameters inside the pg.Mesh
     for key, values in mesh.dataMap():
@@ -79,7 +81,6 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
             grid.cell_data[key] = np.asarray(values)
         elif len(values) == mesh.nodeCount():
             grid.point_data[key] = np.asarray(values)
-
 
     # check the given data as well
     try:
@@ -98,8 +99,10 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
                 grid.point_data[label] = np.asarray(data)
             else:
                 pg.warn("Given data fits neither cell count nor node count:")
-                pg.warn("{} vs. {} vs. {}".format(len(data), mesh.cellCount(),
-                                                mesh.nodeCount()))
+                pg.warn("{}: {} | {} | {}".format(len(data),
+                                                  mesh.cellCount(),
+                                                  mesh.boundaryCount(),
+                                                  mesh.nodeCount()))
     except Exception as e:
         print(label)
         print(e)

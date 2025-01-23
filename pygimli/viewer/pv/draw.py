@@ -46,10 +46,12 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     showMesh = kwargs.pop('showMesh', False)
     grid = kwargs.pop('grid', False)
     colorBar = kwargs.pop('colorBar', style != 'wireframe')
+
     if pv.BUILDING_GALLERY:
         bc = "#ffffff"
     else:
         bc = kwargs.pop('bc', '#EEEEEE')  # background color
+
     lw = kwargs.pop('line_width', 0.1)
     filt = kwargs.pop('filter', {})
     log_scale = kwargs.pop("logScale", False)

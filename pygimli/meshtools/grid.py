@@ -92,7 +92,8 @@ def createGrid(x=None, y=None, z=None, **kwargs) -> Mesh:
 
 
 def createGridPieShaped(r, degree=10.0, h=2, marker=0, phi=None):
-    """Create a 2D pie shaped grid in polar coordinates (segment from annulus or cirlce).
+    """Create a 2D pie shaped grid in polar coordinates
+    (segment from annulus or cirlce).
 
     TODO:
     ----
@@ -101,11 +102,15 @@ def createGridPieShaped(r, degree=10.0, h=2, marker=0, phi=None):
     Arguments
     ---------
     r: iterable of float
-        r-coordinates for all Nodes (2D). If you need it 3D, you can apply :py:mod:`pygimli.meshtools.extrudeMesh` on it.
+        r-coordinates for all Nodes (2D). If you need it 3D,
+        you can apply :py:mod:`pygimli.meshtools.extrudeMesh` on it.
 
     degree: float [None]
         Create a pie shaped grid for a value between 0 and 90.
-        Creates an optional inner boundary (marker=2) for a annulus with r[0] > 0. Outer boundary marker is 1. Optional h refinement. Center node is the first for circle segment.
+        Creates an optional inner boundary (marker=2) for a
+        annulus with r[0] > 0. Outer boundary marker is 1.
+        Optional h refinement.
+        Center node is the first for circle segment.
 
     h: int [2]
         H-Refinement for degree option.
@@ -167,7 +172,7 @@ def createGridPieShaped(r, degree=10.0, h=2, marker=0, phi=None):
 
         meshR = pg.Mesh(mesh)
 
-        ## move all nodes on the inner boundary to rw
+        ## move all nodes on the inner boundary to r
         for b in mesh.boundaries():
             line = pg.Line(b.node(0).pos(), b.node(1).pos())
 
@@ -176,7 +181,8 @@ def createGridPieShaped(r, degree=10.0, h=2, marker=0, phi=None):
                 for n in b.nodes():
                     scale = rSoll/n.pos().abs()
                     if scale > 1:
-                        meshR.node(n.id()).setPos(pg.Line([0.0, 0.0], n.pos()).at(scale))
+                        meshR.node(n.id()).setPos(pg.Line([0.0, 0.0],
+                                                          n.pos()).at(scale))
 
     else:
         n0 = mesh.createNodeWithCheck([0.0, 0.0])
@@ -219,6 +225,75 @@ def createGridPieShaped(r, degree=10.0, h=2, marker=0, phi=None):
         meshR.setCellMarkers(np.full(meshR.cellCount(), marker))
 
     return meshR
+
+
+def createFrustums(r, phi, h=0):
+    """Create a mesh with quadratic pyramid frustums along x.
+
+    TODO:
+        * Refinement works only for small angles.
+        * Rework to increase flexibility
+
+    Arguments
+    ---------
+    r: iterable of float
+        r-coordinates for all Nodes.
+
+    phi: float
+        spherical angle for the frustum.
+
+    h: int [2]
+        H-Refinement for degree option.
+
+    """
+    m = pg.meshtools.createGrid(r, degree=phi/(2*np.pi)*360, h=0)
+    out = pg.meshtools.extrude(m, z=[0, 2*r[0]*np.sin(2*phi)])
+
+    for i in range(out.nodeCount()):
+        n = out.node(i)
+        if i < m.nodeCount():
+            r_ = r[int((i)//2)]
+            th = np.pi/2 + phi/2
+        else:
+            r_ = r[int((i-m.nodeCount())//2)]
+            th = np.pi/2 - phi/2
+
+        if i%2 == 0:
+            ph = -phi/2
+        else:
+            ph = phi/2
+
+        n.setPos([r_ * np.cos(ph)* np.sin(th),
+                  r_ * np.sin(ph)* np.sin(th),
+                  r_ * np.cos(th)])
+
+    if h > 0:
+        for hi in range(h):
+            out = out.createH2()
+
+        out.createNeighbourInfos()
+        x_ = []
+        for b in out.boundaries():
+            if b.marker() == 3:
+                for n in b.nodes():
+                    nOnEdge = False
+                    for nb in n.boundSet():
+                        if nb.outside() and nb.marker() == 0:
+                            nOnEdge = True
+
+                    if nOnEdge:
+                        x_.append(n.pos().abs())
+
+        xrS = np.unique(x_)
+        #pg._y(xrS)
+
+        ## move node to the nearest fitting r
+        for n in out.nodes():
+            rI = n.pos().abs()
+            rS = xrS[(np.abs(xrS - rI)).argmin()]
+            n.setPos(pg.Line([0,0], n.pos()).at(rS/rI))
+
+    return out
 
 
 def appendBoundary(mesh, **kwargs):
