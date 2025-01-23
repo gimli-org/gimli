@@ -220,3 +220,11 @@ def __DataContainer_subset(self, **kwargs):
     return new
 
 DataContainer.subset = __DataContainer_subset
+
+def __DataContainer_removeSensor(self, idx):
+    """Remove a sensor."""
+    for tok in self.dataMap().keys():
+        if self.isSensorIndex(tok):
+            self.remove(self[tok] == idx)
+
+DataContainer.removeSensor = __DataContainer_removeSensor
