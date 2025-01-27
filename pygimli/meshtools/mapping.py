@@ -276,11 +276,11 @@ def interpolateAlongCurve(curve, t, **kwargs):
         periodic : bool [False]
             Curve is periodic.
             Usefull for closed parametric spline interpolation.
-    
+
     TODO
     ----
         * 'linear'
-    
+
     Returns
     -------
     p : np.array
@@ -354,7 +354,7 @@ def interpolateAlongCurve(curve, t, **kwargs):
             xC = curve[:, 0]
             yC = curve[:, 1]
             zC = curve[:, 2]
-            
+
     if len(kwargs.keys()) > 0 and (kwargs.get('method', 'linear') != 'linear'):
 
         # interpolate more curve points to get a smooth line, guarantee to keep
@@ -544,18 +544,16 @@ def interpolate(*args, **kwargs):
                                            verbose=verbose)
 
         if len(args) == 4 and isinstance(args[3], str):
-            return pg.interpolate(args[0], args[1], args[2], method=args[3], 
+            return pg.interpolate(args[0], args[1], args[2], method=args[3],
                                   **kwargs)
 
-            if args[1].ndim == 2:  # outData = (inMesh, mat(dim>1), vR3)
-
-
-                outMat = pg.Matrix()
-                pg.core.interpolate(args[0], inMat=np.array(args[1]),
-                                    destPos=args[2], outMat=outMat,
-                                    fillValue=fallback,
-                                    verbose=verbose)
-                return np.array(outMat)
+            # if args[1].ndim == 2:  # outData = (inMesh, mat(dim>1), vR3)
+            #     outMat = pg.Matrix()
+            #     pg.core.interpolate(args[0], inMat=np.array(args[1]),
+            #                         destPos=args[2], outMat=outMat,
+            #                         fillValue=fallback,
+            #                         verbose=verbose)
+            #     return np.array(outMat)
 
         if len(args) == 4:  # args: (inMesh, inData(dim==1), outPos, outData)
 
@@ -594,8 +592,8 @@ def interpolate(*args, **kwargs):
             # args: (inMesh, inData(dim==1), posList)
             if args[1].ndim == 2:
                 outMat = pg.Matrix()
-                pg.core.interpolate(args[0], 
-                                    inMat=args[1], 
+                pg.core.interpolate(args[0],
+                                    inMat=args[1],
                                     destPos=args[2],
                                     outMat=outMat,
                                     fillValue=fallback,
@@ -612,10 +610,10 @@ def interpolate(*args, **kwargs):
                                         fillValue=fallback,
                                         verbose=verbose)
         except Exception as e:
-            
+
             pass
 
-    
+
     # end if pg.core:
 
     if len(args) == 3:

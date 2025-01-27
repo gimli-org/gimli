@@ -915,8 +915,3 @@ def showAnimation(mesh, data, ax=None, **kwargs):
 
     return __Animation_Keeper__
 
-def __Mesh__show__(self, data=None, **kwargs):
-    """Show the mesh with all possible keyword arguments."""
-    return showMesh(self, data=data, **kwargs)
-
-pg.Mesh.show = __Mesh__show__
