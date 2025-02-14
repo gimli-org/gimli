@@ -1263,6 +1263,7 @@ def linSolve(mat, b, solver=None, verbose=False, **kwargs):
             pg.warning('Matrix reordering for pg core solver not yet implemented')
         _m = pg.matrix.asSparseMatrix(mat)
 
+        pg._b(verbose)
         solver = pg.core.LinSolver(_m, verbose=verbose)
 
         if verbose:
@@ -1327,7 +1328,10 @@ def linSolve(mat, b, solver=None, verbose=False, **kwargs):
             # x = spsolve(_m, b.array()[perm])#[perm]
             # x = x[perm]
         else:
+            pg._b(verbose)
             x = spsolve(_m, b)
+            if verbose:
+                print(f'spsolve: norm(b-Ax) = {np.linalg.norm(b-_m.dot(x))}')
 
         # pg._r(swatch.duration())
     return x

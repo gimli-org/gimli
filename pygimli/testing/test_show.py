@@ -261,7 +261,7 @@ def testShowPV():
     pg.show(m1, showMesh=True)
 
     print('Show Markers with vtk filters:', m1)
-    ax, _ = pg.show(m1, markers=True, filter={'clip': {'origin': (0, 0, 0)}})
+    pg.show(m1, markers=True, filter={'clip': {'origin': (0, 0, 0)}})
 
     print('Show Field (x)')
     pg.show(m1, data=pg.x(m1), label='x', cMap='Spectral_r')
@@ -291,6 +291,13 @@ def testShowPV():
                                  source_center=[-.5, -0., -0.])
     pg.viewer.pv.drawSlice(ax, m1, data=u, label='x', normal=[0, 1, 0])
     ax.show()
+
+def testShowPV2():
+    print('Show HexP2 Mesh (x)')
+    h1 = mt.createGrid(2, 2, 2)
+    h1 = h1.createP2()
+    h1.show(pg.x(h1))
+
 
 
 def testPVBackends():

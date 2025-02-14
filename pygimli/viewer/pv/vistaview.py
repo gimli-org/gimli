@@ -58,7 +58,10 @@ def showMesh3DFallback(mesh, data, **kwargs):
     return ax, None
 
 
-def showMesh3DVista(mesh, data=None, **kwargs):
+__Plotter__ = []
+
+
+def showMesh3DVistaProcess(mesh, data=None, **kwargs):
     """Make use of the actual 3D visualization tool kit.
 
     Parameters
@@ -109,34 +112,66 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     if kwargs.get("aa", False):
         plotter.enable_anti_aliasing()
 
-    if notebook is True:
+    if not hasattr(plotter, '__show'):
         # monkeypatch show of this plotter instance so we can use multiple
         # backends and only plotter.show() .. whoever this needs.
-        plotter.__show = plotter.show
-        plotter.show = lambda *args, **kwargs: plotter.__show(
-            *args, jupyter_backend=backend, **kwargs
-        )
-    elif pg.viewer.mpl.isInteractive():
-        plotter.__show = plotter.show
-        plotter.show = (
-            lambda *args, **kwargs: plotter.__show(*args, **kwargs)
-            if pg.viewer.mpl.isInteractive() or pyvista.BUILDING_GALLERY
-            else False
-        )
-    else:
-        ## on default skip showing if forced, e.g., by test with show=False
-        plotter.__show = plotter.show
-        plotter.show = (
-            lambda *args, **kwargs: plotter.__show(*args, **kwargs)
-            if pg.rc['pyvista.backend'] is not None else False
-        )
+        if notebook is True:
+            plotter.__show = plotter.show
+            plotter.show = lambda *args, **kwargs: plotter.__show(
+                *args, jupyter_backend=backend, **kwargs
+            )
+        elif pg.viewer.mpl.isInteractive():
+            plotter.__show = plotter.show
+            plotter.show = (
+                lambda *args, **kwargs: plotter.__show(*args, **kwargs)
+                if pg.viewer.mpl.isInteractive() or pyvista.BUILDING_GALLERY
+                else False
+            )
+        else:
+            ## on default skip showing if forced, e.g., by test with show=False
+            plotter.__show = plotter.show
+            plotter.show = (
+                lambda *args, **kwargs: plotter.__show(*args, **kwargs)
+                if pg.rc['pyvista.backend'] is not None else False
+            )
 
     if hold is False:
         plotter.show()
+        #__Plotter__.append(plotter)
+        pass
     else:
         #TODO .. store them for a showOnExit()
         pass
 
-
     # , None to keep compatibility
     return plotter, None
+
+
+from multiprocessing import Process
+
+__PV_windows__ = []
+
+def showMesh3DVista(*args, **kwargs):
+    """Draw PV window in an own Process to allow multiple windows
+    for terminal users.
+    """
+    if pg.isNotebook() or pg.isIPyTerminal():
+        return showMesh3DVistaProcess(*args, **kwargs)
+
+    #pg.info(pg.viewer.mpl.isInteractive(), pg.isNotebook(), pg.isIPyTerminal())
+
+    if pg.viewer.mpl.isInteractive() and not kwargs.get('hold', False):
+
+        __PV_windows__.append(Process(target=showMesh3DVistaProcess,
+                                args=args, kwargs=kwargs))
+        ret = __PV_windows__[-1].start()
+
+        return None, None
+    else:
+        return showMesh3DVistaProcess(*args, **kwargs)
+
+
+
+def showAllPlotter():
+    for p in __Plotter__:
+        p.show()

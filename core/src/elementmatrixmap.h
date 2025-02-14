@@ -285,4 +285,7 @@ DLLEXPORT void createUMap1_(const Mesh & mesh, Index order, ElementMatrixMap & r
 DLLEXPORT void createUMap2_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
                 Index nCoeff, Index dofOffset);
 
+DLLEXPORT void testEvalEmap(const ElementMatrixMap & eMap,
+                            const stdVectorR3Vector & v, stdVectorRVector & ret);
+
 } // namespace GIMLI{

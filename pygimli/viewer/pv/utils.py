@@ -118,7 +118,6 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
         pg.warn("Given label '{}' was not found.".format(label))
         label = grid.array_names[-1]
 
-
     grid.set_active_scalars(label)
 
     return grid

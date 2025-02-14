@@ -46,7 +46,7 @@ namespace GIMLI{
 CHOLMODWrapper::CHOLMODWrapper(RSparseMatrix & S, bool verbose, int stype,
                                bool forceUmfpack)
     : SolverWrapper(verbose), stype_(stype), forceUmfpack_(forceUmfpack){
-    
+
     Numeric_ = nullptr;
     NumericD_= nullptr;
     c_ = NULL;
@@ -237,7 +237,7 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
                             if (1 || verbose_) {
                                 log(Info,
                         "non-symmetric matrix found (", i, S.vecRowIdx()[j],
-                        S.vecVals()[j] , " ", S.getVal(S.vecRowIdx()[j], i), 
+                        S.vecVals()[j] , " ", S.getVal(S.vecRowIdx()[j], i),
                                     "atol:", atol,
                                     "rtol:", rtol, ").. switching to umfpack." );
                             }
@@ -398,11 +398,31 @@ template < class ValueType >
                                           b,
                                           (cholmod_common *)c_);       /* solve Ax=b */
 
-        if (((cholmod_sparse*)A_)->stype == 0){
-            double al[2] = {0,0}, be[2] = {1,0};       /* basic scalars */
-            cholmod_sdmult((cholmod_sparse*)A_, 0, be, al, x, r, (cholmod_common*)c_);
+
+        if (((cholmod_sparse*)A_)->stype == 0){  // non-symmetric
+            double al[2] = {1,0}, be[2] = {0,0};       /* basic scalars */
+
+            cholmod_sdmult((cholmod_sparse*)A_, 0, al, be, x, r, (cholmod_common*)c_); // r = 1*Ax + 0*r
             bx = (ValueType *)r->x; /* ret = Ax */
+            // bx = (ValueType *)x->x; /* ret = Ax */
             for (uint i = 0; i < dim_; i++) solution[i] = conj(bx[i]);
+
+            // calc residuum
+            if (verbose_){
+                double one [2] = {1,0}, m1 [2] = {-1,0};
+                r = cholmod_copy_dense (b, (cholmod_common*)c_) ;
+                cholmod_sdmult ((cholmod_sparse*)A_, 0, m1, one, x, r, (cholmod_common*)c_) ; // r = -1*A*x + r | r = r-Ax
+
+                double normi = cholmod_norm_dense (r, 0, (cholmod_common*)c_) ; // compute inf-norm of r
+                double norm2 = cholmod_norm_dense (r, 2, (cholmod_common*)c_) ; // compute inf-norm of r
+                double anorm = cholmod_norm_sparse ((cholmod_sparse*)A_, 0, (cholmod_common*)c_) ; // compute inf-norm of A
+                printf ("\n%s precision results:\n", ((cholmod_sparse*)A_)->dtype ? "single" : "double") ;
+                print("norm_inf(b-Ax) = ", normi, "norm_2(b-Ax) = ", norm2) ;
+                printf ("norm(A) %8.1e\n", anorm) ;
+                double relresid = normi / anorm ;
+                printf ("resid: norm(b-Ax)/norm(A) %8.1e\n", relresid) ;
+                fprintf (stderr, "resid: norm(b-Ax)/norm(A) %8.1e\n", relresid) ;
+            }
 
             //conj here .. check crs->ccs format or transpose before use
 

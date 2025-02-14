@@ -897,6 +897,7 @@ def __stdVectorRVector_BIOP__(self, b, OP):
             ret.append(getattr(ai, OP)(b))
     elif len(self) == len(b):
         for i, ai in enumerate(self):
+            #print(i, ai, b[i], OP)
             ret.append(getattr(ai, OP)(b[i]))
     else:
         critical(f'Cannot {OP} stdVectorRVector with different lengths. {len(self)} != {len(b)}')
@@ -933,6 +934,13 @@ def __stdVectorRVector__array_ufunc__(self, ufunc, method, *inputs, **kwargs):
             return inputs[0] * inputs[1]
         else:
             return inputs[1] * inputs[0]
+
+    ## default apply numpy function
+    ret = pgcore.stdVectorRVector()
+    for i, ai in enumerate(self):
+        ret.append(ufunc(ai))
+    return ret
+
 
     pg._r(self)
     pg._y(f'ufunc: {ufunc}')

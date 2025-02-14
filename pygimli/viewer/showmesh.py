@@ -713,6 +713,7 @@ def show1D(mesh, obj, **kwargs):
 
     ax = kwargs.pop('ax', None)
     newAxe = False
+
     if ax is None:
         newAxe = True
         ax = pg.show()[0]
@@ -730,17 +731,21 @@ def show1D(mesh, obj, **kwargs):
         pg._r(mesh)
         pg._r(obj)
         pg.critical('implementme')
+
     elif pg.isArray(obj, mesh.nodeCount()):
         x = pg.sort(pg.x(mesh))
         v = obj
+
     elif isinstance(obj, list):
         return show1D(mesh, np.array(obj), ax=ax, **kwargs)
 
     elif hasattr(obj, 'ndim') and obj.ndim == 2 and pg.isArray(obj[0], mesh.nodeCount()):
         # list of values for animation
         return showAnimation(mesh, obj, ax=ax, **kwargs)
+
     elif obj is None:
         showMesh = kwargs.pop('showMesh', False)
+
         if showMesh:
             pg.viewer.mpl.drawSelectedMeshBoundaries(ax, mesh.cells(),
                                                      color='k', linewidth=0.3,
@@ -852,6 +857,8 @@ def showAnimation(mesh, data, ax=None, **kwargs):
 
     if mesh.dim() == 1:
         ax, curve = pg.show(mesh, data[0], ax=ax, **kwargs)
+        # ensure p2 meshs are sorted ascending in x
+        sortX = np.argsort(pg.x(mesh))
 
         if swapAxes is True:
             ax.set_xlim(min(data.flatten()), max(data.flatten()))
@@ -875,9 +882,9 @@ def showAnimation(mesh, data, ax=None, **kwargs):
         p.update(t)
         if mesh.dim() == 1:
             if swapAxes is True:
-                curve[0].set_xdata(data[t])
+                curve[0].set_xdata(data[t][sortX])
             else:
-                curve[0].set_ydata(data[t])
+                curve[0].set_ydata(data[t][sortX])
         else:
             ax.clear()
             pg.show(mesh, data[t], ax=ax, **kwargs)

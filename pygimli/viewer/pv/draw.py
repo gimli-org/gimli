@@ -78,13 +78,14 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
 
     theme.font.color = 'k'
 
+    #pg._y(ax)
     if ax is None:
         ax = pv.Plotter(notebook=notebook, theme=theme, **kwargs)
 
     if grid is True:
         pass  # implementme
 
-    ax.show_bounds(all_edges=True, minor_ticks=True)
+    ax.show_bounds(all_edges=True, minor_ticks=False)
     ax.add_axes()
 
     for k, fi in filt.items():

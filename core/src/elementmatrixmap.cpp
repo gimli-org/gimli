@@ -942,5 +942,31 @@ ElementMatrixMap trace(const ElementMatrixMap & A){
     return ret;
 }
 
+void testEvalEmap(const ElementMatrixMap & eMap,
+                  const stdVectorR3Vector & v, stdVectorRVector & ret){
+    ret.resize(v.size());
+
+    Index i = 0;
+
+    for (auto &m: eMap.mats()){
+        ret[i].resize(v[i].size());
+
+        double vAbs = 0;
+        double h = m.entity()->shape().h();
+
+        for (Index j = 0; j < v[i].size(); j ++ ){
+            vAbs = v[i][j].abs();
+
+            if (vAbs > 0){
+                ret[i][j] = h / (2.0*vAbs);
+            } else {
+                ret[i][j] = 0;
+            }
+        }
+        i++;
+    }
+
+}
+
 
 } // namespace GIMLI
