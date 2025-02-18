@@ -472,14 +472,17 @@ class TimelapseERT():
         dataVec = np.concatenate([data["rhoa"] for data in DATA])
         errorVec = np.concatenate([data["err"] for data in DATA])
         startModel = fop.createStartModel(dataVec)
-        inv = pg.Inversion(fop=fop, startModel=startModel, verbose=True)
+        self.inv = pg.Inversion(fop=fop, startModel=startModel, verbose=True)
         fop.createConstraints(C=kwargs.pop("C", None))
         kwargs.setdefault("maxIter", 10)
         kwargs.setdefault("verbose", True)
         kwargs.setdefault("startModel", startModel)
-        model = inv.run(dataVec, errorVec, **kwargs)
+        model = self.inv.run(dataVec, errorVec, **kwargs)
         self.models = np.reshape(model, [len(DATA), -1])
-        self.responses = np.reshape(inv.response, [DATA[0].size(), -1])
+        self.responses = np.reshape(self.inv.response, [DATA[0].size(), -1])
+        misfits = np.log(self.responses) - np.log(self.DATA)
+        misfits /= np.reshape(self.data["err"], [-1, 1])
+        self.chi2s = np.mean(misfits**2, axis=0)
         self.pd = fop.paraDomain
         return model
 
