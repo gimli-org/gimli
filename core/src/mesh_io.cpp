@@ -784,7 +784,8 @@ void Mesh::exportVTK(const std::string & fbody,
     std::map< std::string, RVector > nData;
     std::map< std::string, RVector > cData;
     std::map< std::string, RVector > bData;
-    std::map< std::string, PosVector > vData;
+    std::map< std::string, PosVector > vCellData;
+    std::map< std::string, PosVector > vPointData;
     std::map< std::string, RMatrix > fData;
 
     for (auto &nd: dataMap){
@@ -803,7 +804,8 @@ void Mesh::exportVTK(const std::string & fbody,
             fData[name].push_back(nd.second);
         } else {
 
-            if (nd.second.size() == this->cellCount()){
+            if (nd.second.size() == this->cellCount() &&
+            !endswith(nd.first, "_x") && !endswith(nd.first, "_y") && !endswith(nd.first, "_z")){
                 // __MS("add C", nd.first)
                 cData[nd.first] = nd.second;
             }
@@ -811,13 +813,22 @@ void Mesh::exportVTK(const std::string & fbody,
                 // __MS("add B", nd.first)
                 bData[nd.first] = nd.second;
             }
-            else if (nd.second.size() == this->nodeCount()){
+            else if (nd.second.size() == this->nodeCount() ||
+                     nd.second.size() == this->cellCount()){
+
                 if (endswith(nd.first, "_x")){
                     std::string name = nd.first.substr(0, nd.first.size()-2);
-                    // __MS("add V", name)
-                    vData[name] = r3(dataMap.at(name + "_x"),
-                                    dataMap.at(name + "_y"),
-                                    dataMap.at(name + "_z"));
+
+                    if (nd.second.size() == this->nodeCount()){
+                        vPointData[name] = r3(dataMap.at(name + "_x"),
+                                              dataMap.at(name + "_y"),
+                                              dataMap.at(name + "_z"));
+                    } else {
+                        vCellData[name] = r3(dataMap.at(name + "_x"),
+                                             dataMap.at(name + "_y"),
+                                             dataMap.at(name + "_z"));
+                    }
+
                 } else if (endswith(nd.first, "_y") || endswith(nd.first, "_z")){
                     // __MS("ignore", nd.first)
                 } else {
@@ -835,7 +846,9 @@ void Mesh::exportVTK(const std::string & fbody,
     }
 
     if (vec.size() == nodeCount()){
-        vData["vec"] = vec;
+        vPointData["vec"] = vec;
+    } else if(vec.size() == cellCount()){
+        vCellData["vec"] = vec;
     }
 
     if (cellCount() > 0){
@@ -967,6 +980,24 @@ void Mesh::exportVTK(const std::string & fbody,
                     file << std::endl;
                 }
             }
+            for (auto & vcd: vCellData){
+
+                if (vcd.second.size() == (uint)cellCount()){
+                    log(Debug, "write vector cell field data: " + vcd.first);
+                    file << "VECTORS " + vcd.first + " double" << std::endl;
+
+                    for (Index i = 0; i < vcd.second.size(); i ++){
+                        file << vcd.second[i][0] << " "
+                             << vcd.second[i][1] << " "
+                             << vcd.second[i][2] << " " << std::endl;
+                    }
+                } else {
+                    if (vcd.second.size() > 0){
+                        std::cerr << "Vector " + vcd.first + " data size does not match cell sizes: "
+                                << vcd.second.size() << " " << cellCount() << std::endl;
+                    }
+                }
+            }
         }
     } else {  //   if !(cells && cellCount() > 0){
         //** write boundaries
@@ -1071,9 +1102,12 @@ void Mesh::exportVTK(const std::string & fbody,
     } // else write boundaries
 
     //** write point data
+    bool isInPointDataSection = false;
+
     if (nData.size() > 0){
         log(Debug, "writing point data");
         file << "POINT_DATA " << nodeCount() << std::endl;
+        isInPointDataSection = true;
 
         for (auto & nd: nData){
 
@@ -1094,7 +1128,34 @@ void Mesh::exportVTK(const std::string & fbody,
         }
     }
 
-    // not yet working correctly .. it seams fields for time series need to exported seperatly
+    //** write point vector data
+    if (vPointData.size() > 0){
+        if (!isInPointDataSection){
+            file << "POINT_DATA " << nodeCount() << std::endl;
+            isInPointDataSection = true;
+        }
+
+        for (auto & nd: vPointData){
+            if (nd.second.size() == (uint)nodeCount()){
+                log(Debug, "write vector field data: " + nd.first);
+                file << "VECTORS " + nd.first + " double" << std::endl;
+
+                for (Index i = 0; i < nd.second.size(); i ++){
+                    file << nd.second[i][0] << " "
+                         << nd.second[i][1] << " "
+                         << nd.second[i][2] << " " << std::endl;
+                }
+            } else {
+                if (nd.second.size() > 0){
+                    std::cerr << "Vector " + nd.first + " data size does not match node size: "
+                            << nd.second.size() << " " << nodeCount() << std::endl;
+                }
+            }
+        }
+    }
+
+    // not yet working correctly .. it seams fields for time series need to
+    // exported separately
     if (fData.size() > 0){
 
         log(Debug, "writing field data");
@@ -1114,26 +1175,6 @@ void Mesh::exportVTK(const std::string & fbody,
         }
     }
 
-    //** write point vector data
-    if (vData.size() > 0){
-        for (auto & nd: vData){
-            if (nd.second.size() == (uint)nodeCount()){
-                log(Debug, "write vector field data: " + nd.first);
-                file << "VECTORS " + nd.first + " double" << std::endl;
-
-                for (Index i = 0; i < nd.second.size(); i ++){
-                    file << nd.second[i][0] << " "
-                         << nd.second[i][1] << " "
-                         << nd.second[i][2] << " " << std::endl;
-                }
-            } else {
-                if (nd.second.size() > 0){
-                    std::cerr << "Vector " + nd.first + " data size does not match node size: "
-                            << nd.second.size() << " " << nodeCount() << std::endl;
-                }
-            }
-        }
-    }
 
     file.close();
 }
