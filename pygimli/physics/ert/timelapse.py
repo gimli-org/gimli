@@ -277,13 +277,19 @@ class TimelapseERT():
             _, ax = pg.plt.subplots(figsize=[8, 5])
         good = np.ones(self.data.size(), dtype=bool)
         lab = kwargs.pop("label", "ABMN") + ": "
+        popit = []
         for k, v in kwargs.items():
-            good = np.bitwise_and(good, self.data[k] == v)
+            if self.data.haveData(k):
+                good = np.bitwise_and(good, self.data[k] == v)
+                popit.append(k)
+
+        for k in popit:
+            kwargs.pop(k)
 
         abmn = [self.data[tok] for tok in "abmn"]
         for i in np.nonzero(good)[0]:
             lab1 = lab + " ".join([str(tt[i]) for tt in abmn])
-            ax.semilogy(self.times, self.DATA[i, :], "x-", label=lab1)
+            ax.semilogy(self.times, self.DATA[i, :], "x-", label=lab1, **kwargs)
 
         ax.grid(True)
         ax.legend()
