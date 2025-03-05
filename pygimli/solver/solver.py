@@ -1955,6 +1955,9 @@ def createStiffnessMatrix(mesh, a=None, isVector=False):
 
     if a is None:
         a = pg.Vector(mesh.cellCount(), 1.0)
+    
+    if isinstance(a, (float, int)):
+        a = pg.Vector(mesh.cellCount(), a)
 
     A = None
 
@@ -2013,7 +2016,7 @@ def createStiffnessMatrix(mesh, a=None, isVector=False):
 def createMassMatrix(mesh, b=None):
     r"""Create the mass matrix.
 
-    Calculates the Mass matrix (Finite element identity matrix) the given mesh.
+    Calculates the Mass matrix (Finite element identity) for the given mesh.
 
     ..math::
             ...

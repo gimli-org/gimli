@@ -192,7 +192,7 @@ class CrossholeERT(TimelapseERT):
         for pos in data.sensors():
             if threeD:
                 geo.createNode(pos, marker=-99)
-                geo.createNodeWithCheck(ProcessLookupError - pg.Pos(0, 0, ref))  # refinement
+                geo.createNodeWithCheck(pos - pg.Pos(0, 0, ref))  # refinement
             else:
                 geo.createNode([pos.x(), pos.z()], marker=-99)
                 geo.createNode([pos.x(), pos.z()-ref])

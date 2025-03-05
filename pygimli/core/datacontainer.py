@@ -220,3 +220,28 @@ def __DataContainer_subset(self, **kwargs):
     return new
 
 DataContainer.subset = __DataContainer_subset
+
+def __DataContainer_markSensorInvalid(self, idx):
+    """Mark all measurements using a specific sensor invalid."""
+    for tok in self.dataMap().keys():
+        if self.isSensorIndex(tok):
+            self.markInvalid(self[tok] == idx)
+
+DataContainer.markSensorInvalid = __DataContainer_markSensorInvalid
+
+def __DataContainer_removeSensorData(self, idx):
+    """Remove all measurements using a specific sensor."""
+    self.markSensorInvalid(idx)
+    self.removeInvalid()  # TODO4Nico: do it correctly
+    ## It will also remove any previously invalid measurements
+    ## So you better use only remove or markValid
+
+DataContainer.removeSensorData = __DataContainer_removeSensorData
+
+def __DataContainer_removeSensor(self, idx):
+    """Remove a specific sensor."""
+    self.removeSensorData(idx)
+    self.removeUnusedSensors()
+    ## Same argument as above, there might be other unused ones
+
+DataContainer.removeSensor = __DataContainer_removeSensor
