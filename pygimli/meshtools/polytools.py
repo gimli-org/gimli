@@ -1011,6 +1011,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
     xEnd = xMax + paraBound
     trapRatio = np.minimum(kwargs.pop("trapRatio", 0), 0.45)
     dxTrap = (xEnd - xStart) * trapRatio
+
     if balanceDepth:
         bD = min(sensors[0][iz] - paraDepth, sensors[-1][iz] - paraDepth)
         n2 = poly.createNode([xStart + dxTrap, bD])
@@ -1073,6 +1074,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
                     if iz == 2:
                         e1.rotateX(-math.pi / 2)
                     nSurface.append(poly.createNode((e + e1) * 0.5))
+
             elif paraDX < 0.5:
                 if i > 0:
                     e1 = sensors[i - 1]
@@ -1090,6 +1092,11 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
                     nSurface.append(poly.createNode(e + (e1 - e) * paraDX))
 
     nSurface.append(n4)
+
+    ### remove duplicates
+    nSurface = [ni for i, ni in enumerate(nSurface) if ni not in nSurface[:i]]
+    ### sort again .. just in case
+    nSurface.sort(key=lambda n: n.pos()[0])
 
     for i in range(len(nSurface) - 1, 0, -1):
         poly.createEdge(nSurface[i], nSurface[i - 1],

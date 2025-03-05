@@ -32,6 +32,7 @@ print(data)
 # For generating the mesh, we first create a piecewise-linear complex, i.e. the
 # boxes for inversion region and background and mesh it then.
 #
+
 plc = mt.createParaMeshPLC3D(data, paraDepth=12, paraMaxCellSize=3,
                              surfaceMeshQuality=34)
 mesh = mt.createMesh(plc, quality=1.3)
