@@ -358,6 +358,10 @@ def importAsciiColumns(filename, verbose=False, return_header=False):
 
             content = content[n:last]
 
+        for i, line in enumerate(content):
+            if "/" in line:
+                content[i] = line.replace(' / non conventional', '')
+        
         d = readAsDictionary(content, sep='\t')
         if len(d) < 2:
             d = readAsDictionary(content)
