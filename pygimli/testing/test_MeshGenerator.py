@@ -29,7 +29,6 @@ class TestMeshGenerator(unittest.TestCase):
         print(grid.bb())
 
 
-
     def test_triangle(self):
         plc = pg.meshtools.createRectangle()
         mesh = pg.meshtools.createMesh(plc)
@@ -37,9 +36,10 @@ class TestMeshGenerator(unittest.TestCase):
         self.assertEqual(mesh.cellCount(), 2)
         self.assertEqual(mesh.boundaryCount(), 5)
 
+
     def test_triangle_MAC(self):
-        """ There seems to be an issue on Mac for higher quality, which produce 
-            different meshes on mac vs. Linux/Windows. Needs observation and/or 
+        """ There seems to be an issue on Mac for higher quality, which produce
+            different meshes on mac vs. Linux/Windows. Needs observation and/or
             clarfication."""
         import pygimli as pg
         import pygimli.meshtools as mt
@@ -58,7 +58,7 @@ class TestMeshGenerator(unittest.TestCase):
         else:
             # On Linux Mesh: Nodes: 43 Cells: 60 Boundaries: 102 (same as for quality=30)
             self.assertEqual(mesh.nodeCount(), 43)
-        
+
 
     def test_createGrid(self):
         mesh = pg.createGrid(3)
@@ -70,6 +70,7 @@ class TestMeshGenerator(unittest.TestCase):
         # mesh = pg.meshtools.createMesh1D(10, 1)
         # print(mesh)
         # self.assertEqual(mesh.cellCount(), 10.0)
+
 
     def test_createMesh1D(self):
 
@@ -89,6 +90,7 @@ class TestMeshGenerator(unittest.TestCase):
         mesh = pg.meshtools.createMesh1D(10)
         self.assertEqual(mesh.cellCount(), 10.0)
 
+
     def test_createMesh1DBlock(self):
 
         mesh = pg.meshtools.createMesh1DBlock(nLayers=5)
@@ -106,6 +108,7 @@ class TestMeshGenerator(unittest.TestCase):
         mesh = pg.meshtools.createMesh1DBlock(4, 2)
         self.assertEqual(mesh.cellCount(), 11.0)
 
+
     def test_createMesh2D(self):
 
         mesh = pg.meshtools.createMesh2D(xDim=5, yDim=2)
@@ -117,10 +120,39 @@ class TestMeshGenerator(unittest.TestCase):
         mesh = pg.meshtools.createMesh2D(np.linspace(0, 1, 6),np.linspace(0, 1, 3))
         self.assertEqual(mesh.cellCount(), 10.0)
 
+
     def test_createMesh3D(self):
 
         mesh = pg.meshtools.createMesh3D(xDim=5, yDim=3, zDim=2)
         self.assertEqual(mesh.cellCount(), 30.0)
+
+
+    def test_createMesh3DExtrude(self):
+
+        m3 = pg.meshtools.createMesh3D(xDim=1, yDim=1, zDim=1)
+        self.assertEqual(pg.meshtools.checkMeshConsistency(m3), True)
+
+        m2 = pg.meshtools.createMesh2D(xDim=2, yDim=2)
+        self.assertEqual(pg.meshtools.checkMeshConsistency(m2), True)
+
+        m3 = pg.meshtools.createMesh3D(m2, [0, 1])
+        self.assertEqual(pg.meshtools.checkMeshConsistency(m3), True)
+        # # print(m3)
+        # print(m3)
+
+        # for b in m3.boundaries():
+        #     if b.marker() != 0:
+
+        #         print(b.outside(), b.rightCell(), b.leftCell())
+        #         if b.leftCell() is None:
+        #             pg._r(b)
+        #         #     #self.assertEqual(b.outside(), True)
+        #         #     print(b)
+        #         #     print(b.marker(), b.outside(), b.norm())
+        #         #self.assertEqual(b.outside(), True)
+
+
+
 
     def test_createPartMesh(self):
         mesh = pg.meshtools.createMesh1D(np.linspace(0, 1, 10))
@@ -130,6 +162,7 @@ class TestMeshGenerator(unittest.TestCase):
             pg.find(pg.x(mesh.cellCenters()) < 0.5))
         self.assertEqual(mesh2.cellCount(), 4)
         self.assertEqual(mesh2.cellCenters()[-1][0] < 0.5, True)
+
 
     def test_MeshCreatePolyList(self):
         pos = [[0, 0], [1, 0], [1, -1], [0, -1]]
@@ -142,6 +175,7 @@ class TestMeshGenerator(unittest.TestCase):
         self.assertEqual(mesh.nodeCount(), 4)
         self.assertEqual(mesh.cellCount(), 2)
         self.assertEqual(mesh.boundaryCount(), 5)
+
 
     def test_MeshCreateSecNodes(self):
         x = [0, 1, 2, 3, 42]
@@ -184,15 +218,15 @@ class TestMeshGenerator(unittest.TestCase):
     def test_meshBMS(self):
         # text bms version v3 which stores geometry flag
         mesh = pg.Mesh(2, isGeometry=True)
-        
+
         import tempfile as tmp
         _, fn = tmp.mkstemp()
-        
+
         mesh.save(fn)
         mesh2 = pg.load(fn+'.bms', verbose=True)
-        
+
         self.assertEqual(mesh.isGeometry(), mesh2.isGeometry())
-        
+
     def test_VTK_DataRead(self):
         grid = pg.createGrid(np.arange(4), np.arange(3), np.arange(2))
         cM = np.arange(grid.cellCount())
@@ -247,7 +281,7 @@ class TestMeshGenerator(unittest.TestCase):
 
 
     def test_SimpleMeshExport(self):
-       
+
         mesh = pg.createGrid(3, 3)
         verts = mesh.positions()
         cellIds = [c.ids() for c in mesh.cells()]
@@ -258,7 +292,7 @@ class TestMeshGenerator(unittest.TestCase):
 
         np.testing.assert_array_equal(mesh2.nodeCount(), mesh.nodeCount())
         np.testing.assert_array_equal(mesh2.cellCount(), mesh.cellCount())
-        
+
 
 if __name__ == '__main__':
     # pg.setDeepDebug(1)
