@@ -267,6 +267,8 @@ def createFrustums(r, phi, h=0):
                   r_ * np.sin(ph)* np.sin(th),
                   r_ * np.cos(th)])
 
+    out.createNeighbourInfos()
+
     if h > 0:
         for hi in range(h):
             out = out.createH2()

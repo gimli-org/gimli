@@ -2,9 +2,7 @@
 """General mesh generation and maintenance."""
 
 import os
-
 import numpy as np
-
 import pygimli as pg
 
 
@@ -434,7 +432,8 @@ def extrudeMesh(mesh, a, **kwargs):
     Keyword Arguments
     -----------------
     adjustBottom: bool [False]
-        Adjust all nodes such that the bottom of the mesh has a constant depth (only from 1D to 2D)
+        Adjust all nodes such that the bottom of the mesh has a
+        constant depth (only from 1D to 2D)
 
     Returns
     -------

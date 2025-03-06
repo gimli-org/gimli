@@ -44,6 +44,7 @@ def showMatrix(mat, ax=None, **kwargs):
 
     if isinstance(mat, (pg.core.RSparseMapMatrix, pg.core.RSparseMatrix)):
         gci = drawSparseMatrix(ax, mat, **kwargs)
+
     elif isinstance(mat, pg.matrix.BlockMatrix):
         gci, cBar = drawBlockMatrix(ax, mat, **kwargs)
 
@@ -62,18 +63,22 @@ def showMatrix(mat, ax=None, **kwargs):
                 label = "{:d}".format(ID)
                 labels.append(label)
             cBar.set_ticklabels(labels)
+
     elif isinstance(mat, pg.matrix.Matrix):
         from pygimli.utils import gmat2numpy
         gci = ax.matshow(gmat2numpy(mat))
         cBar = ax.figure.colorbar(gci)
+
     elif isinstance(mat, pg.matrix.RealNumpyMatrix):
         gci = ax.matshow(mat.M)
         cBar = ax.figure.colorbar(gci)
+
     elif isinstance(mat, (pg.matrix.IdentityMatrix,
                           pg.matrix.DiagonalMatrix)):
         x = [0, mat.cols()]
         ax.plot(x, x)
         ax.set_ylim(x[::-1])
+
     else:
         nC = mat.cols()
         nR = mat.rows()

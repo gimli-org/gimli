@@ -481,5 +481,5 @@ class TravelTimeManager(MeshMethodManager):
             fig.set_size_inches(size)
             fig.savefig(os.path.join(path, 'velocity.pdf'), bbox_inches='tight')
             pg.plt.close(fig)
-            
+
         return path
