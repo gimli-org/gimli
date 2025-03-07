@@ -608,8 +608,8 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
     }
     if (this->verbose()){
         std::cout << "/" << swatch.duration(true) << " ";
+        std::cout << std::endl;
     }
-    std::cout << std::endl;
 }
 
 TTModellingWithOffset::TTModellingWithOffset(Mesh & mesh, DataContainer & dataContainer, bool verbose)

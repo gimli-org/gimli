@@ -309,17 +309,17 @@ def prettyFloat(value, roundValue=None, mathtex=False):
 
     if mathtex is True:
         if 'e+' in string:
-            string = string.replace('e+', '\cdot 10^{')
+            string = string.replace('e+', r'\cdot 10^{')
             string+='}'
         elif 'e-' in string:
-            string = string.replace('e-', '\cdot 10^{-')
+            string = string.replace('e-', r'\cdot 10^{-')
             string+='}'
 
     return string
 
 
 def prettyTime(t):
-    """Return prettified time in seconds as string. No months, no leap year.
+    r"""Return prettified time in seconds as string. No months, no leap year.
 
     TODO
     ----
@@ -1172,7 +1172,7 @@ class Table(object):
         import re
         def _m2r(s):
             if isinstance(s, str):
-                return re.sub('\$(.*)\$',
+                return re.sub(r'\$(.*)\$',
                                 lambda m: f':math:`{m.group(1)}`', s)
             return s
 

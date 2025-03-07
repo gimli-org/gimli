@@ -120,12 +120,59 @@ class TestMeshGenerator(unittest.TestCase):
         mesh = pg.meshtools.createMesh2D(np.linspace(0, 1, 6),np.linspace(0, 1, 3))
         self.assertEqual(mesh.cellCount(), 10.0)
 
+        phi = 0.025*2*np.pi
+        m = pg.meshtools.createGrid([1, 2], degree=phi/(2*np.pi)*360, h=0)
+        m.show(markers=True, showMesh=True)
+        for b in m.boundaries():
+            if b.marker() != 0:
+                if b.leftCell() is None:
+                    pg._r(b)
+
+        self.assertEqual(pg.meshtools.checkMeshConsistency(m), True)
+
 
     def test_createMesh3D(self):
 
         mesh = pg.meshtools.createMesh3D(xDim=5, yDim=3, zDim=2)
         self.assertEqual(mesh.cellCount(), 30.0)
 
+
+    def test_createMesh3DExtrude(self):
+
+        m3 = pg.meshtools.createMesh3D(xDim=1, yDim=1, zDim=1)
+        self.assertEqual(pg.meshtools.checkMeshConsistency(m3), True)
+
+        m2 = pg.meshtools.createMesh2D(xDim=2, yDim=2)
+        self.assertEqual(pg.meshtools.checkMeshConsistency(m2), True)
+
+        m3 = pg.meshtools.createMesh3D(m2, [0, 1])
+        self.assertEqual(pg.meshtools.checkMeshConsistency(m3), True)
+        # # print(m3)
+        # print(m3)
+
+        # for b in m3.boundaries():
+        #     if b.marker() != 0:
+
+        #         print(b.outside(), b.rightCell(), b.leftCell())
+        #         if b.leftCell() is None:
+        #             pg._r(b)
+        #         #     #self.assertEqual(b.outside(), True)
+        #         #     print(b)
+        #         #     print(b.marker(), b.outside(), b.norm())
+        #         #self.assertEqual(b.outside(), True)
+
+
+    def test_createMesh3D_Frustums(self):
+        slice = 0.025
+
+        mesh = pg.meshtools.createFrustums([1, 1.2], phi=slice*2*np.pi, h=0)
+
+        #mesh.show(markers=True, showMesh=True)
+        pg.meshtools.checkMeshConsistency(mesh)
+
+        for b in mesh.boundaries():
+            if b.leftCell() is None:
+                print(b)
 
     def test_createPartMesh(self):
         mesh = pg.meshtools.createMesh1D(np.linspace(0, 1, 10))

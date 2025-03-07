@@ -1013,6 +1013,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
     xEnd = xMax + paraBound
     trapRatio = np.minimum(kwargs.pop("trapRatio", 0), 0.45)
     dxTrap = (xEnd - xStart) * trapRatio
+
     if balanceDepth:
         bD = min(sensors[0][iz] - paraDepth, sensors[-1][iz] - paraDepth)
         n2 = poly.createNode([xStart + dxTrap, bD])
@@ -1075,6 +1076,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
                     if iz == 2:
                         e1.rotateX(-math.pi / 2)
                     nSurface.append(poly.createNode((e + e1) * 0.5))
+
             elif paraDX < 0.5:
                 if i > 0:
                     e1 = sensors[i - 1]
@@ -1092,6 +1094,11 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
                     nSurface.append(poly.createNode(e + (e1 - e) * paraDX))
 
     nSurface.append(n4)
+
+    ### remove duplicates
+    nSurface = [ni for i, ni in enumerate(nSurface) if ni not in nSurface[:i]]
+    ### sort again .. just in case
+    nSurface.sort(key=lambda n: n.pos()[0])
 
     for i in range(len(nSurface) - 1, 0, -1):
         poly.createEdge(nSurface[i], nSurface[i - 1],
@@ -1202,7 +1209,11 @@ def createParaMeshSurface(sensors, paraBoundary=None, boundary=-1,
     surfacePLC = boundaryRect + paraRect + sensors[:, 0:2]
     surface = pg.meshtools.createMesh(surfacePLC, quality=surfaceMeshQuality)
 
-    # interpolate Topography to surface
+    # interpolate topography to surface
+    # ax, _ = pg.show(pntsSurface)
+    # p_ = np.asarray(list(zip(pg.x(surface.positions()),
+    #                          pg.y(surface.positions()))))
+    # ax.scatter(*p_.T)
     sZ = pg.interpolate(pntsSurface, pnts[:, 2], surface.positions())
     for n in surface.nodes():
         n.translate(0, 0, sZ[n.id()])

@@ -155,7 +155,7 @@ def createGridPieShaped(r, degree=10.0, h=2, marker=0, phi=None):
         else:
             for i in range(0, len(x)*2-2, 2):
                 c = mesh.createCell([i, i+2, i+3, i+1])
-            mesh.createBoundary([0, 1], marker=1)
+            mesh.createBoundary([1, 0], marker=1)
 
         mesh.createBoundary([mesh.nodeCount()-2, mesh.nodeCount()-1], marker=2)
 
@@ -248,6 +248,7 @@ def createFrustums(r, phi, h=0):
     """
     m = pg.meshtools.createGrid(r, degree=phi/(2*np.pi)*360, h=0)
     out = pg.meshtools.extrude(m, z=[0, 2*r[0]*np.sin(2*phi)])
+
 
     for i in range(out.nodeCount()):
         n = out.node(i)

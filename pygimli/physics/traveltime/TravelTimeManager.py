@@ -37,11 +37,13 @@ class TravelTimeManager(MeshMethodManager):
 
         self.inv.dataTrans = pg.trans.Trans()
 
+
     @property
     def velocity(self):
         """Return velocity vector (the inversion model)."""
         # we can check here if there was an inversion run
         return self.fw.model  # shouldn't it be the inverse?
+
 
     def createForwardOperator(self, **kwargs):
         """Create default forward operator for Traveltime modelling.
@@ -55,10 +57,12 @@ class TravelTimeManager(MeshMethodManager):
             fop = TravelTimeDijkstraModelling(verbose=self.verbose)
         return fop
 
+
     def load(self, fileName):
         """Load any supported data file."""
         self.data = pg.physics.traveltime.load(fileName)
         return self.data
+
 
     def createMeshMovedToMeshManager(self, data=None, **kwargs):
         """Create default inversion mesh.
@@ -74,6 +78,7 @@ class TravelTimeManager(MeshMethodManager):
         ------------
         Forwarded to `:py:func:pygimli.meshtools.createParaMesh`
         """
+        pg._error('do not use. will be removed soon') #25032025
         data = data or self.data
 
         if not hasattr(data, 'sensors'):
@@ -81,6 +86,7 @@ class TravelTimeManager(MeshMethodManager):
 
         return pg.meshtools.createParaMesh(data.sensors(), paraBoundary=0,
                                            boundary=0, **kwargs)
+
 
     def checkData(self, data):
         """Return data from container."""
@@ -90,6 +96,7 @@ class TravelTimeManager(MeshMethodManager):
             return data['t']
 
         return data
+
 
     def checkError(self, err, dataVals):
         """Return relative error."""
@@ -208,6 +215,7 @@ class TravelTimeManager(MeshMethodManager):
         ret['t'] = t
         return ret
 
+
     def invert(self, data=None, useGradient=True, vTop=500, vBottom=5000,
                secNodes=None, **kwargs):
         """Invert data.
@@ -264,6 +272,7 @@ class TravelTimeManager(MeshMethodManager):
         # that needs to be compatible to self.fw.mesh
         return velocity
 
+
     def showFit(self, axs=None, firstPicks=True, **kwargs):
         """Show data fit as first-break picks or apparent velocity."""
         if firstPicks:
@@ -272,6 +281,7 @@ class TravelTimeManager(MeshMethodManager):
             drawFirstPicks(ax, self.fop.data, self.inv.response, marker=None)
         else:
             super().showFit(axs=axs, **kwargs)
+
 
     def getRayPaths(self, model=None):
         """Compute ray paths.
@@ -304,6 +314,7 @@ class TravelTimeManager(MeshMethodManager):
             segs.append(np.column_stack((pg.x(points), pg.y(points))))
 
         return segs
+
 
     def drawRayPaths(self, ax, model=None, rayPaths=None, **kwargs):
         """Draw the the ray paths for model or last model.
@@ -338,6 +349,7 @@ class TravelTimeManager(MeshMethodManager):
         ax.add_collection(lc)
 
         return lc
+
 
     def showRayPaths(self, model=None, ax=None, **kwargs):
         """Show the model with ray paths for given model.
@@ -389,10 +401,12 @@ class TravelTimeManager(MeshMethodManager):
 
         return ax, cbar
 
+
     def rayCoverage(self):
         """Ray coverage, i.e. summed raypath lengths."""
         J = self.fop.jacobian()
         return J.transMult(np.ones(J.rows()))
+
 
     def createTraveltimefield(self, v=None, startPos=None, withSec=False):
         """Compute a single traveltime field."""
@@ -409,11 +423,13 @@ class TravelTimeManager(MeshMethodManager):
         else:
             return dist[:mesh.nodeCount()]
 
+
     def standardizedCoverage(self):
         """Standardized coverage vector (0|1) using neighbor info."""
         coverage = self.rayCoverage()
         C = self.fop.constraintsRef()
         return np.sign(np.absolute(C.transMult(C * coverage)))
+
 
     def showCoverage(self, ax=None, name='coverage', **kwargs):
         """Show the ray coverage in log-scale."""
@@ -424,6 +440,7 @@ class TravelTimeManager(MeshMethodManager):
         return pg.show(self.fop.paraDomain,
                        pg.log10(cov+min(cov[cov > 0])*.5), ax=ax,
                        coverage=self.standardizedCoverage(), **kwargs)
+
 
     def saveResult(self, folder=None, size=(16, 10), verbose=False, **kwargs):
         """Save the results in a specified (or date-time derived) folder.
