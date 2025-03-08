@@ -709,21 +709,25 @@ class MeshMethodManager(MethodManager):
         super().__init__(**kwargs)
         self.mesh = None
 
+
     @property
     def model(self):
         """Inversion model."""
         return self.paraModel(self.fw.model)
+
 
     @property
     def paraDomain(self):
         """Parameter (inversion) domain mesh."""
         return self.fop.paraDomain
 
+
     def paraModel(self, model=None):
         """Give the model parameter regarding the parameter mesh."""
         if model is None:
             model = self.fw.model
         return self.fop.paraModel(model)
+
 
     def createMesh(self, data=None, **kwargs):
         """Create default inversion mesh.
@@ -744,15 +748,19 @@ class MeshMethodManager(MethodManager):
         if not hasattr(data, 'sensors'):
             pg.critical('Please provide a data container for mesh generation')
 
-        mesh = pg.meshtools.createParaMesh(data.sensors(), paraBoundary=0,
-                                           boundary=0, **kwargs)
+        mesh = pg.meshtools.createParaMesh(data.sensors(),
+                                    paraBoundary=kwargs.pop('paraBoundary', 0),
+                                    boundary=kwargs.pop('boundary', 0),
+                                    **kwargs)
         self.setMesh(mesh)
         return mesh
+
 
     def setMesh(self, mesh, **kwargs):
         """Set a mesh and distribute it to the forward operator."""
         self.mesh = mesh  # keep a copy of the original mesh
         self.applyMesh(mesh, **kwargs)
+
 
     def applyMesh(self, mesh, ignoreRegionManager=False, **kwargs):
         """Pass the mesh along to the forward operator."""
@@ -760,6 +768,7 @@ class MeshMethodManager(MethodManager):
             mesh = self.fop.createRefinedFwdMesh(mesh, **kwargs)
 
         self.fop.setMesh(mesh, ignoreRegionManager=ignoreRegionManager)
+
 
     def invert(self, data=None, mesh=None, startModel=None,
                **kwargs):
@@ -843,6 +852,7 @@ class MeshMethodManager(MethodManager):
         self.fw.run(dataVals, errorVals, **kwargs)
         self.postRun(**kwargs)
         return self.paraModel(self.fw.model)
+
 
     def showFit(self, axs=None, **kwargs):
         """Show data and the inversion result model response."""

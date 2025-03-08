@@ -22,7 +22,8 @@ from .mapping import (cellDataToBoundaryData, cellDataToNodeData,
                       nodeDataToBoundaryData, nodeDataToCellData,
                       tapeMeasureToCoordinates, extract2dSlice)
 
-from .mesh import (convert, convertMeshioMesh, convertHDF5Mesh, createMesh,
+from .mesh import (checkMeshConsistency, convert, convertMeshioMesh,
+                   convertHDF5Mesh, createMesh,
                    createParaMesh, createParaMesh2DGrid, createMeshFromHull,
                    exportFenicsHDF5Mesh, exportHDF5Mesh,
                    exportSTL, extrudeMesh, merge2Meshes, mergeMeshes,
