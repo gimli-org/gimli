@@ -11,7 +11,7 @@ from pygimli.viewer.mpl.dataview import showValMapPatches
 from pygimli.viewer.mpl import showDataContainerAsMatrix
 
 
-def generateDataPDF(data, filename="data.pdf"):
+def generateDataPDF(data, filename="data.pdf", **kwargs):
     """Generate a multi-page pdf showing all data properties."""
     if isinstance(data, str):
         filename = data.replace('.txt', '-data.pdf')
@@ -26,7 +26,7 @@ def generateDataPDF(data, filename="data.pdf"):
                 vals = data[tok]
                 logScale = min(vals) > 0 and tok in logToks
                 ax = fig.add_subplot()
-                pg.show(data, vals, ax=ax, label=tok, logScale=logScale)
+                pg.show(data, vals, ax=ax, label=tok, logScale=logScale, **kwargs)
                 fig.savefig(pdf, format='pdf')
                 fig.clf()
 
