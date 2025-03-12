@@ -21,14 +21,13 @@ Installation
    </p><br>
 
 
-On all platforms, we recommend to install pyGIMLi via the conda package manager
-contained in the Anaconda Python distribution. For details on how to install
-Anaconda, see `this page <https://docs.anaconda.com/anaconda/install/>`_.
-
-Note that Anaconda comes with many (great) packages, many of which you likely
-will not use. If you want to save space, you can install the `light-weight
-version Miniconda
-<https://docs.anaconda.com/free/miniconda/miniconda-install/>`_.
+On all platforms, we recommend install pyGIMLi via the conda package manager
+and the cleanest way is to create a new environment.
+Besides large installers like `Anaconda <https://anaconda.org/>`_
+that come with many (great) packages, you can save space and install a 
+light-weight installer like
+`Miniconda <https://docs.anaconda.com/free/miniconda/miniconda-install/>`_
+or `Miniforge <https://conda-forge.org/download/>`_.
 
 .. note::
 
@@ -91,12 +90,19 @@ follow these steps:
 
 pyGIMLi on Google Colab
 -----------------------
-Even though still experimental, pyGIMLi can be run on Google Colab without any
-installation on your own computer. Just create a new Notebook and install the
-pyGIMLi package via pip:
+pyGIMLi can be run on Google Colab without any installation on your own
+computer. Just create a new Notebook and install pyGIMLi via pip:
 
 .. code:: python
 
+    !pip install pygimli tetgen
+
+It turns out that there are some packages preinstalled that lead to some
+incompatibl numpy version, so you might have to uninstall them first.
+
+.. code:: python
+
+    !pip uninstall -y numba tensorflow pytensor thinc
     !pip install pygimli tetgen
 
 Staying up-to-date
