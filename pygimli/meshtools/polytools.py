@@ -2086,7 +2086,12 @@ def createCube(size=[1.0, 1.0, 1.0], pos=None,
     boundaryMarker: int[0]
         Boundary marker for the resulting faces.
 
-    ** kwargs:
+    Keyword Arguments
+    -----------------
+    worldMarkers: bool [False]
+        Specify kind of preset boundary marker [-1, -2] or ascending order [1, 2, 3, 4 ..]
+
+    kwargs:
         Marker related arguments:
         See :py:mod:`pygimli.meshtools.polytools.setPolyRegionMarker`
 
@@ -2127,6 +2132,11 @@ def createCube(size=[1.0, 1.0, 1.0], pos=None,
              [7, 4, 0, 3],
              [0, 1, 2, 3],
              [7, 6, 5, 4], ]
+
+
+    if kwargs.pop('worldMarkers', False) == True:
+        boundaryMarker = [5, 2, 6, 1, 3, 4]
+
 
     if isinstance(boundaryMarker, list):
         for i, f in enumerate(faces):
