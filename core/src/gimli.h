@@ -370,8 +370,8 @@ Default is number of CPU. */
 DLLEXPORT void setThreadCount(Index nThreads);
 DLLEXPORT Index threadCount();
 
-void setUseOMP(bool o);
-bool useOMP();
+DLLEXPORT void setUseOMP(bool o);
+DLLEXPORT bool useOMP();
 
 /*! For some debug purposes only */
 DLLEXPORT void showSizes();
