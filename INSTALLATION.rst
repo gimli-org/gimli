@@ -93,10 +93,18 @@ pyGIMLi on Google Colab
 -----------------------
 Even though still experimental, pyGIMLi can be run on Google Colab without any
 installation on your own computer. Just create a new Notebook and install the
-pyGIMLi package via pip:
+pyGIMLi package via pip.
 
 .. code:: python
 
+    !pip install pygimli tetgen
+
+It turns out that there are some packages preinstalled that lead to some
+incompatibl numpy version, so you might have to uninstall them first.
+
+.. code:: python
+
+    !pip uninstall -y numba tensorflow pytensor thinc
     !pip install pygimli tetgen
 
 Staying up-to-date
