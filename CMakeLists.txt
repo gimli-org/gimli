@@ -16,7 +16,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/core/cmake")
 include(GIMLImacros)
 
-
 add_custom_target(pygimli)
 
 if (NOT CMAKE_BUILD_TYPE)
@@ -241,6 +240,11 @@ if (OS_VAR STREQUAL "almalinux")
     ## build virtual enviroment but on /opt
     find_package(Python ${PYVERSION} COMPONENTS Interpreter REQUIRED)
     find_package(Python ${PYVERSION} COMPONENTS Development.Module REQUIRED)
+    find_package(Python ${PYVERSION} COMPONENTS NumPy REQUIRED)
+elseif (WIN32)
+    find_package(Python ${PYVERSION} COMPONENTS Interpreter REQUIRED)
+    #py312 find python env, but Development fails, however include and lib seems okay
+    find_package(Python ${PYVERSION} COMPONENTS Development)
     find_package(Python ${PYVERSION} COMPONENTS NumPy REQUIRED)
 else()
     find_package(Python ${PYVERSION} EXACT COMPONENTS Interpreter REQUIRED)
