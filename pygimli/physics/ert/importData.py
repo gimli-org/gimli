@@ -334,7 +334,7 @@ def importAsciiColumns(filename, verbose=False, return_header=False):
 
         if content[0].startswith('Filename'):  # ABEM lead-in
             for n, line in enumerate(content):
-                if line.find("MeasID") > 0:
+                if line.find("MeasID") >= 0:
                     break
 
             for i in range(n):
@@ -343,24 +343,32 @@ def importAsciiColumns(filename, verbose=False, return_header=False):
                     tok = sp[0].lstrip("\t").lstrip("- ")
                     header[tok] = sp[1].rstrip("\n").rstrip("\r")
 
-            for last in range(len(content)-1, -1, -1):
+            for last in range(n+1, len(content)):
                 if content[last].find("---") == 0:
-                    print(content[last])
                     last -= 1
-                    print(content[last])
-                    while len(content[last]) < 3:
-                        last -= 1
-
-                    last += 1
                     break
+            # for last in range(len(content)-1, -1, -1):
+            #     if content[last].find("---") == 0:
+            #         last -= 1
+            #         while len(content[last]) < 3:
+            #             last -= 1
+
+            #         last += 1
+            #         break
+
             if last <= 1:
                 last = len(content)
 
             content = content[n:last]
 
+        for i, line in enumerate(content):
+            if "/" in line:
+                content[i] = line.replace(' / non conventional', '')
+        
         d = readAsDictionary(content, sep='\t')
         if len(d) < 2:
             d = readAsDictionary(content)
+
         nData = len(next(iter(d.values())))
         data.resize(nData)
         if 'Spa.1' in d:  # Syscal Pro
@@ -384,6 +392,7 @@ def importAsciiColumns(filename, verbose=False, return_header=False):
             pg.debug("Keys are:", d.keys())
             raise Exception("No electrode positions found!")
         for i in range(nData):
+            # print(i, d['A(x)'][i])
             if abmn[0]+'(z)' in d:
                 eID = [data.createSensor([d[se+'(x)'][i], d[se+'(y)'][i],
                                           d[se+'(z)'][i]]) for se in abmn]
@@ -410,9 +419,10 @@ def importAsciiColumns(filename, verbose=False, return_header=False):
         # data.save('tmp.shm', 'a b m n')
         tokenmap = {'I(mA)': 'i', 'I': 'i', 'In': 'i', 'Vp': 'u',
                     'VoltageV': 'u', 'U': 'u', 'U(V)': 'u', 'UV': 'u',
+                    'Voltage(V)': 'u',
                     'R(Ohm)': 'r', 'RO': 'r', 'R(O)': 'r', 'Res': 'r',
                     'Rho': 'rhoa', 'AppROhmm': 'rhoa', 'Rho-a(Ohm-m)': 'rhoa',
-                    'Rho-a(Om)': 'rhoa',
+                    'Rho-a(Om)': 'rhoa', 'App.R(Ohmm)': 'rhoa',
                     'Var(%)': 'err', 'D': 'err', 'Dev.': 'err', 'Dev': 'err',
                     'M': 'ma', 'P': 'ip', 'IP sum window': 'ip',
                     'Time': 't'}
@@ -506,3 +516,7 @@ def readAsDictionary(content, token=None, sep=None):  # obsolote due to numpy?
                 data[token[j]][i] = v
 
     return data
+
+
+if __name__ == "__main__":
+    pass

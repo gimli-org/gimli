@@ -71,6 +71,9 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
     >>> ax, _ = pg.show(mt.createMesh(rect, quality=33, area=0.01))
     >>> pg.wait()
     """
+    #mpl somehow/somewhere changes locale back tu system settings
+    pg.checkAndFixLocaleDecimal_point()
+
     #  poly == [pg.Mesh, ]
     if isinstance(poly, list):
         if isinstance(poly[0], pg.Mesh):
@@ -84,8 +87,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
         isinstance(poly, pg.PosVector) or \
             (isinstance(poly, np.ndarray) and poly.ndim == 2):
         delPLC = pg.Mesh(2)
-        for p in poly:
-            delPLC.createNode(p[0], p[1], 0.0)
+        delPLC.createNodes(poly)
         return createMesh(delPLC, switches='-zeY', **kwargs)
 
     # poly == Mesh
@@ -149,6 +151,47 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
                                           verbose=verbose, **kwargs)
 
         return mesh
+
+
+def checkMeshConsistency(mesh):
+    """Check mesh for consistency.
+
+    * Checks if all nodes are used in cells.
+    * Checks if all outer boundaries have only a left cell.
+    * Checks if all outer boundaries normal vector points outward.
+
+    Arguments
+    ---------
+    mesh: :gimliapi:`GIMLI::Mesh`
+        Mesh to be checked.
+
+    Returns
+    -------
+    bool
+        True if mesh is consistent, False otherwise.
+    """
+    fail = False
+
+    for n in mesh.nodes():
+        if len(n.cellSet()) == 0:
+            pg.error("Node", n.id(), "not used in any cell.")
+            fail = True
+
+    for b in mesh.boundaries():
+        if b.marker() != 0:
+
+            if b.leftCell() == None and b.rightCell() != None:
+                pg.error("Boundary", b.id(), "has no left cell.")
+                fail = True
+
+            if b.outside():
+                if b.leftCell().center() - b.center() * b.norm() < 0:
+                    pg.error("Boundary", b.id(), "normal vector points inward.")
+                    fail = True
+
+    if not fail:
+        print("The mesh seams to be consistent.")
+    return not fail
 
 
 def createMeshFromHull(mesh, fixNodes=[], **kwargs):

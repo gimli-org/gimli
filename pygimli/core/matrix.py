@@ -108,6 +108,17 @@ def __RSparseMapMatrix_str(self):
 
 pgcore.RSparseMapMatrix.__repr__ = __RSparseMapMatrix_str
 
+def __RSparseMatrix_str(self):
+    s = "SparseMatrix: " + str(self.rows()) + " x " + str(self.cols())
+    if self.rows() * self.cols() > 0:
+        pc = int(self.nVals()/self.cols()/self.rows()*1000) / 10
+        s += " (nnz=" + str(self.nVals()) + " / " + str(pc)+ "%)"
+
+    return s
+
+
+pgcore.RSparseMatrix.__repr__ = __RSparseMatrix_str
+
 
 def __RVector_format(self, f):
     print(f)

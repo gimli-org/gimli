@@ -390,9 +390,13 @@ class ERTManager(MeshMethodManager):
             _, ax = pg.plt.subplots()
 
         kwargs.setdefault("coverage", self.coverage())
-        ax, cBar = self.fop.drawModel(ax, model, **kwargs)
+        color = kwargs.pop("color", "magenta")
+        ax, cBar = self.fop.drawModel(ax, model, **kwargs)        
         if elecs:
-            pg.viewer.mpl.drawSensors(ax, self.fop.data.sensors())
+            if isinstance(elecs, str):
+                color = elecs
+            
+            pg.viewer.mpl.drawSensors(ax, self.fop.data.sensors(), color=color)
 
         return ax, cBar
 
@@ -416,12 +420,10 @@ class ERTManager(MeshMethodManager):
         np.savetxt(path + '/resistivity-scov.vector',
                    self.standardizedCoverage())
 
-        self.fop.data.save(os.path.join(path, 'data.dat'),
-                           'a b m n rhoa k err ip iperr')
         self.mesh.save(os.path.join(path, 'mesh'))
 
         m = pg.Mesh(self.paraDomain)
-        m['Resistivity'] = self.paraModel(self.model)
+        m['Resistivity'] = self.model
         m['Resistivity (log10)'] = np.log10(m['Resistivity'])
         m['Coverage'] = self.coverage()
         m['S_Coverage'] = self.standardizedCoverage()
@@ -434,11 +436,21 @@ class ERTManager(MeshMethodManager):
         m.saveBinaryV2(os.path.join(path, 'resistivity-pd'))
         self.fop.mesh().save(os.path.join(path, 'resistivity-mesh'))
 
+        np.savetxt(path + '/response.vector', self.inv.response)
+        residual = self.inv.residual()  # includes error-(re)weighting
+        np.savetxt(path + '/residual.vector', residual)
+        data = self.fop.data.copy()
+        data['response'] = self.inv.response
+        data['residual'] = residual
+        data.save(os.path.join(path, 'data.dat'),
+                  'a b m n rhoa k err ip iperr response residual')
+
         if self.paraDomain.dim() == 2:
             fig, ax = pg.plt.subplots(figsize=size)
             self.showModel(ax=ax, **kwargs)
             fig.savefig(path + '/resistivity.pdf', bbox_inches="tight")
             return path, fig, ax
+
         return path
 
 

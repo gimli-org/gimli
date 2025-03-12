@@ -214,15 +214,23 @@ class TimelapseERT():
         if emax is not None and np.any(self.ERR):
             self.DATA.mask = np.bitwise_or(self.DATA.mask, self.ERR > emax)
 
-    def automask(self, dmax=0.3, nc=5):
-        """Automatic outlier masking using dist to smoothed curve."""
+    def automask(self, dmax=0.3, nc=5, robustData=True):
+        """Automatic outlier masking using dist to smoothed curve.
+        
+        Parameters
+        ----------
+        dmax : float
+            maximum relative deviation
+        nc : int
+            number of coefficient pairs
+        """
         from pygimli.frameworks import harmfit
         tt = np.array([ti.toordinal() for ti in self.times])
         for data in self.DATA:
             ddata = data[~data.mask].data
             if len(ddata) > 3:
                 hf = harmfit(ddata, tt[~data.mask], verbose=False,
-                            nc=nc, robustData=True, resample=tt)[0]
+                            nc=nc, robustData=robustData, resample=tt)[0]
                 misfit = np.abs(data/hf - 1)
                 data.mask[misfit > dmax] = True
 
@@ -259,8 +267,10 @@ class TimelapseERT():
             return pg.viewer.mpl.showDataContainerAsMatrix(
                 self.data, x, y, v, **kwargs)
         else:
-            kwargs.setdefault("x", "a")
-            kwargs.setdefault("y", "m")
+            if not "style" in kwargs:
+                kwargs.setdefault("x", "a")
+                kwargs.setdefault("y", "m")
+
             return self.data.show(v, **kwargs)
 
     def showTimeline(self, ax=None, **kwargs):
@@ -277,13 +287,19 @@ class TimelapseERT():
             _, ax = pg.plt.subplots(figsize=[8, 5])
         good = np.ones(self.data.size(), dtype=bool)
         lab = kwargs.pop("label", "ABMN") + ": "
+        popit = []
         for k, v in kwargs.items():
-            good = np.bitwise_and(good, self.data[k] == v)
+            if self.data.haveData(k):
+                good = np.bitwise_and(good, self.data[k] == v)
+                popit.append(k)
+
+        for k in popit:
+            kwargs.pop(k)
 
         abmn = [self.data[tok] for tok in "abmn"]
         for i in np.nonzero(good)[0]:
             lab1 = lab + " ".join([str(tt[i]) for tt in abmn])
-            ax.semilogy(self.times, self.DATA[i, :], "x-", label=lab1)
+            ax.semilogy(self.times, self.DATA[i, :], "x-", label=lab1, **kwargs)
 
         ax.grid(True)
         ax.legend()
@@ -472,14 +488,18 @@ class TimelapseERT():
         dataVec = np.concatenate([data["rhoa"] for data in DATA])
         errorVec = np.concatenate([data["err"] for data in DATA])
         startModel = fop.createStartModel(dataVec)
-        inv = pg.Inversion(fop=fop, startModel=startModel, verbose=True)
+        self.inv = pg.Inversion(fop=fop, startModel=startModel, verbose=True)
+        self.inv.modelTrans = 'log'
         fop.createConstraints(C=kwargs.pop("C", None))
         kwargs.setdefault("maxIter", 10)
         kwargs.setdefault("verbose", True)
         kwargs.setdefault("startModel", startModel)
-        model = inv.run(dataVec, errorVec, **kwargs)
+        model = self.inv.run(dataVec, errorVec, **kwargs)
         self.models = np.reshape(model, [len(DATA), -1])
-        self.responses = np.reshape(inv.response, [DATA[0].size(), -1])
+        self.responses = np.reshape(self.inv.response, [DATA[0].size(), -1])
+        misfits = np.log(self.responses) - np.log(self.DATA)
+        misfits /= np.reshape(self.data["err"], [-1, 1])
+        self.chi2s = np.mean(misfits**2, axis=0)
         self.pd = fop.paraDomain
         return model
 
@@ -508,8 +528,9 @@ class TimelapseERT():
         nT = self.DATA.shape[1]
         showRatio = kwargs.pop("ratio", False)
         nrows = int(np.ceil(nT/ncols))
-        _, ax = pg.plt.subplots(nrows=nrows, ncols=ncols,
-                            figsize=kwargs.pop("figsize", [8, 5]))
+        fig, ax = pg.plt.subplots(nrows=nrows, ncols=ncols,
+                                sharex=True, sharey=True,
+                                figsize=kwargs.pop("figsize", [8, 5]))
         ratiokw = kwargs.copy()
         kwargs.setdefault("cMin", np.min(self.models))
         kwargs.setdefault("cMax", np.max(self.models))
@@ -530,6 +551,7 @@ class TimelapseERT():
             else:
                 pg.show(self.pd, model, ax=ax.flat[i], **ratiokw)
 
+        fig.tight_layout()
         return ax
 
     def generateModelPDF(self, **kwargs):

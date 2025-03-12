@@ -49,7 +49,7 @@ else()
     add_custom_target(whl${TARGET_NAME}PackageBuild DEPENDS whlpgcore
         COMMAND "${Python_EXECUTABLE}" -m pip wheel . --wheel-dir=${WHEELHOUSE} --find-links ${WHEELHOUSE}
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-        COMMENT "Building python wheel package for ${TARGET_NAME}"
+        COMMENT "Building python wheel package (${WHEELFILE}) for ${TARGET_NAME}"
     )
 
     add_custom_target(whl${TARGET_NAME} DEPENDS whl${TARGET_NAME}PackageBuild)
@@ -59,12 +59,12 @@ else()
     add_custom_target(whl${TARGET_NAME}TestInstall DEPENDS whl${TARGET_NAME} DEPENDS whlpgcoreTestRun
         COMMAND "${Python3_EXECUTABLE}" -m pip uninstall -y ${TARGET_NAME}
         COMMAND "${Python3_EXECUTABLE}" -m pip install ${WHEELHOUSE}/${PY_WHEELFILE} --quiet --find-links ${WHEELHOUSE}
-        COMMENT "Installing ${TARGET_NAME} in virtual test environment"
+        COMMENT "Installing ${TARGET_NAME} ((${WHEELFILE}) in virtual test environment"
     )
     add_custom_target(whl${TARGET_NAME}TestRun DEPENDS whl${TARGET_NAME}TestInstall
         COMMAND ${Python3_EXECUTABLE} -c "import pygimli as pg; pg.version()"
         VERBATIM
-        COMMENT "Testing ${TARGET_NAME} installation in virtual test environment. ${Python3_EXECUTABLE} -c \'import pygimli as pg; pg.version()\'"
+        COMMENT "Testing ${TARGET_NAME} installation (${WHEELFILE}) in virtual test environment. ${Python3_EXECUTABLE} -c \'import pygimli as pg; pg.version()\'"
     )
     add_custom_target(whl${TARGET_NAME}Test DEPENDS whl${TARGET_NAME}TestRun)
 

@@ -768,13 +768,17 @@ class GeostatisticConstraintsMatrix(MatrixBase):
 
             if isinstance(CM, pgcore.Mesh):
                 CM = covarianceMatrix(CM, **kwargs)
-
-            if CM is None and mesh is not None:
+            elif CM is None and mesh is not None:
                 CM = covarianceMatrix(mesh, **kwargs)
             else:
                 pg.critical('Give either CM or mesh')
 
             self.Cm05 = createCm05(CM)
+
+    def __repr__(self):
+        return "Geostatistical constraints matrix of size " + \
+            "{:d}x{:d} using {:d} eigenvalues".format(
+                self.rows(), self.cols(), len(self.Cm05.ew))
 
     @property
     def spur(self):
@@ -945,6 +949,18 @@ def matrixColumn(A, n):
     one = pg.Vector(A.cols())
     one[n] = 1.0
     return A.mult(one)
+
+def complexMatrix(R, I, scaleR=1.0, scaleI=1.0):
+    """Create a complex-valued matrix from two real-valued ones."""
+    assert R.cols() == I.cols(), "Number of columns need to match"
+    assert R.rows() == I.rows(), "Number of columns need to match"
+    if isinstance(R, SparseMapMatrix) and isinstance(I, SparseMapMatrix):
+        assert R.vecColPtr() == I.vecColPtr(), "sparsity structure differs"
+        assert R.vecRowIdx() == I.vecRowIdx(), "sparsity structure differs"
+        C = pg.core.CSparseMatrix(R.vecColPtr(), R.vecRowIdx(), 
+                          pg.core.toComplex(R.vecVals()*scaleR, 
+                                            I.vecVals()*scaleI))
+
 
 
 if __name__ == "__main__":
