@@ -41,14 +41,15 @@ endif (UMFPACK_FOUND)
 if (PYTHON_FOUND)
     include_directories(${Python_INCLUDE_DIRS})
 
-    # needed since the later doesnt seems to work
-    target_link_libraries(${libgimli_TARGET_NAME} ${Python_LIBRARIES})
-
-    if (Python_Development.Module_FOUND)
-        target_link_libraries(${libgimli_TARGET_NAME} Python::Module)
-    else()
+    if (NOT APPLE)
+        # needed since the later doesnt seems to work
         target_link_libraries(${libgimli_TARGET_NAME} ${Python_LIBRARIES})
+
+        if (Python_Development.Module_FOUND)
+            target_link_libraries(${libgimli_TARGET_NAME} Python::Module)
+        endif()
     endif()
+
 endif (PYTHON_FOUND)
 
 if (Boost_INCLUDE_DIR)

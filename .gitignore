@@ -52,6 +52,7 @@ __pycache__/
 
 # C extensions
 *.so
+*.dylib
 
 # Distribution / packaging
 .Python
@@ -103,12 +104,10 @@ gimli.code-workspace
 pygimli/core/*.dll
 .vscode/settings.json
 
-pygimli/testing/synth.ves
 .vscode/launch.json
 python/git.exe.stackdump
 pygimli/core/libgimli.dll.back
 pygimli/core/_pygimli_.pyd.back
 pygimli/core/_pygimli_.so.dSYM/
-pygimli/core/libgimli.dylib
-doc/examples/dc_and_ip/synth.ves
 pygimli/VERSION
+synth.ves
