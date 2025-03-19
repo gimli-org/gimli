@@ -18,6 +18,7 @@
 
 #include "gimli.h"
 #include "sparsematrix.h"
+#include <algorithm>
 
 namespace GIMLI{
 
@@ -103,7 +104,7 @@ template <> void
 SparseMatrix< double >::add(const ElementMatrix< double > & A,
                             const double & f, const double & scale){
     double b = f*scale;
-    
+
     if (A.oldStyle()){
         if (!valid_) SPARSE_NOT_VALID;
         for (Index i = 0, imax = A.size(); i < imax; i++){
@@ -128,13 +129,13 @@ SparseMatrix< double >::add(const ElementMatrix< double > & A, const Pos & f, co
     THROW_TO_IMPL
 }
 template <> void
-SparseMatrix< double >::add(const ElementMatrix< double > & A, 
+SparseMatrix< double >::add(const ElementMatrix< double > & A,
                             const RSmallMatrix & f, const double & scale){
     THROW_TO_IMPL
 }
 
 template <> void
-SparseMatrix< Complex >::add(const ElementMatrix < double > & A, 
+SparseMatrix< Complex >::add(const ElementMatrix < double > & A,
                              const Complex & f, const double & scale){
     if (!valid_) SPARSE_NOT_VALID;
     A.integrate();
@@ -150,7 +151,7 @@ SparseMatrix< Complex >::add(const ElementMatrix < double > & A, const Pos & f, 
     THROW_TO_IMPL
 }
 template <> void
-SparseMatrix< Complex >::add(const ElementMatrix < double > & A, 
+SparseMatrix< Complex >::add(const ElementMatrix < double > & A,
                              const CSmallMatrix & f, const double & scale){
     THROW_TO_IMPL
 }
@@ -359,7 +360,7 @@ _T_buildSparsityPattern_(SparseMatrix< ValueType > * self,
         for (auto & c: r){
             // print(c);
             rowIdx[k] = c;
-            
+
             //vals_[k] = (ValueType)0.0;
             k++;
         }
@@ -389,8 +390,6 @@ template <> void SparseMatrix< Complex >
 ::buildSparsityPattern(const std::vector < std::set< Index > > & idxMap){
     _T_buildSparsityPattern_(this, idxMap);
 }
-
-
 template <class ValueType > void
 _T_addSparsityPattern_(SparseMatrix< ValueType > * self,
                        const std::vector < std::set< Index > > & idxMap){
@@ -422,20 +421,24 @@ template <> void SparseMatrix< Complex >
 template <class ValueType > void
 _T_reduce_(SparseMatrix< ValueType > * self,
            const IVector & ids, bool keepDiag){
-    // optimize if necessary
-    __M
-    SparseMapMatrix< ValueType, Index > A1(*self);
-    A1.reduce(ids, keepDiag);
 
-    if (keepDiag){
-        // create diagonal entry, they will be needed probably
-        for (Index i = 0; i < A1.rows(); i ++){
-            A1[i][i] += .0;
-
-        }
-
+    for (Index i = 0; i < ids.size(); i ++){
+        self->cleanRow(ids[i]);
+        self->cleanCol(ids[i]);
     }
-    self->copy_(A1);
+
+    // // optimize if necessary
+    // SparseMapMatrix< ValueType, Index > A1(*self);
+    // A1.reduce(ids, keepDiag);
+
+    // if (keepDiag){
+    //     // create diagonal entry, they will be needed probably
+    //     for (Index i = 0; i < A1.rows(); i ++){
+    //         A1[i][i] += .0;
+
+    //     }
+    // }
+    // self->copy_(A1);
 }
 
 template <> void SparseMatrix< double >
@@ -447,13 +450,114 @@ template <> void SparseMatrix< Complex >
     _T_reduce_(this, ids, keepDiag);
 }
 
+template <class ValueType >
+IndexArray _T_createReduceMask_impl(SparseMatrix < ValueType > * self,
+                                    const IVector & ids){
+    IndexArray mask;
+
+    {WITH_TICTOC("rows")
+    for (auto row: ids){
+        ASSERT_RANGE(row, 0, (int)self->rows())
+        for (int ptr = self->colPtr()[row];
+                 ptr < self->colPtr()[row + 1]; ptr ++){
+
+            mask.push_back(ptr);
+        }
+    }
+    }
+    // TODO: optimize, try CRS->CCC
+
+    {WITH_TICTOC("cols")
+    for (auto rID: ids){
+        int i = 0;
+        for (auto row: self->vecRowIdx()){
+            if (row == rID){
+                mask.push_back(i);
+            }
+            i++;
+        }
+    }
+    }
+
+    // for (auto rID: ids){
+    //     ASSERT_RANGE(rID, 0, (int)self->rows())
+    //     ASSERT_RANGE(rID, 0, (int)self->cols())
+
+    //     int j = 0;
+    //     for (int i = 0; i < (int)self->rows(); i ++){
+    //         for (int ptr = self->colPtr()[i];
+    //                  ptr < self->colPtr()[i + 1]; ptr ++){
+
+    //             j = self->vecRowIdx()[ptr];
+    //             //print(i, j, self->values()[ptr]);
+    //             if (rID == i || rID == j){
+    //                 if (!keepDiag || i != j){
+    //                     mask.push_back(ptr);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+
+
+    // std::sort(mask.begin(), mask.end());
+
+    return mask;
+}
+
+template <> IndexArray SparseMatrix< double >
+::createReduceMask(const IVector & ids){
+    return _T_createReduceMask_impl(this, ids);
+}
+
+template <> IndexArray SparseMatrix< Complex >
+::createReduceMask(const IVector & ids){
+    return _T_createReduceMask_impl(this, ids);
+}
+
+template <class ValueType >
+/**
+ * @brief Creates a mask for the diagonal elements of a sparse matrix.
+ *
+ * This function iterates over the rows and columns of the sparse matrix
+ * to identify the diagonal elements and stores their indices in a mask.
+ *
+ * Only diagonal values of the sparsity pattern are considered.
+ *
+ * @tparam ValueType The type of the values stored in the sparse matrix.
+ * @param self Pointer to the sparse matrix object.
+ * @return IndexArray A vector containing the indices of the diagonal elements.
+ */
+IndexArray _T_createDiagonalMask_impl(SparseMatrix < ValueType > * self){
+    IndexArray mask;
+
+    for (Index row = 0; row < self->rows(); row ++){
+        for (int col = self->colPtr()[row];
+                 col < self->colPtr()[row + 1]; col ++){
+            if (self->vecRowIdx()[col] == (int)row){
+                mask.push_back(col);
+            }
+        }
+    }
+    return mask;
+}
+
+template <> IndexArray SparseMatrix< double >
+::createDiagonalMask(){
+    return _T_createDiagonalMask_impl(this);
+}
+
+template <> IndexArray SparseMatrix< Complex >
+::createDiagonalMask(){
+    return _T_createDiagonalMask_impl(this);
+}
 
 template <class ValueType> void
 mult_T_impl(const SparseMatrix< ValueType > & A,
             const Vector < ValueType > & b, Vector < ValueType > & c,
             const ValueType & alpha, const ValueType & beta,
             Index bOff, Index cOff, bool trans) {
-        // c = alpha * (A*b) + beta * c 
+        // c = alpha * (A*b) + beta * c
 
     if (trans){
         ASSERT_GREATER_EQUAL(b.size() + bOff, A.nRows())
@@ -467,7 +571,7 @@ mult_T_impl(const SparseMatrix< ValueType > & A,
 
     ValueType si = 0.0;
     ValueType bi = 0.0;
-    
+
     if (A.stype() == 0){
         // for each row
 
@@ -479,7 +583,7 @@ mult_T_impl(const SparseMatrix< ValueType > & A,
                 }
             } else {
                 si = c[i];
-                for (int j = A.vecColPtr()[i], jMax=A.vecColPtr()[i+1]; 
+                for (int j = A.vecColPtr()[i], jMax=A.vecColPtr()[i+1];
                      j < jMax; j ++){
                     si += alpha * b[A.vecRowIdx()[j]] * A.vecVals()[j];
                     // count ++;
@@ -500,7 +604,7 @@ mult_T_impl(const SparseMatrix< ValueType > & A,
                 ValueType aij(A.vecVals()[j]);
 
                 si += alpha * b[J] * conj(aij);
-                
+
                 if (J > i){
                     c[J] += alpha * b[i] * aij;
                 }
@@ -519,7 +623,7 @@ mult_T_impl(const SparseMatrix< ValueType > & A,
                 ValueType aij(A.vecVals()[j]);
 
                 si += alpha * b[J] * conj(aij);
-                
+
                 if (J < i){
                     c[J] += alpha * b[i] * aij;
                 }
@@ -528,7 +632,7 @@ mult_T_impl(const SparseMatrix< ValueType > & A,
         }
     }
 }
-            
+
 
 void mult(const SparseMatrix< double > & A,
           const RVector & b, RVector & c,

@@ -69,13 +69,14 @@ public:
     #ifndef PYGIMLI_CAST // disallow automatic type conversion in python
     SparseMatrix(const SparseMapMatrix< ValueType, Index > & S)
         : SparseMatrixBase(), valid_(true){
-        copy_(S);
+        this->copy_(S);
     }
     #endif
     SparseMatrix(const IndexArray & colPtr,
                  const IndexArray & rowIdx,
                  const Vector < ValueType > vals, int stype=0)
         : SparseMatrixBase(){
+        WITH_TICTOC("SparseMatrix(c, r, v).1")
         colPtr_ = std::vector < int >(colPtr.size());
         // __MS(colPtr)
         // __MS(rowIdx)
@@ -94,6 +95,7 @@ public:
                  const std::vector < int > & rowIdx,
                  const Vector < ValueType > vals, int stype=0)
         : SparseMatrixBase(){
+        WITH_TICTOC("SparseMatrix(c, r, v).2")
           colPtr_ = colPtr;
           rowIdx_ = rowIdx;
           vals_   = vals;
@@ -108,19 +110,37 @@ public:
 
     /*! Copy assignment operator. */
     SparseMatrix < ValueType > & operator = (const SparseMatrix < ValueType > & S){
+        WITH_TICTOC("SparseMatrix=().1")
         if (this != &S){
-            colPtr_ = S.vecColPtr();
-            rowIdx_ = S.vecRowIdx();
-            vals_   = S.vecVals();
-            stype_  = S.stype();
-            valid_  = true;
-            _cols = S.cols();
-            _rows = S.rows();
-
+            this->copy(S);
         } return *this;
     }
 
+    void copy_( const SparseMatrix< ValueType > & S){
+        colPtr_ = S.vecColPtr();
+        rowIdx_ = S.vecRowIdx();
+        vals_   = S.vecVals();
+        stype_  = S.stype();
+        valid_  = true;
+        _cols = S.cols();
+        _rows = S.rows();
+    }
+    /*! Inline copy.  */
+    void copy(const SparseMatrix< double > & S){ this->copy_(S); }
+    /*! Inline copy. */
+    void copy(const SparseMatrix< Complex > & S){ this->copy_(S); }
+
+    void copy_(const SparseMapMatrix< double, Index > & S);
+
+    void copy_(const SparseMapMatrix< Complex, Index > & S);
+
+    /*! Inline copy.  */
+    void copy(const SparseMapMatrix< double, Index > & S){ this->copy_(S); }
+    /*! Inline copy. */
+    void copy(const SparseMapMatrix< Complex, Index > & S){ this->copy_(S); }
+
     SparseMatrix < ValueType > & operator = (const SparseMapMatrix< ValueType, Index > & S){
+        WITH_TICTOC("SparseMatrix=().2")
         this->copy_(S);
         return *this;
     }
@@ -138,7 +158,7 @@ public:
                 std::cerr << WHERE_AM_I << " pos " << i << " " << j << " is not part of the sparsity pattern " << std::endl; \
             } \
         }\
-        SparseMatrix< ValueType > & operator OP##= (const ValueType & v){\
+        SparseMatrix< ValueType > & operator OP##= (const ValueType & v){ \
             vals_ OP##= v; \
             return *this;\
         }\
@@ -151,11 +171,14 @@ public:
     #undef DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__
 
     SparseMatrix< ValueType > & operator += (const SparseMatrix< ValueType > & A){
-        vals_ += A.vecVals();
+        // pattern check to expensive
+        ASSERT_EQUAL_SIZE(this->values(), A.values())
+        vals_ += A.values();
         return *this;
     }
     SparseMatrix< ValueType > & operator -= (const SparseMatrix< ValueType > & A){
-        vals_ -= A.vecVals();
+        ASSERT_EQUAL_SIZE(this->values(), A.values())
+        vals_ -= A.values();
         return *this;
     }
 
@@ -236,12 +259,74 @@ public:
         }
     }
 
-    /*! Remove all matrix values assiated to columns and rows in idx. Optional
-    keep diagonal values and create pattern if necessary. */
+    /**
+     * @brief Sets the values in the sparse matrix based on the provided mask and values.
+     *
+     * This function updates the values in the sparse matrix using the indices specified
+     * in the mask and the corresponding values provided in the vals vector. The size of
+     * the mask and vals vectors must be the same.
+     *
+     * @param mask A vector of indices where the values need to be updated.
+     * @param vals A vector of values to be set at the specified indices in the mask.
+     *
+     * @throws std::runtime_error if the sizes of mask and vals do not match.
+     */
+    void setMaskValues(const IndexArray & mask,
+                       const Vector < ValueType > & vals){
+        ASSERT_EQUAL(mask.size(), vals.size())
+        Index i = 0;
+        for (auto id: mask){
+            vals_[id] = vals[i];
+            i++;
+        }
+    }
+    /**
+     * @brief Sets the values in the sparse matrix to a specified value based on a mask.
+     *
+     * This function iterates over the indices provided in the mask and sets the corresponding
+     * values in the sparse matrix to the specified value.
+     *
+     * @param mask An array of indices indicating which elements in the sparse matrix should be set.
+     * @param val The value to set for all elements specified by mask.
+     */
+    void setMaskValues(const IndexArray & mask, const ValueType & val){
+        for (auto id: mask){
+            vals_[id] = val;
+        }
+    }
+
+    /**
+     * @brief Reduces the sparse matrix by removing rows and columns specified by the given indices.
+     *
+     * @param ids A vector of indices specifying which rows and columns to remove.
+     * @param keepDiag A boolean flag indicating whether to keep the diagonal elements.
+     *                 If true, diagonal elements are preserved even if their indices are in the ids vector.
+     */
     void reduce(const IVector & ids, bool keepDiag=true);
 
-    void copy_(const SparseMapMatrix< double, Index > & S);
-    void copy_(const SparseMapMatrix< Complex, Index > & S);
+    /*! Create value mask to reduce rows and colums.*/
+    /**
+     * @brief Creates a reduction mask based on the provided indices.
+     *
+     * This function generates an IndexArray that serves as a mask for reducing
+     * the elements of a given vector or matrix. The mask is created based on
+     * the indices provided in the input vector `ids`.
+     *
+     * @param ids A vector of indices used to create the reduction mask.
+     * @return An IndexArray representing the reduction mask.
+     */
+    IndexArray createReduceMask(const IVector & ids);
+
+    /**
+     * @brief Creates a mask for the diagonal elements of the sparse matrix.
+     *
+     * This function generates an index array that represents the positions of the
+     * diagonal elements in the sparse matrix. It can be used to efficiently access
+     * or modify the diagonal elements.
+     *
+     * @return IndexArray An array containing the indices of the diagonal elements.
+     */
+    IndexArray createDiagonalMask();
 
     void buildSparsityPattern(const Mesh & mesh);
     void buildSparsityPattern(const std::vector < std::set< Index > > & idxMap);
@@ -322,8 +407,10 @@ public:
     inline Vector < ValueType > & vecVals() { return vals_; }
 
     //!!prefered
-    inline Vector < ValueType > & values() { return vals_; }
     inline const Vector < ValueType > & values() const { return vals_; }
+    inline Vector < ValueType > values(const IndexArray & mask)
+        const { return vals_[mask]; }
+    inline Vector < ValueType > & values() { return vals_; }
 
     void update(const Vector < ValueType > & v) { vals_ = v; }
 
@@ -467,13 +554,24 @@ SparseMatrix < ValueType > operator * (const ValueType & b,
     return ret *= b;
 }
 
-inline RVector operator * (const RSparseMatrix & A, const RVector & b){return A.mult(b);}
-inline RVector transMult(const RSparseMatrix & A, const RVector & b){return A.transMult(b);}
+inline RVector operator * (const RSparseMatrix & A, const RVector & b){
+    return A.mult(b);
+}
+inline RVector transMult(const RSparseMatrix & A, const RVector & b){
+    return A.transMult(b);
+}
 
-inline CVector operator * (const CSparseMatrix & A, const CVector & b){return A.mult(b);}
-inline CVector operator * (const CSparseMatrix & A, const RVector & b){return A.mult(toComplex(b));}
-inline CVector transMult(const CSparseMatrix & A, const CVector & b){return A.transMult(b);}
-inline CVector transMult(const CSparseMatrix & A, const RVector & b){return A.transMult(toComplex(b));}
+inline CVector operator * (const CSparseMatrix & A, const CVector & b){
+    return A.mult(b);
+}
+inline CVector operator * (const CSparseMatrix & A, const RVector & b){
+    return A.mult(toComplex(b));
+}
+inline CVector transMult(const CSparseMatrix & A, const CVector & b){
+    return A.transMult(b);
+}
+inline CVector transMult(const CSparseMatrix & A, const RVector & b){
+    return A.transMult(toComplex(b));}
 
 inline RSparseMatrix real(const CSparseMatrix & A){
     return RSparseMatrix(A.vecColPtr(), A.vecRowIdx(),
@@ -513,6 +611,18 @@ template <> DLLEXPORT void SparseMatrix< double >::
 reduce(const IVector & ids, bool keepDiag);
 template <> DLLEXPORT void SparseMatrix< Complex >::
 reduce(const IVector & ids, bool keepDiag);
+
+template <> DLLEXPORT IndexArray SparseMatrix< double >::
+createReduceMask(const IVector & ids);
+
+template <> DLLEXPORT IndexArray SparseMatrix< Complex >::
+createReduceMask(const IVector & ids);
+
+template <> DLLEXPORT IndexArray SparseMatrix< double >::
+createDiagonalMask( );
+
+template <> DLLEXPORT IndexArray SparseMatrix< Complex >::
+createDiagonalMask();
 
 } // namespace GIMLI
 #endif //GIMLI_SPARSEMATRIX__H

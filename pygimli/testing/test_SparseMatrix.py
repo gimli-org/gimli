@@ -184,21 +184,44 @@ class TestSparseMatrix(unittest.TestCase):
         A2 = pg.matrix.SparseMapMatrix(colIds, rowIds, vals)
         A1 += A2
 
+
     def test_Access(self):
-        #addVal(0, 1, 1.2) kommt nach der konvertierung auch wieder [0], [1], [1.2]
+        #addVal(0, 1, 1.2)
         pass
 
+
     def test_Operators(self):
-        colIds = range(10)
-        rowIds = range(10)
-        vals = np.ones(10)
-        A = pg.matrix.SparseMapMatrix(colIds, rowIds, vals)
-        S = pg.matrix.asSparseMatrix(A)
 
-        S2 = S + S * 0.1 * 0.3
-        S3 = S + 0.1 * 0.3 * S
+        def _test(A):
+            R = pg.matrix.asCOO(A)
 
-        np.testing.assert_equal(S2, S3)
+            ## needed? usefull?
+            # np.testing.assert_equal((A+2).values(), A.values()+2)
+            # np.testing.assert_equal((A-2).values(), A.values()-2)
+            # np.testing.assert_equal((A+2.).values(), A.values()+2.)
+            # np.testing.assert_equal((A-2.).values(), A.values()-2.)
+            # np.testing.assert_equal((2.+A).values(), 2+A.values())
+            # np.testing.assert_equal((2.-A).values(), 2-A.values())
+            # np.testing.assert_equal((2.+A).values(), 2.+A.values())
+            # np.testing.assert_equal((2.-A).values(), 2.-A.values())
+
+            np.testing.assert_equal(A*2. == R*2., True)
+            np.testing.assert_equal(A/2. == R/2., True)
+            np.testing.assert_equal(2.*A == 2.*R, True)
+            np.testing.assert_equal(A*2 == R*2, True)
+            np.testing.assert_equal(A/2 == R/2, True)
+            np.testing.assert_equal(2*A == 2*R, True)
+
+            np.testing.assert_equal(-A       == -R, True)
+            np.testing.assert_equal( A + A   ==  R + R, True)
+            np.testing.assert_equal( A + A*2 ==  R + R*2, True)
+            np.testing.assert_equal( A - A*2 ==  R - R*2, True)
+            np.testing.assert_equal(-A + A*2 == -R + R*2, True)
+
+        A = np.linspace(0, 15, num=16).reshape(4,4)
+        _test(pg.matrix.asSparseMapMatrix(A))
+        _test(pg.matrix.asSparseMatrix(A))
+
 
     def test_ComplexMatrix(self):
         verbose = False
@@ -263,6 +286,35 @@ class TestSparseMatrix(unittest.TestCase):
             A2.setVal(ix, ix, 1.0)
 
         np.testing.assert_equal(A1==A2, True)
+
+
+    def test_Masks(self):
+        from scipy.sparse import csc_matrix, csr_matrix
+        A = np.linspace(1, 25, num=25).reshape(5,5)
+
+        A1 = pg.matrix.asSparseMatrix(A)
+        print(A1)
+
+        diag = A1.createDiagonalMask()
+        print(diag)
+        np.testing.assert_equal(A1.values(diag), [1, 7, 13, 19, 25])
+
+        reduce = A1.createReduceMask([1,3], keepDiag=False)
+        A1.setMaskValues(reduce, 0.0)
+
+        print(reduce)
+        print(diag)
+
+        diagRed = reduce[np.nonzero(np.in1d(reduce, diag))[0]]
+        print(diagRed)
+        A1.setMaskValues(diagRed, 1.0)
+        print(A1)
+
+        A2 = pg.matrix.asSparseMatrix(A)
+        pg.matrix.reduceEntries(A2, [1,3])
+        print(A2)
+
+        np.testing.assert_equal(A1 == A2, True)
 
 
 

@@ -218,13 +218,7 @@ public:
 
     SparseMapMatrix< ValueType, IndexType > & operator = (const SparseMapMatrix< ValueType, IndexType > & S){
         if (this != &S){
-            clear();
-            _rows = S.rows();
-            _cols = S.cols();
-            stype_ = S.stype();
-            for (const_iterator it = S.begin(); it != S.end(); it ++){
-                this->setVal(it->first.first, it->first.second, it->second);
-            }
+            this->copy(S);
         } return *this;
     }
 
@@ -243,8 +237,31 @@ public:
         _cols = cols;
     }
 
+    void copy_(const SparseMapMatrix< ValueType, IndexType > & S){
+        this->clear();
+        _rows = S.rows();
+        _cols = S.cols();
+        stype_ = S.stype();
+        for (const_iterator it = S.begin(); it != S.end(); it ++){
+            this->setVal(it->first.first, it->first.second, it->second);
+        }
+    }
+    /*! Inline copy.  */
+    void copy(const SparseMapMatrix< double, Index > & S){
+        this->copy_(S);
+    }
+    /*! Inline copy.  */
+    void copy(const SparseMapMatrix< Complex, Index > & S){
+        this->copy_(S);
+    }
+
     void copy_(const SparseMatrix< double > & S);
     void copy_(const SparseMatrix< Complex > & S);
+    /*! Inline copy.  */
+    void copy(const SparseMatrix< double > & S){ this->copy_(S); }
+    /*! Inline copy. */
+    void copy(const SparseMatrix< Complex > & S){ this->copy_(S); }
+
 
     /*! Add this values to the matrix. */
     inline void add(const IndexArray & rows, const IndexArray & cols,
@@ -356,6 +373,11 @@ public:
             }
         }
     }
+
+    // ## fails python conversion
+    // /*! Negation operator thats return a copy of this with negative values. */
+    // SparseMapMatrix< ValueType, IndexType > operator - () {
+    //     return *this * ValueType(-1.0); }
 
     class Aux {  // for index operator below
     public:
@@ -698,8 +720,12 @@ inline RSparseMapMatrix operator - (const RSparseMapMatrix & A,
 }
 
 #define DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(OP) \
-    inline RSparseMapMatrix operator OP (const RSparseMapMatrix & A, \
-                                         const double & v){\
+    inline DLLEXPORT RSparseMapMatrix operator OP (const RSparseMapMatrix & A, \
+                                            const double & v){\
+        return RSparseMapMatrix(A) OP##= v; \
+    } \
+    inline DLLEXPORT RSparseMapMatrix operator OP (const RSparseMapMatrix & A, \
+                                                   long v){\
         return RSparseMapMatrix(A) OP##= v; \
     } \
 
@@ -711,7 +737,11 @@ inline RSparseMapMatrix operator - (const RSparseMapMatrix & A,
 #undef DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__
 
 #define DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(OP) \
-inline RSparseMapMatrix operator OP (const double & v, \
+inline DLLEXPORT RSparseMapMatrix operator OP (const double & v, \
+                                     const RSparseMapMatrix & A){\
+    return RSparseMapMatrix(A) OP##= v; \
+} \
+inline DLLEXPORT RSparseMapMatrix operator OP (long v, \
                                      const RSparseMapMatrix & A){\
     return RSparseMapMatrix(A) OP##= v; \
 } \

@@ -60,7 +60,7 @@ template < class ValueType, class SeqType > void * checkConvertibleSequenz(PyObj
     initNumpy_();
 
     if (!obj){
-        __DC("\t", obj, "\t abborting .. !Object")
+        __DC("\t", obj, "\t aborting .. !Object")
         return NULL;
     }
     __DC(obj, "(", obj->ob_type->tp_name, ") -> sequenz of type ("
@@ -229,7 +229,6 @@ template < class ValueType > void * checkConvertibleNumpyScalar(PyObject * obj){
             GIMLI::type(ValueType(0))) // FW: Caused problems during Mac build
         __DC("\tType:", Py_TYPE(obj))
 
-
         // __DC("\tArray:", PyObject_TypeCheck(obj, &PyArray_Type))
         __DC("\tPyGenericArrType_Type:", PyObject_TypeCheck(obj, &PyGenericArrType_Type))
         __DC("\tPyIntegerArrType_Type:", PyObject_TypeCheck(obj, &PyIntegerArrType_Type))
@@ -316,7 +315,7 @@ struct PySequence2RVector{
 
     /*! Convert List[] or ndarray into RVector */
     static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
-       __DC(obj, " constructing RVector:")
+        __DC(obj, " constructing RVector:")
 
         typedef bp::converter::rvalue_from_python_storage< GIMLI::Vector< double > > storage_t;
         storage_t* the_storage = reinterpret_cast<storage_t*>(data);
@@ -466,7 +465,7 @@ struct PySequence2IndexArray{
     /*! Convert obj into IndexArray */
     static void construct(PyObject * obj,
                           bp::converter::rvalue_from_python_stage1_data * data){
-
+        __DC(obj, " constructing IndexArray:")
         bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
 
         typedef bp::converter::rvalue_from_python_storage< GIMLI::IndexArray > storage_t;
@@ -477,11 +476,10 @@ struct PySequence2IndexArray{
         GIMLI::IndexArray * vec = new (memory_chunk) GIMLI::IndexArray(len(py_sequence));
         data->convertible = memory_chunk;
 
-        __DC(obj, "\t is array:", obj->ob_type->tp_name)
-        __DC(obj, "\t is array", PyObject_TypeCheck(obj, &PyGenericArrType_Type))
+        __DC(obj, "\t type: ", obj->ob_type->tp_name)
+        __DC(obj, strcmp(obj->ob_type->tp_name, "numpy.ndarray"))
 
-        if (PyObject_TypeCheck(obj, &PyGenericArrType_Type)){
-            __DC(obj, "\t is array")
+        if (strcmp(obj->ob_type->tp_name, "numpy.ndarray") == 0){
             PyArrayObject *arr = (PyArrayObject *)obj;
 
             __DC("\t", obj, "\t ndarray.ndim: ", PyArray_NDIM(arr))
@@ -490,9 +488,14 @@ struct PySequence2IndexArray{
             __DC("\t", obj, "\t NPY_INT64: ", NPY_INT64)
             __DC("\t", obj, "\t ndarray.onsegment: ", PyArray_ISONESEGMENT(arr))
 
+            if (PyArray_TYPE(arr) == NPY_UINT64 && PyArray_ISONESEGMENT(arr)){
+                void * arrData = PyArray_DATA(arr);
+                std::memcpy(&(*vec)[0], arrData,
+                            vec->size() * sizeof(GIMLI::Index));
+                return;
+            }
         }
 
-        __DC(obj, "\t constructing IndexArray")
         __DC(obj, "\t from list")
         for (GIMLI::Index i = 0; i < vec->size(); i ++){
             (*vec)[i] = bp::extract< GIMLI::Index >(py_sequence[i]);
@@ -932,57 +935,65 @@ void register_numpy_to_double_conversion(){
                                         & r_values_impl::Numpy2Double::construct,
                                         bp::type_id< double >());
 }
-void register_pysequence_to_indexvector_conversion(){
+
+
+void register_pysequence_to_indexarray_conversion(){
     bp::converter::registry::push_back(
-        & r_values_impl::PySequence2IndexArray::convertible,
-        & r_values_impl::PySequence2IndexArray::construct,
-        bp::type_id< GIMLI::IndexArray >()
-    );
+                            & r_values_impl::PySequence2IndexArray::convertible,
+                            & r_values_impl::PySequence2IndexArray::construct,
+                            bp::type_id< GIMLI::IndexArray >());
 }
-
 void register_pysequence_to_ivector_conversion(){
-    bp::converter::registry::push_back(& r_values_impl::PySequence2IVector::convertible,
-                                        & r_values_impl::PySequence2IVector::construct,
-                                        bp::type_id< GIMLI::IVector >());
+    bp::converter::registry::push_back(
+                            & r_values_impl::PySequence2IVector::convertible,
+                            & r_values_impl::PySequence2IVector::construct,
+                            bp::type_id< GIMLI::IVector >());
 }
-
 void register_pysequence_to_rvector_conversion(){
-    bp::converter::registry::push_back(& r_values_impl::PySequence2RVector::convertible,
-                                        & r_values_impl::PySequence2RVector::construct,
-                                        bp::type_id< GIMLI::Vector< double > >());
+    bp::converter::registry::push_back(
+                            & r_values_impl::PySequence2RVector::convertible,
+                            & r_values_impl::PySequence2RVector::construct,
+                            bp::type_id< GIMLI::Vector< double > >());
 }
 void register_pysequence_to_cvector_conversion(){
-    bp::converter::registry::push_back(& r_values_impl::PySequence2CVector::convertible,
-                                        & r_values_impl::PySequence2CVector::construct,
-                                        bp::type_id< GIMLI::Vector< GIMLI::Complex > >());
+    bp::converter::registry::push_back(
+                            & r_values_impl::PySequence2CVector::convertible,
+                            & r_values_impl::PySequence2CVector::construct,
+                            bp::type_id< GIMLI::Vector< GIMLI::Complex > >());
 }
 void register_pysequence_to_bvector_conversion(){
-    bp::converter::registry::push_back(& r_values_impl::PySequence2BVector::convertible,
-                                        & r_values_impl::PySequence2BVector::construct,
-                                        bp::type_id< GIMLI::Vector< bool > >());
+    bp::converter::registry::push_back(
+                            & r_values_impl::PySequence2BVector::convertible,
+                            & r_values_impl::PySequence2BVector::construct,
+                            bp::type_id< GIMLI::Vector< bool > >());
 }
 void register_pysequence_to_StdVectorRVector3_conversion(){
-    bp::converter::registry::push_back(& r_values_impl::PySequence2StdVectorRVector3::convertible,
-                                        & r_values_impl::PySequence2StdVectorRVector3::construct,
-                                        bp::type_id< std::vector< GIMLI::Pos > >());
+    bp::converter::registry::push_back(
+                            & r_values_impl::PySequence2StdVectorRVector3::convertible,
+                            & r_values_impl::PySequence2StdVectorRVector3::construct,
+                            bp::type_id< std::vector< GIMLI::Pos > >());
 }
 void register_pysequence_to_r3vector_conversion(){
-    bp::converter::registry::push_back(& r_values_impl::PySequence2R3Vector::convertible,
-                                        & r_values_impl::PySequence2R3Vector::construct,
-                                        bp::type_id< GIMLI::R3Vector >());
+    bp::converter::registry::push_back(
+                            & r_values_impl::PySequence2R3Vector::convertible,
+                            & r_values_impl::PySequence2R3Vector::construct,
+                            bp::type_id< GIMLI::R3Vector >());
 }
 void register_pytuple_to_pos_conversion(){
-    bp::converter::registry::push_back(& r_values_impl::PyTuple2Pos::convertible,
-                                        & r_values_impl::PyTuple2Pos::construct,
-                                        bp::type_id< GIMLI::Pos >());
+    bp::converter::registry::push_back(
+                            & r_values_impl::PyTuple2Pos::convertible,
+                            & r_values_impl::PyTuple2Pos::construct,
+                            bp::type_id< GIMLI::Pos >());
 }
 void register_numpy_to_rmatrix_conversion(){
-    bp::converter::registry::push_back(& r_values_impl::Numpy2RMatrix::convertible,
-               & r_values_impl::Numpy2RMatrix::construct,
-                bp::type_id< GIMLI::Matrix< double > >());
+    bp::converter::registry::push_back(
+                            & r_values_impl::Numpy2RMatrix::convertible,
+                            & r_values_impl::Numpy2RMatrix::construct,
+                            bp::type_id< GIMLI::Matrix< double > >());
 }
 void register_numpy_to_rdensematrix_conversion(){
-    bp::converter::registry::push_back(& r_values_impl::Numpy2RMatrix::convertible,
-               & r_values_impl::Numpy2RDenseMatrix::construct,
-                bp::type_id< GIMLI::DenseMatrix< double > >());
+    bp::converter::registry::push_back(
+                            & r_values_impl::Numpy2RMatrix::convertible,
+                            & r_values_impl::Numpy2RDenseMatrix::construct,
+                            bp::type_id< GIMLI::DenseMatrix< double > >());
 }

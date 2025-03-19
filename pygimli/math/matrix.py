@@ -939,6 +939,34 @@ def matrixColumn(A, n):
     return A.mult(one)
 
 
+def concatenateAsCOO(A):
+    """Concatenate a list of sparse matrices into sparse.COO format.
+
+    Only if the shapes of A doesn't overlap.
+
+    Parameters
+    ----------
+    A : iterable
+        List of sparse matrices.
+    """
+    from scipy import sparse
+
+    for i, Ai in enumerate(A):
+        x = pg.matrix.asCOO(Ai)
+        if i == 0:
+            d = x.data
+            r = x.row
+            c = x.col
+        else:
+            d = np.concatenate((d, x.data))
+            r = np.concatenate((r, x.row))
+            c = np.concatenate((c, x.col))
+
+    C = sparse.coo_matrix((d,(r,c)))
+    return C
+
+
+
 if __name__ == "__main__":
     Amat = pg.Matrix(3, 4)
     Bmat = TransposedMatrix(Amat)

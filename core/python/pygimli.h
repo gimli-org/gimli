@@ -200,12 +200,8 @@ namespace GIMLI{
     inline RDenseMatrix operator OP (const RDenseMatrix & a, const RDenseMatrix & b){ \
         RDenseMatrix ret(a);   ret OP##=b; return ret; } \
         /*!*/ \
-    inline RSparseMatrix operator OP (const RSparseMatrix & a, const double & b){ \
-        RSparseMatrix ret(a); ret OP##=b; return ret; } \
-    inline RSparseMatrix operator OP (const double & a, const RSparseMatrix & b){ \
-        RSparseMatrix ret(b); THROW_TO_IMPL return ret; } \
-    inline RSparseMatrix operator OP (const RSparseMatrix & a, const RSparseMatrix & b){ \
-        RSparseMatrix ret(a); THROW_TO_IMPL; return ret; } \
+    inline RSparseMatrix operator OP (const RSparseMatrix & A, const double & b){ \
+        RSparseMatrix ret(A); ret OP##=b; return ret; } \
         /*!*/ \
     inline R3Vector operator OP (const R3Vector & a, const R3Vector & b){ \
         ASSERT_EQUAL_SIZE(a, b) \
@@ -270,6 +266,16 @@ DEFINE_PY_VEC_OPERATOR__(-)
 DEFINE_PY_VEC_OPERATOR__(*)
 DEFINE_PY_VEC_OPERATOR__(/)
 #undef DEFINE_PY_VEC_OPERATOR__
+
+inline RSparseMatrix operator + (const double & a, const RSparseMatrix & b){
+    RSparseMatrix ret(b); return ret += a; }
+inline RSparseMatrix operator * (const double & a, const RSparseMatrix & b){
+    RSparseMatrix ret(b); return ret *= a; }
+
+inline RSparseMatrix operator + (const RSparseMatrix & A, const RSparseMatrix & B){
+    RSparseMatrix ret(A); return ret += B; }
+inline RSparseMatrix operator - (const RSparseMatrix & A, const RSparseMatrix & B){
+    RSparseMatrix ret(A); return ret -= B; }
 
 #define DEFINE_PY_VEC_UNARY_OPERATOR__(OP, FUNCT)                      \
     inline RVector OP (const RVector & a) { \

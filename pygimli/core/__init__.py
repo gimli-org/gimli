@@ -155,27 +155,23 @@ pgcore.RVector.__gt__ = _greaterThan_
 # This seams ugly but necessary until we can recognize numpy array in
 # custom_rvalue
 __origIndexArrayInit__ = pgcore.IndexArray.__init__
-
-
 def __newIndexArrayInit__(self, arr, val=None):
     """New index array."""
     if hasattr(arr, 'dtype') and hasattr(arr, '__iter__'):
-        __origIndexArrayInit__(self, [int(a) for a in arr])
+        __origIndexArrayInit__(self, np.asarray(arr, dtype=np.uint64))
+        #__origIndexArrayInit__(self, [int(a) for a in arr])
     else:
         if val:
             __origIndexArrayInit__(self, arr, val)
         else:
             __origIndexArrayInit__(self, arr)
-
-
 pgcore.IndexArray.__init__ = __newIndexArrayInit__
+
 
 # Overwrite constructor for BVector
 # This seams ugly but necessary until we can recognize numpy array in
 # custom_rvalue
 __origBVectorInit__ = pgcore.BVector.__init__
-
-
 def __newBVectorInit__(self, arr, val=None):
     if hasattr(arr, 'dtype') and hasattr(arr, '__iter__'):
         # this is hell slow .. better in custom_rvalue.cpp or in
@@ -188,8 +184,6 @@ def __newBVectorInit__(self, arr, val=None):
             __origBVectorInit__(self, arr, val)
         else:
             __origBVectorInit__(self, arr)
-
-
 pgcore.BVector.__init__ = __newBVectorInit__
 
 ######################
@@ -198,8 +192,6 @@ pgcore.BVector.__init__ = __newBVectorInit__
 
 # RVector + int fails .. so we need to tweak this command
 __oldRVectorAdd__ = pgcore.RVector.__add__
-
-
 def __newRVectorAdd__(a, b):
     if isinstance(b, np.ndarray) and b.dtype == complex:
         return __oldRVectorAdd__(a, pgcore.CVector(b))
@@ -208,34 +200,26 @@ def __newRVectorAdd__(a, b):
     if isInt(a):
         return __oldRVectorAdd__(float(a), b)
     return __oldRVectorAdd__(a, b)
-
-
 pgcore.RVector.__add__ = __newRVectorAdd__
 
+
 __oldRVectorSub__ = pgcore.RVector.__sub__
-
-
 def __newRVectorSub__(a, b):
     if isInt(b):
         return __oldRVectorSub__(a, float(b))
     if isInt(a):
         return __oldRVectorSub__(float(a), b)
     return __oldRVectorSub__(a, b)
-
-
 pgcore.RVector.__sub__ = __newRVectorSub__
 
+
 __oldRVectorMul__ = pgcore.RVector.__mul__
-
-
 def __newRVectorMul__(a, b):
     if isInt(b):
         return __oldRVectorMul__(a, float(b))
     if isInt(a):
         return __oldRVectorMul__(float(a), b)
     return __oldRVectorMul__(a, b)
-
-
 pgcore.RVector.__mul__ = __newRVectorMul__
 
 try:
@@ -260,26 +244,20 @@ except:
         return __oldRVectorTrueDiv__(a, b)
     pgcore.RVector.__div__ = __newRVectorTrueDiv__
 
+
 __oldRMatMul__ = pgcore.RMatrix.__mul__
-
-
 def __newRMatMul__(a, b):
     if isInt(b):
         return __oldRMatMul__(a, float(b))
     return __oldRMatMul__(a, b)
-
-
 pgcore.RMatrix.__mul__ = __newRMatMul__
 
+
 __oldRMatAdd__ = pgcore.RMatrix.__add__
-
-
 def __newRMatAdd__(a, b):
     if isInt(b):
         return __oldRMatAdd__(a, float(b))
     return __oldRMatAdd__(a, b)
-
-
 pgcore.RMatrix.__add__ = __newRMatAdd__
 
 ###############################################################################
@@ -706,14 +684,15 @@ class PosIter():
         else:
             return self.vec[self.pos]
 
+
 def __PosIterCall__(self):
     return PosIter(self)
-
 pgcore.Pos.__iter__ = __PosIterCall__
 
 ## there are weird exposed value expressions for POS OP with int argument
 ## so we need to overwrite them here until its known how to avoid the exposure
 ## 231006
+
 
 __POS_orig__add__ = getattr(pgcore.Pos, '__add__')
 def __POS_new__add__(self, b):
@@ -721,6 +700,7 @@ def __POS_new__add__(self, b):
         return __POS_orig__add__(self, float(b))
     return __POS_orig__add__(self, b)
 setattr(pgcore.Pos, '__add__', __POS_new__add__)
+
 
 __POS_orig__radd__ = getattr(pgcore.Pos, '__radd__')
 def __POS_new__radd__(self, b):
@@ -732,12 +712,14 @@ def __POS_new__radd__(self, b):
         return __POS_orig__radd__(self, b)
 setattr(pgcore.Pos, '__radd__', __POS_new__radd__)
 
+
 __POS_orig__sub__ = getattr(pgcore.Pos, '__sub__')
 def __POS_new__sub__(self, b):
     if isinstance(b, int):
         return __POS_orig__sub__(self, float(b))
     return __POS_orig__sub__(self, b)
 setattr(pgcore.Pos, '__sub__', __POS_new__sub__)
+
 
 __POS_orig__rsub__ = getattr(pgcore.Pos, '__rsub__')
 def __POS_new__rsub__(self, b):
@@ -749,12 +731,14 @@ def __POS_new__rsub__(self, b):
         return __POS_orig__rsub__(self, b)
 setattr(pgcore.Pos, '__rsub__', __POS_new__rsub__)
 
+
 __POS_orig__mul__ = getattr(pgcore.Pos, '__mul__')
 def __POS_new__mul__(self, b):
     if isinstance(b, int):
         return __POS_orig__mul__(self, float(b))
     return __POS_orig__mul__(self, b)
 setattr(pgcore.Pos, '__mul__', __POS_new__mul__)
+
 
 __POS_orig__truediv__ = getattr(pgcore.Pos, '__truediv__')
 def __POS_new__truediv__(self, b):

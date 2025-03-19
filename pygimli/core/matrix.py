@@ -2,7 +2,10 @@
 """Some matrix specialization."""
 
 import time
+
 import numpy as np
+import pygimli as pg
+from scipy.sparse import csr_matrix, coo_matrix, csc_matrix
 
 from .core import pgcore
 
@@ -12,6 +15,7 @@ from .core import (CMatrix, CSparseMapMatrix, CSparseMatrix,
 
 from .logger import critical, warn, error
 from .base import isArray
+
 
 
 def warn(*a):
@@ -174,6 +178,45 @@ pgcore.CMatrix.__repr__ = __CMatrix_str
 pgcore.ElementMatrix.__repr__ = __ElementMatrix_str
 
 
+def __SparseMatrix_str(self):
+    """Show entries of an ElementMatrix."""
+    import pygimli as pg
+
+    S = pg.matrix.asSparseMapMatrix(self)
+    if S.cols() == 0 or S.rows() == 0:
+        return 'Empty ElementMatrix\n'
+
+    name = str(type(self)).split('.')[-1].split("'")[0]
+    if name.startswith('R'):
+        name = name[1:]
+    s = f"{name}: {S.rows()} x {S.cols()}"
+    pc = int(self.nVals()/self.cols()/self.rows()*1000) / 10
+    s += " (nnz=" + str(self.nVals()) + " / " + str(pc)+ "%)\n"
+
+    if S.cols() < 25:
+        s += '\n'
+
+        M = pg.matrix.asDense(self)
+        for mi in M:
+            for v in mi:
+                if (abs(v) < 1e-12 and abs(v) > 0):
+                    s += ('+'+pg.pf(v)).rjust(9)
+                elif (abs(v)< 1e-12 and abs(v) < 0):
+                    s += ('-'+pg.pf(v)).rjust(9)
+                else:
+                    s += pg.pf(v).rjust(9)
+            s += '\n'
+    return s
+pgcore.RSparseMatrix.__repr__ =__SparseMatrix_str
+pgcore.RSparseMapMatrix.__repr__ =__SparseMatrix_str
+
+
+def __RVector_format(self, f):
+    print(f)
+    return str(self)
+pgcore.RVector.__format__ = __RVector_format
+
+
 # for copy by reference objects we need to keep the owner objects alive, i.e. increase the reference counter
 __ElementMatrix_mat = pgcore.ElementMatrix.mat
 def __ElementMatrix_mat_GC__(self):
@@ -204,39 +247,39 @@ def __CopyRMatrixTranspose__(self):
     return pgcore.RMatrix(np.array(self).T)
 pgcore.RMatrix.T = property(__CopyRMatrixTranspose__)
 
+
 def __CopyRDenseMatrixTranspose__(self):
     return pgcore.RDenseMatrix(np.array(self).T)
 pgcore.RDenseMatrix.T = property(__CopyRDenseMatrixTranspose__)
 
 
-def __SparseMatrix_str(self):
-    """Show entries of an ElementMatrix."""
-    import pygimli as pg
+## Overload some operators
 
-    S = pg.matrix.asSparseMapMatrix(self)
-    if S.cols() == 0 and S.rows() == 0:
-        return 'Empty ElementMatrix\n'
+__RSparseMapMatrix_Mul__orig = pgcore.RSparseMapMatrix.__mul__
+def __RSparseMapMatrix_Mul__(self, b):
+    """Multiply SparseMapMatrix with b."""
+    if isinstance(b, int):
+        ## or this will be wrongly parsed into mul(self, RVector(b))
+        return __RSparseMapMatrix_Mul__orig(self, float(b))
+    return __RSparseMapMatrix_Mul__orig(self, b)
+pgcore.RSparseMapMatrix.__mul__ = __RSparseMapMatrix_Mul__
 
-    s = "{0} size = {1} x {2}, nVals = {3}".format(type(self),
-                                       S.rows(), S.cols(), S.nVals())
 
-    if S.cols() < 25:
-        s += '\n'
+__RSparseMatrix_Mul__orig = pgcore.RSparseMatrix.__mul__
+def __RSparseMatrix_Mul__(self, b):
+    """Multiply SparseMatrix with b."""
+    if isinstance(b, int):
+        ## or this will be wrongly parsed into mul(self, RVector(b))
+        return __RSparseMatrix_Mul__orig(self, float(b))
+    return __RSparseMatrix_Mul__orig(self, b)
+pgcore.RSparseMatrix.__mul__ = __RSparseMatrix_Mul__
 
-        M = pg.matrix.asDense(self)
-        for mi in M:
-            for v in mi:
-                if (abs(v) < 1e-12 and abs(v) > 0):
-                    s += ('+'+pg.pf(v)).rjust(9)
-                elif (abs(v)< 1e-12 and abs(v) < 0):
-                    s += ('-'+pg.pf(v)).rjust(9)
-                else:
-                    s += pg.pf(v).rjust(9)
-            s += '\n'
-    return s
 
-pgcore.RSparseMatrix.__repr__ =__SparseMatrix_str
-pgcore.RSparseMapMatrix.__repr__ =__SparseMatrix_str
+def __RSparseMapMatrix_Neg__(self):
+    """Multiply SparseMapMatrix with b."""
+    return self * -1.0
+pgcore.RSparseMapMatrix.__neg__ = __RSparseMapMatrix_Neg__
+pgcore.RSparseMatrix.__neg__ = __RSparseMapMatrix_Neg__
 
 
 def __stdVectorRSparseMapMatrix_Mult__(self, b):
@@ -266,24 +309,6 @@ def __stdVectorRSparseMapMatrix_Mult__(self, b):
 
     return ret
 pgcore.stdVectorRSparseMapMatrix.__mul__ = __stdVectorRSparseMapMatrix_Mult__
-
-def __RSparseMatrix_str(self):
-    s = "SparseMatrix: " + str(self.rows()) + " x " + str(self.cols())
-    if self.rows() * self.cols() > 0:
-        pc = int(self.nVals()/self.cols()/self.rows()*1000) / 10
-        s += " (nnz=" + str(self.nVals()) + " / " + str(pc)+ "%)"
-
-    return s
-
-
-pgcore.RSparseMatrix.__repr__ = __RSparseMatrix_str
-
-
-def __RVector_format(self, f):
-    print(f)
-    return str(self)
-
-pgcore.RVector.__format__ = __RVector_format
 
 
 # Special Monkeypatch core classes
@@ -383,6 +408,9 @@ def __SparseMatrixEqual__(self, T):
     rowsA, colsA, valsA = sparseMatrix2Array(self, indices=True, getInCRS=True)
     rowsB, colsB, valsB = sparseMatrix2Array(T, indices=True, getInCRS=True)
 
+    # print(rowsA, colsA, valsA)
+    # print(rowsB, colsB, valsB)
+
     if len(valsA) != len(valsB):
         warn(f'Compare value sizes invalid: {len(valsA)}, {len(valsB)}')
         return False
@@ -408,7 +436,6 @@ def __SparseMatrixEqual__(self, T):
         return np.all(rowsA == rowsB) and np.all(colsA == colsB) and nAB/meanA < 1e-12
     else:
         return nAB < 1e-12
-
 pgcore.RSparseMatrix.__eq__ = __SparseMatrixEqual__
 pgcore.RSparseMapMatrix.__eq__ = __SparseMatrixEqual__
 
@@ -416,18 +443,13 @@ pgcore.RSparseMapMatrix.__eq__ = __SparseMatrixEqual__
 def __SparseMatrixCopy__(self):
     """Create a copy."""
     return pgcore.RSparseMatrix(self)
-
 pgcore.RSparseMatrix.copy = __SparseMatrixCopy__
 
 
 def __SparseMapMatrixCopy__(self):
     """Create a copy."""
     return pgcore.RSparseMapMatrix(self)
-
 pgcore.RSparseMapMatrix.copy = __SparseMapMatrixCopy__
-
-
-from scipy.sparse import csr_matrix, coo_matrix, csc_matrix
 
 
 def toSparseMatrix(A):
@@ -472,13 +494,18 @@ def toSparseMatrix(A):
             return SparseMatrix(A.shape[0], A.shape[1])
 
         r, c = A.shape[0], A.shape[1]
-        A = SparseMatrix(A.indptr, A.indices, A.data)
+        with pg.tictoc('ToSparseMatrix'):
+
+            A = SparseMatrix(np.asarray(A.indptr, dtype=np.uint64),
+                             np.asarray(A.indices, dtype=np.uint64),
+                             A.data)
+
         ## sometimes zero diagnonals are skipped
         A.resize(r, c)
         #pg.core.setDeepDebug(0)
         return A
 
-    return toSparseMatrix(toCSR(A))
+    return asSparseMatrix(asCSR(A))
 
 
 def toSparseMapMatrix(A):
@@ -519,7 +546,9 @@ def toSparseMapMatrix(A):
         return toSparseMapMatrix(A.tocsr())
 
     if isinstance(A, coo_matrix):
-        return SparseMapMatrix(A.row, A.col, A.data)
+        return SparseMapMatrix(np.asarray(A.row, dtype=np.uint64),
+                               np.asarray(A.col, dtype=np.uint64),
+                               A.data)
 
     return toSparseMapMatrix(toCOO(A))
 
@@ -626,6 +655,7 @@ def sparseMatrix2csc(A):
 
     return csc_matrix(A)
 
+
 def sparseMatrix2coo(A, rowOffset=0, colOffset=0):
     """Convert SparseMatrix to scipy.coo_matrix.
 
@@ -731,9 +761,9 @@ def sparseMatrix2Dense(matrix):
         mat[r, cc[i]] = vals[i]
 
     return mat
-
 toDense = sparseMatrix2Dense
 asDense = sparseMatrix2Dense
+
 
 def removeEntries(A, rows=None, cols=None):
     """Remove rows and columns from a sparse matrix.
@@ -768,6 +798,7 @@ def removeEntries(A, rows=None, cols=None):
 
     return A
 
+
 def reduceEntries(A, idx):
     """Remove all values of A in row[idx] and col[idx] and add 1 to diag """
     import pygimli as pg
@@ -777,51 +808,39 @@ def reduceEntries(A, idx):
 
     if 1:
         try:
-            A.reduce(idx, True)
+            with pg.tictoc('reduce'):
+                #raise Exception('not yet implemented')
+                A.reduce(idx, True)
         except:
+            with pg.tictoc('manual reduce'):
+                for i, ix in enumerate(idx):
+                    with pg.tictoc('rows'):
+                        A.cleanRow(ix)
+                    with pg.tictoc('cols'):
+                        A.cleanCol(ix)
+
+        with pg.tictoc('diag'):
             for i, ix in enumerate(idx):
-                A.cleanRow(ix)
-                A.cleanCol(ix)
-
-        for i, ix in enumerate(idx):
-            A.setVal(ix, ix, 1.0)
+                A.setVal(ix, ix, 1.0)
     else:
-        if debug:
-            print(A)
-            # print(idx)
-            # print(len(idx))
-        csc = toCSC(A)
+        with pg.tictoc('->CSC'):
+            csc = toCSC(A)
 
-        if debug:
-            pg.toc('to csc', reset=True)
+        with pg.tictoc('->col*=0'):
+            csc[:,idx] *= 0
 
-        csc[:,idx] *= 0
+        with pg.tictoc('->CSR'):
+            csr = csc.tocsr()
 
-        if debug:
-            pg.toc('clean cols', reset=True)
+        with pg.tictoc('->row*=0'):
+            csr[idx] *= 0
 
-        csr = csc.tocsr()
+        # with pg.tictoc('->zero=0'):
+        #     csr.eliminate_zeros()
 
-        if debug:
-            pg.toc('to csr', reset=True)
+        with pg.tictoc('<-copy'):
+            A.copy_(asSparseMatrix(csr))
 
-        csr[idx] *= 0
-
-        if debug:
-            pg.toc('clean rows', reset=True)
-
-        csr.eliminate_zeros()
-
-        if debug:
-            pg.toc('eliminate_zeros', reset=True)
-
-        A.copy_(toSparseMatrix(csr))
-
-        if debug:
-            pg.toc('to map', reset=True)
-
-        for i, ix in enumerate(idx):
-            A.setVal(ix, ix, 1.0)
-
-        if debug:
-            pg.toc('diag', reset=True)
+        with pg.tictoc('diag'):
+            for i, ix in enumerate(idx):
+                A.setVal(ix, ix, 1.0)

@@ -33,7 +33,7 @@
 namespace GIMLI{
 
 template < typename T, class Iter, template < typename, class > class Vec >
-// template < typename T, template < typename, class > class Vec > 
+// template < typename T, template < typename, class > class Vec >
 IndexArray ids(const Vec < T, Iter > & e){
     IndexArray id(e.size());
     for (Index i = 0; i < e.size(); i ++ ) id[i] = e[i]->id();

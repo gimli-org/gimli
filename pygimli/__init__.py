@@ -477,7 +477,7 @@ def timings(name='/'):
         error(f'No timeings for: {name}')
         return
 
-    return Table(table, header, align='lrcrlr')
+    return Table(table, header, align='lrcrlr', transpose=False)
 
 
 # special shortcut pg.plt with lazy evaluation

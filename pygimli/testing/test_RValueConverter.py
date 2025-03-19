@@ -63,6 +63,7 @@ class TestConversionMethods(unittest.TestCase):
         t = pg.core.R3Vector(pl)
         self.assertEqual(t.size(), len(pl))
 
+
     def test_NumpyToIndexArray(self):
         """Implemented in custom_rvalue.cpp."""
         x = np.array(range(10))
@@ -71,6 +72,11 @@ class TestConversionMethods(unittest.TestCase):
         self.assertEqual(pg.sum(a), sum(x))
 
         x = np.arange(0, 10, dtype=np.int64)
+        a = pg.core.IndexArray(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+
+        x = np.arange(0, 10, dtype=np.uint64)
         a = pg.core.IndexArray(x)
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
@@ -84,6 +90,7 @@ class TestConversionMethods(unittest.TestCase):
         a = pg.core.IndexArray(x)
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
+
 
     def test_NumpyToIVector(self):
         """Implemented in custom_rvalue.cpp."""
@@ -111,12 +118,12 @@ class TestConversionMethods(unittest.TestCase):
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
 
-        x = np.arange(10, dtype=np.compat.long)
-
+        x = np.arange(10, dtype=np.long)
         a = pg.IVector(x)
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
         self.assertEqual(pg.sum(x), sum(x))
+
 
     def test_NumpyToBVector(self):
         """Implemented in custom_rvalue.cpp."""
@@ -124,6 +131,7 @@ class TestConversionMethods(unittest.TestCase):
         b = pg.BVector(x > 0.)
         self.assertEqual(b[10], False)
         self.assertEqual(b[11], True)
+
 
     def test_NumpyToRVector(self):
         """Implemented in custom_rvalue.cpp."""
@@ -142,13 +150,12 @@ class TestConversionMethods(unittest.TestCase):
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
 
-        x = np.arange(10, dtype=np.compat.long)
+        x = np.arange(10, dtype=np.long)
         a = pg.Vector(x)
 
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
 
-        self.assertEqual(pg.sum(x), sum(x))
 
     def test_NumpyToCVector(self):
         pass
@@ -225,6 +232,7 @@ class TestConversionMethods(unittest.TestCase):
         x = np.array([0.0, 1.0])
         p = pg.Pos(x)
         self.assertEqual(p.dist([0.0, 1.0, 0.0]), 0.0)
+
 
     def __test_array_conversion(self, v, dtype, perf=False):
         pg.tic()
@@ -332,12 +340,12 @@ class TestConversionMethods(unittest.TestCase):
     def test_StdVecIToNumpy(self):
         """Implemented through hand_made_wrapper.py"""
         A = pg.matrix.SparseMapMatrix(range(10), range(10), np.ones(10))
-        A = pg.utils.toSparseMatrix(A)
+        A = pg.matrix.asSparseMatrix(A)
 
         np.testing.assert_allclose(A.vecRowIdx().array(), range(10))
         np.testing.assert_allclose(np.asarray(A.vecRowIdx()), range(10))
         np.testing.assert_allclose(np.array(A.vecRowIdx()), range(10))
-        
+
         v = pg.core.stdVectorI()
         for v_ in [2]*1000000:
             v.append(v_)
@@ -370,6 +378,7 @@ class TestConversionMethods(unittest.TestCase):
         self.assertEqual(len(a), mesh.cellCount())
 
         self.assertEqual(mesh.positions()[0], v[0])
+
 
     def test_RMatrixToNumpy(self):
         """Implemented through automatic iterator """

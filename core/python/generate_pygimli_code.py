@@ -316,14 +316,14 @@ def generate(defined_symbols, extraIncludes):
         sys.exit()
 
     logger.info("Apply custom rvalues.")
+
     # START manual r-value converters
     rvalue_converters = [
+        'register_pysequence_to_indexarray_conversion',
         'register_pysequence_to_rvector_conversion',
         #'register_pysequence_to_cvector_conversion', .. will not work
         'register_pysequence_to_ivector_conversion',
         'register_pysequence_to_bvector_conversion',
-        'register_pysequence_to_indexvector_conversion',
-        'register_pysequence_to_ivector_conversion',
         'register_pysequence_to_r3vector_conversion',
         'register_pysequence_to_StdVectorRVector3_conversion',
         'register_pytuple_to_pos_conversion',
@@ -337,11 +337,9 @@ def generate(defined_symbols, extraIncludes):
         'register_numpy_to_uint8_conversion',
         'register_numpy_to_uchar_conversion',
     ]
-
     for converter in rvalue_converters:
         mb.add_declaration_code('void %s();' % converter)
         mb.add_registration_code('%s();' % converter)
-
     # END manual r-value converters
 
     custom_rvalue_path = os.path.join(
@@ -624,6 +622,8 @@ def generate(defined_symbols, extraIncludes):
                                               '::GIMLI::CVector const &', #0
                                               '::GIMLI::IVector &', #0
                                               '::GIMLI::IVector const &', #1
+                                              '::GIMLI::IndexArray &', #0
+                                              '::GIMLI::IndexArray const &', #1
                                               '::GIMLI::SVector &', #0
                                               '::GIMLI::SVector const &', #0
                                               '::GIMLI::RMatrix &', #5
