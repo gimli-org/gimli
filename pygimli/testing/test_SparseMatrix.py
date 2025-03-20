@@ -211,6 +211,7 @@ class TestSparseMatrix(unittest.TestCase):
             np.testing.assert_equal(A*2 == R*2, True)
             np.testing.assert_equal(A/2 == R/2, True)
             np.testing.assert_equal(2*A == 2*R, True)
+            np.testing.assert_equal(A*np.float64(0.1) == R*0.1, True)
 
             np.testing.assert_equal(-A       == -R, True)
             np.testing.assert_equal( A + A   ==  R + R, True)

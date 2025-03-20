@@ -243,9 +243,24 @@ template < class ValueType > void * checkConvertibleNumpyScalar(PyObject * obj){
     }
 
     if (PyObject_TypeCheck(obj, &PyGenericArrType_Type)){
+
         if (typeid(ValueType) == typeid(GIMLI::Index)){
             if (!PyObject_TypeCheck(obj, &PyIntegerArrType_Type)){
                 __DC("\t", obj, "\t abort check .. Object cannot convert to GIMLI::Index")
+                return NULL;
+            }
+        }
+        // if (typeid(ValueType) == typeid(double)){
+        //     if (!PyObject_TypeCheck(obj, &PyDoubleArrType_Type)){
+        //         __DC("\t", obj, "\t abort check .. Object cannot convert to double")
+        //         return NULL;
+        //     }
+        // }
+
+        if (typeid(ValueType) == typeid(long)){
+            if (!PyObject_TypeCheck(obj, &PyIntegerArrType_Type) &&
+                !PyObject_TypeCheck(obj, &PyLongArrType_Type)){
+                __DC("\t", obj, "\t abort check .. Object cannot convert to long")
                 return NULL;
             }
         }

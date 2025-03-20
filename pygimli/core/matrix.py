@@ -258,7 +258,7 @@ pgcore.RDenseMatrix.T = property(__CopyRDenseMatrixTranspose__)
 __RSparseMapMatrix_Mul__orig = pgcore.RSparseMapMatrix.__mul__
 def __RSparseMapMatrix_Mul__(self, b):
     """Multiply SparseMapMatrix with b."""
-    if isinstance(b, int):
+    if isinstance(b, (int, np.float64)):
         ## or this will be wrongly parsed into mul(self, RVector(b))
         return __RSparseMapMatrix_Mul__orig(self, float(b))
     return __RSparseMapMatrix_Mul__orig(self, b)
@@ -268,7 +268,7 @@ pgcore.RSparseMapMatrix.__mul__ = __RSparseMapMatrix_Mul__
 __RSparseMatrix_Mul__orig = pgcore.RSparseMatrix.__mul__
 def __RSparseMatrix_Mul__(self, b):
     """Multiply SparseMatrix with b."""
-    if isinstance(b, int):
+    if isinstance(b, (int, np.float64)):
         ## or this will be wrongly parsed into mul(self, RVector(b))
         return __RSparseMatrix_Mul__orig(self, float(b))
     return __RSparseMatrix_Mul__orig(self, b)
