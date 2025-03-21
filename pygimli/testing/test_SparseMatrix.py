@@ -273,6 +273,7 @@ class TestSparseMatrix(unittest.TestCase):
 
 
     def test_ReduceEntries(self):
+        """Test the reduction of entries in a sparse matrix."""
         from scipy.sparse import csc_matrix, csr_matrix
         A = np.ones((5,5))
 
@@ -290,6 +291,7 @@ class TestSparseMatrix(unittest.TestCase):
 
 
     def test_Masks(self):
+        """Test mask operations on sparse matrices."""
         from scipy.sparse import csc_matrix, csr_matrix
         A = np.linspace(1, 25, num=25).reshape(5,5)
         A1 = pg.matrix.asSparseMatrix(A)
@@ -322,7 +324,6 @@ class TestSparseMatrix(unittest.TestCase):
 
         ## check if mask reduce and manual reduce are equal
         np.testing.assert_equal(A1 == A2, True)
-
 
 
 if __name__ == '__main__':
