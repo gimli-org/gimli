@@ -966,7 +966,6 @@ def concatenateAsCOO(A):
     return C
 
 
-
 if __name__ == "__main__":
     Amat = pg.Matrix(3, 4)
     Bmat = TransposedMatrix(Amat)

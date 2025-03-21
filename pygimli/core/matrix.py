@@ -373,13 +373,13 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
     self.__mats__.append(M)
 
     matrixID = __BlockMatrix_addMatrix__(self, M)
-    print('add:', matrixID, row, col)
+    # print('add:', matrixID, row, col)
 
     if row is not None and col is not None:
         self.addMatrixEntry(matrixID, row, col, scale)
 
-    for e in self.entries():
-        print(e)
+    # for e in self.entries():
+    #     print(e)
     return matrixID
 
 

@@ -292,29 +292,35 @@ class TestSparseMatrix(unittest.TestCase):
     def test_Masks(self):
         from scipy.sparse import csc_matrix, csr_matrix
         A = np.linspace(1, 25, num=25).reshape(5,5)
-
         A1 = pg.matrix.asSparseMatrix(A)
-        print(A1)
 
         diag = A1.createDiagonalMask()
-        print(diag)
         np.testing.assert_equal(A1.values(diag), [1, 7, 13, 19, 25])
+        A1.setMaskValues(diag, 2.0)
 
-        reduce = A1.createReduceMask([1,3], keepDiag=False)
-        A1.setMaskValues(reduce, 0.0)
+        ## all diagonal values set to 2.0
+        np.testing.assert_equal(A1.values(diag), [2.0]*A1.size())
 
-        print(reduce)
-        print(diag)
+        ## all values in row 1 and 3 set to 3.0
+        mask = A1.createReduceMask([1,3])
+        ## check if mask is sorted and unique
+        np.testing.assert_equal(mask, np.unique(mask))
 
-        diagRed = reduce[np.nonzero(np.in1d(reduce, diag))[0]]
-        print(diagRed)
-        A1.setMaskValues(diagRed, 1.0)
-        print(A1)
+        A1.setMaskValues(mask, 0.0)
+        np.testing.assert_equal(sum(A1.col(1)), 0)
+        np.testing.assert_equal(sum(A1.row(3)), 0)
 
+        maskDiag = mask[np.nonzero(np.isin(mask, diag))[0]]
+        A1.setMaskValues(maskDiag, 1.0)
+
+        # manual reduce
         A2 = pg.matrix.asSparseMatrix(A)
+        A2.setMaskValues(diag, 2.0)
         pg.matrix.reduceEntries(A2, [1,3])
-        print(A2)
+        A2.setVal(1, 1, 1.0)
+        A2.setVal(3, 3, 1.0)
 
+        ## check if mask reduce and manual reduce are equal
         np.testing.assert_equal(A1 == A2, True)
 
 

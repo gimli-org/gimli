@@ -499,8 +499,11 @@ IndexArray _T_createReduceMask_impl(SparseMatrix < ValueType > * self,
     //     }
     // }
 
-
-    // std::sort(mask.begin(), mask.end());
+    std::vector < Index > m(mask);
+    std::sort(m.begin(), m.end());
+    m.erase(std::unique(m.begin(), m.end()), m.end());
+    mask.resize(m.size());
+    std::copy(m.begin(), m.end(), mask.begin());
 
     return mask;
 }
