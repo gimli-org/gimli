@@ -853,7 +853,9 @@ class SIPSpectrum(object):
 
         self.invDD = IDD
         if new:
-            print("ARMS=", IDD.absrms(), "RRMS=", IDD.absrms()/max(Znorm)*100)
+            if verbose:
+                pg.info("ARMS=", IDD.absrms(), "RRMS=", IDD.absrms()/max(Znorm)*100)
+            
             resp = np.array(IDD.response)
             respRe = resp[:nf]
             respIm = resp[nf:]
