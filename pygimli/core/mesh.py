@@ -792,7 +792,7 @@ def __Mesh__submesh__(self, relation="=", **kwargs):
     """
     istrue = np.ones(self.cellCount(), dtype=bool)
     for key, val in kwargs.items():
-        if key == "marker":
+        if key in ["marker", "cellMarker"]:
             prop = self.cellMarkers()
         elif key in self.dataKeys():
             prop = self[key]
