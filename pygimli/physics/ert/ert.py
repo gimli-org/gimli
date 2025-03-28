@@ -245,8 +245,6 @@ def simulate(mesh, scheme, res, **kwargs):
 
         rhoa *= 1. + pg.randn(ret.size(), seed=seed) * ret('err')
         ret['rhoa'] = rhoa
-        if ret.allNonZero('k'):  # also provide r if user changes k later
-            ret['r'] = ret['rhoa'] / ret['k']
 
         ipError = None
         if phia is not None:
@@ -271,6 +269,11 @@ def simulate(mesh, scheme, res, **kwargs):
             ret['phia'] = phia
 
     # check what needs to be setup and returned
+
+    if ret.allNonZero('k'):  # also provide r if user changes k later
+        ret['r'] = ret['rhoa'] / ret['k']
+        ret['i'] = kwargs.pop("current", 1.0)
+        ret['u'] = ret['r'] * ret['i']
 
     if returnArray:
         if phia is not None:
