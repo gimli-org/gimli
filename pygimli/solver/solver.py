@@ -2011,7 +2011,7 @@ def createStiffnessMatrix(mesh, a=None, isVector=False):
 
     if a is None:
         a = pg.Vector(mesh.cellCount(), 1.0)
-    
+
     if isinstance(a, (float, int)):
         a = pg.Vector(mesh.cellCount(), a)
 
