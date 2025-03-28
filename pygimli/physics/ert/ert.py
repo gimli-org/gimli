@@ -325,7 +325,7 @@ def simulateOld(mesh, scheme, res, sr=True, useBert=True,
 
 @pg.cache
 def createGeometricFactors(scheme, numerical=None, mesh=None, dim=3,
-                           h2=True, p2=True, verbose=False):
+                           h2=True, p2=True, forceFlatEarth=False, verbose=False):
     """Create geometric factors for a given data scheme.
 
     Create geometric factors for a data scheme with and without topography.
@@ -352,20 +352,23 @@ def createGeometricFactors(scheme, numerical=None, mesh=None, dim=3,
         Default spatial refinement to achieve high accuracy
     p2: bool [True]
         Default polynomial refinement to achieve high accuracy
+    forceFlatEarth : bool [False]
+        Set z values of electrodes to zero for geometric factor (usful only for topography).
     verbose: bool
         Give some output.
     """
     if numerical is None:
         numerical = False
-        if min(pg.z(scheme)) != max(pg.z(scheme)):
-            verbose = True
-            pg.warn('Sensor z-coordinates not equal. Is there topography?')
+        # if min(pg.z(scheme)) != max(pg.z(scheme)):
+        #     verbose = True
+        #     pg.warn('Sensor z-coordinates not equal. Is there topography?')
 
     if numerical is False and mesh is None:
         if verbose:
-            pg.info('Calculate analytical flat earth geometric factors.')
+            pg.info('Calculate analytical flat-earth geometric factors.')
 
-        return pg.core.geometricFactors(scheme, forceFlatEarth=True, dim=dim)
+        # better to be replaced by a Python function analyticalGeometricFactors
+        return pg.core.geometricFactors(scheme, forceFlatEarth=forceFlatEarth, dim=dim)
 
     if mesh is None:
         pg.info('Create default mesh for geometric factor calculation.')
