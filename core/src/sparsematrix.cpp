@@ -455,7 +455,7 @@ IndexArray _T_createReduceMask_impl(SparseMatrix < ValueType > * self,
                                     const IVector & ids){
     IndexArray mask;
 
-    {WITH_TICTOC("rows")
+    { //WITH_TICTOC("rows")
     for (auto row: ids){
         ASSERT_RANGE(row, 0, (int)self->rows())
         for (int ptr = self->colPtr()[row];
@@ -467,7 +467,7 @@ IndexArray _T_createReduceMask_impl(SparseMatrix < ValueType > * self,
     }
     // TODO: optimize, try CRS->CCC
 
-    {WITH_TICTOC("cols")
+    { //WITH_TICTOC("cols")
     for (auto rID: ids){
         int i = 0;
         for (auto row: self->vecRowIdx()){

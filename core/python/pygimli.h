@@ -523,10 +523,13 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     extern template std::set< Node * > commonNodes(const std::set < Boundary * > &);
     extern template std::set< Node * > commonNodes(const std::set < Cell * > &);
 
-    void test_Mv_sv(RVector & rhs, const GIMLI::RSparseMatrix & M, const RVector & v1,
-                   const double s, const RVector & v2);
-    void test_Mv_sv(RVector & rhs, const GIMLI::RSparseMapMatrix & M, const RVector & v1,
-                   const double s, const RVector & v2);
+    //*! rhs = M * v1 + s * v2
+    void mult_Mv_add_sv(RVector & rhs, const GIMLI::RSparseMatrix & M,
+                        const RVector & v1, const double s, const RVector & v2);
+    //*! rhs = M * v1 + s * v2
+    void mult_Mv_add_sv(RVector & rhs, const GIMLI::RSparseMapMatrix & M,
+                        const RVector & v1, const double s, const RVector & v2);
+
 
     // extern template std::vector< std::vector< GIMLI::RMatrix > >;
 

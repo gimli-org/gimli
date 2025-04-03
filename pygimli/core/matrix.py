@@ -43,13 +43,37 @@ __Matrices = [pgcore.MatrixBase,
               #pgcore.IdentityMatrix
               ]
 
+def __Matrix_array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+    """ufunct to communicate with numpy"""
+
+    if ufunc == np.multiply:
+        ## for np.float * self
+        if self == inputs[0] and len(inputs) == 2:
+            return self.__mul__(inputs[1])
+
+        # if isinstance(inputs[0], np.ndarray):
+        #     return pg.core.mult(self, np.squeeze(inputs[0]))
+
+    pg._r('self:', self)
+    pg._r('self:', id(self))
+    pg._r('ufunc:', ufunc)
+    pg._r('method:', method)
+    for i, ii in enumerate(inputs):
+        pg._r(f'\t input{i}:', type(ii))
+        pg._r(f'\t input{i}:', id(ii))
+        pg._r(f'\t input{i}:', ii)
+
+    pg._r('kwargs', kwargs)
+    pg.critical('implementme.')
+
+
 for m in __Matrices:
     m.ndim = 2
     m.__len__ = lambda self: self.rows()
     m.shape = property(lambda self: (self.rows(), self.cols()))
     ## To allow for ignoring np.*.__mul__ in case A has the __rmul__ function
     ## see test TestMatrixMethods.testSparseMatrixBasics, TestRVectorMethods.testUFunc
-    m.__array_ufunc__ = None
+    m.__array_ufunc__ = __Matrix_array_ufunc__
     m.__rmul__ = lambda self: critical('not yet implemented')
 
 
@@ -268,9 +292,14 @@ pgcore.RSparseMapMatrix.__mul__ = __RSparseMapMatrix_Mul__
 __RSparseMatrix_Mul__orig = pgcore.RSparseMatrix.__mul__
 def __RSparseMatrix_Mul__(self, b):
     """Multiply SparseMatrix with b."""
+    # pg._b(b)
     if isinstance(b, (int, np.float64)):
         ## or this will be wrongly parsed into mul(self, RVector(b))
         return __RSparseMatrix_Mul__orig(self, float(b))
+
+    if isinstance(b, np.ndarray):
+        return __RSparseMatrix_Mul__orig(self, np.squeeze(b))
+
     return __RSparseMatrix_Mul__orig(self, b)
 pgcore.RSparseMatrix.__mul__ = __RSparseMatrix_Mul__
 

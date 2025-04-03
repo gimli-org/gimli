@@ -260,17 +260,18 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template std::set< Node * > commonNodes(const std::set < Boundary * > &);
     template std::set< Node * > commonNodes(const std::set < Cell * > &);
 
-    void test_Mv_sv(RVector & rhs, const RSparseMapMatrix & M, const RVector & v1,
+    void mult_Mv_add_sv(RVector & rhs, const RSparseMapMatrix & M, const RVector & v1,
                    const double s, const RVector & v2){
         mult(M, v1, rhs);
         rhs += (s*v2);
     }
-    void test_Mv_sv(RVector & rhs, const RSparseMatrix & M, const RVector & v1,
-                   const double s, const RVector & v2){
+    void mult_Mv_add_sv(RVector & rhs, const RSparseMatrix & M, const RVector & v1,
+                        const double s, const RVector & v2){
 
         // mult(M, v1, rhs);
         // rhs += (s*v2);
-
+        rhs.resize(M.rows());
+        // 60% faster, TODO: check why
         double si = 0.0;
         int dataIdx = M.vecColPtr()[0];
         for (Index i = 0, iMax = M.rows(); i < iMax; i++){
@@ -280,19 +281,19 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
             }
             rhs[i] = si + s*v2[i];
         }
-        
-//#pragma omp parallel 
+
+//#pragma omp parallel
 {
         // for (Index i = 0, iMax = M.rows(); i < iMax; i++){
         //     double si = 0.0;
-        //     for (int j = M.vecColPtr()[i], jMax=M.vecColPtr()[i+1]; 
+        //     for (int j = M.vecColPtr()[i], jMax=M.vecColPtr()[i+1];
         //         j < jMax; j ++){
         //         si += M.vecVals()[j] * v1[M.vecRowIdx()[j]];
         //     }
         //     rhs[i] = si + s*v2[i];
         // }
 }
-        
+
     }
 
 // template class PolynomialElement< double >;

@@ -355,16 +355,11 @@ class tictoc(object):
         pass
 
 
-# class WithSkip(object):
-#     """ FallBack if you need empty with clause.
-#     """
-#     def __init__(self, *args, **kwargs):
-#         critical('in use?')
-#         pass
-#     def __enter__(self):
-#         return self
-#     def __exit__(self, type, value, traceback):
-#         pass
+def swatch(key):
+    """Return Stopwatch with specific key name"""
+    if key.startswith('/'):
+        key = key[1:]
+    return SWatches()['/'+key]
 
 
 def timings(name='/'):
