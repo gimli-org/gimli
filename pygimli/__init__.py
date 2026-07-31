@@ -128,13 +128,45 @@ def isIPyTerminal():
     return 'IPython' in sys.modules
 
 
-class SWatches(object):
+class SWatches:
+    """Singleton class to access Stopwatch instances."""
+
     @staticmethod
     def __getitem__(key:str):
+        """Return Stopwatch with specific key name."""
+        if '*' in key:
+            allKeys = SWatches().keys()
+            import fnmatch
+            matches = fnmatch.filter(allKeys, key)
+            if len(matches) == 0:
+                raise KeyError(f'No stopwatch found for: {key}')
+            elif len(matches) > 1:
+                return [SWatches()[k] for k in matches]
+            else:
+                key = matches[0]
+
+        #return SWatches()['/'+key]
         return Swatches.instance()[key]
+
+
     @staticmethod
     def keys():
+        """Return list of all stopwatch keys."""
         return list(Swatches.instance().keys())
+
+
+    @staticmethod
+    def remove(key:str, recursive:bool=False) -> None:
+        """Remove and delete the stopwatch with the given key.
+
+        Arguments
+        ---------
+        key: str
+            Root swatch key name to remove.
+        recursive: bool [False]
+            If True, remove all timings for sub-keys as well.
+        """
+        return Swatches.instance().remove(key, recursive)
 
 
 def tic(msg=None, key=''):
@@ -239,18 +271,37 @@ def store(key='', stop=True):
 
 
 class tictoc(object):
+    """Context manager for timing code blocks."""
+
     def __init__(self, key: str):
+        """Initialize the tictoc context manager."""
         self._tt = core.TicToc(key)
 
+
     def __enter__(self):
+        """Start the timer when entering the context."""
         return self
 
+
     def __exit__(self, type, value, traceback):
-        pass
+        """Stop the timer when exiting the context."""
+        ## no explicit stop needed, destructor will handle it
+        del self._tt
 
 
 def swatch(key):
-    """Return Stopwatch with specific key name."""
+    """Return Stopwatch with specific key name.
+
+    Arguments
+    ---------
+    key: identifier
+        Identifier for your Stopwatch.
+        Single wildcards '*' are supported.
+
+    Returns
+    -------
+    Stopwatch instance or list of Stopwatch instances if multiple matches found.
+    """
     if key.startswith('/'):
         key = key[1:]
     return SWatches()['/'+key]
@@ -259,7 +310,7 @@ def swatch(key):
 def timings(name='/'):
     """Return table of timings for a given root swatch key name."""
     import numpy as np
-    class TTree(object):
+    class TTree:
         def __init__(self, parent=None):
             self.parent = parent
             self.name = None
@@ -285,17 +336,14 @@ def timings(name='/'):
 
         @property
         def fullname(self):
-            if self.name is None:
-                ps = ''
-            else:
-                ps = self.name
+            ps = '' if self.name is None else self.name
 
             p = self.parent
             while 1:
                 try:
                     ps = p.name + "/" + ps
                     p = p.parent
-                except BaseException as e:
+                except BaseException:
                     break
 
             return ps + ":" + str(self.data)
@@ -319,34 +367,35 @@ def timings(name='/'):
     if not name.startswith('/'):
         name = '/' + name
 
-    for k in SWatches().keys():
+    for k in list(SWatches().keys()):
         s = SWatches()[k]
 
-        if isinstance(k, str):
-            if k.startswith(name):
+        if isinstance(k, str) and k.startswith(name):
 
-                ts = s.stored()
-                if len(ts) == 0:
-                    table.append([k, s.duration(), 1, s.duration(), '',None])
-                else:
-                    #     sts = sum(ts)
-                    maxTime = max(float(maxTime), sum(ts))
+            ts = s.stored()
+            if ts is None:
+                print('no swatch for: ', k)
+                table.append([k, 0.0, 0, 0.0, '', None])
+            elif len(ts) == 0:
+                print('no stored times for: ', s.duration(), k)
+                table.append([k, s.duration(), 1, s.duration(), '', None])
+            else:
+                #     sts = sum(ts)
+                maxTime = max(float(maxTime), sum(ts))
 
-                    perc = 0
-                    try:
-                        perc = int(sum(ts)/maxTime*100)
-                    except ZeroDivisionError:
-                        pass
+                perc = 0
+                try:
+                    perc = int(sum(ts)/maxTime*100)
+                except ZeroDivisionError:
+                    pass
 
-                    table.append([k, np.mean(ts), len(ts), sum(ts),
-                        str(perc).rjust(3, '-').rjust(3*(k.count('/')),'-'),
-                                None])
+                table.append([k, np.mean(ts), len(ts), sum(ts),
+                    str(perc).rjust(3, '-').rjust(3*(k.count('/')),'-'),
+                            None])
 
-                    tree[k].data = sum(ts)
+                tree[k].data = sum(ts)
 
-                # print(f'\t{k}: {pg.pf(sts)}s ({len(ts)} x {pg.pf(np.mean(ts)*1000)}ms)' )
-
-    #print(tree)
+        # print(f'\t{k}: {pg.pf(sts)}s ({len(ts)}x{pg.pf(np.mean(ts)*1000)}ms)')
 
     for row in table:
         if len(list(tree[row[0]].childs.keys())) > 0:
@@ -354,18 +403,37 @@ def timings(name='/'):
             row[-1] = row[-3]
             for n, tc in tree[row[0]].childs.items():
                 try:
-                    row[-1] -= tc.data
-                except BaseException:
+                    if tc.data is not None:
+                        row[-1] -= tc.data
+                except BaseException as e:
+                    print('error for: ', n, tc.fullname, tc.data)
+                    print(e)
                     pass
 
             #row[-1] = f'{pf(row[-1])} {str(int(row[-1]/maxTime*100)).rjust(2)}'
             row[-1] = f'{pf(row[-1]/maxTime*100)}'
 
     if len(table) == 0:
-        error(f'No timeings for: {name}')
+        error(f'No timings for: {name}')
         return
 
     return Table(table, header, align='lrcrlr', transpose=False)
+
+
+def removeTimings(name:str, recursive:bool=False) -> None:
+    """Remove all timings for a given root swatch key name.
+
+    Arguments
+    ---------
+    name: str
+        Root swatch key name to remove.
+    recursive: bool [False]
+        If True, remove all timings for subkeys as well.
+    """
+    if not name.startswith('/'):
+        name = "/" + name
+    SWatches().remove(name, recursive=recursive)
+
 
 
 # special shortcut pg.plt with lazy evaluation

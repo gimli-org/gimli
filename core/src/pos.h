@@ -45,13 +45,16 @@ DLLEXPORT RVector y(const R3Vector & rv);
 DLLEXPORT RVector z(const R3Vector & rv);
 
 DLLEXPORT R3Vector r3(const RVector & x, const RVector & y, const RVector & z);
-/*! Vectorize vector of r3vectors. */
-DLLEXPORT void vectorizePosVectorList(const std::vector < PosVector > & v, PosVector & r);
+
+/*! Vectorize vector of r3vectors. Serialize [[pos,],] -> [pos,] */
+DLLEXPORT void vectorizePosVectorList(const std::vector < PosVector > & v,
+                                      PosVector & r);
 DLLEXPORT void vectorizePosVectorList(const std::vector < PosVector > & v,
                                       PosVector & r,
                                       int marker,
                                       const ElementMatrixMap & eMap);
 
+/*! deserialize PosVector  f([pos, ]) -> f[[pos,],] ret:= r[v] */
 DLLEXPORT void deVectorizeRVectorToPosVectorList(std::vector < RVector > & ret,
                                             const RVector & r,
                                             const std::vector < PosVector > & v);

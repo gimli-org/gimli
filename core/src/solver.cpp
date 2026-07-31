@@ -26,7 +26,7 @@
 namespace GIMLI{
 
 int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
-                        const Vec & dWeight, 
+                        const Vec & dWeight,
                         const Vec & b, // deltaData
                         Vec & x,       // deltaModel
                         const Vec & wc, const Vec & wm,
@@ -44,7 +44,7 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
     Vec dW(dWeight);
     // bR.round(1e-10);
     // dW.round(1e-10);
-    
+
 
 //     __MS(S.rtti())
 //     __MS(C.rtti())
@@ -62,11 +62,11 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
 //Ch  Vec cdx(transMult(C, Vec(wc * wc * (C * Vec(wm * deltaX)))) * wm * lambda); // nModel
     Vec cdx(C.transMult(Vec(wc * roughness)) * wm * lambda); // nModel
     Vec z((bR - S * Vec(x / tm) * td) * dW); // nData
-    Vec p(S.transMult(Vec(z * dW * td)) / tm   
+    Vec p(S.transMult(Vec(z * dW * td)) / tm
           - C.transMult(Vec(wc * wc * (C * Vec(wm * x)))) * wm * lambda
           - cdx );// nModel
     Vec r(S.transMult(Vec(bR * dW * dW * td)) / tm - cdx); // nModel
-    
+
     // p = round(p, 1e-10);
     // r = round(r, 1e-10);
 // std::cout.precision(14);
@@ -84,11 +84,11 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
 // __MS("z " << min(z) << " " << max(z) << " " << mean(z))
 // __MS("p " << min(p) << " " << max(p) << " " << mean(p))
 // __MS("r" << min(r) << " " << max(r) << " " << mean(r))
-// __MS(min(Vec(bR * dW * dW * td)) << " " 
-//      << max(Vec(bR * dW * dW * td)) << " " 
+// __MS(min(Vec(bR * dW * dW * td)) << " "
+//      << max(Vec(bR * dW * dW * td)) << " "
 //      << mean(Vec(bR * dW * dW * td)))
-// __MS(min(transMult(S,Vec(bR.size(), 1))) << " " 
-//      << max(transMult(S,Vec(bR.size(), 1))) << " " 
+// __MS(min(transMult(S,Vec(bR.size(), 1))) << " "
+//      << max(transMult(S,Vec(bR.size(), 1))) << " "
 //      << mean(transMult(S,Vec(bR.size(), 1))))
 // // if (z.size() > 100 )exit(1);
 
@@ -96,7 +96,7 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
 //     __MS("S:" << " " << min(sv) << " " << max(sv) << " " << mean(sv))
 //     RVector cv(dynamic_cast< const RSparseMapMatrix *> (&C)->values());
 //     __MS("C:" << " " << min(cv) << " " << max(cv) << " " << mean(cv))
- 
+
     double accuracy = tol;
     if (accuracy < 0.0) accuracy = max(TOLERANCE, 1e-08 * dot(r, r));
     r = p;
@@ -133,13 +133,13 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
         // std::cout << "q " << min(q) << " " << max(q) << " " << mean(q) << std::endl;
         pwm.assign(p * wm);
         Cpwm.assign(C * pwm);
-        
+
         //** try to avoid accuracy problems with unsorted C
         Cpwm.round(1e-10);
 
         // Vec Cpwm((C * pwm));
         wcp = wc * Cpwm;
-        
+
         // std::cout << "pwm " << min(pwm) << " " << max(pwm) << " " << mean(pwm) << std::endl;
         // std::cout << "Cpwm " << min(Cpwm) << " " << max(Cpwm) << " " << mean(Cpwm) << std::endl;
         // std::cout << "wcp " << min(wcp) << " " << max(wcp) << " " << mean(wcp) << std::endl;
@@ -163,7 +163,7 @@ __MS("##################################################################")
         // if (aQ < 1e-10){
         //     aQ = 1e-10;
         // }
-        
+
         // std::cout << "aQ " << aQ<< std::endl;
         alpha = normR2 / aQ;
         //alpha = std::round(alpha * 1e10) / 1e10;
@@ -183,10 +183,10 @@ __MS("##################################################################")
         wmx.assign(wm * x);
         wcwcCwmx.assign(wc * wc * (C * wmx));
 
-        r =   S.transMult(zdWtd) / tm 
+        r =   S.transMult(zdWtd) / tm
             - C.transMult(wcwcCwmx) * wm * lambda - cdx;
-        // r = transMult(S, Vec(z * dW * td)) / tm 
-        //     - transMult(C, Vec(wc * wc * (C * Vec(wm * x)))) * wm * lambda 
+        // r = transMult(S, Vec(z * dW * td)) / tm
+        //     - transMult(C, Vec(wc * wc * (C * Vec(wm * x)))) * wm * lambda
         //     - cdx;
         //r = round(r, 1e-8);
 
@@ -204,7 +204,7 @@ __MS("##################################################################")
 //         std::cout << "x "  << min(x) << " " << max(x) << " " << mean(x) << std::endl;
 //         std::cout << "r "  << min(r) << " " << max(r) << " " << mean(r) << std::endl;
 //         std::cout << "p "  << min(p) << " " << max(p) << " " << mean(p) << std::endl;
-        
+
 // __MS("---" << count << "-------" << normR2 << "-------------------------")
 // __MS(min(q) << " " << max(q) << " " << mean(q))
 // __MS(min(wcp) << " " << max(wcp) << " " << mean(wcp))

@@ -44,15 +44,15 @@ public:
     void clear();
 
     #define DEFINE_INTEGRATOR_LF(VAR_NAME, A_TYPE) \
-        /*! R = \int_mesh this * f \d d mesh and R = RVector(dof) and \
+        /*! Integrate linear form: R = \int_mesh this * f \d d mesh and R = RVector(dof) and \
             f = A_TYPE \
         */ \
         void integrate(const A_TYPE & VAR_NAME, RVector & R, const double & alpha=1.0) const; \
-        /*! Integrate into linear form R = alpha * \int_mesh this * f * R \d d mesh and \
+        /*! Integrate linear form: R = alpha * \int_mesh this * f * R \d d mesh and \
         R = RVector(dof) and f = A_TYPE \
         */ \
         void integrate(const A_TYPE & VAR_NAME, RVector & R, const RVector & alpha) const; \
-        /*! Integrate into linear form R = alpha[cellID]*\int_mesh this * f * R \d d mesh and \
+        /*! Integrate linear form: R = alpha[cellID]*\int_mesh this * f * R \d d mesh and \
         R = RVector(dof) and f = A_TYPE \
         */ \
         RVector integrate(const A_TYPE & VAR_NAME, const double & alpha=1.0) const; \

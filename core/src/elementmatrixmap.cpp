@@ -107,17 +107,32 @@ void _T_integrate_LF_PerCell(const ElementMatrixMap * self,
 }
 
 void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R) const {
+
+    // TODO:
+    // check performance of this forwarding
+    //return fillSparsityPattern(R, *this);
+
     // this * this.T -> quadratic (not necessary) symmetric e.g. u*c
 //    __M
     const ElementMatrixMap & A = *this;
 
-    //__MS(&A, A.dofA(), A.dofB(), R.rows(), R.cols())
+    //__MS(&A, A.dof(), A.dofA(), A.dofB(), R.rows(), R.cols())
 
-    Stopwatch sw(true);
-    if (R.rows() == A.dof() && R.cols() == A.dofB()){
-        // assume R have already a valid pattern
-        return ;
+    //Stopwatch sw(true);
+    if (A.dofB() == 0){
+        // symmetric pattern
+        if (R.rows() == A.dof() && R.cols() == A.dof()){
+            // assume R have already a valid pattern
+            return ;
+        }
+    } else {
+        if (R.rows() == A.dofA() && R.cols() == A.dofB()){
+            // assume R have already a valid pattern
+            return ;
+        }
     }
+
+    WITH_TICTOC("fillSparsityPattern(c)");
     // maybe count dofs before
     std::vector < std::set< Index > > idxMap(A.dof());
     Index i = 0;
@@ -150,14 +165,16 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R,
                                            const ElementMatrixMap & B) const {
     // this * B.T
 
-    // __MS(R.rows(), R.cols(), this->dof(), this->dofB(), B.dof(), B.dofB())
-    Stopwatch sw(true);
+    //__MS(this->dof(), R.rows(), R.cols(), this->dofB(), B.dof(), B.dofB())
+    //Stopwatch sw(true);
     const ElementMatrixMap & A = *this;
 
     if (R.rows() == A.dof() && R.cols() == B.dof()){
         // assume R have already valid pattern
         return ;
     }
+
+    WITH_TICTOC("fillSparsityPattern(c)");
 
     if (A.size() == 1 && A.mats()[0].order() == 0){
         //const_space * B
@@ -196,12 +213,16 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R,
     }
 }
 
-template < class ValueType >
+template < class ScalarType >
 void _T_integrateBLConst(const ElementMatrixMap & A,
                          const ElementMatrixMap & B,
-                         const ValueType & f, SparseMatrixBase & R,
+                         const ScalarType & f,
+                         SparseMatrixBase & R,
                          const double & scale){
 
+    // if (R.rtti() == GIMLI_SPARSE_CRS_MATRIX_RTTI){
+    //     A.fillSparsityPattern(*dynamic_cast< RSparseMatrix * >(&R), B);
+    // }
     // __MS(f)
     // __MS(typeid(f).name())
     // __MS(typeid(R).name())
@@ -250,12 +271,16 @@ void _T_integrateBLConst(const ElementMatrixMap & A,
     }
 }
 
-template < class ValueType >
+template < class VectorType >
 void _T_integrateBLPerCell(const ElementMatrixMap & A,
                            const ElementMatrixMap & B,
-                           const ValueType & f, SparseMatrixBase & R,
+                           const VectorType & f,
+                           SparseMatrixBase & R,
                            const double & scale){
 
+    // if (R.rtti() == GIMLI_SPARSE_CRS_MATRIX_RTTI){
+    //     A.fillSparsityPattern(*dynamic_cast< RSparseMatrix * >(&R), B);
+    // }
 // __M
     ASSERT_EQUAL_SIZE(A.mats(), B.mats())
     ASSERT_EQUAL_SIZE(A, f)

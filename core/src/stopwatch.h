@@ -113,19 +113,25 @@ DLLEXPORT void waitus(Index us, Index count=1);
 DLLEXPORT void waitusOMP(Index us, Index count=1);
 
 
+/*! Singleton class to access Stopwatch instances. */
 class DLLEXPORT Swatches: public Singleton< Swatches >{
 public:
     friend class Singleton< Swatches >;
 
+    /*! Access Stopwatch instance with given key. If not found, create a new one. */
     Stopwatch & operator[](const std::string & key);
 
+    /*! Return true if Stopwatch instance with given key exists. */
     std::vector < std::string > keys();
 
+    /*! Return all Stopwatch instances. */
     std::vector < const Stopwatch * > vals();
 
+    /*! Return all Stopwatch instances with their keys. */
     std::vector < std::pair< std::string, Stopwatch * > > items();
 
-    void remove(const std::string & key, bool isRoot=false);
+    /*! Remove the stopwatch with the given key. */
+    void remove(const std::string & key, bool recursive=false);
 
     void setTrace(const std::string & trace) { _trace = trace; }
 
@@ -147,6 +153,8 @@ private:
     std::string _trace;
 };
 
+/*! Context manager for timing code blocks.
+No explicit start/stop needed, constructor/destructor will handle it. */
 class DLLEXPORT TicToc{
 public:
     TicToc(const std::string & name, bool reset=false);
@@ -157,7 +165,6 @@ protected:
 
     Stopwatch *_sw;
     std::string _parentTrace;
-
 };
 
 #define WITH_TICTOC(name) TicToc tictoc_name(name);

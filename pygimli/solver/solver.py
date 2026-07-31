@@ -17,8 +17,8 @@ def parseMarkersDictKey(key, markers):
     Utility function to parse a dictionary key string into a valid list of
     markers containing in a given markers list.
 
-    Parameters
-    ----------
+    Arguments
+    ---------
     key: str | int | [int]
         Supported are
         - int: single markers

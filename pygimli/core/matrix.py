@@ -81,6 +81,12 @@ def __Matrix_array_ufunc__(self, ufunc, method, *inputs, **kwargs):
         if len(inputs) == 2 and id(self) == id(inputs[1]):
             return self.__rsub__(float(inputs[0]))
 
+    # if ufunc == np.divide:
+    #     ## for self * np.ndarray
+    #     if len(inputs) == 2 and id(self) == id(inputs[0]):
+    #         return self.__truediv__(pg.Vector(inputs[1]))
+    #     # if isinstance(inputs[0], np.ndarray):
+    #     #     return pg.core.mult(self, np.squeeze(inputs[0]))
 
     pg._r('self:', self)
     pg._r('self:', id(self))
@@ -387,6 +393,15 @@ def __RSparseMapMatrix_Mul__(self, b):
 pgcore.RSparseMapMatrix.__mul__ = __RSparseMapMatrix_Mul__
 
 
+__RSparseMapMatrix_TrueDiv__orig = pgcore.RSparseMapMatrix.__truediv__
+def __RSparseMapMatrix_TrueDiv__(self, b):
+    if isinstance(b, (int, np.float64)):
+        ## or this will be wrongly parsed into truediv(self, RVector(b))
+        return __RSparseMapMatrix_TrueDiv__orig(self, float(b))
+    return __RSparseMapMatrix_TrueDiv__orig(self, b)
+pgcore.RSparseMapMatrix.__truediv__ = __RSparseMapMatrix_TrueDiv__
+
+
 __RSparseMatrix_Mul__orig = pgcore.RSparseMatrix.__mul__
 def __RSparseMatrix_Mul__(self, b):
     """Multiply SparseMatrix with b."""
@@ -400,6 +415,15 @@ def __RSparseMatrix_Mul__(self, b):
 
     return __RSparseMatrix_Mul__orig(self, b)
 pgcore.RSparseMatrix.__mul__ = __RSparseMatrix_Mul__
+
+
+__RSparseMatrix_TrueDiv__orig = pgcore.RSparseMatrix.__truediv__
+def __RSparseMatrix_TrueDiv__(self, b):
+    if isinstance(b, (int, np.float64)):
+        ## or this will be wrongly parsed into truediv(self, RVector(b))
+        return __RSparseMatrix_TrueDiv__orig(self, float(b))
+    return __RSparseMatrix_TrueDiv__orig(self, b)
+pgcore.RSparseMatrix.__truediv__ = __RSparseMatrix_TrueDiv__
 
 
 def __RSparseMapMatrix_Neg__(self):

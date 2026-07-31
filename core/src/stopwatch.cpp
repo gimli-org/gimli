@@ -187,18 +187,23 @@ std::vector < std::pair< std::string, Stopwatch * > > Swatches::items(){
     return items;
 }
 
-void Swatches::remove(const std::string & key, bool isRoot){
-    if (isRoot == false){
+void Swatches::remove(const std::string & key, bool recursive){
+    if (recursive == false){
         Stopwatch * s = this->_sw[key];
         this->_sw.erase(key);
         delete s;
     } else {
-        //     for k in list(self._sw.keys()):
-        //         if k.startswith(key):
-        //             self._sw.pop(k, None)
-        THROW_TO_IMPL
+        for (auto it = this->_sw.begin(); it != this->_sw.end();){
+            if (it->first.find(key) == 0){
+                delete it->second;
+                it = this->_sw.erase(it);
+            } else {
+                ++it;
+            }
+        }
     }
 }
+
 
 TicToc::TicToc(const std::string & name, bool reset){
 
