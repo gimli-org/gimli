@@ -1710,7 +1710,7 @@ class ClassicInversion:
         tData = self.dataTrans.deriv(self.response)
         tModel = 1 / self.modelTrans.deriv(self.model)
         if error_weighted:
-            tData *= self.dataTrans.error(self.response, self.errorVals)
+            tData /= self.dataTrans.error(self.response, self.errorVals)
         if numpy_matrix:
             J = self.fop.jacobian()
             if isinstance(J, pg.SparseMapMatrix):
