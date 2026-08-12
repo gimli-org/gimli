@@ -27,9 +27,8 @@ print(data)
 # Hint. Using pg.plt applies lazy evaluated import of matplotlib.pyplot,
 # opens all figures in interactive mode and don't need a plt.show() at the end
 # of the script.
-pg.plt.plot(pg.x(data), pg.z(data), 'x-')
 # Let us first have a look at the topography contained in the data
-fig, ax = plt.subplots()
+fig, ax = pg.plt.subplots()
 ax.plot(pg.x(data), pg.z(data), 'x-')
 ax.set_aspect(1.0)
 ax.set_xlabel('x [m]')
