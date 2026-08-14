@@ -124,7 +124,7 @@ def _b(*args, **kwargs):
     _d(*args, c='b', **kwargs)
 
 
-def _d(*args, c='y', trace=False):
+def _d(*args, c='y', trace=False, plain=False):
     """Simplistic colored debug msg.
 
     Arguments
@@ -135,7 +135,10 @@ def _d(*args, c='y', trace=False):
     trace : bool, optional
         If True, print the traceback of the last exception.
     """
-    print(_(whereAmI(), ':', *args, c=c))
+    if plain is True:
+        print(_(*args, c=c))
+    else:
+        print(_(whereAmI(), ":\n", *args, c=c))
     if trace:
         traceback.print_exc()
         traceback.print_stack()

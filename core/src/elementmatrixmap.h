@@ -22,11 +22,82 @@
 #include "elementmatrix.h"
 #include "vector.h"
 #include "matrix.h"
+#include "meshentities.h"
+
+#include <cstddef>
+#include <iterator>
 
 namespace GIMLI{
 
 class DLLEXPORT ElementMatrixMap {
 public:
+    class MatIterator {
+    public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = ElementMatrix < double >;
+        using difference_type = std::ptrdiff_t;
+        using pointer = const ElementMatrix < double > *;
+        using reference = const ElementMatrix < double > &;
+
+        MatIterator(const ElementMatrixMap * map, Index idx, bool withMask):
+            map_(map), idx_(idx), withMask_(withMask) {
+            advanceToValid_();
+        }
+
+        reference operator*() const { return map_->mats_[idx_]; }
+        pointer operator->() const { return &map_->mats_[idx_]; }
+
+        MatIterator & operator++(){
+            idx_ ++;
+            advanceToValid_();
+            return *this;
+        }
+
+        bool operator==(const MatIterator & other) const {
+            return map_ == other.map_ && idx_ == other.idx_;
+        }
+
+        bool operator!=(const MatIterator & other) const {
+            return !(*this == other);
+        }
+
+    private:
+        void advanceToValid_(){
+            if (!withMask_) return;
+
+            while (idx_ < map_->mats_.size()){
+                const Index cellId = map_->mats_[idx_].entity()->id();
+                ASSERT_RANGE(cellId, 0, map_->cellMask_.size())
+                if (!map_->cellMask_[cellId]) break;
+                idx_ ++;
+            }
+        }
+
+        const ElementMatrixMap * map_;
+        Index idx_;
+        bool withMask_;
+    };
+
+    class MatRange {
+    public:
+        MatRange(const ElementMatrixMap * map, bool withMask):
+            map_(map), withMask_(withMask) {
+                if (withMask_){
+                    ASSERT_PTR(map_)
+                    ASSERT_EQUAL(map_->cellMask_.size(), map_->mats_.size())
+            }
+        }
+
+        MatIterator begin() const {
+            return MatIterator(map_, 0, withMask_); }
+        MatIterator end() const {
+            return MatIterator(map_, map_->mats_.size(), withMask_); }
+
+    private:
+        const ElementMatrixMap * map_;
+        bool withMask_;
+    };
+
     ElementMatrixMap(){
         rows_ = 0; // think to remove
         cols_ = 0; // think to remove
@@ -163,6 +234,8 @@ public:
     return_value_policy< bp::copy_const_reference > has been changed. */
     const std::vector< ElementMatrix < double > > & mats() const;
 
+    MatRange mats(bool withMask) const { return MatRange(this, withMask); }
+
     ElementMatrix < double > * pMat(Index i){ return & mats_[i]; }
 
     void collectQuadraturePoints() const;
@@ -212,6 +285,16 @@ public:
     inline Index dofPerCoeff() const { return dofPerCoeff_;}
     inline Index dofOffset() const { return dofOffset_;}
 
+    /*! Bool array need match cell count.
+    True setting omits assembling and integration for the appropriate cells. */
+    void setCellMask(const BVector & cellMask) { cellMask_ = cellMask; }
+
+    /*! Return current cell mask.*/
+    const BVector & cellMask() const { return cellMask_; }
+
+    /*! Clean current cell mask and sets all values to false. */
+    void cleanCellMask() { cellMask_.resize(mats_.size(), false); }
+
 protected:
     std::vector< ElementMatrix < double > > mats_;
     Index nCoeff_;
@@ -229,6 +312,8 @@ protected:
 
     Index dofA_;
     Index dofB_;
+
+    BVector cellMask_;
 };
 
 

@@ -792,6 +792,14 @@ Boundary & Mesh::boundary(Index i) {
     return *boundaryVector_[i];
 }
 
+BVector Mesh::createCellMask(const std::vector< Cell * > & cells) const {
+    BVector mask(cellCount(), false);
+    for (auto *c: cells){
+        mask[c->id()] = true;
+    }
+    return mask;
+}
+
 void Mesh::findRange_() const{
     if (!rangesKnown_ || !staticGeometry_){
         minRange_ = RVector3(MAX_DOUBLE, MAX_DOUBLE, MAX_DOUBLE);

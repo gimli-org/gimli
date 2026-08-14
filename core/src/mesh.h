@@ -328,6 +328,9 @@ public:
     /*! Return a vector of boundary ptrs matching BVector b.*/
     std::vector< Boundary * > boundaries(const BVector & b) const;
 
+    /*! Return a BVector mask for all cells where all cells in c are True.*/
+    BVector createCellMask(const std::vector< Cell * > & cells) const;
+
     Index nodeCount(bool withSecNodes=false) const;
     Node & node(Index i) const;
     Node & node(Index i);

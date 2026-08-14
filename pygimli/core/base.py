@@ -45,7 +45,8 @@ def isScalar(v, val=None):
     False
     """
     if val is None:
-        return isinstance(v, (int, float, complex, np.integer, np.complex128))
+        return isinstance(v, (int, float, complex, np.integer, np.complex128)) \
+            or (isinstance(v, np.ndarray) and v.ndim == 0)
     # maybe add some tolerance check
     return isScalar(v) and v == val
 

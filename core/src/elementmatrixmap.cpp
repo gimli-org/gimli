@@ -47,7 +47,7 @@ template < class ValueType >
 void _T_integrateLConst(const ElementMatrixMap * self,
                      const ValueType & f, RVector & R, const double & alpha){
     ASSERT_NON_EMPTY(R)
-    for (auto &m : self->mats()){
+    for (auto &m : self->mats(true)){
         m.integrate(f, R, alpha);
     }
 }
@@ -56,7 +56,7 @@ void _T_integrateLConst(const ElementMatrixMap * self,
                      const ValueType & f, RVector & R, const RVector & alpha){
     ASSERT_NON_EMPTY(R)
     ASSERT_EQUAL_SIZE(self->mats(), alpha)
-    for (auto &m : self->mats()){
+    for (auto &m : self->mats(true)){
         m.integrate(f, R, alpha[m.entity()->id()]);
     }
 }
@@ -66,7 +66,7 @@ void _T_integrate_LF_PerNode(const ElementMatrixMap * self, const ValueType & f,
     ASSERT_VEC_SIZE(f, self->dofPerCoeff())
     // __MS("** EMM.intLPerNode(A, ...)")
     // assuming per node values
-    for (auto &m : self->mats()){
+    for (auto &m : self->mats(true)){
         m.integrate_n(f, R, alpha);
     }
 }
@@ -77,7 +77,7 @@ void _T_integrate_LF_PerNode(const ElementMatrixMap * self, const ValueType & f,
     ASSERT_VEC_SIZE(f, self->dofPerCoeff())
     // __MS("** EMM.intLPerNode(A, ...)")
     // assuming per node values
-    for (auto &m : self->mats()){
+    for (auto &m : self->mats(true)){
         m.integrate_n(f, R, alpha[m.entity()->id()]);
     }
 }
@@ -89,7 +89,7 @@ void _T_integrate_LF_PerCell(const ElementMatrixMap * self,
     ASSERT_NON_EMPTY(R)
     ASSERT_EQUAL_SIZE(self->mats(), f)
 
-    for (auto &m : self->mats()){
+    for (auto &m : self->mats(true)){
         m.integrate(f[m.entity()->id()], R, alpha);
     }
 }
@@ -101,7 +101,7 @@ void _T_integrate_LF_PerCell(const ElementMatrixMap * self,
     ASSERT_EQUAL_SIZE(self->mats(), f)
     ASSERT_EQUAL_SIZE(self->mats(), alpha)
 
-    for (auto &m : self->mats()){
+    for (auto &m : self->mats(true)){
         m.integrate(f[m.entity()->id()], R, alpha[m.entity()->id()]);
     }
 }
@@ -136,7 +136,8 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R) const {
     // maybe count dofs before
     std::vector < std::set< Index > > idxMap(A.dof());
     Index i = 0;
-    for (auto &m : A.mats()){
+    for (auto &m : A.mats(true)){
+
         const IndexArray &a = m.rowIDs();
         const IndexArray &b = m.colIDs();
 
@@ -189,7 +190,8 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R,
     std::vector < std::set< Index > > idxMap(A.dof());
 
     Index i = 0;
-    for (auto &m : A.mats()){
+    for (auto &m : A.mats(true)){
+
         const IndexArray &a = m.rowIDs();
         const IndexArray &b = B.mats()[i].rowIDs();
 
@@ -231,7 +233,8 @@ void _T_integrateBLConst(const ElementMatrixMap & A,
         //const_space * B
         Index row = A.mats()[0].dofOffset();
         // __MS(row, A.mats()[0].nCoeff())
-        for (auto &m : B.mats()){
+        for (auto &m : B.mats(true)){
+
             if (!m.isIntegrated()){
                 log(Error, "B need to be integrated");
             }
@@ -248,7 +251,8 @@ void _T_integrateBLConst(const ElementMatrixMap & A,
     if (B.size() == 1 && B.mats()[0].order() == 0){
         //A * const_space
         Index col = B.mats()[0].dofOffset();
-        for (auto &m : A.mats()){
+        for (auto &m : A.mats(true)){
+
             if (!m.isIntegrated()){
                 log(Error, "B need to be integrated");
             }
@@ -265,7 +269,8 @@ void _T_integrateBLConst(const ElementMatrixMap & A,
 // __M
     ASSERT_EQUAL_SIZE(A.mats(), B.mats())
     Index i = 0;
-    for (auto &m : A.mats()){
+    for (auto &m : A.mats(true)){
+
         m.integrate(B.mats()[i], f, R, scale);
         i++;
     }
@@ -285,7 +290,8 @@ void _T_integrateBLPerCell(const ElementMatrixMap & A,
     ASSERT_EQUAL_SIZE(A.mats(), B.mats())
     ASSERT_EQUAL_SIZE(A, f)
     Index i = 0;
-    for (auto &m : A.mats()){
+    for (auto &m : A.mats(true)){
+
         m.integrate(B.mats()[i], f[m.entity()->id()], R, scale);
         i++;
     }
@@ -305,10 +311,12 @@ void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const { \
     ret.resize(this->size());\
     ret.setDof(this->dofA(), this->dofB()); \
     Index i = 0; \
-    for (auto const &m : this->mats_){ \
+    for (auto const &m : this->mats(true)){ \
+        \
         GIMLI::mult(m, f, *ret.pMat(i)); \
         i++; \
     } \
+    ret.cleanCellMask(); \
 }
 DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(double)
 DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(Pos)
@@ -324,11 +332,14 @@ void ElementMatrixMap::add(const ElementMatrixMap & B,
     ret.setDof(this->dofA(), this->dofB());
 
     Index i = 0;
-    for (auto const &m: this->mats_){
+    for (auto const &m: this->mats(true)){
+
         ret.pMat(i)->copyFrom(m);
         ret.pMat(i)->add(B.mats()[i], dim, b);
         i++;
     }
+
+    ret.cleanCellMask();
 
     // __MS(this->mats()[0])
     // __MS(B.mats()[0])
@@ -351,7 +362,8 @@ void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const {  \
     if (f.size() == this->dofA()){ \
         /*__MS('a', this->size(), f.size())*/ \
         Index i = 0; \
-        for (auto const &m : this->mats_){ \
+        for (auto const &m : this->mats(true)){ \
+            \
             GIMLI::mult_n(m, f, *ret.pMat(i)); \
             i++; \
         } \
@@ -359,7 +371,8 @@ void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const {  \
         /* f per cell */ \
         /*__MS('b', this->size(), f.size())*/ \
         Index i = 0; \
-        for (auto const &m : this->mats_){ \
+        for (auto const &m : this->mats(true)){ \
+            \
             GIMLI::mult(m, f[m.entity()->id()], *ret.pMat(i)); \
             i++; \
         } \
@@ -367,6 +380,7 @@ void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const {  \
         __MS(this->size(), f.size()) \
         THROW_TO_IMPL \
     } \
+    ret.cleanCellMask(); \
 }
 DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL(RVector)
 DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL(PosVector)
@@ -376,30 +390,33 @@ DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL(std::vector< PosVector >)
 DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL(std::vector< std::vector< RSmallMatrix > >)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_LF_PER_CELL_IMPL
 
-void ElementMatrixMap::integrate(const std::vector< RVector > & vrv,                             \
-    RVector & R, const double & alpha) const {    \
-_T_integrate_LF_PerCell(this, vrv, R, alpha);                                \
-}                                                                              \
-void ElementMatrixMap::integrate(const std::vector< RVector > & vrv,                             \
-    RVector & R, const RVector & alpha) const {   \
-_T_integrate_LF_PerCell(this, vrv, R, alpha);                                \
-}                                                                              \
+void ElementMatrixMap::integrate(const std::vector< RVector > & vrv,
+    RVector & R, const double & alpha) const {
+_T_integrate_LF_PerCell(this, vrv, R, alpha);
+}
+void ElementMatrixMap::integrate(const std::vector< RVector > & vrv,
+    RVector & R, const RVector & alpha) const {
+_T_integrate_LF_PerCell(this, vrv, R, alpha);
+}
 
 void ElementMatrixMap::mult(const std::vector< RVector > & vrv, ElementMatrixMap & ret) const {
-    ret.resize(this->size()); \
-    ret.setDof(this->dofA(), this->dofB()); \
-    if (vrv.size() == this->size()) { \
-        /* f per cell */ \
-        /*__MS('b', this->size(), f.size())*/ \
-        Index i = 0; \
-        for (auto const &m : this->mats_){ \
-            GIMLI::mult_d_q(m, vrv[m.entity()->id()], *ret.pMat(i)); \
-            i++; \
-        } \
-    } else { \
-        __MS(this->size(), vrv.size()) \
-        THROW_TO_IMPL \
-    } \
+    ret.resize(this->size());
+    ret.setDof(this->dofA(), this->dofB());
+    if (vrv.size() == this->size()) {
+        /* f per cell */
+        /*__MS('b', this->size(), f.size())*/
+        Index i = 0;
+        for (auto const &m : this->mats(true)){
+
+            GIMLI::mult_d_q(m, vrv[m.entity()->id()], *ret.pMat(i));
+            i++;
+        }
+    } else {
+        __MS(this->size(), vrv.size())
+        THROW_TO_IMPL
+    }
+
+    ret.cleanCellMask();
 }
 
 
@@ -507,7 +524,8 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
         Index i = 0;
         Index nCoeff = A.nCoeff();
 
-        for (auto &m : B.mats()){
+        for (auto &m : B.mats(true)){
+
             if (!m.isIntegrated()){
                 log(Error, "B need to be integrated");
             }
@@ -529,6 +547,8 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
             ret.pMat(i)->integrated(true);
             i++;
         }
+
+        ret.cleanCellMask();
         return;
     }
     if (B.size() == 1 && B.mats()[0].order() == 0){
@@ -542,7 +562,7 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
         Index i = 0;
         Index nCoeff = B.mats()[0].nCoeff();
 
-        for (auto &m : this->mats()){
+        for (auto &m : this->mats(true)){
             if (!m.isIntegrated()){
                 log(Error, "A need to be integrated");
             }
@@ -556,6 +576,8 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
             ret.pMat(i)->integrated(true);
             i++;
         }
+
+        ret.cleanCellMask();
         return;
     }
 
@@ -567,10 +589,12 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
     ret.setDof(A.dof(), B.dof());
 
     Index i = 0;
-    for (auto &m : this->mats()){
+    for (auto &m : this->mats(true)){
         GIMLI::dot(m, B.mats()[i], *ret.pMat(i));
         i++;
     }
+
+    ret.cleanCellMask();
 }
 
 template < class ValueType, class RetType >
@@ -579,7 +603,7 @@ void _T_assembleFConst(const ElementMatrixMap * self, const ValueType & f,
     ASSERT_NON_EMPTY(R)
 
     // R.clean(); dont clean
-    for (auto &m : self->mats()){
+    for (auto &m : self->mats(true)){
         R.add(m, f, scale);
     }
 }
@@ -592,7 +616,7 @@ void _T_assembleFConst(const ElementMatrixMap * self, const double & f,
 
     Stopwatch s(true);
     // R.clean(); dont clean
-    for (auto &m : self->mats()){
+    for (auto &m : self->mats(true)){
         R.add(m, f, scale);
     }
     // ALLOW_PYTHON_THREADS
@@ -630,12 +654,12 @@ void _T_assembleFConst(const ElementMatrixMap * self, const double & f,
 }
 
 template < class ValueType, class RetType >
-void assembleFPerCellT_(const ElementMatrixMap * self, const ValueType & f,
+void _T_assembleFPerCell(const ElementMatrixMap * self, const ValueType & f,
                        RetType & R, const double & scale){
     ASSERT_NON_EMPTY(R)
     ASSERT_EQUAL_SIZE(self->mats(), f)
     // R.clean(); dont clean
-    for (auto &m : self->mats()){
+    for (auto &m : self->mats(true)){
         R.add(m, f[m.entity()->id()], scale);
     }
 }
@@ -661,14 +685,14 @@ DEFINE_ASSEMBLER_L(RVector3)  // const Pos for all cells
 #define DEFINE_ASSEMBLER_B(A_TYPE) \
 void ElementMatrixMap::assemble(const A_TYPE & f, RVector & R, \
                                 const double & scale) const { \
-    assembleFPerCellT_(this, f, R, scale); \
+    _T_assembleFPerCell(this, f, R, scale); \
 } \
 void ElementMatrixMap::assemble(const A_TYPE & f, SparseMatrixBase & R, \
                                 const double & scale) const { \
     if (R.rtti() == GIMLI_SPARSE_CRS_MATRIX_RTTI){\
         this->fillSparsityPattern(*dynamic_cast< RSparseMatrix * >(&R));\
     }\
-    assembleFPerCellT_(this, f, R, scale); \
+    _T_assembleFPerCell(this, f, R, scale); \
 } \
 
 DEFINE_ASSEMBLER_B(RVector)  // const scalar for each cell
@@ -807,6 +831,7 @@ void createUMap(const Mesh & mesh, Index order, ElementMatrixMap & ret,
         ret.pMat(0)->setIds(range(dofOffset, dofOffset+nCoeff), {0});
         //ret.setDof(dofOffset+nCoeff);
         ret.setDofs(nCoeff, 1, dofOffset);
+        ret.cleanCellMask();
         return;
     }
 
@@ -833,6 +858,8 @@ void createUMap(const Mesh & mesh, Index order, ElementMatrixMap & ret,
         }
 
     }  // omp paralell
+
+    ret.cleanCellMask();
 }
 
 // only for testing to split parts to find OMP sinks
@@ -856,6 +883,7 @@ void createUMap0_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
         ret.pMat(0)->setIds(range(dofOffset, dofOffset+nCoeff), {0});
         // ret.setDof(dofOffset+nCoeff);
         ret.setDofs(nCoeff, 1, dofOffset);
+        ret.cleanCellMask();
         return;
     }
 
@@ -865,6 +893,7 @@ void createUMap0_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
 
     if (disableCacheForDBG()) ret.clear();
     ret.resize(mesh.cellCount());
+    ret.cleanCellMask();
 }
 
 
@@ -884,6 +913,8 @@ void createUMap1_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
             e->resizeMatX_U_();
         }
     }  // omp paralell
+
+    ret.cleanCellMask();
 }
 
 void createUMap2_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
@@ -897,6 +928,8 @@ void createUMap2_(const Mesh & mesh, Index order, ElementMatrixMap & ret,
         }
 
     }  // omp paralell
+
+    ret.cleanCellMask();
 
 }
 
@@ -929,6 +962,7 @@ void createdUMap(const Mesh & mesh, Index order,
                                     kelvin);
     }
     // __MS(&ret, ret.dofA(), ret.dofB())
+    ret.cleanCellMask();
 }
 
 ElementMatrixMap createdUMap(const Mesh & mesh, Index order,
@@ -951,6 +985,7 @@ void createIdentityMap(const Mesh & mesh, Index order,
                                        nCoeff, mesh.nodeCount(), dofOffset);
     }
     ret.setDofs(nCoeff, mesh.nodeCount(), dofOffset);
+    ret.cleanCellMask();
 }
 
 ElementMatrixMap createIdentityMap(const Mesh & mesh, Index order,
@@ -963,10 +998,12 @@ ElementMatrixMap createIdentityMap(const Mesh & mesh, Index order,
 void sym(const ElementMatrixMap & A, ElementMatrixMap & ret){
     ret.resize(A.size());
     Index i = 0;
-    for (auto &m: A.mats()){
+    for (auto &m: A.mats(true)){
         sym(m, *ret.pMat(i));
         i++;
     }
+
+    ret.cleanCellMask();
 }
 
 
@@ -981,10 +1018,11 @@ void trace(const ElementMatrixMap & A, ElementMatrixMap & ret){
     ret.resize(A.size());
     Index i = 0;
     //#pragma omp parallel not without check
-    for (auto &m: A.mats()){
+    for (auto &m: A.mats(true)){
         trace(m, *ret.pMat(i));
         i++;
     }
+    ret.cleanCellMask();
 }
 
 
@@ -1000,7 +1038,7 @@ void testEvalEmap(const ElementMatrixMap & eMap,
 
     Index i = 0;
 
-    for (auto &m: eMap.mats()){
+    for (auto &m: eMap.mats(true)){
         ret[i].resize(v[i].size());
 
         double vAbs = 0;
