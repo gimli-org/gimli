@@ -1,0 +1,23 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-merge-conflict
+      - id: check-yaml
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Keep in sync with the ruff pulled in by `uv` (the [dev] extra) so the
+    # hook and `uv run ruff check` never disagree on rules/behaviour.
+    rev: v0.15.8
+    hooks:
+      # Gate only: fail the commit on any lint violation, but never mutate
+      # files (no --fix).
+      - id: ruff-check
+      # Enforce ruff's formatting. The whole tree was reformatted in one
+      # mechanical commit (recorded in .git-blame-ignore-revs so it stays
+      # out of `git blame`); this hook keeps it that way going forward.
+      #
+      # deactivated for now, as it is too aggressive and breaks
+      # the code style in some cases.
+      - id: ruff-format
